@@ -3,465 +3,1398 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tildochka</title>
+  <title>Tildochka - Сериалы и Игры</title>
+  
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:Arial;background:#1a1a1a;color:#fff;min-height:100vh}
-    #bg{position:fixed;top:0;left:0;width:100%;height:100%;background:url("bg.jpg") center/cover;z-index:-2}
-    #bg::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85)}
-    #blocked{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;color:#000;font-size:2rem;justify-content:center;align-items:center;z-index:1000}
-    .header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:15px 25px;z-index:100;background:rgba(0,0,0,.7)}
-    .logo{font-size:30px;font-weight:700;cursor:pointer;color:#fff}
-    .logo:hover{color:#ffd700}
-    .burger{width:35px;height:25px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer}
-    .burger span{height:4px;background:#fff;border-radius:2px}
-    .menu{display:none;position:fixed;top:70px;right:25px;background:#1a1a1a;border:1px solid #444;border-radius:8px;min-width:200px;z-index:200}
-    .menu.show{display:block}
-    .menu a{display:block;padding:15px 20px;color:#fff;border-bottom:1px solid #333;cursor:pointer}
-    .menu a:hover{background:rgba(255,215,0,.2)}
-    #content{padding-top:80px}
-    .screen{display:none}
-    .screen.active{display:block}
-    .catalog{max-width:1200px;margin:0 auto;padding:40px 20px}
-    .catalog h2{margin-bottom:30px;font-size:2rem}
-    .cards{display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
-    .movie-card,.game-card{width:220px;cursor:pointer;transition:.3s;text-align:center;background:rgba(0,0,0,.3);border-radius:15px;padding:15px;border:1px solid rgba(255,255,255,.1)}
-    .movie-card:hover,.game-card:hover{transform:translateY(-10px);background:rgba(255,215,0,.1)}
-    .movie-card img{width:100%;border-radius:12px}
-    .game-icon{font-size:60px;display:block;margin-bottom:10px}
-    .movie-card h3,.game-card h3{margin:10px 0 5px}
-    .rating,.game-rating{color:#ffd700;font-weight:700}
-    .hero{text-align:center;padding:40px 20px}
-    .poster{width:100%;max-width:400px;border-radius:15px}
-    .hero h1{font-size:2.5rem;margin:10px 0}
-    .hero h2{color:#ffd700;font-size:2rem}
-    .content{max-width:900px;margin:0 auto;padding:20px}
-    .section{margin-top:40px;padding:25px;background:rgba(0,0,0,.5);border-radius:15px;border:1px solid rgba(255,255,255,.1)}
-    .section h2{margin-bottom:15px}
-    video{width:100%;border-radius:10px}
-    button{margin:10px 5px;padding:12px 20px;background:#333;color:#fff;border:1px solid #555;border-radius:8px;cursor:pointer;font-size:16px}
-    button:hover{background:#555}
-    .episodes{margin-top:15px;padding:15px;background:rgba(0,0,0,.3);border-radius:8px;display:none}
-    .episodes.show{display:block}
-    .coming-soon{color:#aaa;font-style:italic;padding:15px}
-    .stars-container{display:flex;align-items:center;gap:10px;margin:15px 0;flex-wrap:wrap}
-    .star{font-size:35px;cursor:pointer;color:#555;transition:.2s}
-    .star:hover{transform:scale(1.2)}
-    .star.full{color:#ffd700}
-    .star.half{background:linear-gradient(90deg,#ffd700 50%,#555 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    #ratingText,#gameRatingText{margin-left:10px;font-size:20px;color:#ffd700;font-weight:700}
-    .game-container{text-align:center;padding:20px}
-    .game-canvas{border:2px solid #444;border-radius:10px;background:#1a1a1a;margin:20px auto;max-width:100%}
-    .game-score{font-size:24px;color:#ffd700;margin:10px}
-    .player-input{margin:10px;padding:10px;border-radius:8px;border:1px solid #ffd700;background:#2a2a2a;color:#fff;text-align:center}
-    .mobile-controls{display:flex;gap:10px;justify-content:center;margin:10px 0}
-    .mobile-btn{width:50px;height:50px;font-size:24px;background:#444;border:2px solid #666;border-radius:10px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
-    .leaderboard{margin-top:20px;padding:15px;background:rgba(0,0,0,.5);border-radius:10px;max-height:300px;overflow-y:auto}
-    .leaderboard h3{color:#ffd700;margin-bottom:10px}
-    .leaderboard-item{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #333}
-    .review{border-top:1px solid #444;padding:20px 0;margin-top:10px;position:relative}
-    .review-name{font-weight:700;margin-bottom:5px}
-    .review-stars{color:#ffd700;margin-bottom:5px}
-    .review-text{margin:10px 0}
-    .review-date{color:#888;font-size:.85rem}
-    .delete-btn{position:absolute;top:20px;right:0;background:none;border:none;color:#f44;cursor:pointer;font-size:18px}
-    input,textarea{width:100%;max-width:500px;padding:12px;margin:10px 0;background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:8px}
-    textarea{min-height:100px;resize:vertical}
-    .msg{background:rgba(0,0,0,.5);padding:12px;border-radius:8px;margin-bottom:10px}
-    .idea-card{background:rgba(0,0,0,.5);padding:15px;border-radius:10px;margin-bottom:15px}
-    @media(max-width:768px){.logo{font-size:24px}.hero h1{font-size:1.8rem}.movie-card,.game-card{width:160px}.game-icon{font-size:40px}.star{font-size:28px}}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: white;
+      min-height: 100vh;
+    }
+    
+    #app-bg {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url("bg.jpg") no-repeat center/cover;
+      z-index: -2;
+    }
+    
+    #app-bg::after {
+      content: "";
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+    }
+    
+    #blocked {
+      display: none;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: white; color: black;
+      font-size: 2rem;
+      justify-content: center; align-items: center;
+      z-index: 1000; text-align: center; padding: 20px;
+    }
+    
+    .header {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between; align-items: center;
+      padding: 15px 25px;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(10px);
+    }
+    
+    .logo {
+      font-size: 30px; font-weight: bold;
+      color: white; cursor: pointer;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+      transition: color 0.3s;
+    }
+    
+    .logo:hover { color: #ffd700; }
+    
+    .burger {
+      width: 35px; height: 25px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    
+    .burger:hover { transform: scale(1.1); }
+    
+    .burger span {
+      display: block; height: 4px;
+      background: white; border-radius: 2px;
+      transition: 0.3s;
+    }
+    
+    .menu {
+      display: none;
+      position: fixed; top: 70px; right: 25px;
+      background: rgba(26, 26, 26, 0.95);
+      border: 1px solid #444; border-radius: 8px;
+      min-width: 220px; z-index: 200;
+      overflow: hidden; backdrop-filter: blur(10px);
+    }
+    
+    .menu.show { display: block; }
+    
+    .menu a {
+      display: block; padding: 15px 20px;
+      color: white; text-decoration: none;
+      border-bottom: 1px solid #333;
+      cursor: pointer; transition: background 0.2s;
+    }
+    
+    .menu a:hover { background: rgba(255, 215, 0, 0.2); }
+    .menu a:last-child { border-bottom: none; }
+    
+    #content { padding-top: 80px; min-height: 100vh; }
+    
+    .screen { display: none; }
+    .screen.active { display: block; }
+    
+    .catalog {
+      max-width: 1200px; margin: 0 auto;
+      padding: 40px 20px;
+    }
+    
+    .catalog h2 { margin-bottom: 30px; font-size: 2rem; }
+    
+    .movie-grid, .games-grid {
+      display: flex; flex-wrap: wrap;
+      gap: 20px; justify-content: center;
+    }
+    
+    .movie-card, .game-card {
+      width: 220px; cursor: pointer;
+      transition: transform 0.3s;
+      text-align: center;
+      background: rgba(0,0,0,0.3);
+      border-radius: 15px; padding: 15px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .movie-card:hover, .game-card:hover {
+      transform: translateY(-10px);
+      background: rgba(255,215,0,0.1);
+    }
+    
+    .movie-card img {
+      width: 100%; border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    }
+    
+    .game-icon { font-size: 60px; display: block; margin-bottom: 10px; }
+    
+    .movie-card h3, .game-card h3 { margin: 10px 0 5px; font-size: 1.1rem; }
+    
+    .movie-card .rating, .game-card .game-rating {
+      color: #ffd700; font-weight: bold; font-size: 1.1rem;
+    }
+    
+    .hero { text-align: center; padding: 40px 20px; }
+    
+    .poster {
+      width: 100%; max-width: 400px;
+      border-radius: 15px; margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    .hero h1 { font-size: 2.5rem; margin-bottom: 10px; }
+    .hero h2 { color: #ffd700; font-size: 2rem; }
+    
+    .content { max-width: 900px; margin: 0 auto; padding: 20px; }
+    
+    .section {
+      margin-top: 40px; padding: 25px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .section h2 { margin-bottom: 15px; font-size: 1.5rem; }
+    
+    video { width: 100%; border-radius: 10px; }
+    
+    button {
+      margin: 10px 5px; padding: 12px 20px;
+      font-size: 16px; background: #333;
+      color: white; border: 1px solid #555;
+      border-radius: 8px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    button:hover { background: #555; transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    
+    .episodes {
+      margin-top: 15px; padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .episodes.show { display: block; }
+    
+    .coming-soon {
+      color: #aaa; font-style: italic;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px; margin-top: 10px;
+    }
+    
+    .stars-container {
+      display: flex; align-items: center;
+      gap: 10px; margin: 15px 0;
+      flex-wrap: wrap;
+    }
+    
+    .star {
+      font-size: 35px; cursor: pointer;
+      color: #555;
+      transition: all 0.2s;
+      user-select: none;
+      display: inline-block;
+      width: 35px; text-align: center;
+    }
+    
+    .star:hover { transform: scale(1.2); }
+    
+    .star.full { color: #ffd700; }
+    
+    .star.half {
+      background: linear-gradient(90deg, #ffd700 50%, #555 50%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .star.hover-full { color: #ffed4a; }
+    
+    .star.hover-half {
+      background: linear-gradient(90deg, #ffed4a 50%, #555 50%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    #ratingText {
+      margin-left: 10px; font-size: 20px;
+      color: #ffd700; font-weight: bold;
+    }
+    
+    .game-container { text-align: center; padding: 20px; }
+    
+    .game-canvas {
+      border: 2px solid #444; border-radius: 10px;
+      background: #1a1a1a; margin: 20px auto;
+      display: block; max-width: 100%;
+    }
+    
+    .game-score { font-size: 24px; color: #ffd700; margin: 10px; }
+    
+    .player-name-input {
+      margin: 10px; padding: 10px;
+      border-radius: 8px; border: 1px solid #ffd700;
+      background: #2a2a2a; color: white; font-size: 16px;
+      text-align: center;
+    }
+    
+    .mobile-controls {
+      display: flex; gap: 10px; justify-content: center;
+      flex-wrap: wrap; margin: 10px 0;
+    }
+    
+    .mobile-btn {
+      width: 50px; height: 50px;
+      font-size: 24px; background: #444;
+      border: 2px solid #666; border-radius: 10px;
+      color: white; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    
+    .mobile-btn:active { background: #666; }
+    
+    .leaderboard {
+      margin-top: 20px; padding: 15px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 10px; max-height: 300px; overflow-y: auto;
+    }
+    
+    .leaderboard h3 { color: #ffd700; margin-bottom: 10px; }
+    
+    .leaderboard-item {
+      display: flex; justify-content: space-between;
+      padding: 8px; border-bottom: 1px solid #333;
+    }
+    
+    .review {
+      border-top: 1px solid #444;
+      padding: 20px 0; margin-top: 10px;
+      position: relative;
+    }
+    
+    .review-name {
+      font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;
+    }
+    
+    .review-stars-display {
+      color: #ffd700; margin-bottom: 5px;
+    }
+    
+    .review-text { margin: 10px 0; line-height: 1.5; }
+    .review-date { color: #888; font-size: 0.85rem; }
+    
+    .rating-info {
+      margin-top: 10px; padding: 10px;
+      background: rgba(255, 215, 0, 0.1);
+      border-radius: 8px;
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    
+    .delete-review {
+      position: absolute; top: 20px; right: 0;
+      background: none; border: none;
+      color: #ff4444; cursor: pointer; font-size: 18px;
+    }
+    
+    input, textarea {
+      width: 100%; max-width: 500px;
+      padding: 12px; margin: 10px 0;
+      background: #2a2a2a; color: white;
+      border: 1px solid #444; border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    textarea { min-height: 100px; resize: vertical; }
+    
+    .ideas-container, .chat-container {
+      max-width: 700px; margin: 0 auto; padding: 20px;
+    }
+    
+    .idea-card {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 15px; border-radius: 10px;
+      margin-bottom: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .idea-card .idea-author { color: #ffd700; margin-bottom: 5px; }
+    
+    .idea-card .idea-likes {
+      margin-top: 10px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    
+    .like-btn {
+      background: none; border: none;
+      color: white; cursor: pointer;
+      font-size: 18px; padding: 5px 10px;
+      transition: transform 0.2s;
+    }
+    
+    .like-btn:hover { transform: scale(1.2); }
+    
+    .message {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 12px 15px; border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    
+    .message-time { font-size: 12px; color: #888; margin-top: 5px; }
+    
+    .modal {
+      display: none;
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center; align-items: center;
+      cursor: pointer;
+    }
+    
+    .modal img {
+      max-width: 90%; max-height: 90%;
+      border-radius: 10px;
+    }
+    
+    @media (max-width: 768px) {
+      .logo { font-size: 24px; }
+      .hero h1 { font-size: 1.8rem; }
+      .hero h2 { font-size: 1.5rem; }
+      .movie-card, .game-card { width: 160px; }
+      .game-icon { font-size: 40px; }
+      .content { padding: 10px; }
+      .section { padding: 15px; }
+      button { padding: 10px 15px; font-size: 14px; }
+      .star { font-size: 28px; width: 28px; }
+    }
   </style>
 </head>
 <body>
+
   <div id="blocked"><div>🚫 ДОСТУП ЗАПРЕЩЁН</div></div>
-  <div id="bg"></div>
-  <div id="app" style="display:none">
+  <div id="app-bg"></div>
+
+  <div id="app" style="display: none;">
+    
     <div class="header">
       <div class="logo" onclick="showScreen('home')">Tildochka</div>
-      <div class="burger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+      <div class="burger" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </div>
     </div>
+
     <div class="menu" id="menuDropdown">
-      <a onclick="showScreen('home');closeMenu()">🏠 Главная</a>
-      <a onclick="showScreen('discussions');closeMenu()">💬 Обсуждения</a>
-      <a onclick="showScreen('ideas');closeMenu()">💡 Идеи</a>
+      <a onclick="showScreen('home'); closeMenu()">🏠 Главная</a>
+      <a onclick="showScreen('discussions'); closeMenu()">💬 Обсуждения</a>
+      <a onclick="showScreen('ideas'); closeMenu()">💡 Идеи для продолжения</a>
     </div>
+
     <div id="content">
+      
+      <!-- ГЛАВНАЯ -->
       <div id="home-screen" class="screen active">
         <div class="catalog">
-          <h2>🎬 Сериалы</h2>
-          <div class="cards">
-            <div class="movie-card" onclick="showScreen('series')"><img src="cover.jpg"><h3>Приключения 4 куриц</h3><div class="rating" id="seriesRating">⭐ 9.5 / 10</div></div>
+          <h2>🎬 Сейчас смотрят</h2>
+          <div class="movie-grid">
+            <div class="movie-card" onclick="showScreen('series')">
+              <img src="cover.jpg" alt="Постер">
+              <h3>Приключения 4 куриц</h3>
+              <div class="rating" id="seriesRating">⭐ 9.5 / 10</div>
+            </div>
           </div>
-          <h2 style="margin-top:50px">🎮 Игры</h2>
-          <div class="cards">
-            <div class="game-card" onclick="showGame('snake')"><span class="game-icon">🐍</span><h3>Змейка</h3><div class="game-rating" id="rating-snake">⭐ 0/10 (0)</div></div>
-            <div class="game-card" onclick="showGame('tetris')"><span class="game-icon">🧱</span><h3>Тетрис</h3><div class="game-rating" id="rating-tetris">⭐ 0/10 (0)</div></div>
-            <div class="game-card" onclick="showGame('runner')"><span class="game-icon">🏃</span><h3>Раннер</h3><div class="game-rating" id="rating-runner">⭐ 0/10 (0)</div></div>
+          
+          <h2 style="margin-top: 50px;">🎮 Мини-игры</h2>
+          <div class="games-grid">
+            
+            <div class="game-card" onclick="showGame('snake')">
+              <span class="game-icon">🐍</span>
+              <h3>Змейка с курицей</h3>
+              <div class="game-rating" id="rating-snake">⭐ 0/10 (0)</div>
+            </div>
+            
+            <div class="game-card" onclick="showGame('tetris')">
+              <span class="game-icon">🧱</span>
+              <h3>Яичный тетрис</h3>
+              <div class="game-rating" id="rating-tetris">⭐ 0/10 (0)</div>
+            </div>
+            
+            <div class="game-card" onclick="showGame('runner')">
+              <span class="game-icon">🏃</span>
+              <h3>Куриный раннер</h3>
+              <div class="game-rating" id="rating-runner">⭐ 0/10 (0)</div>
+            </div>
+            
           </div>
         </div>
       </div>
 
+      <!-- СЕРИАЛ -->
       <div id="series-screen" class="screen">
-        <div class="hero"><img src="cover.jpg" class="poster"><h1>Приключения 4 куриц</h1><h2 id="seriesRatingHero">⭐ 9.5 / 10</h2></div>
+        <div class="hero">
+          <img src="cover.jpg" class="poster" alt="Постер">
+          <h1>Приключения 4 куриц</h1>
+          <h2 id="seriesRatingHero">⭐ 9.5 / 10</h2>
+        </div>
+
         <div class="content">
-          <div class="section"><h2>📖 Описание</h2><p>Увлекательный сериал о четырёх курицах и их приключениях!</p><div style="margin-top:15px"><span style="font-size:1.2rem;color:#ffd700" id="totalRatingDisplay">⭐ 9.5 / 10</span> <span style="color:#aaa;margin-left:10px" id="reviewsCountDisplay">0 отзывов</span></div></div>
-          <div class="section"><h2>🎭 Жанр</h2><p>комедия / боевик / романтика</p></div>
-          <div class="section"><h2>▶️ Смотреть</h2><video id="player" controls><source id="videosrc" src="episode1.mp4"></video></div>
-          <div class="section"><h2>📺 Сезоны</h2>
-            <button onclick="toggleSeason('season1')">Сезон 1</button><div class="episodes" id="season1"><button onclick="playEpisode('episode1.mp4')">▶ 1 серия</button><button onclick="playEpisode('episode2.mp4')">▶ 2 серия</button><button onclick="playEpisode('episode3.mp4')">▶ 3 серия</button><button onclick="playEpisode('episode4.mp4')">▶ 4 серия</button></div>
-            <button onclick="toggleSeason('season2')">Сезон 2</button><div class="episodes" id="season2"><div class="coming-soon">🎬 Скоро!</div></div>
-            <button onclick="toggleSeason('season3')">Сезон 3</button><div class="episodes" id="season3"><div class="coming-soon">🎬 В разработке!</div></div>
+          <div class="section">
+            <h2>📖 Описание</h2>
+            <p>Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия.</p>
+            
+            <div class="rating-info">
+              <span style="font-size:1.2rem;color:#ffd700;" id="totalRatingDisplay">⭐ 9.5 / 10</span>
+              <span style="color:#aaa;" id="reviewsCountDisplay">На основе 0 отзывов</span>
+            </div>
           </div>
-          <div class="section"><h2>💭 Отзывы</h2>
+
+          <div class="section">
+            <h2>🎭 Жанр</h2>
+            <p>комедия / боевик / романтика</p>
+          </div>
+
+          <div class="section">
+            <h2>▶️ Смотреть</h2>
+            <video id="player" controls>
+              <source id="videosrc" src="episode1.mp4" type="video/mp4">
+              Ваш браузер не поддерживает видео.
+            </video>
+          </div>
+
+          <div class="section">
+            <h2>📺 Сезоны</h2>
+            
+            <button onclick="toggleSeason('season1')">Сезон 1</button>
+            <div class="episodes" id="season1">
+              <h3>Серии 1 сезона:</h3>
+              <button onclick="playEpisode('episode1.mp4')">▶ 1 серия</button>
+              <button onclick="playEpisode('episode2.mp4')">▶ 2 серия</button>
+              <button onclick="playEpisode('episode3.mp4')">▶ 3 серия</button>
+              <button onclick="playEpisode('episode4.mp4')">▶ 4 серия</button>
+            </div>
+            
+            <button onclick="toggleSeason('season2')">Сезон 2</button>
+            <div class="episodes" id="season2">
+              <h3>Серии 2 сезона:</h3>
+              <div class="coming-soon">🎬 Серии второго сезона скоро появятся!<br>Следите за обновлениями.</div>
+            </div>
+            
+            <button onclick="toggleSeason('season3')">Сезон 3</button>
+            <div class="episodes" id="season3">
+              <h3>Серии 3 сезона:</h3>
+              <div class="coming-soon">🎬 Серии третьего сезона в разработке!<br>У вас есть идеи? Поделитесь в разделе "Идеи для продолжения"!</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>💭 Отзывы</h2>
+            
             <input id="reviewName" placeholder="Ваше имя">
-            <div class="stars-container" id="revStars"><span>Оценка: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="ratingText">10/10</span></div>
+            
+            <div class="stars-container" id="reviewStarsContainer">
+              <span>Оценка: </span>
+              <span class="star" data-value="1">★</span>
+              <span class="star" data-value="2">★</span>
+              <span class="star" data-value="3">★</span>
+              <span class="star" data-value="4">★</span>
+              <span class="star" data-value="5">★</span>
+              <span id="ratingText">10/10</span>
+            </div>
+            
             <textarea id="reviewText" placeholder="Напишите отзыв..."></textarea>
+            
             <button onclick="addReview()">📝 Отправить</button>
-            <div id="reviews">Загрузка...</div>
+            <div id="reviews">Загрузка отзывов...</div>
           </div>
         </div>
       </div>
 
+      <!-- ИГРЫ -->
       <div id="game-screen" class="screen">
         <div class="game-container">
-          <button onclick="stopGame();showScreen('home')">← На главную</button>
-          <h2 id="gameTitle"></h2>
-          <input class="player-input" id="playerNameInput" placeholder="Введи имя">
+          <button onclick="stopGame(); showScreen('home')">← На главную</button>
+          <h2 id="gameTitle">Игра</h2>
+          <input type="text" class="player-name-input" id="playerNameInput" placeholder="Введи своё имя">
           <div class="game-score" id="gameScoreDisplay">Счёт: 0</div>
           <div id="gameContent"></div>
           <div id="gameRatingArea"></div>
-          <div class="leaderboard" id="leaderboard"><h3>🏆 Лидеры</h3><p>Загрузка...</p></div>
+          <div class="leaderboard" id="leaderboard"><h3>🏆 Таблица лидеров</h3><p>Загрузка...</p></div>
         </div>
       </div>
 
+      <!-- ОБСУЖДЕНИЯ -->
       <div id="discussions-screen" class="screen">
-        <div class="content"><h2>💬 Обсуждение</h2>
-          <div id="chatMessages">Загрузка...</div>
-          <input id="chatName" placeholder="Имя"><textarea id="chatMessage" placeholder="Сообщение..."></textarea>
+        <div class="chat-container">
+          <h2>💬 Общее обсуждение</h2>
+          <input id="chatName" placeholder="Ваше имя">
+          <textarea id="chatMessage" placeholder="Ваше сообщение..."></textarea>
           <button onclick="sendMessage()">💬 Отправить</button>
+          <div id="chatMessages" style="margin-top: 20px;">Загрузка сообщений...</div>
         </div>
       </div>
 
+      <!-- ИДЕИ -->
       <div id="ideas-screen" class="screen">
-        <div class="content"><h2>💡 Идеи</h2>
-          <div id="ideasList">Загрузка...</div>
-          <input id="ideaAuthor" placeholder="Имя"><textarea id="ideaText" placeholder="Идея..."></textarea>
-          <button onclick="addIdea()">💡 Предложить</button>
+        <div class="ideas-container">
+          <h2>💡 Идеи для продолжения сериала</h2>
+          <p style="margin-bottom: 20px; color: #aaa;">Делитесь своими идеями о том, как могут развиваться события в новых сериях!</p>
+          
+          <input id="ideaAuthor" placeholder="Ваше имя">
+          <textarea id="ideaText" placeholder="Опишите вашу идею..."></textarea>
+          <button onclick="addIdea()">💡 Предложить идею</button>
+          <div id="ideasList" style="margin-top: 30px;">Загрузка идей...</div>
         </div>
       </div>
+
     </div>
   </div>
 
   <script>
-    // Firebase
-    firebase.initializeApp({
-      databaseURL: "https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"
-    });
-    const db = firebase.database();
-    
-    let currentGame = null, gameInterval = null, reviewRating = 10, gameRating = 10;
+    // ==================== FIREBASE ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyc8DrHyUQoOPATqubm0vBY37_naYeTqw",
+      authDomain: "tildochka.firebaseapp.com",
+      databaseURL: "https://tildochka-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "tildochka",
+      storageBucket: "tildochka.firebasestorage.app",
+      messagingSenderId: "162990578480",
+      appId: "1:16929057840:web:2f3d95a4dde5978e5391f5"
+    };
 
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
+    // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+    let currentGame = null;
+    let gameInterval = null;
+    let currentReviewRating = 10;
+    let currentGameRating = 10;
+    
+    // ==================== НАВИГАЦИЯ ====================
     function showScreen(id) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(id + '-screen').classList.add('active');
-      closeMenu(); window.scrollTo(0,0);
+      closeMenu();
+      window.scrollTo(0, 0);
       if (id === 'series') loadReviews();
       if (id === 'discussions') loadMessages();
       if (id === 'ideas') loadIdeas();
     }
 
     function showGame(type) {
-      stopGame(); currentGame = type; showScreen('game');
-      document.getElementById('gameTitle').textContent = {snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер'}[type];
+      stopGame();
+      currentGame = type;
+      showScreen('game');
+      
+      const titles = {
+        snake: '🐍 Змейка с курицей',
+        tetris: '🧱 Яичный тетрис',
+        runner: '🏃 Куриный раннер'
+      };
+      document.getElementById('gameTitle').textContent = titles[type];
       document.getElementById('gameContent').innerHTML = '';
       document.getElementById('gameRatingArea').innerHTML = '';
       document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
-      gameRating = 10;
+      currentGameRating = 10;
+      
       if (type === 'snake') initSnake();
       if (type === 'tetris') initTetris();
       if (type === 'runner') initRunner();
+      
       loadLeaderboard(type);
     }
 
-    function stopGame() { if (gameInterval) { clearInterval(gameInterval); gameInterval = null; } currentGame = null; document.onkeydown = null; }
-    function toggleMenu() { document.getElementById('menuDropdown').classList.toggle('show'); }
-    function closeMenu() { document.getElementById('menuDropdown').classList.remove('show'); }
-    document.addEventListener('click', e => { if (!e.target.closest('.burger') && !e.target.closest('.menu')) closeMenu(); });
-
-    // Звёзды
-    function setupStars(containerId, textId, callback) {
-      const stars = document.querySelectorAll('#' + containerId + ' .star');
-      stars.forEach(s => {
-        s.onclick = function() {
-          const v = parseInt(this.getAttribute('data-v')) * 2;
-          updateStars(stars, v);
-          document.getElementById(textId).textContent = v + '/10';
-          callback(v);
-        };
-        s.onmouseenter = function() {
-          const v = parseInt(this.getAttribute('data-v')) * 2;
-          stars.forEach(x => { x.classList.remove('hover-full','hover-half'); const sv = parseInt(x.getAttribute('data-v'))*2; if(sv<=v) x.classList.add('hover-full'); else if(sv-1===v) x.classList.add('hover-half'); });
-        };
-        s.onmouseleave = function() { stars.forEach(x => x.classList.remove('hover-full','hover-half')); updateStars(stars, callback() || 10); };
-      });
-      updateStars(stars, 10);
-    }
-    function updateStars(stars, rating) {
-      stars.forEach(s => {
-        const v = parseInt(s.getAttribute('data-v')) * 2;
-        s.classList.remove('full','half','hover-full','hover-half');
-        if (rating >= v) s.classList.add('full');
-        else if (rating === v - 1) s.classList.add('half');
-      });
+    function stopGame() {
+      if (gameInterval) {
+        clearInterval(gameInterval);
+        gameInterval = null;
+      }
+      currentGame = null;
+      document.onkeydown = null;
     }
 
-    setupStars('revStars', 'ratingText', v => reviewRating = v);
+    // ==================== МЕНЮ ====================
+    function toggleMenu() {
+      document.getElementById('menuDropdown').classList.toggle('show');
+    }
 
-    // Отзывы сериала
-    function addReview() {
-      const name = document.getElementById('reviewName').value.trim();
-      const text = document.getElementById('reviewText').value.trim();
-      if (!name || !text) { alert('Заполни имя и отзыв!'); return; }
+    function closeMenu() {
+      document.getElementById('menuDropdown').classList.remove('show');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.burger') && !e.target.closest('.menu')) {
+        closeMenu();
+      }
+    });
+
+    // ==================== ЗВЁЗДЫ ДЛЯ ОТЗЫВОВ ====================
+    function setupReviewStars() {
+      const stars = document.querySelectorAll('#reviewStarsContainer .star');
+      stars.forEach(star => {
+        star.onclick = function() {
+          currentReviewRating = parseInt(this.getAttribute('data-value')) * 2;
+          updateStarsDisplay(stars, currentReviewRating);
+          document.getElementById('ratingText').textContent = currentReviewRating + '/10';
+        };
+        
+        star.onmouseenter = function() {
+          const val = parseInt(this.getAttribute('data-value')) * 2;
+          stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value')) * 2;
+            s.classList.remove('hover-full', 'hover-half');
+            if (sVal <= val) s.classList.add('hover-full');
+            else if (sVal - 1 === val) s.classList.add('hover-half');
+          });
+        };
+        
+        star.onmouseleave = function() {
+          stars.forEach(s => s.classList.remove('hover-full', 'hover-half'));
+          updateStarsDisplay(stars, currentReviewRating);
+        };
+      });
+      updateStarsDisplay(stars, 10);
+    }
+
+    function updateStarsDisplay(stars, rating) {
+      stars.forEach(star => {
+        const val = parseInt(star.getAttribute('data-value')) * 2;
+        star.classList.remove('full', 'half', 'hover-full', 'hover-half');
+        if (rating >= val) star.classList.add('full');
+        else if (rating === val - 1) star.classList.add('half');
+      });
+    }
+
+    // ==================== РЕЙТИНГ ИГР ====================
+    function addGameRating() {
+      const name = document.getElementById('playerNameInput').value.trim() || 'Аноним';
+      const scoreText = document.getElementById('gameScoreDisplay').textContent.replace(/\D/g, '');
+      const score = parseInt(scoreText) || 0;
       
-      db.ref('reviews').push({ name, text, rating: reviewRating, timestamp: Date.now() })
+      if (!currentGame) return;
+      
+      database.ref('gameRatings/' + currentGame).push({
+        name: name,
+        rating: currentGameRating,
+        score: score,
+        timestamp: Date.now()
+      }).then(() => {
+        alert('✅ Оценка сохранена! Спасибо!');
+        // Обновляем звёзды на главной
+        loadLeaderboard(currentGame);
+      }).catch(error => {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка сохранения оценки');
+      });
+    }
+
+    function createGameRatingUI() {
+      const area = document.getElementById('gameRatingArea');
+      if (!area) return;
+      
+      area.innerHTML = `
+        <div class="stars-container" id="gameStarsContainer">
+          <span>Оцени игру: </span>
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+          <span id="gameRatingText">10/10</span>
+        </div>
+        <button onclick="addGameRating()">⭐ Отправить оценку</button>
+      `;
+      
+      // Настраиваем звёзды
+      const stars = document.querySelectorAll('#gameStarsContainer .star');
+      stars.forEach(star => {
+        star.onclick = function() {
+          currentGameRating = parseInt(this.getAttribute('data-value')) * 2;
+          updateStarsDisplay(stars, currentGameRating);
+          const textEl = document.getElementById('gameRatingText');
+          if (textEl) textEl.textContent = currentGameRating + '/10';
+        };
+        
+        star.onmouseenter = function() {
+          const val = parseInt(this.getAttribute('data-value')) * 2;
+          stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value')) * 2;
+            s.classList.remove('hover-full', 'hover-half');
+            if (sVal <= val) s.classList.add('hover-full');
+            else if (sVal - 1 === val) s.classList.add('hover-half');
+          });
+        };
+        
+        star.onmouseleave = function() {
+          stars.forEach(s => s.classList.remove('hover-full', 'hover-half'));
+          updateStarsDisplay(stars, currentGameRating);
+        };
+      });
+      
+      updateStarsDisplay(stars, 10);
+    }
+
+    // ==================== СЕРИАЛ ====================
+    function toggleSeason(id) {
+      const season = document.getElementById(id);
+      document.querySelectorAll('.episodes').forEach(e => {
+        if (e.id !== id) e.classList.remove('show');
+      });
+      season.classList.toggle('show');
+    }
+
+    function playEpisode(src) {
+      const video = document.getElementById('player');
+      const source = document.getElementById('videosrc');
+      if (video && source) {
+        source.src = src;
+        video.load();
+        video.play();
+      }
+    }
+
+    function addReview() {
+      const nameEl = document.getElementById('reviewName');
+      const textEl = document.getElementById('reviewText');
+      
+      if (!nameEl || !textEl) return;
+      
+      const name = nameEl.value.trim();
+      const text = textEl.value.trim();
+
+      if (!name || !text) {
+        alert("Пожалуйста, заполните имя и текст отзыва");
+        return;
+      }
+
+      const review = {
+        name: name,
+        text: text,
+        rating: currentReviewRating,
+        date: new Date().toLocaleString('ru-RU'),
+        timestamp: Date.now()
+      };
+
+      database.ref('reviews').push(review)
         .then(() => {
-          document.getElementById('reviewName').value = '';
-          document.getElementById('reviewText').value = '';
-          reviewRating = 10;
-          updateStars(document.querySelectorAll('#revStars .star'), 10);
+          nameEl.value = '';
+          textEl.value = '';
+          currentReviewRating = 10;
+          const stars = document.querySelectorAll('#reviewStarsContainer .star');
+          updateStarsDisplay(stars, 10);
           document.getElementById('ratingText').textContent = '10/10';
-          alert('✅ Отзыв сохранён!');
         })
-        .catch(e => { alert('❌ Ошибка: ' + e.message); });
+        .catch(error => {
+          console.error('Ошибка сохранения:', error);
+          alert('Ошибка при отправке отзыва. Попробуйте ещё раз.');
+        });
+    }
+
+    function deleteReview(reviewId) {
+      if (confirm('Удалить этот отзыв?')) {
+        database.ref('reviews/' + reviewId).remove();
+      }
     }
 
     function loadReviews() {
-      db.ref('reviews').on('value', snap => {
-        const revs = []; snap.forEach(c => revs.push({ id: c.key, ...c.val() }));
-        revs.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
-        const c = document.getElementById('reviews');
-        c.innerHTML = revs.length === 0 ? '<p style="color:#888">Нет отзывов</p>' : revs.map(r => {
-          let s = ''; for(let i=1;i<=5;i++) s += r.rating>=i*2?'⭐':r.rating===i*2-1?'🌓':'☆';
-          return `<div class="review"><button class="delete-btn" onclick="db.ref('reviews/${r.id}').remove()">🗑️</button><div class="review-name">${r.name}</div><div class="review-stars">${s} ${r.rating}/10</div><div class="review-text">${r.text}</div><div class="review-date">${new Date(r.timestamp).toLocaleString('ru-RU')}</div></div>`;
-        }).join('');
-        updateSeriesRating(revs);
-      });
-    }
-
-    function updateSeriesRating(revs) {
-      if (!revs.length) {
-        ['seriesRating','seriesRatingHero','totalRatingDisplay'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '⭐ 9.5 / 10'; });
-        document.getElementById('reviewsCountDisplay').textContent = '0 отзывов'; return;
-      }
-      const avg = (revs.reduce((a,r)=>a+r.rating,0)/revs.length).toFixed(1);
-      ['seriesRating','seriesRatingHero','totalRatingDisplay'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = '⭐ '+avg+' / 10'; });
-      document.getElementById('reviewsCountDisplay').textContent = revs.length + ' отзывов';
-    }
-
-    // Чат
-    function sendMessage() {
-      const n = document.getElementById('chatName').value.trim();
-      const m = document.getElementById('chatMessage').value.trim();
-      if (!n || !m) return;
-      db.ref('messages').push({ name: n, text: m, timestamp: Date.now() })
-        .then(() => { document.getElementById('chatName').value=''; document.getElementById('chatMessage').value=''; })
-        .catch(e => alert('Ошибка: '+e.message));
-    }
-    function loadMessages() {
-      db.ref('messages').on('value', snap => {
-        const msgs = []; snap.forEach(c => msgs.push(c.val()));
-        msgs.sort((a,b) => (b.timestamp||0)-(a.timestamp||0));
-        document.getElementById('chatMessages').innerHTML = msgs.length === 0 ? '<p style="color:#888">Нет сообщений</p>' : msgs.map(m => `<div class="msg"><strong>${m.name}:</strong> ${m.text}</div>`).join('');
-      });
-    }
-
-    // Идеи
-    function addIdea() {
-      const a = document.getElementById('ideaAuthor').value.trim();
-      const t = document.getElementById('ideaText').value.trim();
-      if (!a || !t) return;
-      db.ref('ideas').push({ author: a, text: t, likes: 0, timestamp: Date.now() })
-        .then(() => { document.getElementById('ideaAuthor').value=''; document.getElementById('ideaText').value=''; })
-        .catch(e => alert('Ошибка: '+e.message));
-    }
-    function loadIdeas() {
-      db.ref('ideas').on('value', snap => {
-        const ideas = []; snap.forEach(c => ideas.push({ id: c.key, ...c.val() }));
-        ideas.sort((a,b) => (b.timestamp||0)-(a.timestamp||0));
-        document.getElementById('ideasList').innerHTML = ideas.length === 0 ? '<p style="color:#888">Нет идей</p>' : ideas.map(i => `<div class="idea-card"><b style="color:#ffd700">💡 ${i.author}:</b><p>${i.text}</p><button onclick="db.ref('ideas/${i.id}').update({likes:${(i.likes||0)+1}})">❤️ ${i.likes||0}</button></div>`).join('');
-      });
-    }
-
-    // Рейтинг игр
-    function createGameRating() {
-      document.getElementById('gameRatingArea').innerHTML = `
-        <div class="stars-container" id="gameStars"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="gameRatingText">10/10</span></div>
-        <button onclick="submitGameRating()">⭐ Отправить</button>`;
-      setupStars('gameStars', 'gameRatingText', v => gameRating = v);
-    }
-    function submitGameRating() {
-      const name = document.getElementById('playerNameInput').value.trim() || 'Аноним';
-      const score = parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,'')) || 0;
-      db.ref('gameRatings/' + currentGame).push({ name, rating: gameRating, score, timestamp: Date.now() })
-        .then(() => alert('✅ Оценка сохранена!'))
-        .catch(e => alert('❌ Ошибка: ' + e.message));
-    }
-    function loadLeaderboard(type) {
-      db.ref('gameRatings/' + type).on('value', snap => {
-        const rats = []; snap.forEach(c => rats.push(c.val()));
-        rats.sort((a,b) => (b.score||0)-(a.score||0));
-        let h = '<h3>🏆 Лидеры</h3>';
-        if (!rats.length) h += '<p style="color:#888">Нет игроков</p>';
-        else {
-          rats.slice(0,10).forEach((r,i) => h += `<div class="leaderboard-item"><span>${i+1}. ${r.name}</span><span>${r.score} | ⭐${r.rating}/10</span></div>`);
-          const avg = (rats.reduce((a,r)=>a+(r.rating||0),0)/rats.length).toFixed(1);
-          const el = document.getElementById('rating-' + type);
-          if (el) el.textContent = `⭐ ${avg}/10 (${rats.length})`;
+      database.ref('reviews').on('value', (snapshot) => {
+        const reviews = [];
+        snapshot.forEach(child => {
+          reviews.push({ id: child.key, ...child.val() });
+        });
+        
+        reviews.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        const container = document.getElementById('reviews');
+        if (!container) return;
+        
+        if (reviews.length === 0) {
+          container.innerHTML = '<p style="color:#888;">Пока нет отзывов. Будьте первым!</p>';
+        } else {
+          container.innerHTML = reviews.map(r => {
+            let starsDisplay = '';
+            for (let i = 1; i <= 5; i++) {
+              if (r.rating >= i * 2) starsDisplay += '⭐';
+              else if (r.rating === i * 2 - 1) starsDisplay += '🌓';
+              else starsDisplay += '☆';
+            }
+            
+            return `
+              <div class="review">
+                <button class="delete-review" onclick="deleteReview('${r.id}')">🗑️</button>
+                <div class="review-name">${r.name}</div>
+                <div class="review-stars-display">${starsDisplay} ${r.rating}/10</div>
+                <div class="review-text">${r.text}</div>
+                <div class="review-date">${r.date || ''}</div>
+              </div>
+            `;
+          }).join('');
         }
-        document.getElementById('leaderboard').innerHTML = h;
+        
+        updateSeriesRating(reviews);
       });
     }
 
-    // Сезоны
-    function toggleSeason(id) {
-      const s = document.getElementById(id);
-      document.querySelectorAll('.episodes').forEach(e => { if (e.id !== id) e.classList.remove('show'); });
-      s.classList.toggle('show');
-    }
-    function playEpisode(src) {
-      const v = document.getElementById('player'), s = document.getElementById('videosrc');
-      if (v && s) { s.src = src; v.load(); v.play(); }
+    function updateSeriesRating(reviews) {
+      if (!reviews || reviews.length === 0) {
+        ['seriesRating', 'seriesRatingHero', 'totalRatingDisplay'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = '⭐ 9.5 / 10';
+        });
+        const countEl = document.getElementById('reviewsCountDisplay');
+        if (countEl) countEl.textContent = 'На основе 0 отзывов';
+        return;
+      }
+
+      const sum = reviews.reduce((acc, r) => acc + (r.rating || 0), 0);
+      const average = (sum / reviews.length).toFixed(1);
+      
+      const ratingText = `⭐ ${average} / 10`;
+      ['seriesRating', 'seriesRatingHero', 'totalRatingDisplay'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = ratingText;
+      });
+      
+      const countEl = document.getElementById('reviewsCountDisplay');
+      if (countEl) countEl.textContent = `На основе ${reviews.length} отзывов`;
     }
 
-    // Змейка
+    // ==================== ОБСУЖДЕНИЯ ====================
+    function sendMessage() {
+      const nameEl = document.getElementById('chatName');
+      const msgEl = document.getElementById('chatMessage');
+      
+      if (!nameEl || !msgEl) return;
+      
+      const name = nameEl.value.trim();
+      const msg = msgEl.value.trim();
+
+      if (!name || !msg) {
+        alert("Заполните имя и сообщение");
+        return;
+      }
+
+      database.ref('messages').push({
+        name: name,
+        text: msg,
+        timestamp: Date.now()
+      });
+
+      nameEl.value = '';
+      msgEl.value = '';
+    }
+
+    function loadMessages() {
+      database.ref('messages').on('value', (snapshot) => {
+        const msgs = [];
+        snapshot.forEach(child => msgs.push(child.val()));
+        msgs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        const container = document.getElementById('chatMessages');
+        if (!container) return;
+        
+        container.innerHTML = msgs.length === 0
+          ? '<p style="color:#888;">Нет сообщений. Начните обсуждение!</p>'
+          : msgs.map(m => `
+            <div class="message">
+              <strong>${m.name}:</strong> ${m.text}
+              <div class="message-time">${new Date(m.timestamp).toLocaleString('ru-RU')}</div>
+            </div>
+          `).join('');
+      });
+    }
+
+    // ==================== ИДЕИ ====================
+    function addIdea() {
+      const authorEl = document.getElementById('ideaAuthor');
+      const textEl = document.getElementById('ideaText');
+      
+      if (!authorEl || !textEl) return;
+      
+      const author = authorEl.value.trim();
+      const text = textEl.value.trim();
+
+      if (!author || !text) {
+        alert("Заполните имя и идею");
+        return;
+      }
+
+      database.ref('ideas').push({
+        author: author,
+        text: text,
+        likes: 0,
+        timestamp: Date.now()
+      });
+
+      authorEl.value = '';
+      textEl.value = '';
+    }
+
+    function loadIdeas() {
+      database.ref('ideas').on('value', (snapshot) => {
+        const ideas = [];
+        snapshot.forEach(child => ideas.push({ id: child.key, ...child.val() }));
+        ideas.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        const container = document.getElementById('ideasList');
+        if (!container) return;
+        
+        container.innerHTML = ideas.length === 0
+          ? '<p style="color:#888;">Пока нет идей. Предложите первую!</p>'
+          : ideas.map(i => `
+            <div class="idea-card">
+              <div class="idea-author">💡 ${i.author} предлагает:</div>
+              <p>${i.text}</p>
+              <div style="color:#888;font-size:12px;">${new Date(i.timestamp).toLocaleString('ru-RU')}</div>
+              <div class="idea-likes">
+                <button class="like-btn" onclick="likeIdea('${i.id}', ${i.likes || 0})">❤️</button>
+                <span>${i.likes || 0}</span>
+              </div>
+            </div>
+          `).join('');
+      });
+    }
+
+    function likeIdea(id, currentLikes) {
+      database.ref('ideas/' + id).update({
+        likes: (currentLikes || 0) + 1
+      });
+    }
+
+    // ==================== ТАБЛИЦА ЛИДЕРОВ ====================
+    function loadLeaderboard(type) {
+      database.ref('gameRatings/' + type).on('value', (snapshot) => {
+        const ratings = [];
+        snapshot.forEach(child => ratings.push(child.val()));
+        ratings.sort((a, b) => (b.score || 0) - (a.score || 0));
+        
+        const container = document.getElementById('leaderboard');
+        if (!container) return;
+        
+        let html = '<h3>🏆 Таблица лидеров</h3>';
+        
+        if (ratings.length === 0) {
+          html += '<p style="color:#888;">Пока нет игроков</p>';
+        } else {
+          ratings.slice(0, 10).forEach((r, i) => {
+            html += `<div class="leaderboard-item">
+              <span>${i+1}. ${r.name || 'Аноним'}</span>
+              <span>Счёт: ${r.score || 0} | ⭐${r.rating || 0}/10</span>
+            </div>`;
+          });
+          
+          const avg = (ratings.reduce((a, r) => a + (r.rating || 0), 0) / ratings.length).toFixed(1);
+          const ratingEl = document.getElementById('rating-' + type);
+          if (ratingEl) ratingEl.textContent = `⭐ ${avg}/10 (${ratings.length})`;
+        }
+        
+        container.innerHTML = html;
+      });
+    }
+
+    // ==================== ЗМЕЙКА ====================
     function initSnake() {
-      document.getElementById('gameContent').innerHTML = '<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><p>Стрелки/свайп | 🌾</p>';
-      createGameRating();
-      const c = document.getElementById('sc'), ctx = c.getContext('2d');
-      let snake = [{x:200,y:200}], food = {x:100,y:100}, dir = {x:20,y:0}, score = 0, over = false;
-      function rf() { return {x:Math.floor(Math.random()*20)*20, y:Math.floor(Math.random()*20)*20}; }
-      document.onkeydown = e => {
-        if (over) return;
-        if (e.key==='ArrowLeft'&&dir.x===0) dir={x:-20,y:0};
-        if (e.key==='ArrowRight'&&dir.x===0) dir={x:20,y:0};
-        if (e.key==='ArrowUp'&&dir.y===0) dir={x:0,y:-20};
-        if (e.key==='ArrowDown'&&dir.y===0) dir={x:0,y:20};
+      document.getElementById('gameContent').innerHTML = `
+        <canvas id="snakeCanvas" width="400" height="400" class="game-canvas"></canvas>
+        <p>Стрелки или свайп — управление | Собери 🌾</p>
+      `;
+      
+      createGameRatingUI();
+      
+      const canvas = document.getElementById('snakeCanvas');
+      const ctx = canvas.getContext('2d');
+      let snake = [{x: 200, y: 200}];
+      let food = randomFood();
+      let dir = {x: 20, y: 0};
+      let score = 0;
+      let gameOver = false;
+      
+      function randomFood() {
+        return {
+          x: Math.floor(Math.random() * 20) * 20,
+          y: Math.floor(Math.random() * 20) * 20
+        };
+      }
+      
+      document.onkeydown = function(e) {
+        if (gameOver) return;
+        if (e.key === 'ArrowLeft' && dir.x === 0) dir = {x: -20, y: 0};
+        if (e.key === 'ArrowRight' && dir.x === 0) dir = {x: 20, y: 0};
+        if (e.key === 'ArrowUp' && dir.y === 0) dir = {x: 0, y: -20};
+        if (e.key === 'ArrowDown' && dir.y === 0) dir = {x: 0, y: 20};
       };
-      let tx=0,ty=0;
-      c.addEventListener('touchstart', e => { tx=e.touches[0].clientX; ty=e.touches[0].clientY; });
-      c.addEventListener('touchend', e => {
-        if (over) return;
-        const dx=e.changedTouches[0].clientX-tx, dy=e.changedTouches[0].clientY-ty;
-        if (Math.abs(dx)>Math.abs(dy)) { if (dx>0&&dir.x===0) dir={x:20,y:0}; else if (dx<0&&dir.x===0) dir={x:-20,y:0}; }
-        else { if (dy>0&&dir.y===0) dir={x:0,y:20}; else if (dy<0&&dir.y===0) dir={x:0,y:-20}; }
+      
+      let touchStartX = 0, touchStartY = 0;
+      canvas.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
       });
-      function loop() {
-        if (over) return;
-        const h = {x:snake[0].x+dir.x, y:snake[0].y+dir.y};
-        if (h.x<0||h.x>=400||h.y<0||h.y>=400||snake.some(s=>s.x===h.x&&s.y===h.y)) { end(score); return; }
-        snake.unshift(h);
-        if (h.x===food.x&&h.y===food.y) { score++; document.getElementById('gameScoreDisplay').textContent='Счёт: '+score; food=rf(); }
-        else snake.pop();
-        ctx.clearRect(0,0,400,400); ctx.fillStyle='#ffd700'; ctx.fillRect(food.x,food.y,18,18);
-        ctx.fillStyle='#4CAF50'; snake.forEach(s=>ctx.fillRect(s.x,s.y,18,18));
+      
+      canvas.addEventListener('touchend', (e) => {
+        if (gameOver) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+          if (dx > 0 && dir.x === 0) dir = {x: 20, y: 0};
+          else if (dx < 0 && dir.x === 0) dir = {x: -20, y: 0};
+        } else {
+          if (dy > 0 && dir.y === 0) dir = {x: 0, y: 20};
+          else if (dy < 0 && dir.y === 0) dir = {x: 0, y: -20};
+        }
+      });
+      
+      function gameLoop() {
+        if (gameOver) return;
+        
+        const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+        
+        if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400 ||
+            snake.some(s => s.x === head.x && s.y === head.y)) {
+          endGame(score);
+          return;
+        }
+        
+        snake.unshift(head);
+        
+        if (head.x === food.x && head.y === food.y) {
+          score++;
+          document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
+          food = randomFood();
+        } else {
+          snake.pop();
+        }
+        
+        ctx.clearRect(0, 0, 400, 400);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillRect(food.x, food.y, 18, 18);
+        ctx.fillStyle = '#4CAF50';
+        snake.forEach(s => ctx.fillRect(s.x, s.y, 18, 18));
       }
-      function end(s) {
-        over=true; clearInterval(gameInterval);
-        const b=document.createElement('button'); b.textContent='🔄 Заново'; b.style.cssText='display:block;margin:20px auto;font-size:20px;';
-        b.onclick=()=>{document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initSnake();};
-        document.getElementById('gameContent').appendChild(b);
-        alert('Счёт: '+s);
+      
+      function endGame(finalScore) {
+        gameOver = true;
+        clearInterval(gameInterval);
+        const btn = document.createElement('button');
+        btn.textContent = '🔄 Играть заново';
+        btn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
+        btn.onclick = () => {
+          document.getElementById('gameContent').innerHTML = '';
+          document.getElementById('gameRatingArea').innerHTML = '';
+          initSnake();
+        };
+        document.getElementById('gameContent').appendChild(btn);
+        alert('Игра окончена! Счёт: ' + finalScore + ' 🐍');
       }
-      gameInterval = setInterval(loop, 100);
+      
+      gameInterval = setInterval(gameLoop, 100);
     }
 
-    // Тетрис
+    // ==================== ТЕТРИС (ИСПРАВЛЕННЫЙ) ====================
     function initTetris() {
-      document.getElementById('gameContent').innerHTML = '<canvas id="tc" width="300" height="600" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" id="bl">←</button><button class="mobile-btn" id="brt">↻</button><button class="mobile-btn" id="br">→</button><button class="mobile-btn" id="bd">↓</button></div><p>Стрелки/кнопки</p>';
-      createGameRating();
-      const c=document.getElementById('tc'), ctx=c.getContext('2d');
-      const COLS=10, ROWS=20, BLOCK=30;
-      c.width=COLS*BLOCK; c.height=ROWS*BLOCK;
-      let board=Array(ROWS).fill().map(()=>Array(COLS).fill(0));
-      const shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]]];
-      let piece=newPiece(), score=0, over=false, last=0, dropC=0;
-      function newPiece() { const s=shapes[Math.floor(Math.random()*shapes.length)]; return {shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0}; }
-      function collide() { return piece.shape.some((r,y)=>r.some((v,x)=>v&&board[piece.y+y]&&board[piece.y+y][piece.x+x])); }
-      function merge() { piece.shape.forEach((r,y)=>r.forEach((v,x)=>{if(v)board[piece.y+y][piece.x+x]=v;})); }
-      function rotate() { const rot=piece.shape[0].map((_,i)=>piece.shape.map(r=>r[i]).reverse()), prev=piece.shape; piece.shape=rot; if(collide())piece.shape=prev; }
-      function clearLines() {
-        let lines=0;
-        for(let y=ROWS-1;y>=0;y--) { if(board[y].every(cell=>cell)){board.splice(y,1);board.unshift(Array(COLS).fill(0));lines++;y++;} }
-        if(lines>0){score+=lines*100;document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;}
+      document.getElementById('gameContent').innerHTML = `
+        <canvas id="tetrisCanvas" width="300" height="500" class="game-canvas"></canvas>
+        <div class="mobile-controls">
+          <button class="mobile-btn" id="btnLeft">←</button>
+          <button class="mobile-btn" id="btnRotate">↻</button>
+          <button class="mobile-btn" id="btnRight">→</button>
+          <button class="mobile-btn" id="btnDown">↓</button>
+        </div>
+        <p>Клавиши или кнопки — управление</p>
+      `;
+      
+      createGameRatingUI();
+      
+      const canvas = document.getElementById('tetrisCanvas');
+      const ctx = canvas.getContext('2d');
+      const COLS = 10;
+      const ROWS = 20;
+      const BLOCK = 30;
+      
+      canvas.width = COLS * BLOCK;
+      canvas.height = ROWS * BLOCK;
+      
+      let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+      
+      const shapes = [
+        [[1,1,1,1]],
+        [[1,1],[1,1]],
+        [[1,1,0],[0,1,1]],
+        [[0,1,1],[1,1,0]],
+        [[0,1,0],[1,1,1]],
+        [[1,0,0],[1,1,1]],
+        [[0,0,1],[1,1,1]]
+      ];
+      
+      let piece = newPiece();
+      let score = 0;
+      let gameOver = false;
+      let dropCounter = 0;
+      let lastTime = 0;
+      
+      function newPiece() {
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        return {
+          shape: shape,
+          x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
+          y: 0
+        };
       }
-      function drop() { piece.y++; if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();} dropC=0; }
+      
+      function collide() {
+        for (let y = 0; y < piece.shape.length; y++) {
+          for (let x = 0; x < piece.shape[y].length; x++) {
+            if (piece.shape[y][x] &&
+                (board[piece.y + y] && board[piece.y + y][piece.x + x]) !== 0) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+      
+      function merge() {
+        piece.shape.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (value) {
+              board[piece.y + y][piece.x + x] = value;
+            }
+          });
+        });
+      }
+      
+      function rotate() {
+        const rotated = piece.shape[0].map((_, i) =>
+          piece.shape.map(row => row[i]).reverse()
+        );
+        const prevShape = piece.shape;
+        piece.shape = rotated;
+        if (collide()) {
+          piece.shape = prevShape;
+        }
+      }
+      
+      function clearRows() {
+        let linesCleared = 0;
+        for (let y = ROWS - 1; y >= 0; y--) {
+          if (board[y].every(cell => cell !== 0)) {
+            board.splice(y, 1);
+            board.unshift(Array(COLS).fill(0));
+            linesCleared++;
+            y++;
+          }
+        }
+        if (linesCleared > 0) {
+          score += linesCleared * 100;
+          document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
+        }
+      }
+      
+      function drop() {
+        piece.y++;
+        if (collide()) {
+          piece.y--;
+          merge();
+          clearRows();
+          piece = newPiece();
+          if (collide()) {
+            endGame(score);
+          }
+        }
+        dropCounter = 0;
+      }
+      
       function draw() {
-        ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);
-        board.forEach((r,y)=>r.forEach((v,x)=>{if(v){ctx.fillStyle='#ffd700';ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK-1,BLOCK-1);}}));
-        piece.shape.forEach((r,y)=>r.forEach((v,x)=>{if(v){ctx.fillStyle='#f60';ctx.fillRect((piece.x+x)*BLOCK,(piece.y+y)*BLOCK,BLOCK-1,BLOCK-1);}}));
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        board.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (value) {
+              ctx.fillStyle = '#ffd700';
+              ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK - 1, BLOCK - 1);
+            }
+          });
+        });
+        
+        piece.shape.forEach((row, y) => {
+          row.forEach((value, x) => {
+            if (value) {
+              ctx.fillStyle = '#ff6600';
+              ctx.fillRect((piece.x + x) * BLOCK, (piece.y + y) * BLOCK, BLOCK - 1, BLOCK - 1);
+            }
+          });
+        });
       }
-      function update(time=0) {
-        if(over)return;
-        dropC+=time-last;last=time;
-        if(dropC>500)drop();
+      
+      function update(time = 0) {
+        if (gameOver) return;
+        
+        const deltaTime = time - lastTime;
+        lastTime = time;
+        dropCounter += deltaTime;
+        
+        if (dropCounter > 500) {
+          drop();
+        }
+        
         draw();
-        if(!over)requestAnimationFrame(update);
+        if (!gameOver) {
+          requestAnimationFrame(update);
+        }
       }
-      function end() {
-        over=true;
-        const b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px;';
-        b.onclick=()=>{document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initTetris();};
-        document.getElementById('gameContent').appendChild(b);
-        alert('Счёт: '+score);
+      
+      function endGame(finalScore) {
+        gameOver = true;
+        clearInterval(gameInterval);
+        
+        const btn = document.createElement('button');
+        btn.textContent = '🔄 Играть заново';
+        btn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
+        btn.onclick = () => {
+          document.getElementById('gameContent').innerHTML = '';
+          document.getElementById('gameRatingArea').innerHTML = '';
+          initTetris();
+        };
+        document.getElementById('gameContent').appendChild(btn);
+        
+        alert('Игра окончена! Счёт: ' + finalScore + ' 🧱');
       }
-      document.onkeydown=e=>{if(over)return;if(e.key==='ArrowLeft'){piece.x--;if(collide())piece.x++;}if(e.key==='ArrowRight'){piece.x++;if(collide())piece.x--;}if(e.key==='ArrowDown')drop();if(e.key==='ArrowUp')rotate();e.preventDefault();};
-      document.getElementById('bl').onclick=()=>{if(!over){piece.x--;if(collide())piece.x++;}};
-      document.getElementById('br').onclick=()=>{if(!over){piece.x++;if(collide())piece.x--;}};
-      document.getElementById('brt').onclick=()=>{if(!over)rotate();};
-      document.getElementById('bd').onclick=()=>{if(!over)drop();};
-      requestAnimationFrame(update);
+      
+      // Управление
+      document.onkeydown = function(e) {
+        if (gameOver) return;
+        if (e.key === 'ArrowLeft') {
+          piece.x--;
+          if (collide()) piece.x++;
+        }
+        if (e.key === 'ArrowRight') {
+          piece.x++;
+          if (collide()) piece.x--;
+        }
+        if (e.key === 'ArrowDown') drop();
+        if (e.key === 'ArrowUp') rotate();
+        e.preventDefault();
+      };
+      
+      document.getElementById('btnLeft').onclick = () => {
+        if (!gameOver) { piece.x--; if (collide()) piece.x++; }
+      };
+      document.getElementById('btnRight').onclick = () => {
+        if (!gameOver) { piece.x++; if (collide()) piece.x--; }
+      };
+      document.getElementById('btnRotate').onclick = () => { if (!gameOver) rotate(); };
+      document.getElementById('btnDown').onclick = () => { if (!gameOver) drop(); };
+      
+      update();
     }
 
-    // Раннер
+    // ==================== РАННЕР ====================
     function initRunner() {
-      document.getElementById('gameContent').innerHTML = '<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><p>Пробел/клик — прыжок!</p>';
-      createGameRating();
-      const c=document.getElementById('rc'), ctx=c.getContext('2d');
-      let y=150, vy=0, obs=[{x:600,y:160}], score=0, over=false;
-      function jump() { if(y>=150&&!over)vy=-12; }
-      document.onkeydown=e=>{if(e.key===' ')jump();};
-      c.onclick=jump;
-      c.addEventListener('touchstart',e=>{e.preventDefault();jump();});
-      function loop() {
-        if(over)return;
-        ctx.clearRect(0,0,600,200);ctx.fillStyle='#4CAF50';ctx.fillRect(0,170,600,30);ctx.font='30px Arial';ctx.fillText('🐔',50,y);
-        obs.forEach(o=>{ctx.fillText('🪨',o.x,o.y);o.x-=5;});
-        obs=obs.filter(o=>o.x>-30);
-        if(!obs.length||obs[obs.length-1].x<400)obs.push({x:600,y:160});
-        obs.forEach(o=>{if(o.x<80&&o.x>20&&y>130)end();});
-        y+=vy;vy+=0.8;if(y>150){y=150;vy=0;}
-        score++;document.getElementById('gameScoreDisplay').textContent='Счёт: '+Math.floor(score/10);
+      document.getElementById('gameContent').innerHTML = `
+        <canvas id="runnerCanvas" width="600" height="200" class="game-canvas"></canvas>
+        <p>Пробел, клик или тап — прыжок!</p>
+      `;
+      
+      createGameRatingUI();
+      
+      const canvas = document.getElementById('runnerCanvas');
+      const ctx = canvas.getContext('2d');
+      let y = 150, vy = 0;
+      let obstacles = [{x: 600, y: 160}];
+      let score = 0;
+      let gameOver = false;
+      
+      function jump() {
+        if (y >= 150 && !gameOver) vy = -12;
       }
-      function end() {
-        over=true;clearInterval(gameInterval);
-        const b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px;';
-        b.onclick=()=>{document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initRunner();};
-        document.getElementById('gameContent').appendChild(b);
-        alert('Счёт: '+Math.floor(score/10));
+      
+      document.onkeydown = (e) => { if (e.key === ' ') jump(); };
+      canvas.onclick = jump;
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); jump(); });
+      
+      function gameLoop() {
+        if (gameOver) return;
+        
+        ctx.clearRect(0, 0, 600, 200);
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(0, 170, 600, 30);
+        ctx.font = '30px Arial';
+        ctx.fillText('🐔', 50, y);
+        
+        obstacles.forEach(o => {
+          ctx.fillText('🪨', o.x, o.y);
+          o.x -= 5;
+        });
+        
+        obstacles = obstacles.filter(o => o.x > -30);
+        if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < 400) {
+          obstacles.push({x: 600, y: 160});
+        }
+        
+        obstacles.forEach(o => {
+          if (o.x < 80 && o.x > 20 && y > 130) {
+            endGame(Math.floor(score / 10));
+          }
+        });
+        
+        y += vy;
+        vy += 0.8;
+        if (y > 150) { y = 150; vy = 0; }
+        
+        score++;
+        document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + Math.floor(score / 10);
       }
-      gameInterval=setInterval(loop,20);
+      
+      function endGame(finalScore) {
+        gameOver = true;
+        clearInterval(gameInterval);
+        
+        const btn = document.createElement('button');
+        btn.textContent = '🔄 Играть заново';
+        btn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
+        btn.onclick = () => {
+          document.getElementById('gameContent').innerHTML = '';
+          document.getElementById('gameRatingArea').innerHTML = '';
+          initRunner();
+        };
+        document.getElementById('gameContent').appendChild(btn);
+        
+        alert('Игра окончена! Счёт: ' + finalScore + ' 🏃');
+      }
+      
+      gameInterval = setInterval(gameLoop, 20);
     }
 
-    // Старт
-    let pass = prompt("🔐 Кодовое слово:");
-    if (["четыре курицы","Четыре курицы","4 курицы"].includes(pass)) {
-      document.getElementById("app").style.display="block";
+    // ==================== СТАРТ ====================
+    let pass = prompt("🔐 Введите кодовое слово:");
+    const validPasswords = ["четыре курицы", "Четыре курицы", "4 курицы"];
+
+    if (validPasswords.includes(pass)) {
+      document.getElementById("app").style.display = "block";
       showScreen('home');
-      loadReviews(); loadMessages(); loadIdeas();
-      ['snake','tetris','runner'].forEach(g=>loadLeaderboard(g));
-    } else document.getElementById("blocked").style.display="flex";
+      setupReviewStars();
+      loadReviews();
+      loadMessages();
+      loadIdeas();
+      ['snake', 'tetris', 'runner'].forEach(g => loadLeaderboard(g));
+    } else {
+      document.getElementById("blocked").style.display = "flex";
+    }
   </script>
 </body>
 </html>
