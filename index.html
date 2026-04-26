@@ -195,7 +195,6 @@
       border-radius: 8px; margin-top: 10px;
     }
     
-    /* ЗВЁЗДЫ */
     .stars-container {
       display: flex; align-items: center;
       gap: 10px; margin: 15px 0;
@@ -506,7 +505,7 @@
             
             <input id="reviewName" placeholder="Ваше имя">
             
-            <div class="stars-container">
+            <div class="stars-container" id="reviewStarsContainer">
               <span>Оценка: </span>
               <span class="star" data-value="1">★</span>
               <span class="star" data-value="2">★</span>
@@ -532,6 +531,7 @@
           <input type="text" class="player-name-input" id="playerNameInput" placeholder="Введи своё имя">
           <div class="game-score" id="gameScoreDisplay">Счёт: 0</div>
           <div id="gameContent"></div>
+          <div id="gameRatingArea"></div>
           <div class="leaderboard" id="leaderboard"><h3>🏆 Таблица лидеров</h3><p>Загрузка...</p></div>
         </div>
       </div>
@@ -607,7 +607,9 @@
       };
       document.getElementById('gameTitle').textContent = titles[type];
       document.getElementById('gameContent').innerHTML = '';
+      document.getElementById('gameRatingArea').innerHTML = '';
       document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+      currentGameRating = 10;
       
       if (type === 'snake') initSnake();
       if (type === 'tetris') initTetris();
@@ -622,7 +624,6 @@
         gameInterval = null;
       }
       currentGame = null;
-      // Убираем обработчики клавиш
       document.onkeydown = null;
     }
 
@@ -642,35 +643,34 @@
     });
 
     // ==================== ЗВЁЗДЫ ДЛЯ ОТЗЫВОВ ====================
-    function initReviewStars() {
-      const stars = document.querySelectorAll('#series-screen .star');
+    function setupReviewStars() {
+      const stars = document.querySelectorAll('#reviewStarsContainer .star');
       stars.forEach(star => {
-        star.addEventListener('click', function() {
+        star.onclick = function() {
           currentReviewRating = parseInt(this.getAttribute('data-value')) * 2;
-          updateReviewStars(currentReviewRating);
+          updateStarsDisplay(stars, currentReviewRating);
           document.getElementById('ratingText').textContent = currentReviewRating + '/10';
-        });
-
-        star.addEventListener('mouseenter', function() {
-          const value = parseInt(this.getAttribute('data-value')) * 2;
+        };
+        
+        star.onmouseenter = function() {
+          const val = parseInt(this.getAttribute('data-value')) * 2;
           stars.forEach(s => {
             const sVal = parseInt(s.getAttribute('data-value')) * 2;
             s.classList.remove('hover-full', 'hover-half');
-            if (sVal <= value) s.classList.add('hover-full');
-            else if (sVal - 1 === value) s.classList.add('hover-half');
+            if (sVal <= val) s.classList.add('hover-full');
+            else if (sVal - 1 === val) s.classList.add('hover-half');
           });
-        });
-
-        star.addEventListener('mouseleave', function() {
+        };
+        
+        star.onmouseleave = function() {
           stars.forEach(s => s.classList.remove('hover-full', 'hover-half'));
-          updateReviewStars(currentReviewRating);
-        });
+          updateStarsDisplay(stars, currentReviewRating);
+        };
       });
-      updateReviewStars(10);
+      updateStarsDisplay(stars, 10);
     }
 
-    function updateReviewStars(rating) {
-      const stars = document.querySelectorAll('#series-screen .star');
+    function updateStarsDisplay(stars, rating) {
       stars.forEach(star => {
         const val = parseInt(star.getAttribute('data-value')) * 2;
         star.classList.remove('full', 'half', 'hover-full', 'hover-half');
@@ -679,76 +679,81 @@
       });
     }
 
-    // ==================== ЗВЁЗДЫ ДЛЯ ИГР ====================
-    function createGameStars() {
-      let starsHTML = '<div class="stars-container"><span>Оцени игру: </span>';
-      for (let i = 1; i <= 5; i++) {
-        starsHTML += `<span class="star game-star" data-value="${i}">★</span>`;
-      }
-      starsHTML += '<span id="gameRatingText">10/10</span></div>';
-      return starsHTML;
-    }
-
-    function initGameStars() {
-      const stars = document.querySelectorAll('.game-star');
-      stars.forEach(star => {
-        star.addEventListener('click', function() {
-          currentGameRating = parseInt(this.getAttribute('data-value')) * 2;
-          updateGameStars(currentGameRating);
-          const ratingText = document.getElementById('gameRatingText');
-          if (ratingText) ratingText.textContent = currentGameRating + '/10';
-        });
-
-        star.addEventListener('mouseenter', function() {
-          const value = parseInt(this.getAttribute('data-value')) * 2;
-          stars.forEach(s => {
-            const sVal = parseInt(s.getAttribute('data-value')) * 2;
-            s.classList.remove('hover-full', 'hover-half');
-            if (sVal <= value) s.classList.add('hover-full');
-            else if (sVal - 1 === value) s.classList.add('hover-half');
-          });
-        });
-
-        star.addEventListener('mouseleave', function() {
-          stars.forEach(s => s.classList.remove('hover-full', 'hover-half'));
-          updateGameStars(currentGameRating);
-        });
-      });
-    }
-
-    function updateGameStars(rating) {
-      const stars = document.querySelectorAll('.game-star');
-      stars.forEach(star => {
-        const val = parseInt(star.getAttribute('data-value')) * 2;
-        star.classList.remove('full', 'half', 'hover-full', 'hover-half');
-        if (rating >= val) star.classList.add('full');
-        else if (rating === val - 1) star.classList.add('half');
-      });
-    }
-
-    function submitGameRating() {
+    // ==================== РЕЙТИНГ ИГР ====================
+    function addGameRating() {
       const name = document.getElementById('playerNameInput').value.trim() || 'Аноним';
       const scoreText = document.getElementById('gameScoreDisplay').textContent.replace(/\D/g, '');
       const score = parseInt(scoreText) || 0;
+      
+      if (!currentGame) return;
       
       database.ref('gameRatings/' + currentGame).push({
         name: name,
         rating: currentGameRating,
         score: score,
         timestamp: Date.now()
+      }).then(() => {
+        alert('✅ Оценка сохранена! Спасибо!');
+        // Обновляем звёзды на главной
+        loadLeaderboard(currentGame);
+      }).catch(error => {
+        console.error('Ошибка:', error);
+        alert('❌ Ошибка сохранения оценки');
+      });
+    }
+
+    function createGameRatingUI() {
+      const area = document.getElementById('gameRatingArea');
+      if (!area) return;
+      
+      area.innerHTML = `
+        <div class="stars-container" id="gameStarsContainer">
+          <span>Оцени игру: </span>
+          <span class="star" data-value="1">★</span>
+          <span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span>
+          <span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+          <span id="gameRatingText">10/10</span>
+        </div>
+        <button onclick="addGameRating()">⭐ Отправить оценку</button>
+      `;
+      
+      // Настраиваем звёзды
+      const stars = document.querySelectorAll('#gameStarsContainer .star');
+      stars.forEach(star => {
+        star.onclick = function() {
+          currentGameRating = parseInt(this.getAttribute('data-value')) * 2;
+          updateStarsDisplay(stars, currentGameRating);
+          const textEl = document.getElementById('gameRatingText');
+          if (textEl) textEl.textContent = currentGameRating + '/10';
+        };
+        
+        star.onmouseenter = function() {
+          const val = parseInt(this.getAttribute('data-value')) * 2;
+          stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value')) * 2;
+            s.classList.remove('hover-full', 'hover-half');
+            if (sVal <= val) s.classList.add('hover-full');
+            else if (sVal - 1 === val) s.classList.add('hover-half');
+          });
+        };
+        
+        star.onmouseleave = function() {
+          stars.forEach(s => s.classList.remove('hover-full', 'hover-half'));
+          updateStarsDisplay(stars, currentGameRating);
+        };
       });
       
-      alert('Спасибо за оценку! ⭐');
+      updateStarsDisplay(stars, 10);
     }
 
     // ==================== СЕРИАЛ ====================
     function toggleSeason(id) {
       const season = document.getElementById(id);
-      // Закрываем все остальные
       document.querySelectorAll('.episodes').forEach(e => {
         if (e.id !== id) e.classList.remove('show');
       });
-      // Переключаем текущий
       season.classList.toggle('show');
     }
 
@@ -784,15 +789,13 @@
         timestamp: Date.now()
       };
 
-      // Сохраняем в Firebase
       database.ref('reviews').push(review)
         .then(() => {
-          console.log('Отзыв сохранён успешно!');
-          // Очистка полей
           nameEl.value = '';
           textEl.value = '';
           currentReviewRating = 10;
-          updateReviewStars(10);
+          const stars = document.querySelectorAll('#reviewStarsContainer .star');
+          updateStarsDisplay(stars, 10);
           document.getElementById('ratingText').textContent = '10/10';
         })
         .catch(error => {
@@ -803,9 +806,7 @@
 
     function deleteReview(reviewId) {
       if (confirm('Удалить этот отзыв?')) {
-        database.ref('reviews/' + reviewId).remove()
-          .then(() => console.log('Отзыв удалён'))
-          .catch(error => console.error('Ошибка удаления:', error));
+        database.ref('reviews/' + reviewId).remove();
       }
     }
 
@@ -816,7 +817,6 @@
           reviews.push({ id: child.key, ...child.val() });
         });
         
-        // Сортируем новые сверху
         reviews.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         
         const container = document.getElementById('reviews');
@@ -846,16 +846,12 @@
         }
         
         updateSeriesRating(reviews);
-      }, (error) => {
-        console.error('Ошибка загрузки отзывов:', error);
-        document.getElementById('reviews').innerHTML = '<p style="color:#ff4444;">Ошибка загрузки отзывов</p>';
       });
     }
 
     function updateSeriesRating(reviews) {
       if (!reviews || reviews.length === 0) {
-        const els = ['seriesRating', 'seriesRatingHero', 'totalRatingDisplay'];
-        els.forEach(id => {
+        ['seriesRating', 'seriesRatingHero', 'totalRatingDisplay'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.textContent = '⭐ 9.5 / 10';
         });
@@ -979,7 +975,7 @@
       });
     }
 
-    // ==================== ТАБЛИЦА ЛИДЕРОВ ИГР ====================
+    // ==================== ТАБЛИЦА ЛИДЕРОВ ====================
     function loadLeaderboard(type) {
       database.ref('gameRatings/' + type).on('value', (snapshot) => {
         const ratings = [];
@@ -992,7 +988,7 @@
         let html = '<h3>🏆 Таблица лидеров</h3>';
         
         if (ratings.length === 0) {
-          html += '<p style="color:#888;">Пока нет игроков. Будьте первым!</p>';
+          html += '<p style="color:#888;">Пока нет игроков</p>';
         } else {
           ratings.slice(0, 10).forEach((r, i) => {
             html += `<div class="leaderboard-item">
@@ -1001,7 +997,6 @@
             </div>`;
           });
           
-          // Обновляем рейтинг на главной
           const avg = (ratings.reduce((a, r) => a + (r.rating || 0), 0) / ratings.length).toFixed(1);
           const ratingEl = document.getElementById('rating-' + type);
           if (ratingEl) ratingEl.textContent = `⭐ ${avg}/10 (${ratings.length})`;
@@ -1016,21 +1011,18 @@
       document.getElementById('gameContent').innerHTML = `
         <canvas id="snakeCanvas" width="400" height="400" class="game-canvas"></canvas>
         <p>Стрелки или свайп — управление | Собери 🌾</p>
-        ${createGameStars()}
-        <button onclick="submitGameRating()">⭐ Отправить оценку</button>
       `;
       
-      initGameStars();
+      createGameRatingUI();
       
       const canvas = document.getElementById('snakeCanvas');
       const ctx = canvas.getContext('2d');
       let snake = [{x: 200, y: 200}];
-      let food = {x: 100, y: 100};
+      let food = randomFood();
       let dir = {x: 20, y: 0};
       let score = 0;
       let gameOver = false;
       
-      // Генерация еды
       function randomFood() {
         return {
           x: Math.floor(Math.random() * 20) * 20,
@@ -1038,7 +1030,6 @@
         };
       }
       
-      // Управление с клавиатуры
       document.onkeydown = function(e) {
         if (gameOver) return;
         if (e.key === 'ArrowLeft' && dir.x === 0) dir = {x: -20, y: 0};
@@ -1047,7 +1038,6 @@
         if (e.key === 'ArrowDown' && dir.y === 0) dir = {x: 0, y: 20};
       };
       
-      // Свайпы для телефона
       let touchStartX = 0, touchStartY = 0;
       canvas.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
@@ -1073,21 +1063,14 @@
         
         const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
         
-        // Проверка столкновения со стенами
-        if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
-          endSnakeGame(score);
-          return;
-        }
-        
-        // Проверка столкновения с собой
-        if (snake.some(s => s.x === head.x && s.y === head.y)) {
-          endSnakeGame(score);
+        if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400 ||
+            snake.some(s => s.x === head.x && s.y === head.y)) {
+          endGame(score);
           return;
         }
         
         snake.unshift(head);
         
-        // Проверка еды
         if (head.x === food.x && head.y === food.y) {
           score++;
           document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
@@ -1096,7 +1079,6 @@
           snake.pop();
         }
         
-        // Отрисовка
         ctx.clearRect(0, 0, 400, 400);
         ctx.fillStyle = '#ffd700';
         ctx.fillRect(food.x, food.y, 18, 18);
@@ -1104,27 +1086,25 @@
         snake.forEach(s => ctx.fillRect(s.x, s.y, 18, 18));
       }
       
-      function endSnakeGame(finalScore) {
+      function endGame(finalScore) {
         gameOver = true;
         clearInterval(gameInterval);
-        
-        // Показываем кнопку рестарта
-        const restartBtn = document.createElement('button');
-        restartBtn.textContent = '🔄 Играть заново';
-        restartBtn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
-        restartBtn.onclick = () => {
+        const btn = document.createElement('button');
+        btn.textContent = '🔄 Играть заново';
+        btn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
+        btn.onclick = () => {
           document.getElementById('gameContent').innerHTML = '';
+          document.getElementById('gameRatingArea').innerHTML = '';
           initSnake();
         };
-        document.getElementById('gameContent').appendChild(restartBtn);
-        
+        document.getElementById('gameContent').appendChild(btn);
         alert('Игра окончена! Счёт: ' + finalScore + ' 🐍');
       }
       
       gameInterval = setInterval(gameLoop, 100);
     }
 
-    // ==================== ТЕТРИС ====================
+    // ==================== ТЕТРИС (ИСПРАВЛЕННЫЙ) ====================
     function initTetris() {
       document.getElementById('gameContent').innerHTML = `
         <canvas id="tetrisCanvas" width="300" height="500" class="game-canvas"></canvas>
@@ -1135,133 +1115,192 @@
           <button class="mobile-btn" id="btnDown">↓</button>
         </div>
         <p>Клавиши или кнопки — управление</p>
-        ${createGameStars()}
-        <button onclick="submitGameRating()">⭐ Отправить оценку</button>
       `;
       
-      initGameStars();
+      createGameRatingUI();
       
       const canvas = document.getElementById('tetrisCanvas');
       const ctx = canvas.getContext('2d');
-      let board = Array(25).fill().map(() => Array(15).fill(0));
+      const COLS = 10;
+      const ROWS = 20;
+      const BLOCK = 30;
+      
+      canvas.width = COLS * BLOCK;
+      canvas.height = ROWS * BLOCK;
+      
+      let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+      
       const shapes = [
-        [[1,1],[1,1]],
         [[1,1,1,1]],
+        [[1,1],[1,1]],
         [[1,1,0],[0,1,1]],
         [[0,1,1],[1,1,0]],
-        [[0,1,0],[1,1,1]]
+        [[0,1,0],[1,1,1]],
+        [[1,0,0],[1,1,1]],
+        [[0,0,1],[1,1,1]]
       ];
-      let piece = {x: 5, y: 0, shape: shapes[Math.floor(Math.random() * shapes.length)]};
+      
+      let piece = newPiece();
       let score = 0;
       let gameOver = false;
+      let dropCounter = 0;
+      let lastTime = 0;
       
-      // Кнопки для телефона
-      document.getElementById('btnLeft').onclick = () => { if (!gameOver) piece.x = Math.max(0, piece.x - 1); };
-      document.getElementById('btnRight').onclick = () => { if (!gameOver) piece.x = Math.min(14 - (piece.shape[0]?.length || 1), piece.x + 1); };
-      document.getElementById('btnRotate').onclick = () => {
-        if (!gameOver) piece.shape = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
-      };
-      document.getElementById('btnDown').onclick = () => { if (!gameOver) piece.y++; };
-      
-      // Клавиатура
-      document.onkeydown = function(e) {
-        if (gameOver) return;
-        if (e.key === 'ArrowLeft') piece.x = Math.max(0, piece.x - 1);
-        if (e.key === 'ArrowRight') piece.x = Math.min(14 - (piece.shape[0]?.length || 1), piece.x + 1);
-        if (e.key === 'ArrowDown') piece.y++;
-        if (e.key === 'ArrowUp') piece.shape = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
-      };
-      
-      function checkCollision() {
-        return piece.shape.some((row, y) =>
-          row.some((cell, x) =>
-            cell && (board[piece.y + y] && board[piece.y + y][piece.x + x])
-          )
-        );
+      function newPiece() {
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        return {
+          shape: shape,
+          x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2),
+          y: 0
+        };
       }
       
-      function mergePiece() {
+      function collide() {
+        for (let y = 0; y < piece.shape.length; y++) {
+          for (let x = 0; x < piece.shape[y].length; x++) {
+            if (piece.shape[y][x] &&
+                (board[piece.y + y] && board[piece.y + y][piece.x + x]) !== 0) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+      
+      function merge() {
         piece.shape.forEach((row, y) => {
-          row.forEach((cell, x) => {
-            if (cell && piece.y + y >= 0) {
-              board[piece.y + y][piece.x + x] = 1;
+          row.forEach((value, x) => {
+            if (value) {
+              board[piece.y + y][piece.x + x] = value;
             }
           });
         });
       }
       
-      function clearLines() {
-        board = board.filter(row => row.some(cell => !cell));
-        while (board.length < 25) board.unshift(Array(15).fill(0));
+      function rotate() {
+        const rotated = piece.shape[0].map((_, i) =>
+          piece.shape.map(row => row[i]).reverse()
+        );
+        const prevShape = piece.shape;
+        piece.shape = rotated;
+        if (collide()) {
+          piece.shape = prevShape;
+        }
+      }
+      
+      function clearRows() {
+        let linesCleared = 0;
+        for (let y = ROWS - 1; y >= 0; y--) {
+          if (board[y].every(cell => cell !== 0)) {
+            board.splice(y, 1);
+            board.unshift(Array(COLS).fill(0));
+            linesCleared++;
+            y++;
+          }
+        }
+        if (linesCleared > 0) {
+          score += linesCleared * 100;
+          document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
+        }
+      }
+      
+      function drop() {
+        piece.y++;
+        if (collide()) {
+          piece.y--;
+          merge();
+          clearRows();
+          piece = newPiece();
+          if (collide()) {
+            endGame(score);
+          }
+        }
+        dropCounter = 0;
       }
       
       function draw() {
-        ctx.clearRect(0, 0, 300, 500);
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
         board.forEach((row, y) => {
-          row.forEach((cell, x) => {
-            if (cell) {
+          row.forEach((value, x) => {
+            if (value) {
               ctx.fillStyle = '#ffd700';
-              ctx.fillRect(x * 20, y * 20, 18, 18);
+              ctx.fillRect(x * BLOCK, y * BLOCK, BLOCK - 1, BLOCK - 1);
             }
           });
         });
+        
         piece.shape.forEach((row, y) => {
-          row.forEach((cell, x) => {
-            if (cell) {
+          row.forEach((value, x) => {
+            if (value) {
               ctx.fillStyle = '#ff6600';
-              ctx.fillRect((piece.x + x) * 20, (piece.y + y) * 20, 18, 18);
+              ctx.fillRect((piece.x + x) * BLOCK, (piece.y + y) * BLOCK, BLOCK - 1, BLOCK - 1);
             }
           });
         });
       }
       
-      function gameLoop() {
+      function update(time = 0) {
         if (gameOver) return;
         
-        piece.y++;
+        const deltaTime = time - lastTime;
+        lastTime = time;
+        dropCounter += deltaTime;
         
-        if (piece.y + piece.shape.length > 25 || checkCollision()) {
-          piece.y--;
-          mergePiece();
-          clearLines();
-          
-          piece = {
-            x: 5,
-            y: 0,
-            shape: shapes[Math.floor(Math.random() * shapes.length)]
-          };
-          
-          score += 10;
-          document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
-          
-          // Проверка окончания игры
-          if (checkCollision()) {
-            endTetrisGame(score);
-            return;
-          }
+        if (dropCounter > 500) {
+          drop();
         }
         
         draw();
+        if (!gameOver) {
+          requestAnimationFrame(update);
+        }
       }
       
-      function endTetrisGame(finalScore) {
+      function endGame(finalScore) {
         gameOver = true;
         clearInterval(gameInterval);
         
-        const restartBtn = document.createElement('button');
-        restartBtn.textContent = '🔄 Играть заново';
-        restartBtn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
-        restartBtn.onclick = () => {
+        const btn = document.createElement('button');
+        btn.textContent = '🔄 Играть заново';
+        btn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
+        btn.onclick = () => {
           document.getElementById('gameContent').innerHTML = '';
+          document.getElementById('gameRatingArea').innerHTML = '';
           initTetris();
         };
-        document.getElementById('gameContent').appendChild(restartBtn);
+        document.getElementById('gameContent').appendChild(btn);
         
         alert('Игра окончена! Счёт: ' + finalScore + ' 🧱');
       }
       
-      gameInterval = setInterval(gameLoop, 500);
-      draw();
+      // Управление
+      document.onkeydown = function(e) {
+        if (gameOver) return;
+        if (e.key === 'ArrowLeft') {
+          piece.x--;
+          if (collide()) piece.x++;
+        }
+        if (e.key === 'ArrowRight') {
+          piece.x++;
+          if (collide()) piece.x--;
+        }
+        if (e.key === 'ArrowDown') drop();
+        if (e.key === 'ArrowUp') rotate();
+        e.preventDefault();
+      };
+      
+      document.getElementById('btnLeft').onclick = () => {
+        if (!gameOver) { piece.x--; if (collide()) piece.x++; }
+      };
+      document.getElementById('btnRight').onclick = () => {
+        if (!gameOver) { piece.x++; if (collide()) piece.x--; }
+      };
+      document.getElementById('btnRotate').onclick = () => { if (!gameOver) rotate(); };
+      document.getElementById('btnDown').onclick = () => { if (!gameOver) drop(); };
+      
+      update();
     }
 
     // ==================== РАННЕР ====================
@@ -1269,11 +1308,9 @@
       document.getElementById('gameContent').innerHTML = `
         <canvas id="runnerCanvas" width="600" height="200" class="game-canvas"></canvas>
         <p>Пробел, клик или тап — прыжок!</p>
-        ${createGameStars()}
-        <button onclick="submitGameRating()">⭐ Отправить оценку</button>
       `;
       
-      initGameStars();
+      createGameRatingUI();
       
       const canvas = document.getElementById('runnerCanvas');
       const ctx = canvas.getContext('2d');
@@ -1294,35 +1331,27 @@
         if (gameOver) return;
         
         ctx.clearRect(0, 0, 600, 200);
-        
-        // Земля
         ctx.fillStyle = '#4CAF50';
         ctx.fillRect(0, 170, 600, 30);
-        
-        // Курица
         ctx.font = '30px Arial';
         ctx.fillText('🐔', 50, y);
         
-        // Препятствия
         obstacles.forEach(o => {
           ctx.fillText('🪨', o.x, o.y);
           o.x -= 5;
         });
         
-        // Удаляем пройденные и добавляем новые
         obstacles = obstacles.filter(o => o.x > -30);
         if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < 400) {
           obstacles.push({x: 600, y: 160});
         }
         
-        // Проверка столкновения
         obstacles.forEach(o => {
           if (o.x < 80 && o.x > 20 && y > 130) {
-            endRunnerGame(Math.floor(score / 10));
+            endGame(Math.floor(score / 10));
           }
         });
         
-        // Физика прыжка
         y += vy;
         vy += 0.8;
         if (y > 150) { y = 150; vy = 0; }
@@ -1331,18 +1360,19 @@
         document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + Math.floor(score / 10);
       }
       
-      function endRunnerGame(finalScore) {
+      function endGame(finalScore) {
         gameOver = true;
         clearInterval(gameInterval);
         
-        const restartBtn = document.createElement('button');
-        restartBtn.textContent = '🔄 Играть заново';
-        restartBtn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
-        restartBtn.onclick = () => {
+        const btn = document.createElement('button');
+        btn.textContent = '🔄 Играть заново';
+        btn.style.cssText = 'display:block;margin:20px auto;font-size:20px;';
+        btn.onclick = () => {
           document.getElementById('gameContent').innerHTML = '';
+          document.getElementById('gameRatingArea').innerHTML = '';
           initRunner();
         };
-        document.getElementById('gameContent').appendChild(restartBtn);
+        document.getElementById('gameContent').appendChild(btn);
         
         alert('Игра окончена! Счёт: ' + finalScore + ' 🏃');
       }
@@ -1357,7 +1387,7 @@
     if (validPasswords.includes(pass)) {
       document.getElementById("app").style.display = "block";
       showScreen('home');
-      initReviewStars();
+      setupReviewStars();
       loadReviews();
       loadMessages();
       loadIdeas();
