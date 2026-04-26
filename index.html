@@ -51,6 +51,8 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
+      text-align: center;
+      padding: 20px;
     }
     
     .header {
@@ -287,30 +289,46 @@
       margin-top: 10px;
     }
     
+    /* НОВЫЕ ЗВЁЗДЫ - 5 штук с половинками */
     .stars-container {
       display: flex;
       align-items: center;
       gap: 5px;
       margin: 15px 0;
+      flex-wrap: wrap;
     }
     
-    .star {
+    .star-rating {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+    
+    .half-star {
       font-size: 30px;
       cursor: pointer;
       color: #555;
       transition: color 0.2s, transform 0.2s;
       user-select: none;
+      position: relative;
+      display: inline-block;
+      width: 30px;
+      overflow: hidden;
     }
     
-    .star:hover {
+    .half-star.left {
+      direction: rtl;
+    }
+    
+    .half-star:hover {
       transform: scale(1.2);
     }
     
-    .star.active {
+    .half-star.active {
       color: #ffd700;
     }
     
-    .star.hover {
+    .half-star.hover {
       color: #ffed4a;
     }
     
@@ -318,6 +336,7 @@
       margin-left: 10px;
       font-size: 18px;
       color: #ffd700;
+      font-weight: bold;
     }
     
     .photo-upload {
@@ -360,6 +379,7 @@
       border-top: 1px solid #444;
       padding: 20px 0;
       margin-top: 10px;
+      position: relative;
     }
     
     .review .review-header {
@@ -367,11 +387,13 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     
     .review .review-stars {
       color: #ffd700;
-      font-size: 20px;
+      font-size: 16px;
     }
     
     .review .review-photos {
@@ -394,6 +416,22 @@
       transform: scale(1.05);
     }
     
+    .delete-review {
+      position: absolute;
+      top: 20px;
+      right: 0;
+      background: none;
+      border: none;
+      color: #ff4444;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 5px;
+    }
+    
+    .delete-review:hover {
+      color: #ff0000;
+    }
+    
     .rating-info {
       margin-top: 10px;
       padding: 10px;
@@ -402,6 +440,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
     
     .rating-info .total-rating {
@@ -483,6 +523,13 @@
       padding: 12px 15px;
       border-radius: 8px;
       margin-bottom: 10px;
+      position: relative;
+    }
+    
+    .message-time {
+      font-size: 12px;
+      color: #888;
+      margin-top: 5px;
     }
     
     .modal {
@@ -503,6 +550,38 @@
       max-width: 90%;
       max-height: 90%;
       border-radius: 10px;
+    }
+    
+    /* Адаптация под мобильные */
+    @media (max-width: 768px) {
+      .logo {
+        font-size: 24px;
+      }
+      
+      .hero h1 {
+        font-size: 1.8rem;
+      }
+      
+      .hero h2 {
+        font-size: 1.5rem;
+      }
+      
+      .movie-card {
+        width: 160px;
+      }
+      
+      .content {
+        padding: 10px;
+      }
+      
+      .section {
+        padding: 15px;
+      }
+      
+      button {
+        padding: 10px 15px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -533,6 +612,8 @@
       <a onclick="showScreen('home'); closeMenu()">🏠 Главная</a>
       <a onclick="showScreen('discussions'); closeMenu()">💬 Обсуждения</a>
       <a onclick="showScreen('ideas'); closeMenu()">💡 Идеи для продолжения</a>
+      <a onclick="exportData(); closeMenu()">📤 Экспорт данных</a>
+      <a onclick="importData(); closeMenu()">📥 Импорт данных</a>
     </div>
 
     <div id="content">
@@ -587,7 +668,6 @@
           <div class="section">
             <h2>📺 Сезоны</h2>
             
-            <!-- Сезон 1 -->
             <button onclick="toggleSeason('season1')">Сезон 1</button>
             <div class="episodes" id="season1">
               <h3>Серии 1 сезона:</h3>
@@ -597,7 +677,6 @@
               <button onclick="playEpisode('episode4.mp4')">▶ 4 серия</button>
             </div>
             
-            <!-- Сезон 2 (пустой) -->
             <button onclick="toggleSeason('season2')">Сезон 2</button>
             <div class="episodes" id="season2">
               <h3>Серии 2 сезона:</h3>
@@ -607,7 +686,6 @@
               </div>
             </div>
             
-            <!-- Сезон 3 (пустой) -->
             <button onclick="toggleSeason('season3')">Сезон 3</button>
             <div class="episodes" id="season3">
               <h3>Серии 3 сезона:</h3>
@@ -624,18 +702,22 @@
             
             <input id="reviewName" placeholder="Ваше имя">
             
+            <!-- НОВЫЕ ЗВЁЗДЫ С ПОЛОВИНКАМИ -->
             <div class="stars-container">
               <span>Оценка: </span>
-              <span class="star" data-value="1">★</span>
-              <span class="star" data-value="2">★</span>
-              <span class="star" data-value="3">★</span>
-              <span class="star" data-value="4">★</span>
-              <span class="star" data-value="5">★</span>
-              <span class="star" data-value="6">★</span>
-              <span class="star" data-value="7">★</span>
-              <span class="star" data-value="8">★</span>
-              <span class="star" data-value="9">★</span>
-              <span class="star" data-value="10">★</span>
+              <div class="star-rating" id="starRating">
+                <!-- 10 половинок = 5 целых звёзд -->
+                <span class="half-star left" data-value="1">★</span>
+                <span class="half-star" data-value="2">★</span>
+                <span class="half-star left" data-value="3">★</span>
+                <span class="half-star" data-value="4">★</span>
+                <span class="half-star left" data-value="5">★</span>
+                <span class="half-star" data-value="6">★</span>
+                <span class="half-star left" data-value="7">★</span>
+                <span class="half-star" data-value="8">★</span>
+                <span class="half-star left" data-value="9">★</span>
+                <span class="half-star" data-value="10">★</span>
+              </div>
               <span id="ratingText">10/10</span>
             </div>
             
@@ -681,15 +763,15 @@
   </div>
 
   <script>
-    // ==================== ДАННЫЕ (СОХРАНЕНИЕ В localStorage) ====================
-    let reviews = JSON.parse(localStorage.getItem('reviews')) || [];
-    let messages = JSON.parse(localStorage.getItem('messages')) || [];
-    let ideas = JSON.parse(localStorage.getItem('ideas')) || [];
+    // ==================== ДАННЫЕ ====================
+    let reviews = JSON.parse(localStorage.getItem('tildochka_reviews')) || [];
+    let messages = JSON.parse(localStorage.getItem('tildochka_messages')) || [];
+    let ideas = JSON.parse(localStorage.getItem('tildochka_ideas')) || [];
 
     function saveData() {
-      localStorage.setItem('reviews', JSON.stringify(reviews));
-      localStorage.setItem('messages', JSON.stringify(messages));
-      localStorage.setItem('ideas', JSON.stringify(ideas));
+      localStorage.setItem('tildochka_reviews', JSON.stringify(reviews));
+      localStorage.setItem('tildochka_messages', JSON.stringify(messages));
+      localStorage.setItem('tildochka_ideas', JSON.stringify(ideas));
     }
 
     // ==================== ПРОВЕРКА ПАРОЛЯ ====================
@@ -732,7 +814,6 @@
     // ==================== СЕЗОНЫ И ПЛЕЕР ====================
     function toggleSeason(seasonId) {
       const season = document.getElementById(seasonId);
-      // Закрываем все остальные сезоны
       document.querySelectorAll('.episodes').forEach(ep => {
         if (ep.id !== seasonId) ep.classList.remove('show');
       });
@@ -747,21 +828,21 @@
       video.play();
     }
 
-    // ==================== ЗВЁЗДНЫЙ РЕЙТИНГ ====================
+    // ==================== ЗВЁЗДНЫЙ РЕЙТИНГ С ПОЛОВИНКАМИ ====================
     let currentRating = 10;
-    const stars = document.querySelectorAll('.star');
+    const halfStars = document.querySelectorAll('.half-star');
     const ratingText = document.getElementById('ratingText');
 
-    stars.forEach(star => {
+    halfStars.forEach(star => {
       star.addEventListener('click', function() {
         currentRating = parseInt(this.getAttribute('data-value'));
-        updateStars(currentRating);
+        updateHalfStars(currentRating);
         ratingText.textContent = currentRating + '/10';
       });
 
       star.addEventListener('mouseenter', function() {
         const value = parseInt(this.getAttribute('data-value'));
-        stars.forEach(s => {
+        halfStars.forEach(s => {
           if (parseInt(s.getAttribute('data-value')) <= value) {
             s.classList.add('hover');
           }
@@ -769,13 +850,13 @@
       });
 
       star.addEventListener('mouseleave', function() {
-        stars.forEach(s => s.classList.remove('hover'));
-        updateStars(currentRating);
+        halfStars.forEach(s => s.classList.remove('hover'));
+        updateHalfStars(currentRating);
       });
     });
 
-    function updateStars(rating) {
-      stars.forEach(star => {
+    function updateHalfStars(rating) {
+      halfStars.forEach(star => {
         if (parseInt(star.getAttribute('data-value')) <= rating) {
           star.classList.add('active');
         } else {
@@ -819,10 +900,12 @@
       }
 
       const review = {
+        id: Date.now(),
         name: name,
         text: text,
         rating: currentRating,
-        photos: [...selectedPhotos]
+        photos: [...selectedPhotos],
+        date: new Date().toLocaleString('ru-RU')
       };
 
       reviews.unshift(review);
@@ -830,15 +913,23 @@
       renderReviews();
       updateSeriesRating();
 
-      // Очистка
       document.getElementById('reviewName').value = '';
       document.getElementById('reviewText').value = '';
       document.getElementById('photoInput').value = '';
       document.getElementById('previewContainer').innerHTML = '';
       selectedPhotos = [];
       currentRating = 10;
-      updateStars(10);
+      updateHalfStars(10);
       ratingText.textContent = '10/10';
+    }
+
+    function deleteReview(id) {
+      if (confirm('Удалить этот отзыв?')) {
+        reviews = reviews.filter(r => r.id !== id);
+        saveData();
+        renderReviews();
+        updateSeriesRating();
+      }
     }
 
     function renderReviews() {
@@ -849,9 +940,16 @@
         const div = document.createElement('div');
         div.className = 'review';
         
+        // Показываем целые и половинчатые звёзды
         let starsHTML = '';
         for (let i = 1; i <= 10; i++) {
-          starsHTML += i <= review.rating ? '⭐' : '☆';
+          if (i <= review.rating) {
+            starsHTML += '⭐';
+          } else if (i - 0.5 <= review.rating) {
+            starsHTML += '✦';
+          } else {
+            starsHTML += '☆';
+          }
         }
         
         let photosHTML = '';
@@ -864,11 +962,13 @@
         }
         
         div.innerHTML = `
+          <button class="delete-review" onclick="deleteReview(${review.id})">🗑️</button>
           <div class="review-header">
             <strong>${review.name}</strong>
             <div class="review-stars">${starsHTML} ${review.rating}/10</div>
           </div>
           <p>${review.text}</p>
+          <div style="color: #888; font-size: 12px;">${review.date}</div>
           ${photosHTML}
         `;
         
@@ -916,7 +1016,8 @@
 
       messages.unshift({
         name: name,
-        text: msg
+        text: msg,
+        time: new Date().toLocaleString('ru-RU')
       });
 
       saveData();
@@ -933,7 +1034,10 @@
       messages.forEach(msg => {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'message';
-        messageDiv.innerHTML = `<strong>${msg.name}:</strong> ${msg.text}`;
+        messageDiv.innerHTML = `
+          <strong>${msg.name}:</strong> ${msg.text}
+          <div class="message-time">${msg.time}</div>
+        `;
         container.appendChild(messageDiv);
       });
     }
@@ -951,7 +1055,8 @@
       ideas.unshift({
         author: author,
         text: text,
-        likes: 0
+        likes: 0,
+        date: new Date().toLocaleString('ru-RU')
       });
 
       saveData();
@@ -972,6 +1077,7 @@
         ideaCard.innerHTML = `
           <div class="idea-author">💡 ${idea.author} предлагает:</div>
           <p>${idea.text}</p>
+          <div style="color: #888; font-size: 12px;">${idea.date}</div>
           <div class="idea-likes">
             <button class="like-btn" onclick="toggleIdeaLike(${index})">❤️</button>
             <span class="likes-count">${idea.likes}</span>
@@ -988,11 +1094,65 @@
       renderIdeas();
     }
 
+    // ==================== ЭКСПОРТ/ИМПОРТ ДАННЫХ ====================
+    function exportData() {
+      const data = {
+        reviews: reviews,
+        messages: messages,
+        ideas: ideas
+      };
+      
+      const dataStr = JSON.stringify(data, null, 2);
+      const blob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tildochka_backup.json';
+      a.click();
+      
+      URL.revokeObjectURL(url);
+      alert('✅ Данные сохранены в файл!');
+    }
+
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            
+            if (confirm('Импортировать данные? Текущие данные будут заменены!')) {
+              reviews = data.reviews || [];
+              messages = data.messages || [];
+              ideas = data.ideas || [];
+              
+              saveData();
+              loadAllData();
+              alert('✅ Данные успешно импортированы!');
+            }
+          } catch (error) {
+            alert('❌ Ошибка: неверный формат файла');
+          }
+        };
+        
+        reader.readAsText(file);
+      };
+      
+      input.click();
+    }
+
     // ==================== ЗАГРУЗКА ВСЕХ ДАННЫХ ====================
     function loadAllData() {
-      reviews = JSON.parse(localStorage.getItem('reviews')) || [];
-      messages = JSON.parse(localStorage.getItem('messages')) || [];
-      ideas = JSON.parse(localStorage.getItem('ideas')) || [];
+      reviews = JSON.parse(localStorage.getItem('tildochka_reviews')) || [];
+      messages = JSON.parse(localStorage.getItem('tildochka_messages')) || [];
+      ideas = JSON.parse(localStorage.getItem('tildochka_ideas')) || [];
       
       renderReviews();
       renderMessages();
