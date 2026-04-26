@@ -9,11 +9,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
       font-family: Arial, sans-serif;
@@ -24,10 +20,8 @@
     
     #app-bg {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: url("bg.jpg") no-repeat center/cover;
       z-index: -2;
     }
@@ -35,35 +29,27 @@
     #app-bg::after {
       content: "";
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.85);
     }
     
     #blocked {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: white;
       color: black;
       font-size: 2rem;
       justify-content: center;
       align-items: center;
       z-index: 1000;
-      text-align: center;
-      padding: 20px;
     }
     
     .header {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -78,26 +64,17 @@
       font-weight: bold;
       color: white;
       cursor: pointer;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
       transition: color 0.3s;
     }
     
-    .logo:hover {
-      color: #ffd700;
-    }
+    .logo:hover { color: #ffd700; }
     
     .burger {
-      width: 35px;
-      height: 25px;
+      width: 35px; height: 25px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       cursor: pointer;
-      transition: transform 0.3s;
-    }
-    
-    .burger:hover {
-      transform: scale(1.1);
     }
     
     .burger span {
@@ -105,26 +82,20 @@
       height: 4px;
       background: white;
       border-radius: 2px;
-      transition: 0.3s;
     }
     
     .menu {
       display: none;
       position: fixed;
-      top: 70px;
-      right: 25px;
+      top: 70px; right: 25px;
       background: rgba(26, 26, 26, 0.95);
       border: 1px solid #444;
       border-radius: 8px;
       min-width: 220px;
       z-index: 200;
-      overflow: hidden;
-      backdrop-filter: blur(10px);
     }
     
-    .menu.show {
-      display: block;
-    }
+    .menu.show { display: block; }
     
     .menu a {
       display: block;
@@ -133,37 +104,25 @@
       text-decoration: none;
       border-bottom: 1px solid #333;
       cursor: pointer;
-      transition: background 0.2s;
     }
     
-    .menu a:hover {
-      background: rgba(255, 215, 0, 0.2);
-    }
+    .menu a:hover { background: rgba(255, 215, 0, 0.2); }
     
     #content {
       padding-top: 80px;
       min-height: 100vh;
     }
     
-    .screen {
-      display: none;
-    }
+    .screen { display: none; }
+    .screen.active { display: block; }
     
-    .screen.active {
-      display: block;
-    }
-    
-    /* ГЛАВНАЯ СТРАНИЦА */
     .catalog {
       max-width: 1200px;
       margin: 0 auto;
       padding: 40px 20px;
     }
     
-    .catalog h2 {
-      margin-bottom: 30px;
-      font-size: 2rem;
-    }
+    .catalog h2 { margin-bottom: 30px; font-size: 2rem; }
     
     .movie-grid, .games-grid {
       display: flex;
@@ -191,56 +150,15 @@
     .movie-card img {
       width: 100%;
       border-radius: 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     }
     
-    .game-icon {
-      font-size: 60px;
-      margin-bottom: 10px;
-      display: block;
-    }
+    .game-icon { font-size: 60px; display: block; margin-bottom: 10px; }
     
-    .movie-card h3, .game-card h3 {
-      margin: 10px 0 5px;
-      font-size: 1.1rem;
-    }
+    .movie-card h3, .game-card h3 { margin: 10px 0 5px; }
     
-    .movie-card .rating, .game-card .game-type {
-      color: #ffd700;
-      font-weight: bold;
-      font-size: 0.9rem;
-    }
+    .game-rating { color: #ffd700; font-size: 0.9rem; }
     
-    /* ОСТАЛЬНЫЕ СТИЛИ */
-    .hero {
-      text-align: center;
-      padding: 40px 20px;
-    }
-    
-    .poster {
-      width: 100%;
-      max-width: 400px;
-      border-radius: 15px;
-      margin-bottom: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    
-    .hero h1 {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
-    
-    .hero h2 {
-      color: #ffd700;
-      font-size: 2rem;
-    }
-    
-    .content {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 20px;
-    }
+    .content { max-width: 900px; margin: 0 auto; padding: 20px; }
     
     .section {
       margin-top: 40px;
@@ -250,15 +168,18 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
-    .section h2 {
-      margin-bottom: 15px;
-      font-size: 1.5rem;
+    .hero {
+      text-align: center;
+      padding: 40px 20px;
     }
     
-    video {
+    .poster {
       width: 100%;
-      border-radius: 10px;
+      max-width: 400px;
+      border-radius: 15px;
     }
+    
+    video { width: 100%; border-radius: 10px; }
     
     button {
       margin: 10px 5px;
@@ -272,9 +193,22 @@
       transition: all 0.2s;
     }
     
-    button:hover {
-      background: #555;
-      transform: translateY(-2px);
+    button:hover { background: #555; transform: translateY(-2px); }
+    
+    .episodes {
+      margin-top: 15px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .episodes.show { display: block; }
+    
+    .coming-soon {
+      color: #aaa;
+      font-style: italic;
+      padding: 15px;
     }
     
     .stars-container {
@@ -282,7 +216,6 @@
       align-items: center;
       gap: 10px;
       margin: 15px 0;
-      flex-wrap: wrap;
     }
     
     .star {
@@ -294,24 +227,14 @@
     }
     
     .star.full { color: #ffd700; }
+    
     .star.half {
       background: linear-gradient(90deg, #ffd700 50%, #555 50%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     
-    #ratingText {
-      margin-left: 10px;
-      font-size: 20px;
-      color: #ffd700;
-      font-weight: bold;
-    }
-    
-    /* ИГРОВЫЕ ЭКРАНЫ */
-    .game-container {
-      text-align: center;
-      padding: 20px;
-    }
+    .game-container { text-align: center; padding: 20px; }
     
     .game-canvas {
       border: 2px solid #444;
@@ -321,14 +244,32 @@
       display: block;
     }
     
-    .game-score {
-      font-size: 24px;
-      color: #ffd700;
-      margin: 10px;
+    .game-score { font-size: 24px; color: #ffd700; margin: 10px; }
+    
+    .player-name-input {
+      margin: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ffd700;
+      background: #2a2a2a;
+      color: white;
+      font-size: 16px;
     }
     
-    .back-btn {
-      margin-bottom: 20px;
+    .leaderboard {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 10px;
+    }
+    
+    .leaderboard h3 { color: #ffd700; margin-bottom: 10px; }
+    
+    .leaderboard-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px;
+      border-bottom: 1px solid #333;
     }
     
     input, textarea {
@@ -340,17 +281,10 @@
       color: white;
       border: 1px solid #444;
       border-radius: 8px;
-      font-size: 14px;
-    }
-    
-    textarea {
-      min-height: 100px;
-      resize: vertical;
     }
     
     @media (max-width: 768px) {
       .logo { font-size: 24px; }
-      .hero h1 { font-size: 1.8rem; }
       .movie-card, .game-card { width: 160px; }
       .game-icon { font-size: 40px; }
     }
@@ -378,7 +312,7 @@
 
     <div id="content">
       
-      <!-- ГЛАВНАЯ СТРАНИЦА -->
+      <!-- ГЛАВНАЯ -->
       <div id="home-screen" class="screen active">
         <div class="catalog">
           <h2>🎬 Сериалы</h2>
@@ -386,166 +320,146 @@
             <div class="movie-card" onclick="showScreen('series')">
               <img src="cover.jpg" alt="Постер">
               <h3>Приключения 4 куриц</h3>
-              <div class="rating" id="seriesRating">⭐ 9.5 / 10</div>
+              <div class="game-rating" id="seriesRating">⭐ 9.5 / 10</div>
             </div>
           </div>
           
           <h2 style="margin-top: 50px;">🎮 Мини-игры</h2>
           <div class="games-grid">
             
-            <div class="game-card" onclick="showScreen('game1')">
-              <span class="game-icon">🐔</span>
-              <h3>Поймай курицу</h3>
-              <div class="game-type">Кликер</div>
-            </div>
-            
-            <div class="game-card" onclick="showScreen('game2')">
+            <div class="game-card" onclick="startGame('clicker')">
               <span class="game-icon">🥚</span>
               <h3>Куриный кликер</h3>
-              <div class="game-type">Ферма</div>
+              <div class="game-rating" id="rating-clicker">⭐ 0/10 (0)</div>
             </div>
             
-            <div class="game-card" onclick="showScreen('game3')">
+            <div class="game-card" onclick="startGame('snake')">
               <span class="game-icon">🐍</span>
-              <h3>Змейка</h3>
-              <div class="game-type">Аркада</div>
+              <h3>Змейка с курицей</h3>
+              <div class="game-rating" id="rating-snake">⭐ 0/10 (0)</div>
             </div>
             
-            <div class="game-card" onclick="showScreen('game4')">
-              <span class="game-icon">🎬</span>
-              <h3>Угадай серию</h3>
-              <div class="game-type">Викторина</div>
-            </div>
-            
-            <div class="game-card" onclick="showScreen('game5')">
+            <div class="game-card" onclick="startGame('tetris')">
               <span class="game-icon">🧱</span>
               <h3>Яичный тетрис</h3>
-              <div class="game-type">Головоломка</div>
+              <div class="game-rating" id="rating-tetris">⭐ 0/10 (0)</div>
             </div>
             
-            <div class="game-card" onclick="showScreen('game6')">
+            <div class="game-card" onclick="startGame('battle')">
               <span class="game-icon">⚔️</span>
               <h3>Битва куриц</h3>
-              <div class="game-type">Файтинг</div>
+              <div class="game-rating" id="rating-battle">⭐ 0/10 (0)</div>
             </div>
             
-            <div class="game-card" onclick="showScreen('game7')">
+            <div class="game-card" onclick="startGame('runner')">
               <span class="game-icon">🏃</span>
               <h3>Куриный раннер</h3>
-              <div class="game-type">Раннер</div>
+              <div class="game-rating" id="rating-runner">⭐ 0/10 (0)</div>
             </div>
             
           </div>
         </div>
       </div>
 
-      <!-- ИГРА 1: ПОЙМАЙ КУРИЦУ -->
-      <div id="game1-screen" class="screen">
-        <div class="game-container">
-          <button class="back-btn" onclick="showScreen('home')">← На главную</button>
-          <h2>🐔 Поймай курицу!</h2>
-          <div class="game-score">Поймано: <span id="catchScore">0</span></div>
-          <canvas id="catchCanvas" width="400" height="400" class="game-canvas"></canvas>
-          <p>Кликай по курице, пока она не убежала!</p>
-        </div>
-      </div>
-
-      <!-- ИГРА 2: КУРИНЫЙ КЛИКЕР -->
-      <div id="game2-screen" class="screen">
-        <div class="game-container">
-          <button class="back-btn" onclick="showScreen('home')">← На главную</button>
-          <h2>🥚 Куриный кликер</h2>
-          <div class="game-score">Яйца: <span id="eggCount">0</span></div>
-          <button onclick="clickEgg()" style="font-size: 60px; padding: 30px 50px;">🥚</button>
-          <br>
-          <button onclick="buyUpgrade()">Купить курицу (10 яиц) | Куриц: <span id="chickenCount">0</span></button>
-          <p>Курицы несут 1 яйцо в секунду каждая</p>
-        </div>
-      </div>
-
-      <!-- ИГРА 3: ЗМЕЙКА -->
-      <div id="game3-screen" class="screen">
-        <div class="game-container">
-          <button class="back-btn" onclick="showScreen('home'); stopSnake()">← На главную</button>
-          <h2>🐍 Змейка с курицей</h2>
-          <div class="game-score">Счёт: <span id="snakeScore">0</span></div>
-          <canvas id="snakeCanvas" width="400" height="400" class="game-canvas"></canvas>
-          <p>Стрелки: ←↑↓→ | Собери зёрна 🌾</p>
-        </div>
-      </div>
-
-      <!-- ИГРА 4: УГАДАЙ СЕРИЮ -->
-      <div id="game4-screen" class="screen">
-        <div class="game-container">
-          <button class="back-btn" onclick="showScreen('home')">← На главную</button>
-          <h2>🎬 Угадай серию</h2>
-          <div class="game-score">Счёт: <span id="quizScore">0</span></div>
-          <p id="quizQuestion">В какой серии курица впервые появляется?</p>
-          <button onclick="quizAnswer(1)">1 серия</button>
-          <button onclick="quizAnswer(2)">2 серия</button>
-          <button onclick="quizAnswer(3)">3 серия</button>
-          <button onclick="quizAnswer(4)">4 серия</button>
-        </div>
-      </div>
-
-      <!-- ИГРА 5: ТЕТРИС -->
-      <div id="game5-screen" class="screen">
-        <div class="game-container">
-          <button class="back-btn" onclick="showScreen('home')">← На главную</button>
-          <h2>🧱 Яичный тетрис</h2>
-          <div class="game-score">Счёт: <span id="tetrisScore">0</span></div>
-          <canvas id="tetrisCanvas" width="300" height="500" class="game-canvas"></canvas>
-          <p>← → двигать | ↑ поворот | ↓ уронить</p>
-        </div>
-      </div>
-
-      <!-- ИГРА 6: БИТВА КУРИЦ -->
-      <div id="game6-screen" class="screen">
-        <div class="game-container">
-          <button class="back-btn" onclick="showScreen('home')">← На главную</button>
-          <h2>⚔️ Битва куриц</h2>
-          <div class="game-score">
-            Игрок: <span id="playerHP">100</span> HP | Враг: <span id="enemyHP">100</span> HP
-          </div>
-          <button onclick="battle('attack')">⚔️ Атака (10-20 урона)</button>
-          <button onclick="battle('special')">🔥 Супер удар (20-35 урона)</button>
-          <button onclick="battle('heal')">💚 Лечение (+15 HP)</button>
-          <div id="battleLog"></div>
-        </div>
-      </div>
-
-      <!-- ИГРА 7: РАННЕР -->
-      <div id="game7-screen" class="screen">
-        <div class="game-container">
-          <button class="back-btn" onclick="showScreen('home'); stopRunner()">← На главную</button>
-          <h2>🏃 Куриный раннер</h2>
-          <div class="game-score">Счёт: <span id="runnerScore">0</span></div>
-          <canvas id="runnerCanvas" width="600" height="200" class="game-canvas"></canvas>
-          <p>Пробел или клик — прыжок!</p>
-        </div>
-      </div>
-
-      <!-- СЕРИАЛ + ОБСУЖДЕНИЯ (оставим для краткости) -->
+      <!-- СТРАНИЦА СЕРИАЛА -->
       <div id="series-screen" class="screen">
+        <div class="hero">
+          <img src="cover.jpg" class="poster" alt="Постер">
+          <h1>Приключения 4 куриц</h1>
+          <h2 id="seriesRatingHero">⭐ 9.5 / 10</h2>
+        </div>
+
         <div class="content">
-          <h2>📺 Сериал скоро появится здесь!</h2>
-          <button onclick="showScreen('home')">← На главную</button>
+          <div class="section">
+            <h2>📖 Описание</h2>
+            <p>Очень увлекательный сериал о четырёх курицах и их невероятных приключениях!</p>
+            <div class="game-score" id="totalRatingDisplay">⭐ 9.5 / 10</div>
+            <div id="reviewsCountDisplay">Загрузка...</div>
+          </div>
+
+          <div class="section">
+            <h2>🎭 Жанр</h2>
+            <p>комедия / боевик / романтика</p>
+          </div>
+
+          <div class="section">
+            <h2>▶️ Смотреть</h2>
+            <video id="player" controls>
+              <source id="videosrc" src="episode1.mp4" type="video/mp4">
+            </video>
+          </div>
+
+          <div class="section">
+            <h2>📺 Сезоны</h2>
+            <button onclick="toggleSeason('season1')">Сезон 1</button>
+            <div class="episodes" id="season1">
+              <button onclick="playEpisode('episode1.mp4')">▶ 1 серия</button>
+              <button onclick="playEpisode('episode2.mp4')">▶ 2 серия</button>
+              <button onclick="playEpisode('episode3.mp4')">▶ 3 серия</button>
+              <button onclick="playEpisode('episode4.mp4')">▶ 4 серия</button>
+            </div>
+            
+            <button onclick="toggleSeason('season2')">Сезон 2</button>
+            <div class="episodes" id="season2">
+              <div class="coming-soon">🎬 Скоро появятся!</div>
+            </div>
+            
+            <button onclick="toggleSeason('season3')">Сезон 3</button>
+            <div class="episodes" id="season3">
+              <div class="coming-soon">🎬 В разработке!</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>💭 Отзывы</h2>
+            <input id="reviewName" placeholder="Ваше имя">
+            <div class="stars-container">
+              <span>Оценка: </span>
+              <span class="star" data-value="1" onclick="setRating(1)">★</span>
+              <span class="star" data-value="2" onclick="setRating(2)">★</span>
+              <span class="star" data-value="3" onclick="setRating(3)">★</span>
+              <span class="star" data-value="4" onclick="setRating(4)">★</span>
+              <span class="star" data-value="5" onclick="setRating(5)">★</span>
+              <span id="ratingText">10/10</span>
+            </div>
+            <textarea id="reviewText" placeholder="Напишите отзыв..."></textarea>
+            <button onclick="addReview()">📝 Отправить</button>
+            <div id="reviews">Загрузка...</div>
+          </div>
         </div>
       </div>
 
+      <!-- ИГРЫ -->
+      <div id="game-screen" class="screen">
+        <div class="game-container" id="gameArea">
+          <button onclick="showScreen('home'); stopAllGames()">← На главную</button>
+          <h2 id="gameTitle">Игра</h2>
+          <input type="text" class="player-name-input" id="playerNameInput" placeholder="Введи своё имя">
+          <div class="game-score" id="gameScoreDisplay">Счёт: 0</div>
+          <div id="gameContent"></div>
+          <div class="leaderboard" id="leaderboard"></div>
+        </div>
+      </div>
+
+      <!-- ОБСУЖДЕНИЯ -->
       <div id="discussions-screen" class="screen">
         <div class="content">
           <h2>💬 Обсуждения</h2>
-          <p>Здесь будет чат</p>
-          <button onclick="showScreen('home')">← На главную</button>
+          <input id="chatName" placeholder="Ваше имя">
+          <textarea id="chatMessage" placeholder="Сообщение..."></textarea>
+          <button onclick="sendMessage()">💬 Отправить</button>
+          <div id="chatMessages">Загрузка...</div>
         </div>
       </div>
 
+      <!-- ИДЕИ -->
       <div id="ideas-screen" class="screen">
         <div class="content">
           <h2>💡 Идеи</h2>
-          <p>Здесь будут идеи для продолжения</p>
-          <button onclick="showScreen('home')">← На главную</button>
+          <input id="ideaAuthor" placeholder="Ваше имя">
+          <textarea id="ideaText" placeholder="Ваша идея..."></textarea>
+          <button onclick="addIdea()">💡 Предложить</button>
+          <div id="ideasList">Загрузка...</div>
         </div>
       </div>
 
@@ -553,124 +467,198 @@
   </div>
 
   <script>
+    // ==================== FIREBASE ====================
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyc8DrHyUQoOPATqubm0vBY37_naYeTqw",
+      authDomain: "tildochka.firebaseapp.com",
+      databaseURL: "https://tildochka-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "tildochka",
+      storageBucket: "tildochka.firebasestorage.app",
+      messagingSenderId: "162990578480",
+      appId: "1:16929057840:web:2f3d95a4dde5978e5391f5"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    
     // ==================== НАВИГАЦИЯ ====================
+    let currentGame = null;
+    
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId + '-screen').classList.add('active');
       closeMenu();
       window.scrollTo(0, 0);
-      if (screenId === 'game1') startCatchGame();
-      if (screenId === 'game3') startSnakeGame();
-      if (screenId === 'game5') startTetris();
-      if (screenId === 'game7') startRunner();
+      if (screenId === 'series') loadReviews();
+      if (screenId === 'discussions') loadMessages();
+      if (screenId === 'ideas') loadIdeas();
     }
 
-    function toggleMenu() {
-      document.getElementById('menuDropdown').classList.toggle('show');
-    }
-
-    function closeMenu() {
-      document.getElementById('menuDropdown').classList.remove('show');
-    }
-
-    // ==================== ИГРА 1: ПОЙМАЙ КУРИЦУ ====================
-    let catchScore = 0;
-    let chickenX = 200, chickenY = 200;
-    let catchInterval;
-
-    function startCatchGame() {
-      catchScore = 0;
-      document.getElementById('catchScore').textContent = '0';
-      const canvas = document.getElementById('catchCanvas');
-      const ctx = canvas.getContext('2d');
+    function startGame(gameType) {
+      currentGame = gameType;
+      showScreen('game');
+      document.getElementById('gameTitle').textContent = getGameTitle(gameType);
+      document.getElementById('gameContent').innerHTML = '';
+      document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
       
-      function spawnChicken() {
-        chickenX = Math.random() * 350;
-        chickenY = Math.random() * 350;
-      }
+      if (gameType === 'clicker') initClicker();
+      if (gameType === 'snake') initSnake();
+      if (gameType === 'tetris') initTetris();
+      if (gameType === 'battle') initBattle();
+      if (gameType === 'runner') initRunner();
+      
+      loadLeaderboard(gameType);
+    }
 
-      canvas.onclick = function(e) {
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        if (Math.abs(x - chickenX) < 40 && Math.abs(y - chickenY) < 40) {
-          catchScore++;
-          document.getElementById('catchScore').textContent = catchScore;
-          spawnChicken();
+    function getGameTitle(type) {
+      const titles = {
+        clicker: '🥚 Куриный кликер',
+        snake: '🐍 Змейка с курицей',
+        tetris: '🧱 Яичный тетрис',
+        battle: '⚔️ Битва куриц',
+        runner: '🏃 Куриный раннер'
+      };
+      return titles[type] || 'Игра';
+    }
+
+    function stopAllGames() {
+      // Остановка всех интервалов
+      if (window.gameInterval) clearInterval(window.gameInterval);
+      currentGame = null;
+    }
+
+    // ==================== РЕЙТИНГ ИГР ====================
+    function rateGame() {
+      const name = document.getElementById('playerNameInput').value.trim() || 'Аноним';
+      const stars = document.querySelectorAll('#gameContent .star');
+      let rating = 10;
+      
+      stars.forEach(star => {
+        star.onclick = function() {
+          rating = parseInt(this.getAttribute('data-value')) * 2;
+          updateGameStars(stars, rating);
+        };
+      });
+      
+      // Сохраняем рейтинг
+      const score = parseInt(document.getElementById('gameScoreDisplay').textContent.replace('Счёт: ', ''));
+      
+      database.ref('gameRatings/' + currentGame).push({
+        name: name,
+        rating: rating,
+        score: score,
+        timestamp: Date.now()
+      });
+      
+      loadLeaderboard(currentGame);
+    }
+
+    function loadLeaderboard(gameType) {
+      database.ref('gameRatings/' + gameType).on('value', (snapshot) => {
+        const ratings = [];
+        snapshot.forEach(child => ratings.push(child.val()));
+        ratings.sort((a, b) => b.score - a.score);
+        
+        let html = '<h3>🏆 Таблица лидеров</h3>';
+        ratings.slice(0, 10).forEach((r, i) => {
+          html += `<div class="leaderboard-item">
+            <span>${i+1}. ${r.name}</span>
+            <span>Счёт: ${r.score} | ⭐${r.rating}/10</span>
+          </div>`;
+        });
+        
+        if (ratings.length === 0) html += '<p>Пока нет игроков</p>';
+        
+        // Обновляем рейтинг на главной
+        if (ratings.length > 0) {
+          const avgRating = (ratings.reduce((a, r) => a + r.rating, 0) / ratings.length).toFixed(1);
+          document.getElementById('rating-' + gameType).textContent = `⭐ ${avgRating}/10 (${ratings.length})`;
+        }
+        
+        document.getElementById('leaderboard').innerHTML = html;
+      });
+    }
+
+    // ==================== ИГРА: КЛИКЕР ====================
+    function initClicker() {
+      let eggs = 0, chickens = 0;
+      
+      document.getElementById('gameContent').innerHTML = `
+        <button onclick="window.clickEgg()" style="font-size:60px;padding:30px 50px;">🥚</button>
+        <br>
+        <button onclick="window.buyUpgrade()">Купить курицу (10 яиц) | Куриц: <span id="chickens">0</span></button>
+        <div class="stars-container">
+          <span>Оцени игру: </span>
+          <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span><span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+          <button onclick="rateGame()">⭐ Оценить</button>
+        </div>
+      `;
+      
+      window.clickEgg = function() {
+        eggs++;
+        document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + eggs;
+      };
+      
+      window.buyUpgrade = function() {
+        if (eggs >= 10) {
+          eggs -= 10;
+          chickens++;
+          document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + eggs;
+          document.getElementById('chickens').textContent = chickens;
         }
       };
-
-      function draw() {
-        ctx.clearRect(0, 0, 400, 400);
-        ctx.font = '40px Arial';
-        ctx.fillText('🐔', chickenX - 20, chickenY + 15);
-      }
-
-      spawnChicken();
-      catchInterval = setInterval(() => {
-        spawnChicken();
-        draw();
-      }, 800);
-      draw();
+      
+      window.gameInterval = setInterval(() => {
+        eggs += chickens;
+        document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + eggs;
+      }, 1000);
     }
 
-    // ==================== ИГРА 2: КЛИКЕР ====================
-    let eggs = 0, chickens = 0;
-
-    function clickEgg() {
-      eggs++;
-      document.getElementById('eggCount').textContent = eggs;
-    }
-
-    function buyUpgrade() {
-      if (eggs >= 10) {
-        eggs -= 10;
-        chickens++;
-        document.getElementById('eggCount').textContent = eggs;
-        document.getElementById('chickenCount').textContent = chickens;
-      }
-    }
-
-    setInterval(() => {
-      eggs += chickens;
-      document.getElementById('eggCount').textContent = eggs;
-    }, 1000);
-
-    // ==================== ИГРА 3: ЗМЕЙКА ====================
-    let snake, food, direction, snakeScore, snakeInterval;
-
-    function startSnakeGame() {
-      snake = [{x: 200, y: 200}];
-      food = {x: 100, y: 100};
-      direction = {x: 20, y: 0};
-      snakeScore = 0;
-      document.getElementById('snakeScore').textContent = '0';
+    // ==================== ИГРА: ЗМЕЙКА ====================
+    function initSnake() {
+      document.getElementById('gameContent').innerHTML = `
+        <canvas id="snakeCanvas" width="400" height="400" class="game-canvas"></canvas>
+        <p>Стрелки: ←↑↓→ | Собери 🌾</p>
+        <div class="stars-container">
+          <span>Оцени игру: </span>
+          <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span><span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+          <button onclick="rateGame()">⭐ Оценить</button>
+        </div>
+      `;
       
       const canvas = document.getElementById('snakeCanvas');
       const ctx = canvas.getContext('2d');
+      let snake = [{x: 200, y: 200}];
+      let food = {x: 100, y: 100};
+      let dir = {x: 20, y: 0};
+      let score = 0;
       
-      document.onkeydown = function(e) {
-        if (e.key === 'ArrowLeft' && direction.x === 0) direction = {x: -20, y: 0};
-        if (e.key === 'ArrowRight' && direction.x === 0) direction = {x: 20, y: 0};
-        if (e.key === 'ArrowUp' && direction.y === 0) direction = {x: 0, y: -20};
-        if (e.key === 'ArrowDown' && direction.y === 0) direction = {x: 0, y: 20};
+      document.onkeydown = (e) => {
+        if (e.key === 'ArrowLeft' && dir.x === 0) dir = {x: -20, y: 0};
+        if (e.key === 'ArrowRight' && dir.x === 0) dir = {x: 20, y: 0};
+        if (e.key === 'ArrowUp' && dir.y === 0) dir = {x: 0, y: -20};
+        if (e.key === 'ArrowDown' && dir.y === 0) dir = {x: 0, y: 20};
       };
-
-      function gameLoop() {
-        const head = {x: snake[0].x + direction.x, y: snake[0].y + direction.y};
+      
+      window.gameInterval = setInterval(() => {
+        const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
         
         if (head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400) {
-          clearInterval(snakeInterval);
-          alert('Игра окончена! Счёт: ' + snakeScore);
+          clearInterval(window.gameInterval);
+          alert('Игра окончена! Счёт: ' + score);
           return;
         }
         
         snake.unshift(head);
         
         if (head.x === food.x && head.y === food.y) {
-          snakeScore++;
-          document.getElementById('snakeScore').textContent = snakeScore;
-          food = {x: Math.floor(Math.random() * 20) * 20, y: Math.floor(Math.random() * 20) * 20};
+          score++;
+          document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
+          food = {x: Math.floor(Math.random()*20)*20, y: Math.floor(Math.random()*20)*20};
         } else {
           snake.pop();
         }
@@ -679,183 +667,356 @@
         ctx.fillStyle = '#ffd700';
         ctx.fillRect(food.x, food.y, 18, 18);
         ctx.fillStyle = '#4CAF50';
-        snake.forEach(seg => ctx.fillRect(seg.x, seg.y, 18, 18));
-      }
+        snake.forEach(s => ctx.fillRect(s.x, s.y, 18, 18));
+      }, 100);
+    }
+
+    // ==================== ИГРА: ТЕТРИС ====================
+    function initTetris() {
+      document.getElementById('gameContent').innerHTML = `
+        <canvas id="tetrisCanvas" width="300" height="500" class="game-canvas"></canvas>
+        <p>← → двигать | ↑ поворот | ↓ уронить</p>
+        <div class="stars-container">
+          <span>Оцени игру: </span>
+          <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span><span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+          <button onclick="rateGame()">⭐ Оценить</button>
+        </div>
+      `;
       
-      snakeInterval = setInterval(gameLoop, 100);
-    }
-
-    function stopSnake() {
-      clearInterval(snakeInterval);
-    }
-
-    // ==================== ИГРА 4: ВИКТОРИНА ====================
-    let quizScore = 0;
-    const questions = [
-      {q: 'Какая курица главная?', a: 1},
-      {q: 'Сколько всего куриц?', a: 4},
-      {q: 'Любимая еда куриц?', a: 2},
-      {q: 'Где живут курицы?', a: 3}
-    ];
-    let currentQ = 0;
-
-    function quizAnswer(answer) {
-      if (answer === questions[currentQ].a) {
-        quizScore++;
-        document.getElementById('quizScore').textContent = quizScore;
-      }
-      currentQ = (currentQ + 1) % questions.length;
-      document.getElementById('quizQuestion').textContent = questions[currentQ].q;
-    }
-
-    // ==================== ИГРА 5: ТЕТРИС ====================
-    let tetrisScore = 0;
-    let tetrisInterval;
-
-    function startTetris() {
       const canvas = document.getElementById('tetrisCanvas');
       const ctx = canvas.getContext('2d');
       let board = Array(25).fill().map(() => Array(15).fill(0));
       let piece = {x: 5, y: 0, shape: [[1,1],[1,1]]};
-      tetrisScore = 0;
+      let score = 0;
       
-      document.onkeydown = function(e) {
-        if (e.key === 'ArrowLeft') piece.x--;
-        if (e.key === 'ArrowRight') piece.x++;
+      document.onkeydown = (e) => {
+        if (e.key === 'ArrowLeft') piece.x = Math.max(0, piece.x - 1);
+        if (e.key === 'ArrowRight') piece.x = Math.min(13, piece.x + 1);
         if (e.key === 'ArrowDown') piece.y++;
-      };
-
-      function draw() {
-        ctx.clearRect(0, 0, 300, 500);
-        board.forEach((row, y) => row.forEach((cell, x) => {
-          if (cell) {
-            ctx.fillStyle = '#ffd700';
-            ctx.fillRect(x*20, y*20, 18, 18);
-          }
-        }));
-        piece.shape.forEach((row, y) => row.forEach((cell, x) => {
-          if (cell) {
-            ctx.fillStyle = '#ff6600';
-            ctx.fillRect((piece.x+x)*20, (piece.y+y)*20, 18, 18);
-          }
-        }));
-      }
-      
-      tetrisInterval = setInterval(() => {
-        piece.y++;
-        if (piece.y >= 24) {
-          piece.shape.forEach((row, y) => row.forEach((cell, x) => {
-            if (cell) board[piece.y+y-1][piece.x+x] = 1;
-          }));
-          piece = {x: 5, y: 0, shape: [[1,1],[1,1]]};
-          tetrisScore += 10;
-          document.getElementById('tetrisScore').textContent = tetrisScore;
+        if (e.key === 'ArrowUp') {
+          piece.shape = piece.shape[0].map((_, i) => piece.shape.map(row => row[i]).reverse());
         }
-        draw();
+      };
+      
+      window.gameInterval = setInterval(() => {
+        piece.y++;
+        
+        if (piece.y + piece.shape.length > 25 || collision(board, piece)) {
+          piece.y--;
+          piece.shape.forEach((row, y) => row.forEach((cell, x) => {
+            if (cell) board[piece.y+y][piece.x+x] = 1;
+          }));
+          
+          // Проверка линий
+          board = board.filter(row => row.some(cell => !cell));
+          while (board.length < 25) board.unshift(Array(15).fill(0));
+          
+          piece = {x: 5, y: 0, shape: [[1,1],[1,1]]};
+          score += 10;
+          document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
+        }
+        
+        drawBoard(ctx, board, piece);
       }, 500);
-      draw();
     }
 
-    // ==================== ИГРА 6: БИТВА ====================
-    let playerHP = 100, enemyHP = 100;
-
-    function battle(action) {
-      let damage = 0;
-      if (action === 'attack') damage = Math.floor(Math.random() * 11) + 10;
-      if (action === 'special') damage = Math.floor(Math.random() * 16) + 20;
-      if (action === 'heal') {
-        playerHP = Math.min(100, playerHP + 15);
-        document.getElementById('playerHP').textContent = playerHP;
-      }
-      
-      if (damage > 0) {
-        enemyHP -= damage;
-        document.getElementById('enemyHP').textContent = Math.max(0, enemyHP);
-        document.getElementById('battleLog').innerHTML += `<br>Нанесено ${damage} урона!`;
-      }
-      
-      if (enemyHP <= 0) {
-        alert('Победа! 🎉');
-        enemyHP = 100;
-        playerHP = 100;
-        document.getElementById('playerHP').textContent = 100;
-        document.getElementById('enemyHP').textContent = 100;
-        document.getElementById('battleLog').innerHTML = '';
-      } else {
-        const enemyDamage = Math.floor(Math.random() * 11) + 5;
-        playerHP -= enemyDamage;
-        document.getElementById('playerHP').textContent = Math.max(0, playerHP);
-        document.getElementById('battleLog').innerHTML += `<br>Враг нанёс ${enemyDamage} урона!`;
-      }
+    function collision(board, piece) {
+      return piece.shape.some((row, y) => 
+        row.some((cell, x) => 
+          cell && board[piece.y+y] && board[piece.y+y][piece.x+x]
+        )
+      );
     }
 
-    // ==================== ИГРА 7: РАННЕР ====================
-    let runnerScore = 0, runnerY = 150, velocity = 0, obstacles = [];
-    let runnerInterval;
+    function drawBoard(ctx, board, piece) {
+      ctx.clearRect(0, 0, 300, 500);
+      board.forEach((row, y) => row.forEach((cell, x) => {
+        if (cell) {
+          ctx.fillStyle = '#ffd700';
+          ctx.fillRect(x*20, y*20, 18, 18);
+        }
+      }));
+      piece.shape.forEach((row, y) => row.forEach((cell, x) => {
+        if (cell) {
+          ctx.fillStyle = '#ff6600';
+          ctx.fillRect((piece.x+x)*20, (piece.y+y)*20, 18, 18);
+        }
+      }));
+    }
 
-    function startRunner() {
+    // ==================== ИГРА: БИТВА ====================
+    function initBattle() {
+      let php = 100, ehp = 100;
+      
+      document.getElementById('gameContent').innerHTML = `
+        <div class="game-score">
+          Игрок: <span id="php">100</span> HP | Враг: <span id="ehp">100</span> HP
+        </div>
+        <button onclick="window.battleAction('attack')">⚔️ Атака (10-20)</button>
+        <button onclick="window.battleAction('special')">🔥 Супер (20-35)</button>
+        <button onclick="window.battleAction('heal')">💚 Лечение (+15)</button>
+        <div id="battleLog"></div>
+        <div class="stars-container">
+          <span>Оцени игру: </span>
+          <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span><span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+          <button onclick="rateGame()">⭐ Оценить</button>
+        </div>
+      `;
+      
+      window.battleAction = function(action) {
+        let dmg = 0;
+        if (action === 'attack') dmg = Math.floor(Math.random()*11)+10;
+        if (action === 'special') dmg = Math.floor(Math.random()*16)+20;
+        if (action === 'heal') {
+          php = Math.min(100, php+15);
+          document.getElementById('php').textContent = php;
+        }
+        
+        if (dmg > 0) {
+          ehp -= dmg;
+          document.getElementById('ehp').textContent = Math.max(0, ehp);
+          document.getElementById('battleLog').innerHTML += `<br>Нанесено ${dmg} урона!`;
+        }
+        
+        if (ehp <= 0) {
+          alert('Победа! 🎉');
+          ehp = 100; php = 100;
+          document.getElementById('php').textContent = 100;
+          document.getElementById('ehp').textContent = 100;
+          document.getElementById('battleLog').innerHTML = '';
+          document.getElementById('gameScoreDisplay').textContent = 'Счёт: Победа!';
+        } else {
+          const edmg = Math.floor(Math.random()*11)+5;
+          php -= edmg;
+          document.getElementById('php').textContent = Math.max(0, php);
+          document.getElementById('battleLog').innerHTML += `<br>Враг нанёс ${edmg} урона!`;
+          
+          if (php <= 0) {
+            alert('Поражение! 😢');
+            ehp = 100; php = 100;
+            document.getElementById('php').textContent = 100;
+            document.getElementById('ehp').textContent = 100;
+            document.getElementById('battleLog').innerHTML = '';
+          }
+        }
+      };
+    }
+
+    // ==================== ИГРА: РАННЕР ====================
+    function initRunner() {
+      document.getElementById('gameContent').innerHTML = `
+        <canvas id="runnerCanvas" width="600" height="200" class="game-canvas"></canvas>
+        <p>Пробел или клик — прыжок!</p>
+        <div class="stars-container">
+          <span>Оцени игру: </span>
+          <span class="star" data-value="1">★</span><span class="star" data-value="2">★</span>
+          <span class="star" data-value="3">★</span><span class="star" data-value="4">★</span>
+          <span class="star" data-value="5">★</span>
+          <button onclick="rateGame()">⭐ Оценить</button>
+        </div>
+      `;
+      
       const canvas = document.getElementById('runnerCanvas');
       const ctx = canvas.getContext('2d');
-      runnerScore = 0;
-      runnerY = 150;
-      velocity = 0;
-      obstacles = [{x: 600, y: 160}];
+      let y = 150, vy = 0, obstacles = [{x: 600, y: 160}];
+      let score = 0, gameOver = false;
       
-      document.onkeydown = function(e) {
-        if (e.key === ' ' && runnerY >= 150) velocity = -12;
-      };
-      canvas.onclick = function() {
-        if (runnerY >= 150) velocity = -12;
-      };
-
-      function draw() {
+      document.onkeydown = (e) => { if (e.key === ' ' && y >= 150) vy = -12; };
+      canvas.onclick = () => { if (y >= 150) vy = -12; };
+      
+      window.gameInterval = setInterval(() => {
+        if (gameOver) return;
+        
         ctx.clearRect(0, 0, 600, 200);
         ctx.fillStyle = '#4CAF50';
         ctx.fillRect(0, 170, 600, 30);
         ctx.font = '30px Arial';
-        ctx.fillText('🐔', 50, runnerY);
+        ctx.fillText('🐔', 50, y);
         
-        obstacles.forEach(obs => {
-          ctx.fillText('🪨', obs.x, obs.y);
-          obs.x -= 5;
+        obstacles.forEach(o => {
+          ctx.fillText('🪨', o.x, o.y);
+          o.x -= 5;
         });
         
-        obstacles = obstacles.filter(obs => obs.x > -30);
+        obstacles = obstacles.filter(o => o.x > -30);
         if (obstacles.length === 0 || obstacles[obstacles.length-1].x < 400) {
           obstacles.push({x: 600, y: 160});
         }
         
-        obstacles.forEach(obs => {
-          if (obs.x < 80 && obs.x > 20 && runnerY > 130) {
-            clearInterval(runnerInterval);
-            alert('Игра окончена! Счёт: ' + runnerScore);
+        obstacles.forEach(o => {
+          if (o.x < 80 && o.x > 20 && y > 130) {
+            gameOver = true;
+            clearInterval(window.gameInterval);
+            alert('Игра окончена! Счёт: ' + Math.floor(score/10));
           }
         });
         
-        runnerY += velocity;
-        velocity += 0.8;
-        if (runnerY > 150) { runnerY = 150; velocity = 0; }
+        y += vy;
+        vy += 0.8;
+        if (y > 150) { y = 150; vy = 0; }
         
-        runnerScore++;
-        document.getElementById('runnerScore').textContent = Math.floor(runnerScore / 10);
-      }
+        score++;
+        document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + Math.floor(score/10);
+      }, 20);
+    }
+
+    // ==================== СЕРИАЛ ====================
+    let currentRating = 10;
+    
+    function setRating(value) {
+      currentRating = value * 2;
+      updateStars();
+      document.getElementById('ratingText').textContent = currentRating + '/10';
+    }
+    
+    function updateStars() {
+      document.querySelectorAll('#series-screen .star').forEach(star => {
+        star.classList.remove('full', 'half');
+        const val = parseInt(star.getAttribute('data-value')) * 2;
+        if (currentRating >= val) star.classList.add('full');
+        else if (currentRating === val - 1) star.classList.add('half');
+      });
+    }
+
+    function toggleSeason(id) {
+      document.querySelectorAll('.episodes').forEach(e => e.classList.remove('show'));
+      document.getElementById(id).classList.toggle('show');
+    }
+
+    function playEpisode(src) {
+      document.getElementById('videosrc').src = src;
+      document.getElementById('player').load();
+      document.getElementById('player').play();
+    }
+
+    function addReview() {
+      const name = document.getElementById('reviewName').value.trim();
+      const text = document.getElementById('reviewText').value.trim();
+      if (!name || !text) return alert('Заполни имя и отзыв!');
       
-      runnerInterval = setInterval(draw, 20);
+      database.ref('reviews').push({
+        name, text,
+        rating: currentRating,
+        timestamp: Date.now()
+      });
+      
+      document.getElementById('reviewName').value = '';
+      document.getElementById('reviewText').value = '';
     }
 
-    function stopRunner() {
-      clearInterval(runnerInterval);
+    function loadReviews() {
+      database.ref('reviews').on('value', (snapshot) => {
+        const reviews = [];
+        snapshot.forEach(c => reviews.push(c.val()));
+        reviews.sort((a, b) => b.timestamp - a.timestamp);
+        
+        const container = document.getElementById('reviews');
+        if (reviews.length === 0) {
+          container.innerHTML = '<p>Пока нет отзывов</p>';
+        } else {
+          container.innerHTML = reviews.map(r => `
+            <div style="border-top:1px solid #444;padding:15px 0;">
+              <strong>${r.name}</strong> ⭐${r.rating}/10
+              <p>${r.text}</p>
+            </div>
+          `).join('');
+        }
+        
+        // Обновление рейтинга сериала
+        if (reviews.length > 0) {
+          const avg = (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1);
+          document.getElementById('seriesRating').textContent = `⭐ ${avg} / 10`;
+          document.getElementById('seriesRatingHero').textContent = `⭐ ${avg} / 10`;
+          document.getElementById('totalRatingDisplay').textContent = `⭐ ${avg} / 10`;
+          document.getElementById('reviewsCountDisplay').textContent = `На основе ${reviews.length} отзывов`;
+        }
+      });
     }
 
-    // ==================== ПРОВЕРКА ПАРОЛЯ ====================
+    // ==================== ОБСУЖДЕНИЯ ====================
+    function sendMessage() {
+      const name = document.getElementById('chatName').value.trim();
+      const msg = document.getElementById('chatMessage').value.trim();
+      if (!name || !msg) return;
+      
+      database.ref('messages').push({ name, text: msg, timestamp: Date.now() });
+      document.getElementById('chatName').value = '';
+      document.getElementById('chatMessage').value = '';
+    }
+
+    function loadMessages() {
+      database.ref('messages').on('value', (snapshot) => {
+        const msgs = [];
+        snapshot.forEach(c => msgs.push(c.val()));
+        msgs.sort((a, b) => b.timestamp - a.timestamp);
+        
+        document.getElementById('chatMessages').innerHTML = msgs.length === 0 
+          ? '<p>Нет сообщений</p>'
+          : msgs.map(m => `<div style="padding:10px;background:rgba(0,0,0,0.5);margin:5px 0;border-radius:8px;"><strong>${m.name}:</strong> ${m.text}</div>`).join('');
+      });
+    }
+
+    // ==================== ИДЕИ ====================
+    function addIdea() {
+      const author = document.getElementById('ideaAuthor').value.trim();
+      const text = document.getElementById('ideaText').value.trim();
+      if (!author || !text) return;
+      
+      database.ref('ideas').push({ author, text, likes: 0, timestamp: Date.now() });
+      document.getElementById('ideaAuthor').value = '';
+      document.getElementById('ideaText').value = '';
+    }
+
+    function loadIdeas() {
+      database.ref('ideas').on('value', (snapshot) => {
+        const ideas = [];
+        snapshot.forEach(c => ideas.push({ id: c.key, ...c.val() }));
+        ideas.sort((a, b) => b.timestamp - a.timestamp);
+        
+        document.getElementById('ideasList').innerHTML = ideas.length === 0
+          ? '<p>Пока нет идей</p>'
+          : ideas.map(i => `
+            <div style="background:rgba(0,0,0,0.5);padding:15px;border-radius:10px;margin:10px 0;">
+              <strong style="color:#ffd700;">💡 ${i.author}:</strong>
+              <p>${i.text}</p>
+              <button onclick="likeIdea('${i.id}', ${i.likes})">❤️ ${i.likes}</button>
+            </div>
+          `).join('');
+      });
+    }
+
+    function likeIdea(id, likes) {
+      database.ref('ideas/' + id).update({ likes: likes + 1 });
+    }
+
+    // ==================== МЕНЮ ====================
+    function toggleMenu() {
+      document.getElementById('menuDropdown').classList.toggle('show');
+    }
+
+    function closeMenu() {
+      document.getElementById('menuDropdown').classList.remove('show');
+    }
+
+    // ==================== СТАРТ ====================
     let pass = prompt("🔐 Введите кодовое слово:");
-    const validPasswords = ["четыре курицы", "Четыре курицы", "4 курицы"];
-
-    if (validPasswords.includes(pass)) {
+    if (["четыре курицы", "Четыре курицы", "4 курицы"].includes(pass)) {
       document.getElementById("app").style.display = "block";
       showScreen('home');
+      loadAll();
     } else {
       document.getElementById("blocked").style.display = "flex";
+    }
+
+    function loadAll() {
+      loadReviews();
+      loadMessages();
+      loadIdeas();
+      ['clicker','snake','tetris','battle','runner'].forEach(g => loadLeaderboard(g));
     }
   </script>
 </body>
