@@ -1381,7 +1381,15 @@
     function initSnake() {
       document.getElementById('gameContent').innerHTML = 
         '<canvas id="sc" width="400" height="400" class="game-canvas"></canvas>' +
-        '<p>Стрелки или свайп — управление | Собери 🌾</p>';
+        '<div class="mobile-controls">' +
+          '<button class="mobile-btn" id="snakeUp">↑</button>' +
+          '<div style="display:flex;gap:10px;">' +
+            '<button class="mobile-btn" id="snakeLeft">←</button>' +
+            '<button class="mobile-btn" id="snakeDown">↓</button>' +
+            '<button class="mobile-btn" id="snakeRight">→</button>' +
+          '</div>' +
+        '</div>' +
+        '<p>Стрелки, свайп или кнопки | Собери 🌾</p>';
       
       createGameRating();
       
@@ -1400,14 +1408,38 @@
         };
       }
       
-      document.onkeydown = function(e) {
+      function changeDirection(newDir) {
         if (gameOver) return;
-        if (e.key === 'ArrowLeft' && dir.x === 0) dir = {x: -20, y: 0};
-        if (e.key === 'ArrowRight' && dir.x === 0) dir = {x: 20, y: 0};
-        if (e.key === 'ArrowUp' && dir.y === 0) dir = {x: 0, y: -20};
-        if (e.key === 'ArrowDown' && dir.y === 0) dir = {x: 0, y: 20};
+        if (newDir.x === -dir.x && newDir.y === -dir.y) return;
+        if (newDir.x !== 0 && dir.x !== 0) return;
+        if (newDir.y !== 0 && dir.y !== 0) return;
+        dir = newDir;
+      }
+      
+      // Кнопки джойстика
+      document.getElementById('snakeUp').onclick = function() {
+        changeDirection({x: 0, y: -20});
+      };
+      document.getElementById('snakeDown').onclick = function() {
+        changeDirection({x: 0, y: 20});
+      };
+      document.getElementById('snakeLeft').onclick = function() {
+        changeDirection({x: -20, y: 0});
+      };
+      document.getElementById('snakeRight').onclick = function() {
+        changeDirection({x: 20, y: 0});
       };
       
+      // Клавиатура
+      document.onkeydown = function(e) {
+        if (e.key === 'ArrowLeft') changeDirection({x: -20, y: 0});
+        if (e.key === 'ArrowRight') changeDirection({x: 20, y: 0});
+        if (e.key === 'ArrowUp') changeDirection({x: 0, y: -20});
+        if (e.key === 'ArrowDown') changeDirection({x: 0, y: 20});
+        e.preventDefault();
+      };
+      
+      // Свайпы
       var touchStartX = 0, touchStartY = 0;
       canvas.addEventListener('touchstart', function(e) {
         touchStartX = e.touches[0].clientX;
@@ -1415,16 +1447,15 @@
       });
       
       canvas.addEventListener('touchend', function(e) {
-        if (gameOver) return;
         var dx = e.changedTouches[0].clientX - touchStartX;
         var dy = e.changedTouches[0].clientY - touchStartY;
         
         if (Math.abs(dx) > Math.abs(dy)) {
-          if (dx > 0 && dir.x === 0) dir = {x: 20, y: 0};
-          else if (dx < 0 && dir.x === 0) dir = {x: -20, y: 0};
+          if (dx > 0) changeDirection({x: 20, y: 0});
+          else changeDirection({x: -20, y: 0});
         } else {
-          if (dy > 0 && dir.y === 0) dir = {x: 0, y: 20};
-          else if (dy < 0 && dir.y === 0) dir = {x: 0, y: -20};
+          if (dy > 0) changeDirection({x: 0, y: 20});
+          else changeDirection({x: 0, y: -20});
         }
       });
       
