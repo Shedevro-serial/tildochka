@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Tildochka</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: url("bg.jpg") no-repeat center/cover;
+}
+
+/* затемнение */
+.overlay {
+  background: rgba(0,0,0,0.8);
+  min-height: 100vh;
+}
+
+/* логотип */
+.logo {
+  position: fixed;
+  top: 15px;
+  left: 25px;
+  font-size: 30px;
+  font-weight: bold;
+  color: white;
+}
+
+/* контейнер */
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding-top: 100px;
+  color: white;
+}
+
+/* постер */
+.poster {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 15px;
+}
+
+/* текст блок */
+.section {
+  margin-top: 40px;
+}
+
+/* видео */
+video {
+  width: 100%;
+  margin-top: 20px;
+  border-radius: 10px;
+}
+
+/* кнопки */
+button {
+  margin: 10px 5px;
+  padding: 12px 20px;
+  font-size: 16px;
+  background: #222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* отзывы */
+.review {
+  border-top: 1px solid #555;
+  padding: 10px;
+}
+
+/* экран блокировки */
+#blocked {
+  display: none;
+  height: 100vh;
+  background: white;
+  color: black;
+  font-size: 40px;
+  justify-content: center;
+  align-items: center;
+}
+</style>
+</head>
+
+<body>
+
+<div id="blocked">ДОСТУП ЗАПРЕЩЕН</div>
+
+<div class="overlay">
+
+<div class="logo">Tildochka</div>
+
+<div class="container">
+
+<!-- ПОСТЕР -->
+<div class="section" style="text-align:center;">
+  <img src="cover.jpg" class="poster">
+  <h1>Приключения 4 куриц</h1>
+  <h2>⭐ 9.5 / 10</h2>
+</div>
+
+<!-- ОПИСАНИЕ -->
+<div class="section">
+  <h2>Описание</h2>
+  <p>
+  Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях.
+  История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных,
+  смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы,
+  преданности и силы чувств, которые способны преодолеть любые препятствия.
+  С каждой серией герои сталкиваются с новыми испытаниями, которые заставляют их меняться,
+  расти и по-новому смотреть на мир.
+  </p>
+</div>
+
+<!-- ЖАНР -->
+<div class="section">
+  <h2>Жанр</h2>
+  <p>комедия / боевик / романтика</p>
+</div>
+
+<!-- ПЛЕЕР -->
+<div class="section">
+  <video id="player" controls>
+    <source id="videosrc" src="episode1.mp4">
+  </video>
+</div>
+
+<!-- СЕЗОНЫ -->
+<div class="section">
+  <h2>Сезоны</h2>
+  <button onclick="showSeason()">Сезон 1</button>
+
+  <div id="season1" style="display:none;">
+    <h3>Серии</h3>
+    <button onclick="play('episode1.mp4')">1 серия</button>
+    <button onclick="play('episode2.mp4')">2 серия</button>
+    <button onclick="play('episode3.mp4')">3 серия</button>
+    <button onclick="play('episode4.mp4')">4 серия</button>
+  </div>
+</div>
+
+<!-- ОТЗЫВЫ -->
+<div class="section">
+  <h2>Отзывы</h2>
+
+  <input id="name" placeholder="Имя"><br><br>
+  <textarea id="text" placeholder="Напиши отзыв"></textarea><br><br>
+  <button onclick="addReview()">Отправить</button>
+
+  <div id="reviews"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+let pass = prompt("Введите кодовое слово:");
+let valid = ["четыре курицы","Четыре курицы","4 курицы"];
+
+if (!valid.includes(pass)) {
+  document.getElementById("blocked").style.display = "flex";
+  document.querySelector(".overlay").style.display = "none";
+}
+
+function showSeason() {
+  document.getElementById("season1").style.display = "block";
+}
+
+function play(src) {
+  let video = document.getElementById("player");
+  let source = document.getElementById("videosrc");
+
+  source.src = src;
+  video.load();
+  video.play();
+}
+
+function addReview() {
+  let name = document.getElementById("name").value;
+  let text = document.getElementById("text").value;
+
+  if (!name || !text) return;
+
+  let div = document.createElement("div");
+  div.className = "review";
+  div.innerHTML = "<b>" + name + ":</b> " + text;
+
+  document.getElementById("reviews").prepend(div);
+
+  document.getElementById("name").value = "";
+  document.getElementById("text").value = "";
+}
+</script>
+
+</body>
+</html>
