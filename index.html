@@ -289,7 +289,6 @@
       margin-top: 10px;
     }
     
-    /* НОВЫЕ ЗВЁЗДЫ - 5 штук с половинками */
     .stars-container {
       display: flex;
       align-items: center;
@@ -552,7 +551,6 @@
       border-radius: 10px;
     }
     
-    /* Адаптация под мобильные */
     @media (max-width: 768px) {
       .logo {
         font-size: 24px;
@@ -612,8 +610,6 @@
       <a onclick="showScreen('home'); closeMenu()">🏠 Главная</a>
       <a onclick="showScreen('discussions'); closeMenu()">💬 Обсуждения</a>
       <a onclick="showScreen('ideas'); closeMenu()">💡 Идеи для продолжения</a>
-      <a onclick="exportData(); closeMenu()">📤 Экспорт данных</a>
-      <a onclick="importData(); closeMenu()">📥 Импорт данных</a>
     </div>
 
     <div id="content">
@@ -702,11 +698,9 @@
             
             <input id="reviewName" placeholder="Ваше имя">
             
-            <!-- НОВЫЕ ЗВЁЗДЫ С ПОЛОВИНКАМИ -->
             <div class="stars-container">
               <span>Оценка: </span>
               <div class="star-rating" id="starRating">
-                <!-- 10 половинок = 5 целых звёзд -->
                 <span class="half-star left" data-value="1">★</span>
                 <span class="half-star" data-value="2">★</span>
                 <span class="half-star left" data-value="3">★</span>
@@ -764,14 +758,27 @@
 
   <script>
     // ==================== ДАННЫЕ ====================
-    let reviews = JSON.parse(localStorage.getItem('tildochka_reviews')) || [];
-    let messages = JSON.parse(localStorage.getItem('tildochka_messages')) || [];
-    let ideas = JSON.parse(localStorage.getItem('tildochka_ideas')) || [];
+    // Используем одинаковые ключи localStorage на всех страницах
+    const STORAGE_KEY = 'tildochka_series_data';
+    
+    // Загружаем данные при старте
+    let allData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+      reviews: [],
+      messages: [],
+      ideas: []
+    };
+    
+    let reviews = allData.reviews || [];
+    let messages = allData.messages || [];
+    let ideas = allData.ideas || [];
 
-    function saveData() {
-      localStorage.setItem('tildochka_reviews', JSON.stringify(reviews));
-      localStorage.setItem('tildochka_messages', JSON.stringify(messages));
-      localStorage.setItem('tildochka_ideas', JSON.stringify(ideas));
+    function saveAllData() {
+      allData = {
+        reviews: reviews,
+        messages: messages,
+        ideas: ideas
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(allData));
     }
 
     // ==================== ПРОВЕРКА ПАРОЛЯ ====================
@@ -781,7 +788,7 @@
     if (validPasswords.includes(pass)) {
       document.getElementById("app").style.display = "block";
       showScreen('home');
-      loadAllData();
+      renderAllData();
     } else {
       document.getElementById("blocked").style.display = "flex";
     }
@@ -789,9 +796,22 @@
     // ==================== НАВИГАЦИЯ ====================
     function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(screenId + '-screen').classList.add('active');
+      const targetScreen = document.getElementById(screenId + '-screen');
+      if (targetScreen) {
+        targetScreen.classList.add('active');
+      }
       closeMenu();
       window.scrollTo(0, 0);
+      
+      // Перерендериваем данные при переключении экранов
+      if (screenId === 'series') {
+        renderReviews();
+        updateSeriesRating();
+      } else if (screenId === 'discussions') {
+        renderMessages();
+      } else if (screenId === 'ideas') {
+        renderIdeas();
+      }
     }
 
     // ==================== МЕНЮ ====================
@@ -823,37 +843,41 @@
     function playEpisode(src) {
       const video = document.getElementById('player');
       const source = document.getElementById('videosrc');
-      source.src = src;
-      video.load();
-      video.play();
+      if (video && source) {
+        source.src = src;
+        video.load();
+        video.play();
+      }
     }
 
-    // ==================== ЗВЁЗДНЫЙ РЕЙТИНГ С ПОЛОВИНКАМИ ====================
+    // ==================== РЕЙТИНГ ====================
     let currentRating = 10;
     const halfStars = document.querySelectorAll('.half-star');
     const ratingText = document.getElementById('ratingText');
 
-    halfStars.forEach(star => {
-      star.addEventListener('click', function() {
-        currentRating = parseInt(this.getAttribute('data-value'));
-        updateHalfStars(currentRating);
-        ratingText.textContent = currentRating + '/10';
-      });
+    if (halfStars.length > 0) {
+      halfStars.forEach(star => {
+        star.addEventListener('click', function() {
+          currentRating = parseInt(this.getAttribute('data-value'));
+          updateHalfStars(currentRating);
+          if (ratingText) ratingText.textContent = currentRating + '/10';
+        });
 
-      star.addEventListener('mouseenter', function() {
-        const value = parseInt(this.getAttribute('data-value'));
-        halfStars.forEach(s => {
-          if (parseInt(s.getAttribute('data-value')) <= value) {
-            s.classList.add('hover');
-          }
+        star.addEventListener('mouseenter', function() {
+          const value = parseInt(this.getAttribute('data-value'));
+          halfStars.forEach(s => {
+            if (parseInt(s.getAttribute('data-value')) <= value) {
+              s.classList.add('hover');
+            }
+          });
+        });
+
+        star.addEventListener('mouseleave', function() {
+          halfStars.forEach(s => s.classList.remove('hover'));
+          updateHalfStars(currentRating);
         });
       });
-
-      star.addEventListener('mouseleave', function() {
-        halfStars.forEach(s => s.classList.remove('hover'));
-        updateHalfStars(currentRating);
-      });
-    });
+    }
 
     function updateHalfStars(rating) {
       halfStars.forEach(star => {
@@ -865,12 +889,14 @@
       });
     }
 
-    // ==================== ЗАГРУЗКА ФОТО ====================
+    // ==================== ФОТО ====================
     let selectedPhotos = [];
 
     function previewPhotos() {
       const input = document.getElementById('photoInput');
       const previewContainer = document.getElementById('previewContainer');
+      
+      if (!input || !previewContainer) return;
       
       selectedPhotos = [];
       previewContainer.innerHTML = '';
@@ -891,8 +917,13 @@
 
     // ==================== ОТЗЫВЫ ====================
     function addReview() {
-      const name = document.getElementById('reviewName').value.trim();
-      const text = document.getElementById('reviewText').value.trim();
+      const nameEl = document.getElementById('reviewName');
+      const textEl = document.getElementById('reviewText');
+      
+      if (!nameEl || !textEl) return;
+      
+      const name = nameEl.value.trim();
+      const text = textEl.value.trim();
 
       if (!name || !text) {
         alert("Пожалуйста, заполните имя и текст отзыва");
@@ -909,24 +940,27 @@
       };
 
       reviews.unshift(review);
-      saveData();
+      saveAllData();
       renderReviews();
       updateSeriesRating();
 
-      document.getElementById('reviewName').value = '';
-      document.getElementById('reviewText').value = '';
-      document.getElementById('photoInput').value = '';
-      document.getElementById('previewContainer').innerHTML = '';
+      // Очистка
+      nameEl.value = '';
+      textEl.value = '';
+      const photoInput = document.getElementById('photoInput');
+      const previewContainer = document.getElementById('previewContainer');
+      if (photoInput) photoInput.value = '';
+      if (previewContainer) previewContainer.innerHTML = '';
       selectedPhotos = [];
       currentRating = 10;
       updateHalfStars(10);
-      ratingText.textContent = '10/10';
+      if (ratingText) ratingText.textContent = '10/10';
     }
 
     function deleteReview(id) {
       if (confirm('Удалить этот отзыв?')) {
         reviews = reviews.filter(r => r.id !== id);
-        saveData();
+        saveAllData();
         renderReviews();
         updateSeriesRating();
       }
@@ -934,19 +968,24 @@
 
     function renderReviews() {
       const container = document.getElementById('reviews');
+      if (!container) return;
+      
+      // Перезагружаем данные перед рендером
+      const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (savedData && savedData.reviews) {
+        reviews = savedData.reviews;
+      }
+      
       container.innerHTML = '';
 
       reviews.forEach(review => {
         const div = document.createElement('div');
         div.className = 'review';
         
-        // Показываем целые и половинчатые звёзды
         let starsHTML = '';
         for (let i = 1; i <= 10; i++) {
           if (i <= review.rating) {
             starsHTML += '⭐';
-          } else if (i - 0.5 <= review.rating) {
-            starsHTML += '✦';
           } else {
             starsHTML += '☆';
           }
@@ -979,35 +1018,53 @@
     }
 
     function updateSeriesRating() {
+      // Перезагружаем данные
+      const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (savedData && savedData.reviews) {
+        reviews = savedData.reviews;
+      }
+      
+      const seriesRating = document.getElementById('seriesRating');
+      const seriesRatingHero = document.getElementById('seriesRatingHero');
+      const totalRatingDisplay = document.getElementById('totalRatingDisplay');
+      const reviewsCountDisplay = document.getElementById('reviewsCountDisplay');
+      
       if (reviews.length === 0) {
-        document.getElementById('seriesRating').textContent = '⭐ 9.5 / 10';
-        document.getElementById('seriesRatingHero').textContent = '⭐ 9.5 / 10';
-        document.getElementById('totalRatingDisplay').textContent = '⭐ 9.5 / 10';
-        document.getElementById('reviewsCountDisplay').textContent = 'На основе 0 отзывов';
+        if (seriesRating) seriesRating.textContent = '⭐ 9.5 / 10';
+        if (seriesRatingHero) seriesRatingHero.textContent = '⭐ 9.5 / 10';
+        if (totalRatingDisplay) totalRatingDisplay.textContent = '⭐ 9.5 / 10';
+        if (reviewsCountDisplay) reviewsCountDisplay.textContent = 'На основе 0 отзывов';
         return;
       }
 
       let sum = reviews.reduce((acc, review) => acc + review.rating, 0);
       let average = (sum / reviews.length).toFixed(1);
       
-      document.getElementById('seriesRating').textContent = `⭐ ${average} / 10`;
-      document.getElementById('seriesRatingHero').textContent = `⭐ ${average} / 10`;
-      document.getElementById('totalRatingDisplay').textContent = `⭐ ${average} / 10`;
-      document.getElementById('reviewsCountDisplay').textContent = `На основе ${reviews.length} отзывов`;
+      if (seriesRating) seriesRating.textContent = `⭐ ${average} / 10`;
+      if (seriesRatingHero) seriesRatingHero.textContent = `⭐ ${average} / 10`;
+      if (totalRatingDisplay) totalRatingDisplay.textContent = `⭐ ${average} / 10`;
+      if (reviewsCountDisplay) reviewsCountDisplay.textContent = `На основе ${reviews.length} отзывов`;
     }
 
     // ==================== МОДАЛЬНОЕ ОКНО ====================
     function openModal(src) {
       const modal = document.getElementById('photoModal');
       const modalImg = document.getElementById('modalImage');
-      modal.style.display = 'flex';
-      modalImg.src = src;
+      if (modal && modalImg) {
+        modal.style.display = 'flex';
+        modalImg.src = src;
+      }
     }
 
     // ==================== ОБСУЖДЕНИЯ ====================
     function sendMessage() {
-      const name = document.getElementById('chatName').value.trim();
-      const msg = document.getElementById('chatMessage').value.trim();
+      const nameEl = document.getElementById('chatName');
+      const msgEl = document.getElementById('chatMessage');
+      
+      if (!nameEl || !msgEl) return;
+      
+      const name = nameEl.value.trim();
+      const msg = msgEl.value.trim();
 
       if (!name || !msg) {
         alert("Заполните имя и сообщение");
@@ -1020,15 +1077,22 @@
         time: new Date().toLocaleString('ru-RU')
       });
 
-      saveData();
+      saveAllData();
       renderMessages();
 
-      document.getElementById('chatName').value = '';
-      document.getElementById('chatMessage').value = '';
+      nameEl.value = '';
+      msgEl.value = '';
     }
 
     function renderMessages() {
       const container = document.getElementById('chatMessages');
+      if (!container) return;
+      
+      const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (savedData && savedData.messages) {
+        messages = savedData.messages;
+      }
+      
       container.innerHTML = '';
 
       messages.forEach(msg => {
@@ -1044,8 +1108,13 @@
 
     // ==================== ИДЕИ ====================
     function addIdea() {
-      const author = document.getElementById('ideaAuthor').value.trim();
-      const text = document.getElementById('ideaText').value.trim();
+      const authorEl = document.getElementById('ideaAuthor');
+      const textEl = document.getElementById('ideaText');
+      
+      if (!authorEl || !textEl) return;
+      
+      const author = authorEl.value.trim();
+      const text = textEl.value.trim();
 
       if (!author || !text) {
         alert("Заполните имя и идею");
@@ -1059,15 +1128,22 @@
         date: new Date().toLocaleString('ru-RU')
       });
 
-      saveData();
+      saveAllData();
       renderIdeas();
 
-      document.getElementById('ideaAuthor').value = '';
-      document.getElementById('ideaText').value = '';
+      authorEl.value = '';
+      textEl.value = '';
     }
 
     function renderIdeas() {
       const container = document.getElementById('ideasList');
+      if (!container) return;
+      
+      const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (savedData && savedData.ideas) {
+        ideas = savedData.ideas;
+      }
+      
       container.innerHTML = '';
 
       ideas.forEach((idea, index) => {
@@ -1089,76 +1165,30 @@
     }
 
     function toggleIdeaLike(index) {
-      ideas[index].likes++;
-      saveData();
-      renderIdeas();
-    }
-
-    // ==================== ЭКСПОРТ/ИМПОРТ ДАННЫХ ====================
-    function exportData() {
-      const data = {
-        reviews: reviews,
-        messages: messages,
-        ideas: ideas
-      };
-      
-      const dataStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([dataStr], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'tildochka_backup.json';
-      a.click();
-      
-      URL.revokeObjectURL(url);
-      alert('✅ Данные сохранены в файл!');
-    }
-
-    function importData() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      
-      input.onchange = function(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-          try {
-            const data = JSON.parse(e.target.result);
-            
-            if (confirm('Импортировать данные? Текущие данные будут заменены!')) {
-              reviews = data.reviews || [];
-              messages = data.messages || [];
-              ideas = data.ideas || [];
-              
-              saveData();
-              loadAllData();
-              alert('✅ Данные успешно импортированы!');
-            }
-          } catch (error) {
-            alert('❌ Ошибка: неверный формат файла');
-          }
-        };
-        
-        reader.readAsText(file);
-      };
-      
-      input.click();
+      if (ideas[index]) {
+        ideas[index].likes++;
+        saveAllData();
+        renderIdeas();
+      }
     }
 
     // ==================== ЗАГРУЗКА ВСЕХ ДАННЫХ ====================
-    function loadAllData() {
-      reviews = JSON.parse(localStorage.getItem('tildochka_reviews')) || [];
-      messages = JSON.parse(localStorage.getItem('tildochka_messages')) || [];
-      ideas = JSON.parse(localStorage.getItem('tildochka_ideas')) || [];
+    function renderAllData() {
+      const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (savedData) {
+        reviews = savedData.reviews || [];
+        messages = savedData.messages || [];
+        ideas = savedData.ideas || [];
+      }
       
       renderReviews();
       renderMessages();
       renderIdeas();
       updateSeriesRating();
     }
+    
+    // Загружаем данные при старте
+    renderAllData();
   </script>
 </body>
 </html>
