@@ -2,69 +2,157 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Tildochka – Сериал</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tildochka – Сериалы</title>
   <style>
-    /* === ОБЩИЕ НАСТРОЙКИ === */
     * {
       box-sizing: border-box;
     }
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      /* фиксированный фон – при скролле остаётся на месте */
       background: url("bg.jpg") no-repeat center/cover fixed;
     }
-
-    /* затемнение – всегда перед глазами, тоже фиксированное */
     body::before {
       content: "";
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.8);
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
       z-index: 0;
     }
 
-    /* === ЭКРАН БЛОКИРОВКИ === */
+    /* ЭКРАН БЛОКИРОВКИ */
     #blocked {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: white;
       color: black;
-      font-size: 40px;
+      font-size: 2rem;
       justify-content: center;
       align-items: center;
-      z-index: 100;
+      z-index: 200;
     }
 
-    /* === ЛОГОТИП (всегда в углу) === */
-    .logo {
-      position: fixed;
-      top: 15px;
-      left: 25px;
-      font-size: 30px;
-      font-weight: bold;
-      color: white;
-      z-index: 10;
-    }
-
-    /* === ПРОКРУЧИВАЕМЫЙ КОНТЕЙНЕР === */
-    #scroll-container {
+    /* ОСНОВНОЙ КОНТЕЙНЕР ПРИЛОЖЕНИЯ */
+    #app {
       position: relative;
-      z-index: 2;
+      z-index: 1;
       height: 100vh;
       overflow-y: auto;
       color: white;
     }
 
-    /* === ГЕРОЙ-СЕКЦИЯ (главный экран) === */
+    /* ШАПКА: логотип + бургер */
+    .header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 25px;
+      z-index: 10;
+      pointer-events: none; /* чтобы клики проходили сквозь пустые области */
+    }
+    .header > * {
+      pointer-events: auto;
+    }
+
+    .logo {
+      font-size: 30px;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    }
+
+    /* БУРГЕР */
+    .burger {
+      width: 35px;
+      height: 25px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .burger span {
+      display: block;
+      height: 4px;
+      background: white;
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+
+    /* МЕНЮ */
+    .menu {
+      display: none;
+      position: fixed;
+      top: 60px;
+      right: 25px;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      flex-direction: column;
+      min-width: 160px;
+      z-index: 20;
+      overflow: hidden;
+    }
+    .menu a {
+      display: block;
+      padding: 12px 20px;
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid #333;
+    }
+    .menu a:hover {
+      background: #333;
+    }
+    .menu a:last-child {
+      border-bottom: none;
+    }
+
+    /* ЭКРАНЫ */
+    .screen {
+      display: none;
+      min-height: 100vh;
+      padding-top: 70px; /* чтобы контент не заезжал под шапку */
+    }
+    .screen.active {
+      display: block;
+    }
+
+    /* ГЛАВНЫЙ ЭКРАН */
+    .catalog {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .movie-card {
+      display: inline-block;
+      width: 200px;
+      margin: 15px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .movie-card:hover {
+      transform: scale(1.05);
+    }
+    .movie-card img {
+      width: 100%;
+      border-radius: 12px;
+    }
+    .movie-card h3 {
+      text-align: center;
+      margin: 10px 0 5px;
+    }
+    .movie-card p {
+      text-align: center;
+      color: gold;
+    }
+
+    /* СТРАНИЦА СЕРИАЛА (как раньше) */
     .hero {
       height: 100vh;
       display: flex;
@@ -73,40 +161,24 @@
       align-items: center;
       text-align: center;
     }
-
     .poster {
       width: 100%;
       max-width: 400px;
       border-radius: 15px;
     }
-
-    .hero h1 {
-      margin: 20px 0 10px;
-      font-size: 36px;
-    }
-
-    .hero h2 {
-      font-size: 28px;
-      color: gold;
-    }
-
-    /* === КОНТЕНТ (описание, плеер, сезоны, отзывы) === */
     .content {
       max-width: 900px;
       margin: 0 auto;
       padding: 40px 20px 60px;
     }
-
     .section {
       margin-top: 40px;
     }
-
     video {
       width: 100%;
       margin-top: 20px;
       border-radius: 10px;
     }
-
     button {
       margin: 10px 5px;
       padding: 12px 20px;
@@ -117,162 +189,245 @@
       border-radius: 8px;
       cursor: pointer;
     }
-
     button:hover {
       background: #444;
     }
-
-    /* отзывы */
     .review {
       border-top: 1px solid #555;
       padding: 10px 0;
     }
-
-    .rating {
-      color: gold;
-      font-weight: bold;
+    /* ОБСУЖДЕНИЯ */
+    .chat-container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .message {
+      background: #1e1e1e;
+      padding: 10px 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    textarea, input {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 6px;
     }
 
-    /* ползунок рейтинга */
-    input[type="range"] {
-      width: 200px;
-      margin: 10px 0;
-    }
-
-    #ratingValue {
-      font-weight: bold;
-      margin-left: 10px;
+    /* СЕЗОНЫ – скрытый блок */
+    #season1 {
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Блокировка доступа -->
+  <!-- Блокировка -->
   <div id="blocked">ДОСТУП ЗАПРЕЩЕН</div>
 
-  <!-- Логотип -->
-  <div class="logo">Tildochka</div>
+  <!-- Приложение -->
+  <div id="app" style="display: none;">
 
-  <!-- Вся прокручиваемая часть -->
-  <div id="scroll-container">
-
-    <!-- ГЛАВНЫЙ ЭКРАН (герой) -->
-    <div class="hero">
-      <img src="cover.jpg" class="poster" alt="Постер">
-      <h1>Приключения 4 куриц</h1>
-      <h2>⭐ 9.5 / 10</h2>
+    <!-- Шапка -->
+    <div class="header">
+      <div class="logo" onclick="showScreen('home')">Tildochka</div>
+      <div class="burger" id="burgerBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </div>
     </div>
 
-    <!-- Остальной контент -->
-    <div class="content">
+    <!-- Меню -->
+    <div class="menu" id="menuDropdown">
+      <a href="#" onclick="showScreen('home'); closeMenu();">🏠 Главная</a>
+      <a href="#" onclick="showScreen('discussions'); closeMenu();">💬 Обсуждения</a>
+    </div>
 
-      <!-- ОПИСАНИЕ -->
-      <div class="section">
-        <h2>Описание</h2>
-        <p>
-          Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях.
-          История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных,
-          смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы,
-          преданности и силы чувств, которые способны преодолеть любые препятствия.
-          С каждой серией герои сталкиваются с новыми испытаниями, которые заставляют их меняться,
-          расти и по-новому смотреть на мир.
-        </p>
+    <!-- ЭКРАНЫ -->
+
+    <!-- Главный экран (каталог) -->
+    <div id="home-screen" class="screen active">
+      <div class="catalog">
+        <h2>Сейчас смотрят</h2>
+        <div class="movie-card" onclick="showScreen('series')">
+          <img src="cover.jpg" alt="Постер">
+          <h3>Приключения 4 куриц</h3>
+          <p>⭐ 9.5 / 10</p>
+        </div>
+        <!-- Здесь можно будет добавлять другие сериалы -->
+      </div>
+    </div>
+
+    <!-- Экран сериала -->
+    <div id="series-screen" class="screen">
+      <!-- ГЕРОЙ -->
+      <div class="hero">
+        <img src="cover.jpg" class="poster" alt="Постер">
+        <h1>Приключения 4 куриц</h1>
+        <h2>⭐ 9.5 / 10</h2>
       </div>
 
-      <!-- ЖАНР -->
-      <div class="section">
-        <h2>Жанр</h2>
-        <p>комедия / боевик / романтика</p>
-      </div>
-      <!-- ПЛЕЕР -->
-      <div class="section">
-        <video id="player" controls>
-          <source id="videosrc" src="episode1.mp4">
-        </video>
-      </div>
+      <div class="content">
+        <!-- ОПИСАНИЕ -->
+        <div class="section">
+          <h2>Описание</h2>
+          <p>
+            Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях.
+            История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных,
+            смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы,
+            преданности и силы чувств, которые способны преодолеть любые препятствия.
+          </p>
+        </div>
 
-      <!-- СЕЗОНЫ -->
-      <div class="section">
-        <h2>Сезоны</h2>
-        <button onclick="showSeason()">Сезон 1</button>
+        <!-- ЖАНР -->
+        <div class="section">
+          <h2>Жанр</h2>
+          <p>комедия / боевик / романтика</p>
+        </div>
 
-        <div id="season1" style="display:none;">
-          <h3>Серии</h3>
-          <button onclick="play('episode1.mp4')">1 серия</button>
-          <button onclick="play('episode2.mp4')">2 серия</button>
-          <button onclick="play('episode3.mp4')">3 серия</button>
-          <button onclick="play('episode4.mp4')">4 серия</button>
+        <!-- ПЛЕЕР -->
+        <div class="section">
+          <video id="player" controls>
+            <source id="videosrc" src="episode1.mp4">
+          </video>
+        </div>
+
+        <!-- СЕЗОНЫ -->
+        <div class="section">
+          <h2>Сезоны</h2>
+          <button onclick="toggleSeason()">Сезон 1</button>
+          <div id="season1">
+            <h3>Серии</h3>
+            <button onclick="playEpisode('episode1.mp4')">1 серия</button>
+            <button onclick="playEpisode('episode2.mp4')">2 серия</button>
+            <button onclick="playEpisode('episode3.mp4')">3 серия</button>
+            <button onclick="playEpisode('episode4.mp4')">4 серия</button>
+          </div>
+        </div>
+
+        <!-- ОТЗЫВЫ -->
+        <div class="section">
+          <h2>Отзывы</h2>
+          <input id="reviewName" placeholder="Имя"><br><br>
+          <textarea id="reviewText" placeholder="Напиши отзыв"></textarea><br>
+          <label>Оценка: <input type="range" id="reviewRating" min="1" max="10" value="10" oninput="document.getElementById('ratingVal').textContent = this.value"></label>
+          <span id="ratingVal">10</span><br><br>
+          <button onclick="addReview()">Отправить</button>
+          <div id="reviews"></div>
         </div>
       </div>
-
-      <!-- ОТЗЫВЫ -->
-      <div class="section">
-        <h2>Отзывы</h2>
-
-        <input id="name" placeholder="Имя"><br>
-        <textarea id="text" placeholder="Напиши отзыв"></textarea><br>
-
-        <!-- Рейтинг: ползунок от 1 до 10 -->
-        <label for="rating">Оценка: </label>
-        <input type="range" id="rating" min="1" max="10" value="10" oninput="document.getElementById('ratingValue').textContent = this.value">
-        <span id="ratingValue">10</span><br><br>
-
-        <button onclick="addReview()">Отправить</button>
-
-        <div id="reviews"></div>
+    </div>
+    <!-- Экран обсуждений -->
+    <div id="discussions-screen" class="screen">
+      <div class="chat-container">
+        <h2>💬 Общее обсуждение</h2>
+        <input id="chatName" placeholder="Ваше имя"><br>
+        <textarea id="chatMessage" placeholder="Сообщение..."></textarea><br>
+        <button onclick="sendMessage()">Отправить</button>
+        <div id="chatMessages"></div>
       </div>
+    </div>
 
-    </div><!-- конец .content -->
-  </div><!-- конец #scroll-container -->
+  </div> <!-- конец #app -->
 
   <script>
-    // ----- ПРОВЕРКА ПАРОЛЯ -----
+    // ------------------- ПРОВЕРКА ПАРОЛЯ -------------------
     let pass = prompt("Введите кодовое слово:");
-    let valid = ["четыре курицы", "Четыре курицы", "4 курицы"];
+    const validPasswords = ["четыре курицы", "Четыре курицы", "4 курицы"];
 
-    if (!valid.includes(pass)) {
+    if (!validPasswords.includes(pass)) {
       document.getElementById("blocked").style.display = "flex";
-      document.getElementById("scroll-container").style.display = "none";
+    } else {
+      document.getElementById("app").style.display = "block";
+      showScreen('home'); // по умолчанию главный экран
     }
 
-    // ----- ФУНКЦИИ ДЛЯ СЕЗОНОВ И ПЛЕЕРА -----
-    function showSeason() {
-      document.getElementById("season1").style.display = "block";
+    // ------------------- НАВИГАЦИЯ -------------------
+    function showScreen(screenId) {
+      // Скрываем все экраны
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      // Показываем нужный
+      document.getElementById(screenId + '-screen').classList.add('active');
+      // Закрываем меню, если открыто
+      closeMenu();
+      // Прокручиваем контейнер приложения наверх
+      document.getElementById('app').scrollTop = 0;
     }
 
-    function play(src) {
-      let video = document.getElementById("player");
-      let source = document.getElementById("videosrc");
+    // ------------------- БУРГЕР-МЕНЮ -------------------
+    function toggleMenu() {
+      const menu = document.getElementById('menuDropdown');
+      menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+    }
+    function closeMenu() {
+      document.getElementById('menuDropdown').style.display = 'none';
+    }
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', function(e) {
+      const burger = document.getElementById('burgerBtn');
+      const menu = document.getElementById('menuDropdown');
+      if (!burger.contains(e.target) && !menu.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    // ------------------- ПЛЕЕР И СЕЗОНЫ -------------------
+    function toggleSeason() {
+      const seasonBlock = document.getElementById('season1');
+      seasonBlock.style.display = (seasonBlock.style.display === 'block') ? 'none' : 'block';
+    }
+
+    function playEpisode(src) {
+      const video = document.getElementById('player');
+      const source = document.getElementById('videosrc');
       source.src = src;
       video.load();
       video.play();
     }
 
-    // ----- ДОБАВЛЕНИЕ ОТЗЫВА С РЕЙТИНГОМ -----
+    // ------------------- ОТЗЫВЫ (на странице сериала) -------------------
     function addReview() {
-      let name = document.getElementById("name").value.trim();
-      let text = document.getElementById("text").value.trim();
-      let rating = document.getElementById("rating").value;
+      const name = document.getElementById('reviewName').value.trim();
+      const text = document.getElementById('reviewText').value.trim();
+      const rating = document.getElementById('reviewRating').value;
 
       if (!name || !text) {
-        alert("Пожалуйста, заполните имя и текст отзыва.");
+        alert("Введите имя и текст отзыва");
         return;
       }
 
-      let div = document.createElement("div");
-      div.className = "review";
-      div.innerHTML = 
-        <b>${name}</b> <span class="rating">⭐ ${rating}/10</span>
-        <p>${text}</p>
-      ;
-
-      document.getElementById("reviews").prepend(div);
+      const div = document.createElement('div');
+      div.className = 'review';
+      div.innerHTML = <b>${name}</b> <span style="color:gold;">⭐ ${rating}/10</span><p>${text}</p>;
+      document.getElementById('reviews').prepend(div);
 
       // Очистка полей
-      document.getElementById("name").value = "";
-      document.getElementById("text").value = "";
-      document.getElementById("rating").value = 10;
-      document.getElementById("ratingValue").textContent = 10;
+      document.getElementById('reviewName').value = '';
+      document.getElementById('reviewText').value = '';
+      document.getElementById('reviewRating').value = 10;
+      document.getElementById('ratingVal').textContent = 10;
+    }
+
+    // ------------------- ОБСУЖДЕНИЯ (чат) -------------------
+    function sendMessage() {
+      const name = document.getElementById('chatName').value.trim();
+      const msg = document.getElementById('chatMessage').value.trim();
+
+      if (!name || !msg) {
+        alert("Заполните имя и сообщение");
+        return;
+      }
+
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'message';
+      messageDiv.innerHTML = <strong>${name}:</strong> ${msg};
+      document.getElementById('chatMessages').prepend(messageDiv);
+      // Очистка
+      document.getElementById('chatName').value = '';
+      document.getElementById('chatMessage').value = '';
     }
   </script>
 </body>
