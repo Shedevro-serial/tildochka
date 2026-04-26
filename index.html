@@ -649,6 +649,65 @@
         width: 28px;
       }
     }
+        /* Модальное окно смены имени */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 300;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-overlay.show {
+      display: flex;
+    }
+    
+    .modal-box {
+      background: #1a1a1a;
+      border: 2px solid #ffd700;
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    
+    .modal-box h3 {
+      color: #ffd700;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+    
+    .modal-box input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #ffd700;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+    }
+    
+    .modal-box button {
+      margin-top: 15px;
+      background: #ffd700;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      padding: 12px 30px;
+      font-size: 16px;
+    }
+    
+    .modal-box button:hover {
+      background: #ffed4a;
+    }
   </style>
 </head>
 <body>
@@ -661,14 +720,17 @@
 
   <div id="app" style="display: none;">
     
-    <div class="header">
+<div class="header">
       <div class="logo" onclick="showScreen('home')">Tildochka</div>
-      <div class="burger" onclick="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
+      <div style="display:flex;align-items:center;gap:15px;">
+        <span id="profileName" style="color:#ffd700;cursor:pointer;font-size:16px;" onclick="changeName()">👤 Гость</span>
+        <div class="burger" onclick="toggleMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
       </div>
-    </div>
+</div>
 
     <div class="menu" id="menuDropdown">
       <a onclick="showScreen('home'); closeMenu()">🏠 Главная</a>
@@ -791,7 +853,6 @@
           <div class="section">
             <h2>💭 Отзывы</h2>
             
-            <input id="reviewName" placeholder="Ваше имя">
             
             <div class="stars-container" id="revStars">
               <span>Оценка: </span>
@@ -833,7 +894,6 @@
         <div class="chat-container">
           <h2>💬 Общее обсуждение</h2>
           <div id="chatMessages">Загрузка сообщений...</div>
-          <input id="chatName" placeholder="Ваше имя">
           <textarea id="chatMessage" placeholder="Ваше сообщение..."></textarea>
           <button onclick="sendMessage()">💬 Отправить</button>
         </div>
@@ -845,7 +905,6 @@
           <h2>💡 Идеи для продолжения сериала</h2>
           <p style="margin-bottom: 20px; color: #aaa;">Делитесь своими идеями о том, как могут развиваться события в новых сериях!</p>
           <div id="ideasList">Загрузка идей...</div>
-          <input id="ideaAuthor" placeholder="Ваше имя">
           <textarea id="ideaText" placeholder="Опишите вашу идею..."></textarea>
           <button onclick="addIdea()">💡 Предложить идею</button>
         </div>
@@ -853,7 +912,17 @@
 
     </div>
   </div>
-
+  <!-- Модальное окно смены имени -->
+  <div class="modal-overlay" id="nameModal">
+    <div class="modal-box">
+      <h3>👤 Твоё имя</h3>
+      <p style="color:#aaa;margin-bottom:15px;">Это имя будет отображаться в отзывах, играх и обсуждениях</p>
+      <input type="text" id="newNameInput" placeholder="Введи своё имя">
+      <br>
+      <button onclick="saveName()">💾 Сохранить</button>
+      <button onclick="closeNameModal()" style="background:#444;color:#fff;margin-left:5px;">Отмена</button>
+    </div>
+  </div>
   <script>
     // ==================== FIREBASE ====================
     firebase.initializeApp({
@@ -1091,14 +1160,31 @@
     }
 
     // ==================== ОТЗЫВЫ ====================
-    function addReview() {
-      var name = document.getElementById('reviewName').value.trim();
+function addReview() {
       var text = document.getElementById('reviewText').value.trim();
       
-      if (!name || !text) {
-        alert("Пожалуйста, заполните имя и текст отзыва");
+      if (!text) {
+        alert("Пожалуйста, напишите текст отзыва");
         return;
       }
+
+      var name = localStorage.getItem('tildochka_username') || 'Гость';
+      
+      db.ref('reviews/' + currentMovieId).push({
+        name: name,
+        text: text,
+        rating: reviewRating,
+        timestamp: Date.now()
+      }).then(function() {
+        document.getElementById('reviewText').value = '';
+        reviewRating = 10;
+        var stars = document.querySelectorAll('#revStars .star');
+        updateStars(stars, 10);
+        document.getElementById('ratingText').textContent = '10/10';
+      }).catch(function(error) {
+        alert('Ошибка при отправке: ' + error.message);
+      });
+}
 
       db.ref('reviews/' + currentMovieId).push({
         name: name,
@@ -1177,14 +1263,26 @@
     }
 
     // ==================== ОБСУЖДЕНИЯ ====================
-    function sendMessage() {
-      var name = document.getElementById('chatName').value.trim();
+function sendMessage() {
       var msg = document.getElementById('chatMessage').value.trim();
       
-      if (!name || !msg) {
-        alert("Заполните имя и сообщение");
+      if (!msg) {
+        alert("Напишите сообщение");
         return;
       }
+
+      var name = localStorage.getItem('tildochka_username') || 'Гость';
+      
+      db.ref('messages').push({
+        name: name,
+        text: msg,
+        timestamp: Date.now()
+      }).then(function() {
+        document.getElementById('chatMessage').value = '';
+      }).catch(function(error) {
+        alert('Ошибка: ' + error.message);
+      });
+}
 
       db.ref('messages').push({
         name: name,
@@ -1223,14 +1321,27 @@
     }
 
     // ==================== ИДЕИ ====================
-    function addIdea() {
-      var author = document.getElementById('ideaAuthor').value.trim();
+function addIdea() {
       var text = document.getElementById('ideaText').value.trim();
       
-      if (!author || !text) {
-        alert("Заполните имя и идею");
+      if (!text) {
+        alert("Напишите идею");
         return;
       }
+
+      var name = localStorage.getItem('tildochka_username') || 'Гость';
+      
+      db.ref('ideas').push({
+        author: name,
+        text: text,
+        likes: 0,
+        timestamp: Date.now()
+      }).then(function() {
+        document.getElementById('ideaText').value = '';
+      }).catch(function(error) {
+        alert('Ошибка: ' + error.message);
+      });
+}
 
       db.ref('ideas').push({
         author: author,
@@ -1360,8 +1471,8 @@
       updateStars(stars, 10);
     }
 
-    function submitGameRating() {
-      var name = document.getElementById('playerNameInput').value.trim() || 'Аноним';
+function submitGameRating() {
+      var name = localStorage.getItem('tildochka_username') || 'Аноним';
       var scoreText = document.getElementById('gameScoreDisplay').textContent.replace(/\D/g, '');
       var score = parseInt(scoreText) || 0;
       
@@ -1375,7 +1486,7 @@
       }).catch(function(error) {
         alert('❌ Ошибка: ' + error.message);
       });
-    }
+}
 
     // ==================== ЗМЕЙКА ====================
     function initSnake() {
@@ -1826,6 +1937,7 @@
 
     if (validPasswords.includes(pass)) {
       document.getElementById("app").style.display = "block";
+      loadProfile();
       showScreen('home');
       loadMessages();
       loadIdeas();
@@ -1834,6 +1946,36 @@
       });
     } else {
       document.getElementById("blocked").style.display = "flex";
+    }
+      // ==================== ПРОФИЛЬ ====================
+    function loadProfile() {
+      var savedName = localStorage.getItem('tildochka_username');
+      if (savedName) {
+        document.getElementById('profileName').textContent = '👤 ' + savedName;
+      }
+    }
+    
+    function changeName() {
+      var savedName = localStorage.getItem('tildochka_username') || '';
+      document.getElementById('newNameInput').value = savedName;
+      document.getElementById('nameModal').classList.add('show');
+      document.getElementById('newNameInput').focus();
+    }
+    
+    function saveName() {
+      var newName = document.getElementById('newNameInput').value.trim();
+      if (!newName) {
+        alert('Введи имя!');
+        return;
+      }
+      localStorage.setItem('tildochka_username', newName);
+      document.getElementById('profileName').textContent = '👤 ' + newName;
+      document.getElementById('nameModal').classList.remove('show');
+      alert('✅ Имя сохранено! Теперь ты ' + newName);
+    }
+    
+    function closeNameModal() {
+      document.getElementById('nameModal').classList.remove('show');
     }
   </script>
 </body>
