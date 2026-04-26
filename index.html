@@ -191,13 +191,13 @@
       background: rgba(255,215,0,0.1);
     }
     
-    .movie-card img {
+   .movie-card img {
       width: 100%;
-      height: 300px;
-      object-fit: cover;
       border-radius: 12px;
       margin-bottom: 10px;
       box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+      aspect-ratio: 2/3;
+      object-fit: cover;
     }
     
     .game-icon {
@@ -600,7 +600,7 @@
       border-radius: 10px;
     }
     
-    @media (max-width: 768px) {
+   @media (max-width: 768px) {
       .logo {
         font-size: 24px;
       }
@@ -613,12 +613,18 @@
         font-size: 1.5rem;
       }
       
-      .movie-card, .game-card {
-        width: 160px;
+      .movie-grid, .games-grid {
+        gap: 10px;
       }
       
-      .movie-card img {
-        height: 220px;
+      .movie-card, .game-card {
+        width: calc(50% - 10px);
+        min-width: 140px;
+        padding: 10px;
+      }
+      
+      .movie-card h3, .game-card h3 {
+        font-size: 0.9rem;
       }
       
       .game-icon {
@@ -1511,9 +1517,11 @@
         [[0,0,1],[1,1,1]]
       ];
       
-      var piece = newPiece();
+      var piece = null;
       var score = 0;
       var gameOver = false;
+      var dropInterval = 500;
+      var lastDrop = Date.now();
       
       function newPiece() {
         var shape = shapes[Math.floor(Math.random() * shapes.length)];
@@ -1524,13 +1532,20 @@
         };
       }
       
+      piece = newPiece();
+      
       function collide() {
         for (var y = 0; y < piece.shape.length; y++) {
           for (var x = 0; x < piece.shape[y].length; x++) {
-            if (piece.shape[y][x] &&
-                board[piece.y + y] &&
-                board[piece.y + y][piece.x + x]) {
-              return true;
+            if (piece.shape[y][x]) {
+              var boardY = piece.y + y;
+              var boardX = piece.x + x;
+              if (boardY >= ROWS || boardX < 0 || boardX >= COLS) {
+                return true;
+              }
+              if (boardY >= 0 && board[boardY][boardX]) {
+                return true;
+              }
             }
           }
         }
@@ -1541,7 +1556,11 @@
         for (var y = 0; y < piece.shape.length; y++) {
           for (var x = 0; x < piece.shape[y].length; x++) {
             if (piece.shape[y][x]) {
-              board[piece.y + y][piece.x + x] = piece.shape[y][x];
+              var boardY = piece.y + y;
+              var boardX = piece.x + x;
+              if (boardY >= 0 && boardY < ROWS && boardX >= 0 && boardX < COLS) {
+                board[boardY][boardX] = 1;
+              }
             }
           }
         }
@@ -1549,16 +1568,23 @@
       
       function rotate() {
         var rotated = [];
-        for (var i = 0; i < piece.shape[0].length; i++) {
+        var rows = piece.shape.length;
+        var cols = piece.shape[0].length;
+        
+        for (var i = 0; i < cols; i++) {
           rotated[i] = [];
-          for (var j = piece.shape.length - 1; j >= 0; j--) {
-            rotated[i][piece.shape.length - 1 - j] = piece.shape[j][i];
+          for (var j = rows - 1; j >= 0; j--) {
+            rotated[i][rows - 1 - j] = piece.shape[j][i];
           }
         }
+        
         var prevShape = piece.shape;
+        var prevX = piece.x;
         piece.shape = rotated;
+        
         if (collide()) {
           piece.shape = prevShape;
+          piece.x = prevX;
         }
       }
       
@@ -1575,7 +1601,7 @@
           if (full) {
             board.splice(y, 1);
             var newRow = [];
-            for (var x = 0; x < COLS; x++) newRow[x] = 0;
+            for (var x = 0; x < COLS; x++) newRow.push(0);
             board.unshift(newRow);
             linesCleared++;
             y++;
@@ -1598,6 +1624,17 @@
             endGame();
           }
         }
+        lastDrop = Date.now();
+      }
+      
+      function moveLeft() {
+        piece.x--;
+        if (collide()) piece.x++;
+      }
+      
+      function moveRight() {
+        piece.x++;
+        if (collide()) piece.x--;
       }
       
       function draw() {
@@ -1613,11 +1650,13 @@
           }
         }
         
-        for (var y = 0; y < piece.shape.length; y++) {
-          for (var x = 0; x < piece.shape[y].length; x++) {
-            if (piece.shape[y][x]) {
-              ctx.fillStyle = '#ff6600';
-              ctx.fillRect((piece.x + x) * BLOCK, (piece.y + y) * BLOCK, BLOCK - 1, BLOCK - 1);
+        if (piece) {
+          for (var y = 0; y < piece.shape.length; y++) {
+            for (var x = 0; x < piece.shape[y].length; x++) {
+              if (piece.shape[y][x]) {
+                ctx.fillStyle = '#ff6600';
+                ctx.fillRect((piece.x + x) * BLOCK, (piece.y + y) * BLOCK, BLOCK - 1, BLOCK - 1);
+              }
             }
           }
         }
@@ -1625,13 +1664,18 @@
       
       function gameLoop() {
         if (gameOver) return;
-        drop();
+        
+        var now = Date.now();
+        if (now - lastDrop > dropInterval) {
+          drop();
+        }
+        
         draw();
+        requestAnimationFrame(gameLoop);
       }
       
       function endGame() {
         gameOver = true;
-        clearInterval(gameInterval);
         
         var btn = document.createElement('button');
         btn.textContent = '🔄 Играть заново';
@@ -1648,30 +1692,21 @@
       
       document.onkeydown = function(e) {
         if (gameOver) return;
-        if (e.key === 'ArrowLeft') { piece.x--; if (collide()) piece.x++; }
-        if (e.key === 'ArrowRight') { piece.x++; if (collide()) piece.x--; }
+        if (e.key === 'ArrowLeft') moveLeft();
+        if (e.key === 'ArrowRight') moveRight();
         if (e.key === 'ArrowDown') drop();
         if (e.key === 'ArrowUp') rotate();
         e.preventDefault();
       };
       
-      document.getElementById('btnLeft').onclick = function() {
-        if (!gameOver) { piece.x--; if (collide()) piece.x++; }
-      };
-      document.getElementById('btnRight').onclick = function() {
-        if (!gameOver) { piece.x++; if (collide()) piece.x--; }
-      };
-      document.getElementById('btnRotate').onclick = function() {
-        if (!gameOver) rotate();
-      };
-      document.getElementById('btnDown').onclick = function() {
-        if (!gameOver) drop();
-      };
+      document.getElementById('btnLeft').onclick = function() { if (!gameOver) moveLeft(); };
+      document.getElementById('btnRight').onclick = function() { if (!gameOver) moveRight(); };
+      document.getElementById('btnRotate').onclick = function() { if (!gameOver) rotate(); };
+      document.getElementById('btnDown').onclick = function() { if (!gameOver) drop(); };
       
-      gameInterval = setInterval(gameLoop, 500);
-      draw();
+      lastDrop = Date.now();
+      requestAnimationFrame(gameLoop);
     }
-
     // ==================== РАННЕР ====================
     function initRunner() {
       document.getElementById('gameContent').innerHTML = 
