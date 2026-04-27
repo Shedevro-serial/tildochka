@@ -100,8 +100,8 @@
     .xo-board{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:5px;justify-content:center;margin:20px auto}
     .xo-cell{width:100px;height:100px;background:#333;border:2px solid #555;border-radius:10px;font-size:50px;display:flex;align-items:center;justify-content:center;cursor:pointer}
     .xo-cell.x{color:#ffd700}.xo-cell.o{color:#f60}
-    .battle-board{display:grid;grid-template-columns:repeat(8,40px);grid-template-rows:repeat(8,40px);gap:2px;justify-content:center;margin:10px}
-    .battle-cell{width:40px;height:40px;background:#333;border:1px solid #555;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .battle-board{display:grid;grid-template-columns:repeat(10,35px);grid-template-rows:repeat(10,35px);gap:2px;justify-content:center;margin:10px}
+    .battle-cell{width:35px;height:35px;background:#333;border:1px solid #555;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px}
     .battle-cell.ship{background:#ffd700}
     .battle-cell.hit{background:#f44}
     .battle-cell.miss{background:#666}
@@ -110,7 +110,7 @@
     .online-user:hover{background:rgba(255,215,0,.1)}
     .online-user-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(0,0,0,.5);border:1px solid #ffd700;overflow:hidden}
     .online-user-avatar img{width:100%;height:100%;object-fit:cover}
-    @media(max-width:768px){.logo{font-size:24px}.hero h1{font-size:1.8rem}.movie-card,.game-card{width:calc(50% - 10px);min-width:140px;padding:10px}.game-icon{font-size:40px}.section{padding:15px}button{padding:10px 15px;font-size:14px}.star{font-size:28px}.xo-board{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)}.xo-cell{width:80px;height:80px;font-size:40px}.battle-board{grid-template-columns:repeat(8,35px);grid-template-rows:repeat(8,35px)}.battle-cell{width:35px;height:35px;font-size:14px}}
+    @media(max-width:768px){.logo{font-size:24px}.hero h1{font-size:1.8rem}.movie-card,.game-card{width:calc(50% - 10px);min-width:140px;padding:10px}.game-icon{font-size:40px}.section{padding:15px}button{padding:10px 15px;font-size:14px}.star{font-size:28px}.xo-board{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)}.xo-cell{width:80px;height:80px;font-size:40px}.battle-board{grid-template-columns:repeat(10,28px);grid-template-rows:repeat(10,28px)}.battle-cell{width:28px;height:28px;font-size:12px}}
   </style>
 </head>
 <body>
@@ -127,10 +127,16 @@
 
 <div class="modal-overlay" id="inviteModal">
 <div class="modal-box">
-<h3>📨 Приглашение</h3>
+<h3 id="inviteTitle">📨 Приглашение</h3>
 <div id="inviteContent"></div>
-<button onclick="acceptInvite()" style="background:#4f4">✅ Принять</button>
-<button onclick="declineInvite()" style="background:#f44">❌ Отклонить</button>
+<div id="inviteActions"></div>
+</div>
+</div>
+
+<div class="modal-overlay" id="waitingModal">
+<div class="modal-box">
+<h3>⏳ Ожидание</h3>
+<div id="waitingContent"></div>
 </div>
 </div>
 
@@ -245,7 +251,8 @@
 <br><button onclick="saveProfile()">💾 Сохранить профиль</button>
 <button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:5px">Отмена</button>
 </div>
-  </div>
+</div>
+
 <script>
 // ==================== FIREBASE ====================
 firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
@@ -261,774 +268,252 @@ var isSending={chat:false,meme:false,idea:false};
 
 var moviesData={
 series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',description:'Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия.',tags:['комедия','боевик','романтика'],type:'series'},
-comb:{title:'Расческа для лысых',poster:'cover-comb.jpg',video:'comb.mp4',description:'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески. Комедийная драма о поиске себя, принятии своей внешности и о том, что настоящая красота идёт изнутри.',tags:['драма','комедия','философия'],type:'movie'},
-pirates:{title:'Пираты',poster:'cover-pirates.jpg',video:'pirates.mp4',description:'Захватывающий приключенческий фильм о команде отважных пиратов, которые отправляются на поиски легендарных сокровищ. Но на их пути встают не только морские чудовища и свирепые штормы, но и коварные конкуренты.',tags:['приключения','экшн','пираты'],type:'movie'},
-americans:{title:'Американцы зло',poster:'cover-americans.jpg',video:'americans.mp4',description:'Острая сатирическая комедия о столкновении культур и стереотипах. Группа друзей из маленького городка встречает американских туристов, и начинается череда нелепых ситуаций, недопониманий и смешных конфликтов.',tags:['комедия','сатира','приключения'],type:'movie'},
-ads1:{title:'Рекламки (часть 1)',poster:'cover-ads.jpg',video:'ads-part1.mp4',description:'Первая часть сборника самых смешных, нелепых и креативных рекламных роликов. Подборка забавных моментов, курьёзных ситуаций и неожиданных поворотов.',tags:['юмор','реклама','подборка'],type:'ads'},
-ads2:{title:'Рекламки (часть 2)',poster:'cover-ads.jpg',video:'ads-part2.mp4',description:'Вторая часть популярного сборника рекламных роликов! Ещё больше смешных моментов, неожиданных поворотов и креативных идей из мира рекламы.',tags:['юмор','реклама','подборка'],type:'ads'}
+comb:{title:'Расческа для лысых',poster:'cover-comb.jpg',video:'comb.mp4',description:'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески.',tags:['драма','комедия','философия'],type:'movie'},
+pirates:{title:'Пираты',poster:'cover-pirates.jpg',video:'pirates.mp4',description:'Захватывающий приключенческий фильм о команде отважных пиратов.',tags:['приключения','экшн','пираты'],type:'movie'},
+americans:{title:'Американцы зло',poster:'cover-americans.jpg',video:'americans.mp4',description:'Острая сатирическая комедия о столкновении культур и стереотипах.',tags:['комедия','сатира'],type:'movie'},
+ads1:{title:'Рекламки (часть 1)',poster:'cover-ads.jpg',video:'ads-part1.mp4',description:'Сборник самых смешных рекламных роликов.',tags:['юмор','реклама'],type:'ads'},
+ads2:{title:'Рекламки (часть 2)',poster:'cover-ads.jpg',video:'ads-part2.mp4',description:'Вторая часть популярного сборника рекламных роликов!',tags:['юмор','реклама'],type:'ads'}
 };
 
 var quotes=[
 {text:'Расческа нужна каждому. Даже если кажется, что не нужна.',author:'Главный герой',movie:'Расческа для лысых'},
 {text:'Куры не летают. Но мечтают об этом каждую ночь.',author:'Курица №3',movie:'Приключения 4 куриц'},
 {text:'Пираты не делятся сокровищами. Но делятся приключениями.',author:'Капитан',movie:'Пираты'},
-{text:'Американцы не зло. Они просто... ну ладно, иногда зло.',author:'Мудрец',movie:'Американцы зло'},
-{text:'Если жизнь подкинула яйца — сделай яичницу!',author:'Курица-философ',movie:'Приключения 4 куриц'},
 {text:'Лысина — это не приговор. Это простор для фантазии.',author:'Парикмахер',movie:'Расческа для лысых'},
-{text:'Смех продлевает жизнь. А наши фильмы продлевают смех.',author:'Tildochka',movie:'Все фильмы'},
+{text:'Если жизнь подкинула яйца — сделай яичницу!',author:'Курица-философ',movie:'Приключения 4 куриц'},
 {text:'Лучше быть курицей с мечтой, чем орлом без воображения.',author:'Курица-мечтатель',movie:'Приключения 4 куриц'},
-{text:'Расческа в руках лысого — это не глупость, это вера в чудо.',author:'Философ',movie:'Расческа для лысых'},
-{text:'Пират без карты — просто турист с ножом.',author:'Штурман',movie:'Пираты'},
-{text:'Яйца не выбирают корзину. Корзина выбирает яйца.',author:'Мудрая курица',movie:'Приключения 4 куриц'},
-{text:'Если ты споткнулся о лысину — значит ты уже на правильном пути.',author:'Случайный прохожий',movie:'Расческа для лысых'},
-{text:'В каждой рекламе есть доля правды. Очень маленькая доля.',author:'Критик',movie:'Рекламки'},
-{text:'Курица — это не просто птица. Это стиль жизни.',author:'Курица-стилист',movie:'Приключения 4 куриц'}
+{text:'В каждой рекламе есть доля правды. Очень маленькая доля.',author:'Критик',movie:'Рекламки'}
 ];
 
 // ==================== ПРОФИЛЬ ====================
 function loadProfile(){
 myName=localStorage.getItem('tildochka_username')||'Гость';
 var avatarStr=localStorage.getItem('tildochka_avatar_data');
-if(avatarStr){
-  try{
-    var ad=JSON.parse(avatarStr);
-    selectedAvatar=ad;
-    selectedAvatarType=ad.type;
-    updateHeaderAvatar();
-  }catch(e){
-    selectedAvatar={type:'emoji',value:'🐔'};
-    selectedAvatarType='emoji';
-    document.getElementById('headerAvatar').textContent='🐔';
-  }
-}else{
-  selectedAvatar={type:'emoji',value:'🐔'};
-  selectedAvatarType='emoji';
-  document.getElementById('headerAvatar').textContent='🐔';
+if(avatarStr){try{var ad=JSON.parse(avatarStr);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}
+updateHeaderAvatar();document.getElementById('profileName').textContent=myName;
 }
-document.getElementById('profileName').textContent=myName;
-}
-
 function updateHeaderAvatar(){
-if(selectedAvatarType==='emoji'){
-  document.getElementById('headerAvatar').textContent=selectedAvatar.value;
-}else{
-  document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';
+if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';
+else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';
 }
-}
-
 function openProfileModal(){
 document.getElementById('newNameInput').value=myName;
 var avatarStr=localStorage.getItem('tildochka_avatar_data');
-if(avatarStr){
-  try{selectedAvatar=JSON.parse(avatarStr);selectedAvatarType=selectedAvatar.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}
-}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}
+if(avatarStr){try{selectedAvatar=JSON.parse(avatarStr);selectedAvatarType=selectedAvatar.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}
 updateAvatarPreview();
 document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(selectedAvatarType==='emoji'&&el.textContent===selectedAvatar.value)el.classList.add('selected');});
-document.getElementById('drawArea').style.display='none';
-document.getElementById('profileModal').classList.add('show');
+document.getElementById('drawArea').style.display='none';document.getElementById('profileModal').classList.add('show');
 }
-
-function updateAvatarPreview(){
-var preview=document.getElementById('avatarPreviewContent');
-if(selectedAvatarType==='emoji'){
-  preview.innerHTML=selectedAvatar.value;
-}else{
-  preview.innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';
-}
-}
-
-function selectAvatar(emoji){
-selectedAvatar={type:'emoji',value:emoji};
-selectedAvatarType='emoji';
-updateAvatarPreview();
-document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(el.textContent===emoji)el.classList.add('selected');});
-}
-
-function loadCustomAvatar(){
-var file=document.getElementById('customAvatarInput').files[0];
-if(!file)return;
-var reader=new FileReader();
-reader.onload=function(e){
-  selectedAvatar={type:'image',value:e.target.result};
-  selectedAvatarType='image';
-  updateAvatarPreview();
-};
-reader.readAsDataURL(file);
-}
-
-function showDrawCanvas(){
-document.getElementById('drawArea').style.display='block';
-drawCanvas=document.getElementById('drawCanvas');
-drawCtx=drawCanvas.getContext('2d');
-drawCtx.fillStyle='#ffffff';
-drawCtx.fillRect(0,0,200,200);
-var drawing=false;
-drawCanvas.onmousedown=function(e){drawing=true;draw(e);};
-drawCanvas.onmouseup=function(){drawing=false;drawCtx.beginPath();};
-drawCanvas.onmousemove=function(e){if(drawing)draw(e);};
-drawCanvas.ontouchstart=function(e){e.preventDefault();drawing=true;draw(e.touches[0]);};
-drawCanvas.ontouchend=function(){drawing=false;drawCtx.beginPath();};
-drawCanvas.ontouchmove=function(e){e.preventDefault();if(drawing)draw(e.touches[0]);};
-function draw(e){
-  var rect=drawCanvas.getBoundingClientRect();
-  var x=(e.clientX-rect.left)*(200/rect.width);
-  var y=(e.clientY-rect.top)*(200/rect.height);
-  drawCtx.fillStyle=drawColor;
-  drawCtx.beginPath();
-  drawCtx.arc(x,y,5,0,Math.PI*2);
-  drawCtx.fill();
-}
-}
-
-function changeDrawColor(color){drawColor=color;}
-function clearDrawCanvas(){if(drawCtx){drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,200,200);}}
-function saveDrawnAvatar(){
-if(!drawCanvas)return;
-var data=drawCanvas.toDataURL('image/png');
-selectedAvatar={type:'image',value:data};
-selectedAvatarType='image';
-updateAvatarPreview();
-document.getElementById('drawArea').style.display='none';
-}
-
-function saveProfile(){
-var n=document.getElementById('newNameInput').value.trim();
-if(!n){alert('Введи имя!');return;}
-localStorage.setItem('tildochka_username',n);
-localStorage.setItem('tildochka_avatar_data',JSON.stringify(selectedAvatar));
-myName=n;
-document.getElementById('profileName').textContent=n;
-updateHeaderAvatar();
-document.getElementById('profileModal').classList.remove('show');
-}
-
+function updateAvatarPreview(){var preview=document.getElementById('avatarPreviewContent');if(selectedAvatarType==='emoji')preview.innerHTML=selectedAvatar.value;else preview.innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
+function selectAvatar(emoji){selectedAvatar={type:'emoji',value:emoji};selectedAvatarType='emoji';updateAvatarPreview();document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(el.textContent===emoji)el.classList.add('selected');});}
+function loadCustomAvatar(){var file=document.getElementById('customAvatarInput').files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){selectedAvatar={type:'image',value:e.target.result};selectedAvatarType='image';updateAvatarPreview();};reader.readAsDataURL(file);}
+function showDrawCanvas(){document.getElementById('drawArea').style.display='block';drawCanvas=document.getElementById('drawCanvas');drawCtx=drawCanvas.getContext('2d');drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,200,200);var drawing=false;drawCanvas.onmousedown=function(e){drawing=true;draw(e);};drawCanvas.onmouseup=function(){drawing=false;drawCtx.beginPath();};drawCanvas.onmousemove=function(e){if(drawing)draw(e);};drawCanvas.ontouchstart=function(e){e.preventDefault();drawing=true;draw(e.touches[0]);};drawCanvas.ontouchend=function(){drawing=false;drawCtx.beginPath();};drawCanvas.ontouchmove=function(e){e.preventDefault();if(drawing)draw(e.touches[0]);};function draw(e){var rect=drawCanvas.getBoundingClientRect();var x=(e.clientX-rect.left)*(200/rect.width);var y=(e.clientY-rect.top)*(200/rect.height);drawCtx.fillStyle=drawColor;drawCtx.beginPath();drawCtx.arc(x,y,5,0,Math.PI*2);drawCtx.fill();}}
+function changeDrawColor(color){drawColor=color;}function clearDrawCanvas(){if(drawCtx){drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,200,200);}}
+function saveDrawnAvatar(){if(!drawCanvas)return;var data=drawCanvas.toDataURL('image/png');selectedAvatar={type:'image',value:data};selectedAvatarType='image';updateAvatarPreview();document.getElementById('drawArea').style.display='none';}
+function saveProfile(){var n=document.getElementById('newNameInput').value.trim();if(!n){alert('Введи имя!');return;}localStorage.setItem('tildochka_username',n);localStorage.setItem('tildochka_avatar_data',JSON.stringify(selectedAvatar));myName=n;document.getElementById('profileName').textContent=n;updateHeaderAvatar();document.getElementById('profileModal').classList.remove('show');}
 function closeProfileModal(){document.getElementById('profileModal').classList.remove('show');}
 
 // ==================== НАВИГАЦИЯ ====================
-function showScreen(id){
-document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-var t=document.getElementById(id+'-screen');if(t)t.classList.add('active');
-closeMenu();window.scrollTo(0,0);
-if(id==='chat'){loadChatMessages();markRead('chat');}
-if(id==='memes'){loadMemes();markRead('memes');}
-if(id==='ideas'){loadIdeas();markRead('ideas');}
-}
-
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var t=document.getElementById(id+'-screen');if(t)t.classList.add('active');closeMenu();window.scrollTo(0,0);if(id==='chat'){loadChatMessages();markRead('chat');}if(id==='memes'){loadMemes();markRead('memes');}if(id==='ideas'){loadIdeas();markRead('ideas');}}
 function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}
 function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
 document.addEventListener('click',function(e){if(!e.target.closest('.burger')&&!e.target.closest('.menu'))closeMenu();});
-
-function adminLogin(){
-var c=prompt("🔑 Админ-код:");
-if(c==="курица"){isAdmin=true;document.getElementById('adminBadge').style.display='inline';alert("👑 Админ!");}
-else if(c==="выход"){isAdmin=false;document.getElementById('adminBadge').style.display='none';alert("❌ Вышел");}
-else alert("❌ Неверно!");
-}
-
-function adminDelete(path){if(!isAdmin)return;if(confirm("👑 Удалить?"))db.ref(path).remove();}
+function adminLogin(){var c=prompt("🔑 Админ-код:");if(c==="курица"){isAdmin=true;document.getElementById('adminBadge').style.display='inline';alert("👑 Админ!");}else if(c==="выход"){isAdmin=false;document.getElementById('adminBadge').style.display='none';}else alert("❌ Неверно!");}
 
 // ==================== ОНЛАЙН ====================
 function setupOnline(){
 var ref=db.ref('online/'+myUid);
-var data={
-  name:myName,
-  avatarType:selectedAvatarType,
-  avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,
-  timestamp:Date.now()
-};
-ref.set(data);
-ref.onDisconnect().remove();
-db.ref('online').on('value',function(snap){
-  onlineUsers={};
-  snap.forEach(function(c){
-    if(c.key!==myUid) onlineUsers[c.key]=c.val();
-  });
-  var count=Object.keys(onlineUsers).length+1;
-  document.getElementById('onlineCount').textContent='🟢 '+count;
-});
-setInterval(function(){
-  ref.update({timestamp:Date.now(),avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,name:myName});
-},30000);
+var data={name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,timestamp:Date.now()};
+ref.set(data);ref.onDisconnect().remove();
+db.ref('online').on('value',function(snap){onlineUsers={};snap.forEach(function(c){if(c.key!==myUid)onlineUsers[c.key]=c.val();});document.getElementById('onlineCount').textContent='🟢 '+(Object.keys(onlineUsers).length+1);});
+setInterval(function(){ref.update({timestamp:Date.now(),name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value});},30000);
 }
-
 function showOnlineList(){
-var h='';
-var allOnline={};
-allOnline[myUid]={name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value};
-Object.keys(onlineUsers).forEach(function(uid){
-  allOnline[uid]=onlineUsers[uid];
-});
-Object.keys(allOnline).forEach(function(uid){
-  var u=allOnline[uid];
-  var av=(u.avatarType==='image')?'<img src="'+u.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':(u.avatarValue||'🐔');
-  h+='<div class="online-user" onclick="invitePlayer(\''+uid+'\')">';
-  h+='<span class="online-user-avatar">'+av+'</span>';
-  h+='<span>'+u.name+'</span>';
-  if(uid===myUid) h+=' <span style="color:#4f4;font-size:12px">(вы)</span>';
-  h+='</div>';
-});
-document.getElementById('onlineList').innerHTML=h||'<p style="color:#888">Никого нет</p>';
-document.getElementById('onlineModal').classList.add('show');
+var h='';var all={};all[myUid]={name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value};
+Object.keys(onlineUsers).forEach(function(u){all[u]=onlineUsers[u];});
+Object.keys(all).forEach(function(uid){var u=all[uid];var av=(u.avatarType==='image')?'<img src="'+u.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':(u.avatarValue||'🐔');h+='<div class="online-user" onclick="invitePlayer(\''+uid+'\')"><span class="online-user-avatar">'+av+'</span><span>'+u.name+'</span>'+(uid===myUid?' <span style="color:#4f4;font-size:12px">(вы)</span>':'')+'</div>';});
+document.getElementById('onlineList').innerHTML=h||'<p style="color:#888">Никого нет</p>';document.getElementById('onlineModal').classList.add('show');
 }
 
 // ==================== УВЕДОМЛЕНИЯ ====================
 var lastCounts={chat:0,memes:0,ideas:0};
 function updateUnreadAll(){
-['chat','memes','ideas'].forEach(function(k){
-  var saved=parseInt(localStorage.getItem('tildochka_read_'+k)||'0');
-  var unread=Math.max(0,lastCounts[k]-saved);
-  var badge=document.getElementById('unread'+k.charAt(0).toUpperCase()+k.slice(1));
-  if(badge){
-    if(unread>0&&!document.getElementById(k+'-screen').classList.contains('active')){
-      badge.style.display='inline';
-      badge.textContent=unread>99?'99+':unread;
-    }else{badge.style.display='none';}
-  }
-});
-}
+['chat','memes','ideas'].forEach(function(k){var saved=parseInt(localStorage.getItem('tildochka_read_'+k)||'0');var unread=Math.max(0,lastCounts[k]-saved);var badge=document.getElementById('unread'+k.charAt(0).toUpperCase()+k.slice(1));if(badge){if(unread>0&&!document.getElementById(k+'-screen').classList.contains('active')){badge.style.display='inline';badge.textContent=unread>99?'99+':unread;}else{badge.style.display='none';}}});}
+function markRead(k){localStorage.setItem('tildochka_read_'+k,lastCounts[k]||0);updateUnreadAll();}
 
-function markRead(k){
-localStorage.setItem('tildochka_read_'+k,lastCounts[k]||0);
-updateUnreadAll();
-}
-
-// ==================== АНТИ-СПАМ ОТПРАВКА ====================
-function safeSend(key,fn){
-if(isSending[key])return;
-isSending[key]=true;
-var btn=document.getElementById(key+'SendBtn');
-if(btn){btn.disabled=true;btn.textContent='⏳ Отправка...';}
-fn().then(function(){
-  if(btn){btn.textContent='✅ Отправлено!';}
-  setTimeout(function(){
-    if(btn){
-      btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';
-      btn.disabled=false;
-    }
-    isSending[key]=false;
-  },1500);
-}).catch(function(e){
-  console.error('Ошибка отправки:',e);
-  alert('❌ Ошибка: '+e.message);
-  if(btn){btn.disabled=false;btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';}
-  isSending[key]=false;
-});
-}
+// ==================== АНТИ-СПАМ ====================
+function safeSend(key,fn){if(isSending[key])return;isSending[key]=true;var btn=document.getElementById(key+'SendBtn');if(btn){btn.disabled=true;btn.textContent='⏳ Отправка...';}fn().then(function(){if(btn)btn.textContent='✅ Отправлено!';setTimeout(function(){if(btn){btn.disabled=false;btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';}isSending[key]=false;},1500);}).catch(function(e){console.error(e);alert('❌ Ошибка: '+e.message);if(btn){btn.disabled=false;btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';}isSending[key]=false;});}
 
 // ==================== ЧАТ ====================
-function sendChatMessage(){
-var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;
-safeSend('chat',function(){
-  var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}
-  return db.ref('chat').push({name:myName,avatarType:ad.type,avatarValue:ad.value,text:m,timestamp:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});
-});
-}
-
-function loadChatMessages(){
-db.ref('chat').on('value',function(snap){
-  var msgs=[];snap.forEach(function(c){msgs.push(c.val());});
-  msgs.sort(function(a,b){return(a.timestamp||0)-(b.timestamp||0);});
-  lastCounts.chat=msgs.length;
-  var c=document.getElementById('chatMessagesLive');c.innerHTML='';
-  msgs.forEach(function(m){
-    var av=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':(m.avatarValue||'🐔');
-    var d=document.createElement('div');d.className='message';
-    d.innerHTML='<span class="message-avatar">'+av+'</span> <strong>'+m.name+':</strong> '+m.text+'<div class="message-time">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';
-    c.appendChild(d);
-  });
-  c.scrollTop=c.scrollHeight;
-  updateUnreadAll();
-});
-}
+function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;safeSend('chat',function(){var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}return db.ref('chat').push({name:myName,avatarType:ad.type,avatarValue:ad.value,text:m,timestamp:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});});}
+function loadChatMessages(){db.ref('chat').on('value',function(snap){var msgs=[];snap.forEach(function(c){msgs.push(c.val());});msgs.sort(function(a,b){return(a.timestamp||0)-(b.timestamp||0);});lastCounts.chat=msgs.length;var c=document.getElementById('chatMessagesLive');c.innerHTML='';msgs.forEach(function(m){var av=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':(m.avatarValue||'🐔');var d=document.createElement('div');d.className='message';d.innerHTML='<span class="message-avatar">'+av+'</span> <strong>'+m.name+':</strong> '+m.text+'<div class="message-time">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});c.scrollTop=c.scrollHeight;updateUnreadAll();});}
 
 // ==================== МЕМЫ ====================
-function previewMemeMedia(type){
-var inp=type==='photo'?document.getElementById('memePhoto'):document.getElementById('memeVideo');
-if(!inp.files||!inp.files[0])return;
-var r=new FileReader();
-r.onload=function(e){memeMedia=e.target.result;memeMediaType=type;document.getElementById('memePreview').innerHTML=type==='photo'?'<img src="'+e.target.result+'" style="max-width:300px;border-radius:8px">':'<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};
-r.readAsDataURL(inp.files[0]);
-}
-
-function postMeme(){
-var cap=document.getElementById('memeCaption').value.trim();
-if(!cap&&!memeMedia)return;
-safeSend('meme',function(){
-  var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}
-  return db.ref('memes').push({author:myName,avatarType:ad.type,avatarValue:ad.value,caption:cap,media:memeMedia||null,mediaType:memeMediaType||null,reactions:{laugh:0,fire:0,wow:0,cry:0},timestamp:Date.now()}).then(function(){
-    document.getElementById('memeCaption').value='';document.getElementById('memePhoto').value='';document.getElementById('memeVideo').value='';document.getElementById('memePreview').innerHTML='';memeMedia=null;memeMediaType=null;
-  });
-});
-}
-
-function loadMemes(){
-db.ref('memes').on('value',function(snap){
-  var memes=[];snap.forEach(function(c){memes.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'😂',caption:c.val().caption,media:c.val().media,mediaType:c.val().mediaType,reactions:c.val().reactions||{},timestamp:c.val().timestamp});});
-  memes.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});
-  lastCounts.memes=memes.length;
-  var c=document.getElementById('memesList');
-  if(!memes.length){c.innerHTML='<p style="color:#888">Пока нет мемов. Будь первым!</p>';}
-  else{
-    c.innerHTML='';
-    memes.forEach(function(m){
-      var mediaHTML='';if(m.media)mediaHTML=m.mediaType==='photo'?'<img src="'+m.media+'" onclick="window.open(this.src)" style="cursor:pointer">':'<video src="'+m.media+'" controls></video>';
-      var d=document.createElement('div');d.className='meme-card';
-      d.innerHTML='<span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mediaHTML+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂 '+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥 '+(m.reactions.fire||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'wow\','+(m.reactions.wow||0)+')">😮 '+(m.reactions.wow||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'cry\','+(m.reactions.cry||0)+')">😢 '+(m.reactions.cry||0)+'</button></div>';
-      c.appendChild(d);
-    });
-  }
-  updateUnreadAll();
-});
-}
-
+function previewMemeMedia(type){var inp=type==='photo'?document.getElementById('memePhoto'):document.getElementById('memeVideo');if(!inp.files||!inp.files[0])return;var r=new FileReader();r.onload=function(e){memeMedia=e.target.result;memeMediaType=type;document.getElementById('memePreview').innerHTML=type==='photo'?'<img src="'+e.target.result+'" style="max-width:300px;border-radius:8px">':'<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};r.readAsDataURL(inp.files[0]);}
+function postMeme(){var cap=document.getElementById('memeCaption').value.trim();if(!cap&&!memeMedia)return;safeSend('meme',function(){var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}return db.ref('memes').push({author:myName,avatarType:ad.type,avatarValue:ad.value,caption:cap,media:memeMedia||null,mediaType:memeMediaType||null,reactions:{laugh:0,fire:0,wow:0,cry:0},timestamp:Date.now()}).then(function(){document.getElementById('memeCaption').value='';document.getElementById('memePhoto').value='';document.getElementById('memeVideo').value='';document.getElementById('memePreview').innerHTML='';memeMedia=null;memeMediaType=null;});});}
+function loadMemes(){db.ref('memes').on('value',function(snap){var memes=[];snap.forEach(function(c){memes.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'😂',caption:c.val().caption,media:c.val().media,mediaType:c.val().mediaType,reactions:c.val().reactions||{},timestamp:c.val().timestamp});});memes.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});lastCounts.memes=memes.length;var c=document.getElementById('memesList');if(!memes.length){c.innerHTML='<p style="color:#888">Нет мемов</p>';}else{c.innerHTML='';memes.forEach(function(m){var mediaHTML='';if(m.media)mediaHTML=m.mediaType==='photo'?'<img src="'+m.media+'" onclick="window.open(this.src)">':'<video src="'+m.media+'" controls></video>';var d=document.createElement('div');d.className='meme-card';d.innerHTML='<span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mediaHTML+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂 '+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥 '+(m.reactions.fire||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'wow\','+(m.reactions.wow||0)+')">😮 '+(m.reactions.wow||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'cry\','+(m.reactions.cry||0)+')">😢 '+(m.reactions.cry||0)+'</button></div>';c.appendChild(d);});}updateUnreadAll();});}
 function reactMeme(id,type,count){var u={};u['reactions/'+type]=(count||0)+1;db.ref('memes/'+id).update(u);}
 
 // ==================== ИДЕИ ====================
-function addIdea(){
-var t=document.getElementById('ideaText').value.trim();if(!t)return;
-safeSend('idea',function(){
-  var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}
-  return db.ref('ideas').push({author:myName,avatarType:ad.type,avatarValue:ad.value,text:t,likes:0,timestamp:Date.now()}).then(function(){document.getElementById('ideaText').value='';});
-});
-}
-
-function loadIdeas(){
-db.ref('ideas').on('value',function(snap){
-  var ideas=[];snap.forEach(function(c){ideas.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'💡',text:c.val().text,likes:c.val().likes||0,timestamp:c.val().timestamp});});
-  ideas.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});
-  lastCounts.ideas=ideas.length;
-  var c=document.getElementById('ideasList');
-  if(!ideas.length){c.innerHTML='<p style="color:#888">Пока нет идей. Предложите первую!</p>';}
-  else{
-    c.innerHTML='';
-    ideas.forEach(function(i){
-      var d=document.createElement('div');d.className='idea-card';
-      d.innerHTML='<span class="idea-author">💡 '+i.author+' предлагает:</span><p>'+i.text+'</p><div class="idea-likes"><button class="like-btn" onclick="db.ref(\'ideas/'+i.id+'\').update({likes:'+(i.likes+1)+'})">❤️</button><span>'+i.likes+'</span></div>';
-      c.appendChild(d);
-    });
-  }
-  updateUnreadAll();
-});
-}
+function addIdea(){var t=document.getElementById('ideaText').value.trim();if(!t)return;safeSend('idea',function(){var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}return db.ref('ideas').push({author:myName,avatarType:ad.type,avatarValue:ad.value,text:t,likes:0,timestamp:Date.now()}).then(function(){document.getElementById('ideaText').value='';});});}
+function loadIdeas(){db.ref('ideas').on('value',function(snap){var ideas=[];snap.forEach(function(c){ideas.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'💡',text:c.val().text,likes:c.val().likes||0,timestamp:c.val().timestamp});});ideas.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});lastCounts.ideas=ideas.length;var c=document.getElementById('ideasList');if(!ideas.length){c.innerHTML='<p style="color:#888">Нет идей</p>';}else{c.innerHTML='';ideas.forEach(function(i){var d=document.createElement('div');d.className='idea-card';d.innerHTML='<span class="idea-author">💡 '+i.author+':</span><p>'+i.text+'</p><div class="idea-likes"><button class="like-btn" onclick="db.ref(\'ideas/'+i.id+'\').update({likes:'+(i.likes+1)+'})">❤️</button><span>'+i.likes+'</span></div>';c.appendChild(d);});}updateUnreadAll();});}
 
 // ==================== ФИЛЬМЫ И ОТЗЫВЫ ====================
-function openMovie(id){
-currentMovieId=id;var m=moviesData[id];if(!m)return;
-document.getElementById('moviePoster').src=m.poster;
-document.getElementById('movieTitle').textContent=m.title;
-document.getElementById('movieDescription').textContent=m.description;
-var tags='';m.tags.forEach(function(t){tags+='<span class="tag">'+t+'</span>';});
-document.getElementById('movieTags').innerHTML=tags;
-document.getElementById('videosrc').src=m.video;document.getElementById('player').load();
-var ss=document.getElementById('seasonsSection');
-if(m.type==='series'){
-  ss.style.display='block';
-  document.getElementById('seasonsContent').innerHTML='<button onclick="toggleSeason(\'season1\')">Сезон 1</button><div class="episodes" id="season1"><button onclick="playEpisode(\'episode1.mp4\')">▶ 1 серия</button><button onclick="playEpisode(\'episode2.mp4\')">▶ 2 серия</button><button onclick="playEpisode(\'episode3.mp4\')">▶ 3 серия</button><button onclick="playEpisode(\'episode4.mp4\')">▶ 4 серия</button></div><button onclick="toggleSeason(\'season2\')">Сезон 2</button><div class="episodes" id="season2"><div class="coming-soon">🎬 Серии второго сезона скоро появятся!<br>Следите за обновлениями.</div></div><button onclick="toggleSeason(\'season3\')">Сезон 3</button><div class="episodes" id="season3"><div class="coming-soon">🎬 Серии третьего сезона в разработке!<br>У вас есть идеи? Поделитесь в разделе "Идеи для продолжения"!</div></div>';
-}else{ss.style.display='none';}
-showScreen('movie');loadMovieReviews(id);setupReviewStars();
-}
-
+function openMovie(id){currentMovieId=id;var m=moviesData[id];if(!m)return;document.getElementById('moviePoster').src=m.poster;document.getElementById('movieTitle').textContent=m.title;document.getElementById('movieDescription').textContent=m.description;var tags='';m.tags.forEach(function(t){tags+='<span class="tag">'+t+'</span>';});document.getElementById('movieTags').innerHTML=tags;document.getElementById('videosrc').src=m.video;document.getElementById('player').load();var ss=document.getElementById('seasonsSection');if(m.type==='series'){ss.style.display='block';document.getElementById('seasonsContent').innerHTML='<button onclick="toggleSeason(\'season1\')">Сезон 1</button><div class="episodes" id="season1"><button onclick="playEpisode(\'episode1.mp4\')">▶ 1 серия</button><button onclick="playEpisode(\'episode2.mp4\')">▶ 2 серия</button><button onclick="playEpisode(\'episode3.mp4\')">▶ 3 серия</button><button onclick="playEpisode(\'episode4.mp4\')">▶ 4 серия</button></div><button onclick="toggleSeason(\'season2\')">Сезон 2</button><div class="episodes" id="season2"><div class="coming-soon">🎬 Скоро!</div></div><button onclick="toggleSeason(\'season3\')">Сезон 3</button><div class="episodes" id="season3"><div class="coming-soon">🎬 В разработке!</div></div>';}else ss.style.display='none';showScreen('movie');loadMovieReviews(id);setupReviewStars();}
 function toggleSeason(id){var s=document.getElementById(id);if(!s)return;document.querySelectorAll('.episodes').forEach(function(e){if(e.id!==id)e.classList.remove('show');});s.classList.toggle('show');}
 function playEpisode(src){document.getElementById('videosrc').src=src;document.getElementById('player').load();document.getElementById('player').play();}
-
-function setupReviewStars(){
-var stars=document.querySelectorAll('#revStars .star');
-stars.forEach(function(s){
-  s.onclick=function(){reviewRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,reviewRating);document.getElementById('ratingText').textContent=reviewRating+'/10';};
-  s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};
-  s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,reviewRating);};
-});
-updateStars(stars,10);
-}
-
-function updateStars(stars,r){
-stars.forEach(function(s){var v=parseInt(s.getAttribute('data-v'))*2;s.classList.remove('full','half','hover-full','hover-half');if(r>=v)s.classList.add('full');else if(r===v-1)s.classList.add('half');});
-}
-
-function addReview(){
-var t=document.getElementById('reviewText').value.trim();
-if(!t){alert('Напиши текст отзыва!');return;}
-var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}
-var review={name:myName,avatarType:ad.type,avatarValue:ad.value,text:t,rating:reviewRating,timestamp:Date.now()};
-db.ref('reviews/'+currentMovieId).push(review).then(function(){
-  document.getElementById('reviewText').value='';
-  reviewRating=10;
-  updateStars(document.querySelectorAll('#revStars .star'),10);
-  document.getElementById('ratingText').textContent='10/10';
-}).catch(function(error){alert('Ошибка: '+error.message);});
-}
-
-function loadMovieReviews(mid){
-db.ref('reviews/'+mid).on('value',function(snap){
-  var revs=[];snap.forEach(function(c){
-    var at=c.val().avatarType||'emoji';
-    var av=c.val().avatarValue||'🐔';
-    revs.push({id:c.key,name:c.val().name,avatarType:at,avatarValue:av,text:c.val().text,rating:c.val().rating,timestamp:c.val().timestamp});
-  });
-  revs.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});
-  var c=document.getElementById('reviews');
-  if(!revs.length){c.innerHTML='<p style="color:#888">Пока нет отзывов. Будьте первым!</p>';}
-  else{
-    c.innerHTML='';
-    revs.forEach(function(r){
-      var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';
-      var avHTML=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':r.avatarValue;
-      var d=document.createElement('div');d.className='review';
-      d.innerHTML='<span class="review-avatar">'+avHTML+'</span> <span class="review-name">'+r.name+'</span><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div><div class="review-date">'+new Date(r.timestamp).toLocaleString('ru-RU')+'</div>';
-      c.appendChild(d);
-    });
-  }
-  updateMovieRating(mid,revs);
-});
-}
-
-function updateMovieRating(mid,revs){
-if(!revs.length){
-  ['movieRatingHero','totalRatingDisplay'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='Нет оценок';});
-  document.getElementById('reviewsCountDisplay').textContent='0 отзывов';
-  var el=document.getElementById('rating-'+mid);if(el)el.textContent='Нет оценок';
-  return;
-}
-var sum=0;revs.forEach(function(r){sum+=r.rating;});
-var avg=(sum/revs.length).toFixed(1);
-document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';
-document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';
-document.getElementById('reviewsCountDisplay').textContent='На основе '+revs.length+' отзывов';
-var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';
-}
+function setupReviewStars(){var stars=document.querySelectorAll('#revStars .star');stars.forEach(function(s){s.onclick=function(){reviewRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,reviewRating);document.getElementById('ratingText').textContent=reviewRating+'/10';};s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,reviewRating);};});updateStars(stars,10);}
+function updateStars(stars,r){stars.forEach(function(s){var v=parseInt(s.getAttribute('data-v'))*2;s.classList.remove('full','half','hover-full','hover-half');if(r>=v)s.classList.add('full');else if(r===v-1)s.classList.add('half');});}
+function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;var ad;try{ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');}catch(e){ad={type:'emoji',value:'🐔'};}db.ref('reviews/'+currentMovieId).push({name:myName,avatarType:ad.type,avatarValue:ad.value,text:t,rating:reviewRating,timestamp:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';});}
+function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){var at=c.val().avatarType||'emoji';var av=c.val().avatarValue||'🐔';revs.push({id:c.key,name:c.val().name,avatarType:at,avatarValue:av,text:c.val().text,rating:c.val().rating,timestamp:c.val().timestamp});});revs.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('reviews');if(!revs.length){c.innerHTML='<p style="color:#888">Пока нет отзывов.</p>';}else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var avHTML=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':r.avatarValue;var d=document.createElement('div');d.className='review';d.innerHTML='<span class="review-avatar">'+avHTML+'</span> <span class="review-name">'+r.name+'</span><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div><div class="review-date">'+new Date(r.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});}updateMovieRating(mid,revs);});}
+function updateMovieRating(mid,revs){if(!revs.length){['movieRatingHero','totalRatingDisplay'].forEach(function(id){var el=document.getElementById(id);if(el)el.textContent='Нет оценок';});document.getElementById('reviewsCountDisplay').textContent='0 отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='Нет оценок';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';document.getElementById('reviewsCountDisplay').textContent='На основе '+revs.length+' отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';}
 
 // ==================== ИГРЫ ====================
-function showGame(type){
-stopGame();currentGame=type;showScreen('game');
-var titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy курица',memory:'🧠 Memory',guess:'🔢 Угадай число',rps:'✂️ Камень-ножницы'};
-document.getElementById('gameTitle').textContent=titles[type]||type;
-document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';
-document.getElementById('gameScoreDisplay').textContent='Счёт: 0';gameRating=10;
-if(type==='snake')initSnake();
-if(type==='tetris')initTetris();
-if(type==='runner')initRunner();
-if(type==='chickenrain')initChickenRain();
-if(type==='flappy')initFlappy();
-if(type==='memory')initMemory();
-if(type==='guess')initGuess();
-if(type==='rps')initRPS();
-if(type!=='onlinexo'&&type!=='onlinepong'&&type!=='battleship')loadLeaderboard(type);
-}
-
+function showGame(type){stopGame();currentGame=type;showScreen('game');var titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy курица',memory:'🧠 Memory',guess:'🔢 Угадай число',rps:'✂️ Камень-ножницы'};document.getElementById('gameTitle').textContent=titles[type]||type;document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';document.getElementById('gameScoreDisplay').textContent='Счёт: 0';gameRating=10;if(type==='snake')initSnake();if(type==='tetris')initTetris();if(type==='runner')initRunner();if(type==='chickenrain')initChickenRain();if(type==='flappy')initFlappy();if(type==='memory')initMemory();if(type==='guess')initGuess();if(type==='rps')initRPS();loadLeaderboard(type);}
 function stopGame(){if(gameInterval){clearInterval(gameInterval);gameInterval=null;}currentGame=null;document.onkeydown=null;}
+function loadLeaderboard(type){db.ref('gameRatings/'+type).on('value',function(snap){var rats=[];snap.forEach(function(c){rats.push(c.val());});rats.sort(function(a,b){return(b.score||0)-(a.score||0);});var h='<h3>🏆 Лидеры</h3>';if(!rats.length)h+='<p style="color:#888">Нет игроков</p>';else{for(var i=0;i<rats.length&&i<10;i++)h+='<div class="leaderboard-item"><span>'+(i+1)+'. '+(rats[i].name||'Аноним')+'</span><span>Счёт: '+rats[i].score+' | ⭐'+rats[i].rating+'/10</span></div>';var sum=0;rats.forEach(function(r){sum+=r.rating||0;});var el=document.getElementById('rating-'+type);if(el)el.textContent='⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';}document.getElementById('leaderboard').innerHTML=h;});}
+function createGameRating(){document.getElementById('gameRatingArea').innerHTML='<div class="stars-container" id="gameStars"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="gameRatingText">10/10</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';var stars=document.querySelectorAll('#gameStars .star');stars.forEach(function(s){s.onclick=function(){gameRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,gameRating);document.getElementById('gameRatingText').textContent=gameRating+'/10';};s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,gameRating);};});updateStars(stars,10);}
+function submitGameRating(){db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0,timestamp:Date.now()}).then(function(){alert('✅ Оценка сохранена!');});}
 
-function loadLeaderboard(type){
-db.ref('gameRatings/'+type).on('value',function(snap){
-  var rats=[];snap.forEach(function(c){rats.push(c.val());});
-  rats.sort(function(a,b){return(b.score||0)-(a.score||0);});
-  var h='<h3>🏆 Лидеры</h3>';
-  if(!rats.length)h+='<p style="color:#888">Пока нет игроков. Будьте первым!</p>';
-  else{
-    for(var i=0;i<rats.length&&i<10;i++)h+='<div class="leaderboard-item"><span>'+(i+1)+'. '+(rats[i].name||'Аноним')+'</span><span>Счёт: '+rats[i].score+' | ⭐'+rats[i].rating+'/10</span></div>';
-    var sum=0;rats.forEach(function(r){sum+=r.rating||0;});
-    var el=document.getElementById('rating-'+type);if(el)el.textContent='⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';
-  }
-  document.getElementById('leaderboard').innerHTML=h;
-});
-}
-
-function createGameRating(){
-document.getElementById('gameRatingArea').innerHTML='<div class="stars-container" id="gameStars"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="gameRatingText">10/10</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';
-var stars=document.querySelectorAll('#gameStars .star');
-stars.forEach(function(s){
-  s.onclick=function(){gameRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,gameRating);document.getElementById('gameRatingText').textContent=gameRating+'/10';};
-  s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};
-  s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,gameRating);};
-});
-updateStars(stars,10);
-}
-
-function submitGameRating(){
-db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0,timestamp:Date.now()})
-.then(function(){alert('✅ Оценка сохранена!');});
-}
-
-// ==================== ОНЛАЙН-ИГРЫ ====================
+// ==================== ОНЛАЙН-ИГРЫ (НОВАЯ СИСТЕМА) ====================
 function showOnlineGame(type){
-var users=Object.keys(onlineUsers).filter(function(u){return u!==myUid;});
-if(users.length===0){alert('Нет никого онлайн для игры! Выбери одиночную игру.');return;}
-var h='<p style="margin-bottom:10px">Выбери соперника для <b>'+type+'</b>:</p>';
-users.forEach(function(u){
-  var uname=onlineUsers[u].name||'Игрок';
-  var uav=onlineUsers[u].avatarType==='image'?'<img src="'+onlineUsers[u].avatarValue+'" style="width:20px;height:20px;object-fit:cover;border-radius:50%">':(onlineUsers[u].avatarValue||'🐔');
-  h+='<button onclick="invitePlayer(\''+u+'\',\''+type+'\')" style="display:block;width:100%;text-align:left;margin:5px 0;background:#444">'+uav+' '+uname+'</button>';
-});
-document.getElementById('inviteContent').innerHTML=h;
-pendingInvite=null;
-document.getElementById('inviteModal').classList.add('show');
+var users=Object.keys(onlineUsers);
+if(users.length===0){alert('Нет никого онлайн!');return;}
+var h='<p style="margin-bottom:10px">Выбери соперника:</p>';
+users.forEach(function(u){var un=onlineUsers[u].name||'Игрок';var ua=onlineUsers[u].avatarType==='image'?'<img src="'+onlineUsers[u].avatarValue+'" style="width:20px;height:20px;border-radius:50%;object-fit:cover">':(onlineUsers[u].avatarValue||'🐔');h+='<button onclick="sendInvite(\''+u+'\',\''+type+'\')" style="display:block;width:100%;text-align:left;margin:5px 0;background:#444">'+ua+' '+un+'</button>';});
+document.getElementById('inviteContent').innerHTML=h;document.getElementById('inviteActions').innerHTML='';document.getElementById('inviteTitle').textContent='🎮 Пригласить';
+pendingInvite=null;document.getElementById('inviteModal').classList.add('show');
 }
 
-function invitePlayer(uid,game){
-if(uid===myUid)return;
-pendingInvite=null;
-db.ref('invites/'+uid).set({from:myUid,fromName:myName,game:game,timestamp:Date.now()}).then(function(){
-  alert('✅ Приглашение отправлено!');
-  document.getElementById('inviteModal').classList.remove('show');
-});
-}
-
-db.ref('invites/'+myUid).on('value',function(snap){
-var d=snap.val();
-if(d&&d.timestamp>Date.now()-30000){
-  pendingInvite=d;
-  document.getElementById('inviteContent').innerHTML='<p>'+d.fromName+' приглашает тебя в <b>'+d.game+'</b>!</p>';
-  document.getElementById('inviteModal').classList.add('show');
-}
-});
-
-function acceptInvite(){
-if(!pendingInvite)return;
-var game=pendingInvite.game;
-var opp=pendingInvite.from;
+function sendInvite(uid,game){
 document.getElementById('inviteModal').classList.remove('show');
-db.ref('invites/'+myUid).remove();
-if(game==='xo')initOnlineXO(opp);
-if(game==='pong')initOnlinePong(opp);
-if(game==='battleship')initBattleship(opp);
+var roomId=myUid+'_'+uid+'_'+game;
+db.ref('invites/'+uid).set({from:myUid,fromName:myName,game:game,room:roomId,timestamp:Date.now()}).then(function(){
+  document.getElementById('waitingContent').innerHTML='⏳ Ожидаем ответа от '+onlineUsers[uid].name+'...';
+  document.getElementById('waitingModal').classList.add('show');
+  listenAccept(uid,game,roomId);
+});
 }
 
-function declineInvite(){
-document.getElementById('inviteModal').classList.remove('show');
-db.ref('invites/'+myUid).remove();
-pendingInvite=null;
+function listenAccept(uid,game,roomId){
+var ref=db.ref('invites/'+myUid+'/response');
+ref.on('value',function(snap){var d=snap.val();if(d&&d.room===roomId){ref.off();document.getElementById('waitingModal').classList.remove('show');if(d.accepted){if(game==='battleship')startBattleshipSetup(uid,roomId);if(game==='pong')initOnlinePong(uid,roomId);if(game==='xo')initOnlineXO(uid,roomId);}else{alert('❌ Приглашение отклонено');}}});}
+
+db.ref('invites/'+myUid).on('value',function(snap){var d=snap.val();if(d&&d.timestamp>Date.now()-60000&&!d.response){pendingInvite=d;document.getElementById('inviteContent').innerHTML='<p>'+d.fromName+' зовёт в <b>'+d.game+'</b>!</p>';document.getElementById('inviteActions').innerHTML='<button onclick="acceptInvite()" style="background:#4f4">✅ Принять</button><button onclick="declineInvite()" style="background:#f44">❌ Отклонить</button>';document.getElementById('inviteTitle').textContent='📨 Приглашение';document.getElementById('inviteModal').classList.add('show');}});
+
+function acceptInvite(){if(!pendingInvite)return;document.getElementById('inviteModal').classList.remove('show');var g=pendingInvite.game;var opp=pendingInvite.from;var room=pendingInvite.room;db.ref('invites/'+myUid+'/response').set({accepted:true,room:room});db.ref('invites/'+myUid).remove();if(g==='battleship')startBattleshipSetup(opp,room);if(g==='pong')initOnlinePong(opp,room);if(g==='xo')initOnlineXO(opp,room);}
+function declineInvite(){if(!pendingInvite)return;document.getElementById('inviteModal').classList.remove('show');db.ref('invites/'+myUid+'/response').set({accepted:false,room:pendingInvite.room});db.ref('invites/'+myUid).remove();pendingInvite=null;}
+
+// ==================== МОРСКОЙ БОЙ (НОВЫЙ: 10x10, подготовка) ====================
+function startBattleshipSetup(opp,roomId){
+currentGame='battleship';onlineGameRoom=roomId;showScreen('game');
+document.getElementById('gameTitle').textContent='🚢 Морской бой vs '+(onlineUsers[opp]?onlineUsers[opp].name:'Соперник')+' — Расстановка';
+document.getElementById('gameRatingArea').innerHTML='';
+var SIZE=10;
+var myBoard=Array(SIZE).fill().map(function(){return Array(SIZE).fill(0);});
+var ships=[4,3,3,2,2,2,1,1,1,1];
+var placedShips=0;
+
+function renderSetup(){
+var h='<p>Расставь корабли (осталось: '+(ships.length-placedShips)+')</p>';
+h+='<div class="battle-board">';
+for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++){h+='<div class="battle-cell'+(myBoard[y][x]===1?' ship':'')+'" onclick="placeShip('+x+','+y+')"></div>';}
+h+='</div><button onclick="autoPlaceShips()">🎲 Авто</button>';
+document.getElementById('gameContent').innerHTML=h;
 }
 
-// ==================== КРЕСТИКИ-НОЛИКИ ОНЛАЙН ====================
-function initOnlineXO(opp){
+window.placeShip=function(x,y){if(placedShips>=ships.length)return;var size=ships[placedShips];var hor=(window.placeShipHor!==false);var ok=true;if(hor){if(x+size>SIZE)return;for(var i=0;i<size;i++)if(myBoard[y][x+i]!==0)ok=false;}else{if(y+size>SIZE)return;for(var i=0;i<size;i++)if(myBoard[y+i][x]!==0)ok=false;}if(!ok)return;if(hor)for(var i=0;i<size;i++)myBoard[y][x+i]=1;else for(var i=0;i<size;i++)myBoard[y+i][x]=1;placedShips++;renderSetup();if(placedShips>=ships.length){document.getElementById('gameContent').innerHTML+='<button onclick="readyBattle(\''+opp+'\',\''+roomId+'\')" style="font-size:20px;background:#4f4">✅ Готов!</button>';}};
+window.autoPlaceShips=function(){myBoard=Array(SIZE).fill().map(function(){return Array(SIZE).fill(0);});placedShips=0;var ss=[4,3,3,2,2,2,1,1,1,1];ss.forEach(function(s){var placed=false;while(!placed){var h=Math.random()>0.5,x=Math.floor(Math.random()*SIZE),y=Math.floor(Math.random()*SIZE);if(h&&x+s<=SIZE){var ok=true;for(var i=0;i<s;i++)if(myBoard[y][x+i]!==0)ok=false;if(ok){for(var i=0;i<s;i++)myBoard[y][x+i]=1;placed=true;}}else if(!h&&y+s<=SIZE){var ok=true;for(var i=0;i<s;i++)if(myBoard[y+i][x]!==0)ok=false;if(ok){for(var i=0;i<s;i++)myBoard[y+i][x]=1;placed=true;}}}});placedShips=ss.length;renderSetup();document.getElementById('gameContent').innerHTML+='<button onclick="readyBattle(\''+opp+'\',\''+roomId+'\')" style="font-size:20px;background:#4f4">✅ Готов!</button>';};
+window.readyBattle=function(o,rid){db.ref('battleship_rooms/'+rid+'/players/'+myUid).set({board:myBoard,ready:true,name:myName});alert('✅ Ожидаем соперника...');document.getElementById('waitingContent').innerHTML='⏳ Ожидаем готовности соперника...';document.getElementById('waitingModal').classList.add('show');db.ref('battleship_rooms/'+rid+'/players').on('value',function(snap){var all=true;var oppReady=false;snap.forEach(function(c){if(c.key!==myUid&&c.val().ready)oppReady=true;if(!c.val().ready)all=false;});if(all&&oppReady){document.getElementById('waitingModal').classList.remove('show');db.ref('battleship_rooms/'+rid+'/players').off();startBattleshipGame(o,rid,myBoard);}});};
+window.placeShipHor=true;document.addEventListener('keydown',function(e){if(currentGame==='battleship'&&e.key==='r'){window.placeShipHor=!window.placeShipHor;renderSetup();}});
+renderSetup();
+}
+
+function startBattleshipGame(opp,roomId,myBoard){
+document.getElementById('gameTitle').textContent='🚢 Морской бой vs '+(onlineUsers[opp]?onlineUsers[opp].name:'Соперник');
+document.getElementById('gameContent').innerHTML='';
+var SIZE=10;
+var enemyBoard=Array(SIZE).fill().map(function(){return Array(SIZE).fill(0);});
+var myTurn=myUid<opp;
+var gameOver=false;
+
+function renderGame(){
+var h='<div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap">';
+h+='<div><h4>Твоё поле</h4><div class="battle-board">';
+for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++){var cls='battle-cell';if(myBoard[y][x]===1)cls+=' my-ship';if(myBoard[y][x]===2)cls+=' hit';if(myBoard[y][x]===3)cls+=' miss';h+='<div class="'+cls+'">'+(myBoard[y][x]===2?'💥':myBoard[y][x]===3?'•':(myBoard[y][x]===1?'🚢':''))+'</div>';}
+h+='</div></div>';
+h+='<div><h4>Поле врага</h4><div class="battle-board">';
+for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++){var cls='battle-cell';if(enemyBoard[y][x]===2)cls+=' hit';if(enemyBoard[y][x]===3)cls+=' miss';var clickable=myTurn&&!gameOver&&enemyBoard[y][x]===0;h+='<div class="'+cls+'" '+((clickable)?'onclick="battleShoot('+x+','+y+',\''+opp+'\',\''+roomId+'\')"':'')+'>'+(enemyBoard[y][x]===2?'💥':enemyBoard[y][x]===3?'•':'')+'</div>';}
+h+='</div></div></div><p>'+(gameOver?'Игра окончена!':(myTurn?'Твой ход':'Ход соперника'))+'</p>';
+document.getElementById('gameContent').innerHTML=h;
+}
+
+window.battleShoot=function(x,y,o,rid){if(!myTurn||gameOver||enemyBoard[y][x]!==0)return;myTurn=false;db.ref('battleship_rooms/'+rid+'/shots/'+myUid).set({x:x,y:y,timestamp:Date.now()});};
+db.ref('battleship_rooms/'+roomId+'/shots/'+opp).on('value',function(snap){var s=snap.val();if(s&&s.timestamp>Date.now()-5000&&!myTurn){var hit=myBoard[s.y][s.x]===1;myBoard[s.y][s.x]=hit?2:3;db.ref('battleship_rooms/'+roomId+'/results/'+myUid).set({x:s.x,y:s.y,hit:hit});myTurn=true;renderGame();if(hit){var sunk=true;for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++)if(myBoard[y][x]===1)sunk=false;if(sunk){gameOver=true;renderGame();alert('Соперник победил! 😢');}}}});
+db.ref('battleship_rooms/'+roomId+'/results/'+opp).on('value',function(snap){var r=snap.val();if(r&&!myTurn){enemyBoard[r.y][r.x]=r.hit?2:3;myTurn=true;renderGame();if(r.hit){var sunk=true;for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++)if(enemyBoard[y][x]===1)sunk=false;if(sunk){gameOver=true;renderGame();alert('Ты победил! 🎉');}}}});
+renderGame();
+}
+
+// ==================== КРЕСТИКИ-НОЛИКИ ====================
+function initOnlineXO(opp,roomId){
 currentGame='onlinexo';showScreen('game');
 document.getElementById('gameTitle').textContent='❌ Крестики-нолики vs '+(onlineUsers[opp]?onlineUsers[opp].name:'Соперник');
 document.getElementById('gameRatingArea').innerHTML='';
 var board=['','','','','','','','',''];
+var rid=roomId||(myUid+'_'+opp+'_xo');
 var myTurn=myUid<opp;
-var mySymbol=myTurn?'X':'O';
-var oppSymbol=myTurn?'O':'X';
+var mySym=myTurn?'X':'O';
 var gameOver=false;
 
 function render(){
 var h='<div class="xo-board">';
-for(var i=0;i<9;i++){
-  var cls='xo-cell';
-  if(board[i]==='X')cls+=' x';
-  if(board[i]==='O')cls+=' o';
-  var clickable=myTurn&&!board[i]&&!gameOver;
-  h+='<div class="'+cls+'" onclick="'+(clickable?'onlineXOClick('+i+',\''+opp+'\')':'')+'">'+(board[i]==='X'?'❌':board[i]==='O'?'⭕':'')+'</div>';
-}
-h+='</div><p>'+(gameOver?'Игра окончена!':(myTurn?'Твой ход (❌)':'Ход соперника (⭕)'))+'</p>';
+for(var i=0;i<9;i++){var cls='xo-cell';if(board[i]==='X')cls+=' x';if(board[i]==='O')cls+=' o';var cl=myTurn&&!board[i]&&!gameOver;h+='<div class="'+cls+'"'+(cl?' onclick="onlineXOClick('+i+',\''+opp+'\',\''+rid+'\')"':'')+'>'+(board[i]==='X'?'❌':board[i]==='O'?'⭕':'')+'</div>';}
+h+='</div><p>'+(gameOver?'Конец игры':(myTurn?'Твой ход':'Ход соперника'))+'</p>';
 document.getElementById('gameContent').innerHTML=h;
 }
 
-window.onlineXOClick=function(i,o){
-if(!myTurn||board[i]||gameOver)return;
-board[i]=mySymbol;
-myTurn=false;
-var wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-for(var w=0;w<wins.length;w++){
-  if(board[wins[w][0]]&&board[wins[w][0]]===board[wins[w][1]]&&board[wins[w][1]]===board[wins[w][2]]){
-    gameOver=true;render();alert('Ты победил! 🎉');return;
-  }
-}
-if(!board.includes('')){gameOver=true;render();alert('Ничья!');return;}
-db.ref('games/onlinexo/'+myUid+'_'+o).set({board:board,turn:o});
-render();
-};
-
-db.ref('games/onlinexo/'+opp+'_'+myUid).on('value',function(snap){
-var d=snap.val();
-if(d&&d.board){
-  board=d.board;
-  myTurn=(d.turn===myUid);
-  var wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-  for(var w=0;w<wins.length;w++){
-    if(board[wins[w][0]]&&board[wins[w][0]]===board[wins[w][1]]&&board[wins[w][1]]===board[wins[w][2]]){
-      gameOver=true;
-      if(!gameOver)alert('Соперник победил! 😢');
-    }
-  }
-  if(!board.includes('')&&!gameOver){gameOver=true;}
-  render();
-}
-});
-
+window.onlineXOClick=function(i,o,rid){if(!myTurn||board[i]||gameOver)return;board[i]=mySym;myTurn=false;db.ref('xo_rooms/'+rid+'/board').set({board:board,turn:o});render();checkWin();};
+db.ref('xo_rooms/'+rid+'/board').on('value',function(snap){var d=snap.val();if(d&&d.turn===myUid){board=d.board;myTurn=true;render();checkWin();}});
+function checkWin(){var w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var i=0;i<w.length;i++){if(board[w[i][0]]&&board[w[i][0]]===board[w[i][1]]&&board[w[i][1]]===board[w[i][2]]){gameOver=true;render();alert((board[w[i][0]]===mySym?'Ты':'Соперник')+' победил!');return;}}if(!board.includes('')){gameOver=true;render();alert('Ничья!');}}
 render();
 }
 
-// ==================== ПИНГ-ПОНГ ОНЛАЙН ====================
-function initOnlinePong(opp){
+// ==================== ПИНГ-ПОНГ ====================
+function initOnlinePong(opp,roomId){
 currentGame='onlinepong';showScreen('game');
 document.getElementById('gameTitle').textContent='🏓 Пинг-понг vs '+(onlineUsers[opp]?onlineUsers[opp].name:'Соперник');
 document.getElementById('gameContent').innerHTML='<canvas id="pc" width="500" height="300" class="game-canvas"></canvas>';
 document.getElementById('gameRatingArea').innerHTML='';
 var c=document.getElementById('pc'),ctx=c.getContext('2d');
+var rid=roomId||(myUid+'_'+opp+'_pong');
 var paddle={};paddle[myUid]={y:120};paddle[opp]={y:120};
 var ball={x:250,y:150,vx:myUid<opp?4:-4,vy:3};
 var score={};score[myUid]=0;score[opp]=0;
 var gameOver=false;
 
-document.onkeydown=function(e){
-if(gameOver)return;
-var ch=0;
-if(e.key==='w'||e.key==='ArrowUp')ch=-20;
-if(e.key==='s'||e.key==='ArrowDown')ch=20;
-if(ch!==0){
-  paddle[myUid].y=Math.max(0,Math.min(240,paddle[myUid].y+ch));
-  db.ref('games/onlinepong/'+myUid+'_'+opp+'/paddle').set(paddle[myUid]);
-}
-};
+document.onkeydown=function(e){if(gameOver)return;var ch=0;if(e.key==='w'||e.key==='ArrowUp')ch=-20;if(e.key==='s'||e.key==='ArrowDown')ch=20;if(ch!==0){paddle[myUid].y=Math.max(0,Math.min(240,paddle[myUid].y+ch));db.ref('pong_rooms/'+rid+'/paddles/'+myUid).set(paddle[myUid]);}};
+db.ref('pong_rooms/'+rid+'/paddles/'+opp).on('value',function(snap){if(snap.val())paddle[opp]=snap.val();});
+db.ref('pong_rooms/'+rid+'/ball').on('value',function(snap){if(snap.val())ball=snap.val();});
 
-db.ref('games/onlinepong/'+opp+'_'+myUid+'/paddle').on('value',function(snap){
-if(snap.val())paddle[opp]=snap.val();
-});
-db.ref('games/onlinepong/'+myUid+'_'+opp+'/ball').on('value',function(snap){
-if(snap.val())ball=snap.val();
-});
-
-function loop(){
-if(gameOver){clearInterval(gameInterval);return;}
-ctx.clearRect(0,0,500,300);
-ctx.fillStyle='#4f4';ctx.fillRect(3,paddle[myUid].y,8,60);
-ctx.fillStyle='#f44';ctx.fillRect(489,paddle[opp].y,8,60);
-ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(248,0,4,300);
-ball.x+=ball.vx;ball.y+=ball.vy;
-if(ball.y<=0||ball.y>=290)ball.vy*=-1;
-if(ball.x<=15&&ball.y>paddle[myUid].y-5&&ball.y<paddle[myUid].y+65){ball.vx=Math.abs(ball.vx);ball.x=16;}
-if(ball.x>=485&&ball.y>paddle[opp].y-5&&ball.y<paddle[opp].y+65){ball.vx=-Math.abs(ball.vx);ball.x=484;}
-if(ball.x<0){score[opp]++;ball={x:250,y:150,vx:4,vy:3};}
-if(ball.x>500){score[myUid]++;ball={x:250,y:150,vx:-4,vy:3};}
-document.getElementById('gameScoreDisplay').textContent='Ты: '+score[myUid]+' | Соперник: '+score[opp];
-ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fillStyle='#ffd700';ctx.fill();
-if(score[myUid]>=5||score[opp]>=5){
-  gameOver=true;
-  alert((score[myUid]>=5?'Ты':'Соперник')+' победил! 🏆');
-  db.ref('games/onlinepong/'+myUid+'_'+opp).remove();
-}
-db.ref('games/onlinepong/'+myUid+'_'+opp+'/ball').set(ball);
-}
+function loop(){if(gameOver){clearInterval(gameInterval);return;}ctx.clearRect(0,0,500,300);ctx.fillStyle='#4f4';ctx.fillRect(3,paddle[myUid].y,8,60);ctx.fillStyle='#f44';ctx.fillRect(489,paddle[opp].y,8,60);ctx.fillStyle='rgba(255,255,255,.3)';ctx.fillRect(248,0,4,300);ball.x+=ball.vx;ball.y+=ball.vy;if(ball.y<=0||ball.y>=290)ball.vy*=-1;if(ball.x<=15&&ball.y>paddle[myUid].y-5&&ball.y<paddle[myUid].y+65)ball.vx=Math.abs(ball.vx);if(ball.x>=485&&ball.y>paddle[opp].y-5&&ball.y<paddle[opp].y+65)ball.vx=-Math.abs(ball.vx);if(ball.x<0){score[opp]++;ball={x:250,y:150,vx:4,vy:3};}if(ball.x>500){score[myUid]++;ball={x:250,y:150,vx:-4,vy:3};}document.getElementById('gameScoreDisplay').textContent='Ты: '+score[myUid]+' | Соперник: '+score[opp];ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fillStyle='#ffd700';ctx.fill();if(score[myUid]>=5||score[opp]>=5){gameOver=true;alert((score[myUid]>=5?'Ты':'Соперник')+' победил! 🏆');db.ref('pong_rooms/'+rid).remove();}else{db.ref('pong_rooms/'+rid+'/ball').set(ball);}}
 gameInterval=setInterval(loop,20);
 }
 
-// ==================== МОРСКОЙ БОЙ ====================
-function initBattleship(opp){
-currentGame='battleship';showScreen('game');
-document.getElementById('gameTitle').textContent='🚢 Морской бой vs '+(onlineUsers[opp]?onlineUsers[opp].name:'Соперник');
-document.getElementById('gameRatingArea').innerHTML='<button onclick="placeRandomShips(\''+opp+'\')">🎲 Авто-расстановка</button>';
-var SIZE=8;
-var myBoard=Array(SIZE).fill().map(function(){return Array(SIZE).fill(0);});
-var enemyBoard=Array(SIZE).fill().map(function(){return Array(SIZE).fill(0);});
-var myTurn=myUid<opp;
-var gameOver=false;
-
-function render(){
-var h='<div style="display:flex;gap:20px;justify-content:center;flex-wrap:wrap">';
-h+='<div><h4>Твоё поле</h4><div class="battle-board" style="grid-template-columns:repeat('+SIZE+',35px);grid-template-rows:repeat('+SIZE+',35px)">';
-for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++){
-  var cls='battle-cell';
-  if(myBoard[y][x]===1)cls+=' my-ship';
-  if(myBoard[y][x]===2)cls+=' hit';
-  if(myBoard[y][x]===3)cls+=' miss';
-  h+='<div class="'+cls+'">'+(myBoard[y][x]===2?'💥':myBoard[y][x]===3?'•':(myBoard[y][x]===1?'🚢':''))+'</div>';
-}
-h+='</div></div>';
-h+='<div><h4>Поле врага</h4><div class="battle-board" style="grid-template-columns:repeat('+SIZE+',35px);grid-template-rows:repeat('+SIZE+',35px)">';
-for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++){
-  var cls='battle-cell';
-  if(enemyBoard[y][x]===2)cls+=' hit';
-  if(enemyBoard[y][x]===3)cls+=' miss';
-  var clickable=myTurn&&!gameOver&&enemyBoard[y][x]===0;
-  h+='<div class="'+cls+'" '+((clickable)?'onclick="shoot(\''+opp+'\','+x+','+y+')"':'')+'>'+(enemyBoard[y][x]===2?'💥':enemyBoard[y][x]===3?'•':'')+'</div>';
-}
-h+='</div></div></div>';
-h+='<p>'+(gameOver?'Игра окончена!':(myTurn?'Твой ход':'Ход соперника'))+'</p>';
-document.getElementById('gameContent').innerHTML=h;
-}
-
-window.placeRandomShips=function(o){
-myBoard=Array(SIZE).fill().map(function(){return Array(SIZE).fill(0);});
-var ships=[3,2,2,1,1];
-ships.forEach(function(size){
-  var placed=false;
-  while(!placed){
-    var hor=Math.random()>0.5,x=Math.floor(Math.random()*SIZE),y=Math.floor(Math.random()*SIZE);
-    if(hor&&x+size<=SIZE){
-      var ok=true;for(var i=0;i<size;i++)if(myBoard[y][x+i]!==0){ok=false;break;}
-      if(ok){for(var i=0;i<size;i++)myBoard[y][x+i]=1;placed=true;}
-    }else if(!hor&&y+size<=SIZE){
-      var ok=true;for(var i=0;i<size;i++)if(myBoard[y+i][x]!==0){ok=false;break;}
-      if(ok){for(var i=0;i<size;i++)myBoard[y+i][x]=1;placed=true;}
-    }
-  }
-});
-db.ref('games/battleship/'+myUid+'_'+o+'/board').set(myBoard);
-render();
-};
-
-window.shoot=function(o,x,y){
-if(!myTurn||gameOver||enemyBoard[y][x]!==0)return;
-myTurn=false;
-db.ref('games/battleship/'+myUid+'_'+o+'/shot').set({x:x,y:y});
-};
-
-db.ref('games/battleship/'+myUid+'_'+o+'/shot').on('value',function(snap){});
-db.ref('games/battleship/'+o+'_'+myUid+'/shot').on('value',function(snap){
-var s=snap.val();
-if(s&&s.from===o){
-  var hit=myBoard[s.y][s.x]===1;
-  myBoard[s.y][s.x]=hit?2:3;
-  var result={x:s.x,y:s.y,hit:hit};
-  db.ref('games/battleship/'+o+'_'+myUid+'/result').set(result);
-  db.ref('games/battleship/'+o+'_'+myUid+'/shot').remove();
-  myTurn=true;
-  if(hit){
-    var allSunk=true;
-    for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++)if(myBoard[y][x]===1)allSunk=false;
-    if(allSunk){gameOver=true;render();alert('Соперник победил! 😢');}
-  }
-  render();
-}
-});
-
-db.ref('games/battleship/'+myUid+'_'+o+'/result').on('value',function(snap){
-var r=snap.val();
-if(r){
-  enemyBoard[r.y][r.x]=r.hit?2:3;
-  myTurn=true;
-  var allHit=true;
-  var shipsLeft=false;
-  for(var y=0;y<SIZE;y++)for(var x=0;x<SIZE;x++)if(enemyBoard[y][x]===2)allHit=true;
-  if(allHit){gameOver=true;render();alert('Ты победил! 🎉');}
-  render();
-  db.ref('games/battleship/'+myUid+'_'+o+'/result').remove();
-}
-});
-
-render();
-}
-
-// ==================== ЗМЕЙКА ====================
+// ==================== ВСЕ ОСТАЛЬНЫЕ ИГРЫ (Змейка, Тетрис, Раннер, ChickenRain, Flappy, Memory, Guess, RPS) ====================
 function initSnake(){
 document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" id="su">↑</button><div class="mobile-row"><button class="mobile-btn" id="sl">←</button><button class="mobile-btn" id="sd">↓</button><button class="mobile-btn" id="sr">→</button></div></div><p>Стрелки/кнопки | 🌾</p>';
 createGameRating();
 var c=document.getElementById('sc'),ctx=c.getContext('2d'),snake=[{x:200,y:200}],food=rf(),dir={x:20,y:0},score=0,over=false;
 function rf(){return{x:Math.floor(Math.random()*20)*20,y:Math.floor(Math.random()*20)*20};}
 function cd(nd){if(over||(nd.x===-dir.x&&nd.y===-dir.y)||(nd.x!==0&&dir.x!==0)||(nd.y!==0&&dir.y!==0))return;dir=nd;}
-document.getElementById('su').onclick=function(){cd({x:0,y:-20});};
-document.getElementById('sd').onclick=function(){cd({x:0,y:20});};
-document.getElementById('sl').onclick=function(){cd({x:-20,y:0});};
-document.getElementById('sr').onclick=function(){cd({x:20,y:0});};
+document.getElementById('su').onclick=function(){cd({x:0,y:-20});};document.getElementById('sd').onclick=function(){cd({x:0,y:20});};document.getElementById('sl').onclick=function(){cd({x:-20,y:0});};document.getElementById('sr').onclick=function(){cd({x:20,y:0});};
 document.onkeydown=function(e){if(e.key==='ArrowLeft')cd({x:-20,y:0});if(e.key==='ArrowRight')cd({x:20,y:0});if(e.key==='ArrowUp')cd({x:0,y:-20});if(e.key==='ArrowDown')cd({x:0,y:20});e.preventDefault();};
-var tx=0,ty=0;
-c.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;});
-c.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>Math.abs(dy)){if(dx>0)cd({x:20,y:0});else cd({x:-20,y:0});}else{if(dy>0)cd({x:0,y:20});else cd({x:0,y:-20});}});
+var tx=0,ty=0;c.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;});c.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>Math.abs(dy)){if(dx>0)cd({x:20,y:0});else cd({x:-20,y:0});}else{if(dy>0)cd({x:0,y:20});else cd({x:0,y:-20});}});
 function loop(){if(over)return;var h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(h.x<0||h.x>=400||h.y<0||h.y>=400||snake.some(function(s){return s.x===h.x&&s.y===h.y;})){end(score);return;}snake.unshift(h);if(h.x===food.x&&h.y===food.y){score++;document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;food=rf();}else snake.pop();ctx.clearRect(0,0,400,400);ctx.fillStyle='#ffd700';ctx.fillRect(food.x,food.y,18,18);ctx.fillStyle='#4CAF50';snake.forEach(function(s){ctx.fillRect(s.x,s.y,18,18);});}
 function end(s){over=true;clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initSnake();};document.getElementById('gameContent').appendChild(b);alert('Игра окончена! Счёт: '+s+' 🐍');}
 gameInterval=setInterval(loop,100);
 }
 
-// ==================== ТЕТРИС ====================
 function initTetris(){
 document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="600" class="game-canvas"></canvas><div class="mobile-controls"><div class="mobile-row"><button class="mobile-btn" id="bl">←</button><button class="mobile-btn" id="brt">↻</button><button class="mobile-btn" id="br">→</button><button class="mobile-btn" id="bd">↓</button></div></div><p>Клавиши/кнопки</p>';
 createGameRating();
@@ -1047,12 +532,10 @@ function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);for(var 
 function loop(){if(over)return;var now=Date.now();if(now-lastDrop>500)drop();draw();requestAnimationFrame(loop);}
 function end(){over=true;var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initTetris();};document.getElementById('gameContent').appendChild(b);alert('Игра окончена! Счёт: '+score+' 🧱');}
 document.onkeydown=function(e){if(over)return;if(e.key==='ArrowLeft')ml();if(e.key==='ArrowRight')mr();if(e.key==='ArrowDown')drop();if(e.key==='ArrowUp')rotate();e.preventDefault();};
-document.getElementById('bl').onclick=function(){if(!over)ml();};document.getElementById('br').onclick=function(){if(!over)mr();};
-document.getElementById('brt').onclick=function(){if(!over)rotate();};document.getElementById('bd').onclick=function(){if(!over)drop();};
+document.getElementById('bl').onclick=function(){if(!over)ml();};document.getElementById('br').onclick=function(){if(!over)mr();};document.getElementById('brt').onclick=function(){if(!over)rotate();};document.getElementById('bd').onclick=function(){if(!over)drop();};
 requestAnimationFrame(loop);
 }
 
-// ==================== РАННЕР ====================
 function initRunner(){
 document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><p>Пробел/клик — прыжок!</p>';
 createGameRating();
@@ -1064,22 +547,19 @@ function end(){over=true;clearInterval(gameInterval);var b=document.createElemen
 gameInterval=setInterval(loop,20);
 }
 
-// ==================== CHICKEN RAIN ====================
 function initChickenRain(){
-document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div class="mobile-controls"><div class="mobile-row"><button class="mobile-btn" id="crl">←</button><button class="mobile-btn" id="crr">→</button></div></div><p>← → лови яйца 🥚</p>';
+document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div class="mobile-controls"><div class="mobile-row"><button class="mobile-btn" id="crl">←</button><button class="mobile-btn" id="crr">→</button></div></div><p>← → лови 🥚</p>';
 createGameRating();
 var c=document.getElementById('cr'),ctx=c.getContext('2d'),chicken={x:180,y:440},eggs=[],score=0,over=false;
 function spawnEgg(){return{x:Math.random()*370,y:-20,speed:1.5+Math.random()*2};}
 document.onkeydown=function(e){if(e.key==='ArrowLeft')chicken.x=Math.max(0,chicken.x-25);if(e.key==='ArrowRight')chicken.x=Math.min(350,chicken.x+25);};
-document.getElementById('crl').onclick=function(){chicken.x=Math.max(0,chicken.x-25);};
-document.getElementById('crr').onclick=function(){chicken.x=Math.min(350,chicken.x+25);};
+document.getElementById('crl').onclick=function(){chicken.x=Math.max(0,chicken.x-25);};document.getElementById('crr').onclick=function(){chicken.x=Math.min(350,chicken.x+25);};
 c.addEventListener('touchmove',function(e){e.preventDefault();var r=c.getBoundingClientRect();chicken.x=e.touches[0].clientX-r.left-25;chicken.x=Math.max(0,Math.min(350,chicken.x));});
 function loop(){if(over)return;ctx.clearRect(0,0,400,500);ctx.fillStyle='#4CAF50';ctx.fillRect(0,460,400,40);ctx.font='40px Arial';ctx.fillText('🐔',chicken.x,chicken.y);if(Math.random()<0.02)eggs.push(spawnEgg());for(var i=eggs.length-1;i>=0;i--){eggs[i].y+=eggs[i].speed;ctx.fillText('🥚',eggs[i].x,eggs[i].y);if(eggs[i].y>420&&eggs[i].y<460&&Math.abs(eggs[i].x-chicken.x)<35){eggs.splice(i,1);score++;document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;}else if(eggs[i].y>500){eggs.splice(i,1);end(score);}}}
 function end(s){over=true;clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initChickenRain();};document.getElementById('gameContent').appendChild(b);alert('Яйцо разбилось! Счёт: '+s+' 🌧️');}
 gameInterval=setInterval(loop,20);
 }
 
-// ==================== FLAPPY CHICKEN ====================
 function initFlappy(){
 document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик — лететь! 🐔</p>';
 createGameRating();
@@ -1091,7 +571,6 @@ function end(){over=true;clearInterval(gameInterval);var b=document.createElemen
 gameInterval=setInterval(loop,20);
 }
 
-// ==================== MEMORY ====================
 function initMemory(){
 createGameRating();
 var emojis=['🐔','🥚','🐣','🐓','🌾','🦊','🐍','🪨'];
@@ -1102,7 +581,6 @@ window.memClick=function(i){if(flipped.length>=2||flipped.includes(i)||matched.i
 renderM();
 }
 
-// ==================== УГАДАЙ ЧИСЛО ====================
 function initGuess(){
 createGameRating();
 var number=Math.floor(Math.random()*100)+1,attempts=0;
@@ -1111,44 +589,30 @@ document.getElementById('gameScoreDisplay').textContent='Попыток: 0';
 window.guessClick=function(){var g=parseInt(document.getElementById('gi').value);if(!g)return;attempts++;if(g===number){alert('Победа! За '+attempts+' попыток!');document.getElementById('gameScoreDisplay').textContent='Победа!';}else if(g<number)document.getElementById('gh').textContent='🔺 Больше!';else document.getElementById('gh').textContent='🔻 Меньше!';document.getElementById('gameScoreDisplay').textContent='Попыток: '+attempts;};
 }
 
-// ==================== КАМЕНЬ-НОЖНИЦЫ ====================
 function initRPS(){
 createGameRating();
 var score={p:0,b:0};
-document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button onclick="rpsClick(0)" style="font-size:24px;padding:20px">🪨 Камень</button><button onclick="rpsClick(1)" style="font-size:24px;padding:20px">📄 Бумага</button><button onclick="rpsClick(2)" style="font-size:24px;padding:20px">✂️ Ножницы</button></div><p id="rr"></p>';
+document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button onclick="rpsClick(0)" style="font-size:24px;padding:20px">🪨</button><button onclick="rpsClick(1)" style="font-size:24px;padding:20px">📄</button><button onclick="rpsClick(2)" style="font-size:24px;padding:20px">✂️</button></div><p id="rr"></p>';
 document.getElementById('gameScoreDisplay').textContent='Ты: 0 | Бот: 0';
-window.rpsClick=function(p){var ch=['🪨','📄','✂️'],bot=Math.floor(Math.random()*3),res='';if(p===bot)res='Ничья!';else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){score.p++;res='Ты победил!';}else{score.b++;res='Бот победил!';}document.getElementById('rr').textContent='Ты: '+ch[p]+' vs Бот: '+ch[bot]+' — '+res;document.getElementById('gameScoreDisplay').textContent='Ты: '+score.p+' | Бот: '+score.b;};
+window.rpsClick=function(p){var ch=['🪨','📄','✂️'],bot=Math.floor(Math.random()*3);if(p===bot)document.getElementById('rr').textContent='Ничья!';else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){score.p++;document.getElementById('rr').textContent='Ты победил!';}else{score.b++;document.getElementById('rr').textContent='Бот победил!';}document.getElementById('gameScoreDisplay').textContent='Ты: '+score.p+' | Бот: '+score.b;};
 }
 
-// ==================== ЦИТАТА ДНЯ ====================
+// ==================== ЦИТАТА ====================
 function getDailyQuote(){var t=new Date();return quotes[(t.getFullYear()*10000+(t.getMonth()+1)*100+t.getDate())%quotes.length];}
 function showDailyQuote(){
 var q=getDailyQuote();
 var h='<div class="quote-box"><div class="quote-text">«'+q.text+'»</div><div class="quote-author">— '+q.author+'</div><div class="quote-movie">🎬 '+q.movie+'</div></div>';
 var cat=document.querySelector('#home-screen .catalog');
-if(cat){
-  var ex=document.getElementById('dailyQuote');
-  if(ex)ex.innerHTML=h;
-  else{
-    var d=document.createElement('div');d.id='dailyQuote';d.style.cssText='max-width:600px;margin:30px auto 0';
-    d.innerHTML='<h3 style="color:#ffd700;margin-bottom:10px">💬 Цитата дня</h3>'+h;
-    cat.appendChild(d);
-  }
-}
+if(cat){var ex=document.getElementById('dailyQuote');if(ex)ex.innerHTML=h;else{var d=document.createElement('div');d.id='dailyQuote';d.style.cssText='max-width:600px;margin:30px auto 0';d.innerHTML='<h3 style="color:#ffd700;margin-bottom:10px">💬 Цитата дня</h3>'+h;cat.appendChild(d);}}
 }
 
-// ==================== ЗАГРУЗКА РЕЙТИНГОВ НА ГЛАВНУЮ ====================
+// ==================== ЗАГРУЗКА РЕЙТИНГОВ ====================
 function loadAllRatings(){
 Object.keys(moviesData).forEach(function(mid){
   db.ref('reviews/'+mid).on('value',function(snap){
     var revs=[];snap.forEach(function(c){revs.push(c.val());});
     var el=document.getElementById('rating-'+mid);
-    if(el){
-      if(revs.length>0){
-        var sum=0;revs.forEach(function(r){sum+=r.rating;});
-        el.textContent='⭐ '+(sum/revs.length).toFixed(1)+'/10';
-      }else{el.textContent='Нет оценок';}
-    }
+    if(el){if(revs.length>0){var sum=0;revs.forEach(function(r){sum+=r.rating;});el.textContent='⭐ '+(sum/revs.length).toFixed(1)+'/10';}else el.textContent='Нет оценок';}
   });
 });
 }
