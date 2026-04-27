@@ -310,7 +310,42 @@ function adminDelete(path){if(!isAdmin)return;if(confirm("👑 Удалить?")
 function setupReviewStars(){var stars=document.querySelectorAll('#revStars .star');stars.forEach(function(s){s.onclick=function(){reviewRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,reviewRating);document.getElementById('ratingText').textContent=reviewRating+'/10';};s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,reviewRating);};});updateStars(stars,10);}
 function updateStars(stars,r){stars.forEach(function(s){var v=parseInt(s.getAttribute('data-v'))*2;s.classList.remove('full','half','hover-full','hover-half');if(r>=v)s.classList.add('full');else if(r===v-1)s.classList.add('half');});}
 
-function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');db.ref('reviews/'+currentMovieId).push({name:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,text:t,rating:reviewRating,timestamp:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';});}
+function addReview(){
+  var t = document.getElementById('reviewText').value.trim();
+  if (!t) return alert('Напиши текст отзыва!');
+  
+  var avatarData;
+  try {
+    avatarData = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
+  } catch(e) {
+    avatarData = {type:'emoji', value:'🐔'};
+  }
+  
+  var review = {
+    name: localStorage.getItem('tildochka_username') || 'Гость',
+    avatarType: avatarData.type,
+    avatarValue: avatarData.value,
+    text: t,
+    rating: reviewRating,
+    timestamp: Date.now()
+  };
+  
+  console.log('Отправляю отзыв:', review);
+  
+  db.ref('reviews/' + currentMovieId).push(review)
+    .then(function() {
+      console.log('Отзыв сохранён!');
+      document.getElementById('reviewText').value = '';
+      reviewRating = 10;
+      updateStars(document.querySelectorAll('#revStars .star'), 10);
+      document.getElementById('ratingText').textContent = '10/10';
+      alert('✅ Отзыв сохранён!');
+    })
+    .catch(function(error) {
+      console.error('Ошибка:', error);
+      alert('❌ Ошибка: ' + error.message);
+    });
+}
 function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push({id:c.key,name:c.val().name,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'🐔',text:c.val().text,rating:c.val().rating,timestamp:c.val().timestamp});});revs.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('reviews');if(!revs.length){c.innerHTML='<p style="color:#888">Пока нет отзывов. Будьте первым!</p>';}else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var avatarHTML=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':r.avatarValue;var d=document.createElement('div');d.className='review';d.innerHTML=(isAdmin?'<button class="delete-review" onclick="adminDelete(\'reviews/'+mid+'/'+r.id+'\')">👑🗑️</button>':'<button class="delete-review" onclick="db.ref(\'reviews/'+mid+'/'+r.id+'\').remove()">🗑️</button>')+'<span class="review-avatar">'+avatarHTML+'</span> <span class="review-name">'+r.name+'</span><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div><div class="review-date">'+new Date(r.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});}updateMovieRating(mid,revs);});}
 function updateMovieRating(mid,revs){if(!revs.length){document.getElementById('movieRatingHero').textContent='Нет оценок';document.getElementById('totalRatingDisplay').textContent='Нет оценок';document.getElementById('reviewsCountDisplay').textContent='0 отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='Нет оценок';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';document.getElementById('reviewsCountDisplay').textContent='На основе '+revs.length+' отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+' / 10';}
 
