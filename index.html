@@ -8,7 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:Arial;background:#1a1a1a;color:#fff;min-height:100vh}
+    body{font-family:Arial;background:#1a1a1a;color:#fff;min-height:100vh;transition:background 0.5s}
     #bg{position:fixed;top:0;left:0;width:100%;height:100%;background:url("bg.jpg") center/cover;z-index:-2}
     #bg::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85)}
     #blocked{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;color:#000;font-size:2rem;justify-content:center;align-items:center;z-index:1000}
@@ -81,17 +81,22 @@
     .modal-overlay.show{display:flex}
     .modal-box{background:#1a1a1a;border:2px solid #ffd700;border-radius:15px;padding:30px;text-align:center;max-width:500px;width:90%;max-height:90vh;overflow-y:auto}
     .modal-box h3{color:#ffd700;margin-bottom:15px}.modal-box input{width:100%;padding:12px;margin:10px 0;background:#2a2a2a;color:#fff;border:1px solid #ffd700;border-radius:8px;text-align:center}
-    .modal-box button{margin-top:10px;background:#ffd700;color:#000;font-weight:700;border:none;padding:12px 30px}
     .avatar-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
     .avatar-option{width:50px;height:50px;border-radius:50%;border:3px solid transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;background:rgba(0,0,0,.5);transition:.2s}
     .avatar-option:hover{border-color:#ffd700;transform:scale(1.1)}
     .avatar-option.selected{border-color:#ffd700;background:rgba(255,215,0,.2)}
     .draw-canvas{border:2px solid #555;border-radius:10px;background:#fff;cursor:crosshair;margin:10px auto;display:block}
-    #easterEgg{position:fixed;bottom:20px;right:20px;font-size:40px;cursor:pointer;opacity:.1;transition:.3s;z-index:50}
-    #easterEgg:hover{opacity:1;transform:scale(1.2) rotate(10deg)}
-    #easterEgg.found{animation:crack .5s}@keyframes crack{0%{transform:scale(1)}50%{transform:scale(2) rotate(180deg);opacity:1}100%{transform:scale(0);opacity:0}}
-    #easterCounter{position:fixed;bottom:70px;right:20px;background:rgba(0,0,0,.8);color:#ffd700;padding:8px 15px;border-radius:20px;font-size:14px;z-index:50;display:none;border:1px solid #ffd700;animation:fadeInOut 5s forwards}
-    @keyframes fadeInOut{0%{opacity:0;transform:translateY(10px)}10%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0;display:none}}
+    
+    /* Пасхалка */
+    #easterEgg{position:fixed;font-size:35px;cursor:pointer;opacity:0.15;transition:all 0.3s;z-index:50;user-select:none;animation:eggFloat 3s ease-in-out infinite}
+    #easterEgg:hover{opacity:1;transform:scale(1.3) rotate(15deg)}
+    #easterEgg.found{animation:eggCrack 0.6s ease}
+    #eggCountBadge{position:absolute;top:-15px;right:-15px;background:#ff4444;color:#fff;border-radius:50%;width:22px;height:22px;font-size:11px;display:flex;align-items:center;just-content:center;font-weight:bold;display:none}
+    @keyframes eggFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    @keyframes eggCrack{0%{transform:scale(1) rotate(0)}30%{transform:scale(1.5) rotate(20deg);opacity:1}100%{transform:scale(0) rotate(180deg);opacity:0}}
+    #easterCounter{position:fixed;bottom:70px;right:20px;background:rgba(0,0,0,.9);color:#ffd700;padding:10px 18px;border-radius:25px;font-size:15px;z-index:50;display:none;border:1px solid #ffd700;animation:slideUp 0.5s ease;box-shadow:0 5px 20px rgba(255,215,0,.3)}
+    @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    
     .quote-box{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,215,0,.05));border-left:3px solid #ffd700;padding:15px 20px;margin:15px 0;border-radius:8px;font-style:italic}
     .quote-text{font-size:1.1rem;margin-bottom:10px}.quote-author{color:#ffd700;text-align:right}.quote-movie{color:#aaa;font-size:.8rem;text-align:right}
     .media-upload label{display:inline-block;padding:10px 20px;background:#444;border-radius:8px;cursor:pointer;margin:5px}
@@ -103,6 +108,11 @@
     .xo-board{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:5px;justify-content:center;margin:20px auto}
     .xo-cell{width:100px;height:100px;background:#333;border:2px solid #555;border-radius:10px;font-size:50px;display:flex;align-items:center;justify-content:center;cursor:pointer}
     .xo-cell.x{color:#ffd700}.xo-cell.o{color:#f60}
+    
+    /* Конфетти */
+    .confetti{position:fixed;pointer-events:none;z-index:999;animation:confettiFall 3s ease-in forwards}
+    @keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+    
     @media(max-width:768px){.logo{font-size:24px}.hero h1{font-size:1.8rem}.movie-card,.game-card{width:calc(50% - 10px);min-width:140px;padding:10px}.game-icon{font-size:40px}.section{padding:15px}button{padding:10px 15px;font-size:14px}.star{font-size:28px}.xo-board{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)}.xo-cell{width:80px;height:80px;font-size:40px}}
   </style>
 </head>
@@ -169,69 +179,40 @@
 </div>
 
 <div id="game-screen" class="screen">
-<div class="game-container">
-<button onclick="stopGame();showScreen('home')">← На главную</button>
-<h2 id="gameTitle"></h2>
-<div class="game-score" id="gameScoreDisplay">Счёт: 0</div>
-<div id="gameContent"></div>
-<div id="gameRatingArea"></div>
-<div class="leaderboard" id="leaderboard"><h3>🏆 Лидеры</h3><p>Загрузка...</p></div>
-</div>
+<div class="game-container"><button onclick="stopGame();showScreen('home')">← На главную</button><h2 id="gameTitle"></h2><div class="game-score" id="gameScoreDisplay">Счёт: 0</div><div id="gameContent"></div><div id="gameRatingArea"></div><div class="leaderboard" id="leaderboard"><h3>🏆 Лидеры</h3><p>Загрузка...</p></div></div>
 </div>
 
 <div id="chat-screen" class="screen"><div class="chat-container"><h2>💬 Чат</h2><div id="chatMessagesLive" style="max-height:500px;overflow-y:auto">Загрузка...</div><textarea id="chatMessageLive" placeholder="Сообщение..."></textarea><button onclick="sendChatMessage()">💬 Отправить</button></div></div>
-
 <div id="memes-screen" class="screen"><div class="chat-container"><h2>😂 Мемы</h2><textarea id="memeCaption" placeholder="Подпись..."></textarea><div class="media-upload"><label for="memePhoto">📷 Фото</label><input type="file" id="memePhoto" accept="image/*" onchange="previewMemeMedia('photo')"><label for="memeVideo">🎬 Видео</label><input type="file" id="memeVideo" accept="video/*" onchange="previewMemeMedia('video')"></div><div id="memePreview"></div><button onclick="postMeme()">😂 Опубликовать</button><div id="memesList" style="margin-top:30px">Загрузка...</div></div></div>
-
 <div id="ideas-screen" class="screen"><div class="chat-container"><h2>💡 Идеи</h2><div id="ideasList">Загрузка...</div><textarea id="ideaText" placeholder="Идея..."></textarea><button onclick="addIdea()">💡 Предложить</button></div></div>
-
 </div>
 </div>
 
-<!-- Модальное окно профиля -->
 <div class="modal-overlay" id="profileModal">
-<div class="modal-box" style="max-width:500px">
-<h3>👤 Твой профиль</h3>
-<div id="profileAvatarPreview" style="width:80px;height:80px;border-radius:50%;border:3px solid #ffd700;margin:10px auto;display:flex;align-items:center;justify-content:center;font-size:45px;background:rgba(0,0,0,.5);overflow:hidden">
-<span id="avatarPreviewContent">🐔</span>
-</div>
+<div class="modal-box" style="max-width:500px"><h3>👤 Твой профиль</h3>
+<div id="profileAvatarPreview" style="width:80px;height:80px;border-radius:50%;border:3px solid #ffd700;margin:10px auto;display:flex;align-items:center;justify-content:center;font-size:45px;background:rgba(0,0,0,.5);overflow:hidden"><span id="avatarPreviewContent">🐔</span></div>
 <input id="newNameInput" placeholder="Введи имя"><br>
 <button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:5px">📷 Загрузить фото</button>
 <button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:5px">🎨 Нарисовать</button>
 <input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none">
-<div id="drawArea" style="display:none;margin-top:10px">
-<canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas>
-<div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:5px 0">
-<button onclick="changeDrawColor('#000000')" style="background:#000;width:30px;height:30px;border-radius:50%;padding:0"></button>
-<button onclick="changeDrawColor('#ff0000')" style="background:red;width:30px;height:30px;border-radius:50%;padding:0"></button>
-<button onclick="changeDrawColor('#00ff00')" style="background:green;width:30px;height:30px;border-radius:50%;padding:0"></button>
-<button onclick="changeDrawColor('#0000ff')" style="background:blue;width:30px;height:30px;border-radius:50%;padding:0"></button>
-<button onclick="changeDrawColor('#ffff00')" style="background:yellow;width:30px;height:30px;border-radius:50%;padding:0"></button>
-<button onclick="changeDrawColor('#ff00ff')" style="background:fuchsia;width:30px;height:30px;border-radius:50%;padding:0"></button>
-<button onclick="changeDrawColor('#ffffff')" style="background:#fff;width:30px;height:30px;border-radius:50%;padding:0"></button>
-<button onclick="clearDrawCanvas()" style="background:#555;padding:5px 10px;font-size:12px">Очистить</button>
-</div>
-<button onclick="saveDrawnAvatar()" style="font-size:14px;padding:8px 15px">💾 Сохранить рисунок</button>
-</div>
+<div id="drawArea" style="display:none;margin-top:10px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas>
+<div style="display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:5px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:30px;height:30px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:30px;height:30px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:30px;height:30px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:30px;height:30px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:30px;height:30px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f0f')" style="background:fuchsia;width:30px;height:30px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#fff')" style="background:#fff;width:30px;height:30px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:5px 10px;font-size:12px">Очистить</button></div>
+<button onclick="saveDrawnAvatar()" style="font-size:14px;padding:8px 15px">💾 Сохранить рисунок</button></div>
 <p style="color:#ffd700;margin-top:15px">Или выбери готовый:</p>
-<div class="avatar-grid" id="avatarGrid">
-<span class="avatar-option selected" onclick="selectAvatar('🐔')">🐔</span><span class="avatar-option" onclick="selectAvatar('🐣')">🐣</span><span class="avatar-option" onclick="selectAvatar('🥚')">🥚</span><span class="avatar-option" onclick="selectAvatar('🐓')">🐓</span><span class="avatar-option" onclick="selectAvatar('🐧')">🐧</span><span class="avatar-option" onclick="selectAvatar('🦆')">🦆</span><span class="avatar-option" onclick="selectAvatar('🦉')">🦉</span><span class="avatar-option" onclick="selectAvatar('🦩')">🦩</span><span class="avatar-option" onclick="selectAvatar('🦜')">🦜</span><span class="avatar-option" onclick="selectAvatar('🐤')">🐤</span><span class="avatar-option" onclick="selectAvatar('👑')">👑</span><span class="avatar-option" onclick="selectAvatar('🌟')">🌟</span><span class="avatar-option" onclick="selectAvatar('💎')">💎</span><span class="avatar-option" onclick="selectAvatar('🔥')">🔥</span><span class="avatar-option" onclick="selectAvatar('💀')">💀</span><span class="avatar-option" onclick="selectAvatar('🤖')">🤖</span><span class="avatar-option" onclick="selectAvatar('👻')">👻</span><span class="avatar-option" onclick="selectAvatar('🎭')">🎭</span>
-</div>
-<br>
-<button onclick="saveProfile()">💾 Сохранить профиль</button>
-<button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:5px">Отмена</button>
-</div>
+<div class="avatar-grid" id="avatarGrid"><span class="avatar-option selected" onclick="selectAvatar('🐔')">🐔</span><span class="avatar-option" onclick="selectAvatar('🐣')">🐣</span><span class="avatar-option" onclick="selectAvatar('🥚')">🥚</span><span class="avatar-option" onclick="selectAvatar('🐓')">🐓</span><span class="avatar-option" onclick="selectAvatar('🐧')">🐧</span><span class="avatar-option" onclick="selectAvatar('🦆')">🦆</span><span class="avatar-option" onclick="selectAvatar('🦉')">🦉</span><span class="avatar-option" onclick="selectAvatar('🦩')">🦩</span><span class="avatar-option" onclick="selectAvatar('🦜')">🦜</span><span class="avatar-option" onclick="selectAvatar('🐤')">🐤</span><span class="avatar-option" onclick="selectAvatar('👑')">👑</span><span class="avatar-option" onclick="selectAvatar('🌟')">🌟</span><span class="avatar-option" onclick="selectAvatar('💎')">💎</span><span class="avatar-option" onclick="selectAvatar('🔥')">🔥</span><span class="avatar-option" onclick="selectAvatar('💀')">💀</span><span class="avatar-option" onclick="selectAvatar('🤖')">🤖</span><span class="avatar-option" onclick="selectAvatar('👻')">👻</span><span class="avatar-option" onclick="selectAvatar('🎭')">🎭</span></div>
+<br><button onclick="saveProfile()">💾 Сохранить профиль</button>
+<button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:5px">Отмена</button></div>
 </div>
 
-<div id="easterEgg" onclick="foundEasterEgg()">🥚</div>
+<div id="easterEgg" onclick="foundEasterEgg()">🥚<span id="eggCountBadge">0</span></div>
 <div id="easterCounter">🥚 Найдено: <span id="eggCount">0</span></div>
 
 <script>
 firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
 var db=firebase.database();
 var currentGame=null,gameInterval=null,reviewRating=10,gameRating=10,currentMovieId='',memeMedia=null,memeMediaType=null,isAdmin=false;
-var selectedAvatar='🐔',selectedAvatarType='emoji',drawColor='#000000',drawCanvas=null,drawCtx=null;
-var eggTimer=null;
+var selectedAvatar='🐔',selectedAvatarType='emoji',drawColor='#000',drawCanvas=null,drawCtx=null;
+var eggTimer=null,eggsFound=0;
 
 var moviesData={
 series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',description:'Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия. С каждой серией герои сталкиваются с новыми испытаниями, которые заставляют их меняться, расти и по-новому смотреть на мир.',tags:['комедия','боевик','романтика'],type:'series'},
@@ -255,12 +236,11 @@ setInterval(function(){ref.update({lastSeen:Date.now()});},30000);
 function loadProfile(){
 var n=localStorage.getItem('tildochka_username')||'Гость';
 var avatarStr=localStorage.getItem('tildochka_avatar_data');
-if(avatarStr){
-try{var ad=JSON.parse(avatarStr);selectedAvatar=ad;selectedAvatarType=ad.type;
+if(avatarStr){try{var ad=JSON.parse(avatarStr);selectedAvatar=ad;selectedAvatarType=ad.type;
 if(ad.type==='emoji')document.getElementById('headerAvatar').textContent=ad.value;
 else document.getElementById('headerAvatar').innerHTML='<img src="'+ad.value+'" style="width:100%;height:100%;object-fit:cover">';
-}catch(e){selectedAvatar='🐔';selectedAvatarType='emoji';document.getElementById('headerAvatar').textContent='🐔';}
-}else{selectedAvatar='🐔';selectedAvatarType='emoji';document.getElementById('headerAvatar').textContent='🐔';}
+}catch(e){selectedAvatar='🐔';selectedAvatarType='emoji';document.getElementById('headerAvatar').textContent='🐔';}}
+else{selectedAvatar='🐔';selectedAvatarType='emoji';document.getElementById('headerAvatar').textContent='🐔';}
 document.getElementById('profileName').textContent=n;
 }
 
@@ -270,49 +250,18 @@ var avatarStr=localStorage.getItem('tildochka_avatar_data');
 if(avatarStr){try{selectedAvatar=JSON.parse(avatarStr);selectedAvatarType=selectedAvatar.type;}catch(e){selectedAvatar='🐔';selectedAvatarType='emoji';}}
 else{selectedAvatar='🐔';selectedAvatarType='emoji';}
 updateAvatarPreview();
-document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');
-if(selectedAvatarType==='emoji'&&el.textContent===selectedAvatar)el.classList.add('selected');});
+document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(selectedAvatarType==='emoji'&&el.textContent===selectedAvatar)el.classList.add('selected');});
 document.getElementById('drawArea').style.display='none';
 document.getElementById('profileModal').classList.add('show');
 }
-function updateAvatarPreview(){
-var preview=document.getElementById('avatarPreviewContent');
-if(selectedAvatarType==='emoji'){preview.innerHTML=selectedAvatar;}
-else if(selectedAvatarType==='image'){preview.innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
-}
-function selectAvatar(emoji){selectedAvatar=emoji;selectedAvatarType='emoji';updateAvatarPreview();
-document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(el.textContent===emoji)el.classList.add('selected');});}
-function loadCustomAvatar(){
-var file=document.getElementById('customAvatarInput').files[0];if(!file)return;
-var reader=new FileReader();
-reader.onload=function(e){selectedAvatar={type:'image',value:e.target.result};selectedAvatarType='image';updateAvatarPreview();};
-reader.readAsDataURL(file);
-}
-function showDrawCanvas(){
-document.getElementById('drawArea').style.display='block';
-drawCanvas=document.getElementById('drawCanvas');drawCtx=drawCanvas.getContext('2d');
-drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,200,200);
-var drawing=false;
-drawCanvas.onmousedown=function(e){drawing=true;draw(e);};
-drawCanvas.onmouseup=function(){drawing=false;drawCtx.beginPath();};
-drawCanvas.onmousemove=function(e){if(drawing)draw(e);};
-drawCanvas.ontouchstart=function(e){e.preventDefault();drawing=true;draw(e.touches[0]);};
-drawCanvas.ontouchend=function(){drawing=false;drawCtx.beginPath();};
-drawCanvas.ontouchmove=function(e){e.preventDefault();if(drawing)draw(e.touches[0]);};
-function draw(e){var rect=drawCanvas.getBoundingClientRect();var x=(e.clientX-rect.left)*(200/rect.width);var y=(e.clientY-rect.top)*(200/rect.height);drawCtx.fillStyle=drawColor;drawCtx.beginPath();drawCtx.arc(x,y,5,0,Math.PI*2);drawCtx.fill();}
-}
-function changeDrawColor(color){drawColor=color;}
-function clearDrawCanvas(){if(drawCtx){drawCtx.fillStyle='#ffffff';drawCtx.fillRect(0,0,200,200);}}
-function saveDrawnAvatar(){if(!drawCanvas)return;var data=drawCanvas.toDataURL('image/png');selectedAvatar={type:'image',value:data};selectedAvatarType='image';updateAvatarPreview();document.getElementById('drawArea').style.display='none';}
-function saveProfile(){
-var n=document.getElementById('newNameInput').value.trim();if(!n){alert('Введи имя!');return;}
-localStorage.setItem('tildochka_username',n);
-localStorage.setItem('tildochka_avatar_data',JSON.stringify(selectedAvatar));
-document.getElementById('profileName').textContent=n;
-if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar;
-else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';
-document.getElementById('profileModal').classList.remove('show');
-}
+function updateAvatarPreview(){var p=document.getElementById('avatarPreviewContent');if(selectedAvatarType==='emoji')p.innerHTML=selectedAvatar;else p.innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
+function selectAvatar(e){selectedAvatar=e;selectedAvatarType='emoji';updateAvatarPreview();document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(el.textContent===e)el.classList.add('selected');});}
+function loadCustomAvatar(){var f=document.getElementById('customAvatarInput').files[0];if(!f)return;var r=new FileReader();r.onload=function(e){selectedAvatar={type:'image',value:e.target.result};selectedAvatarType='image';updateAvatarPreview();};r.readAsDataURL(f);}
+function showDrawCanvas(){document.getElementById('drawArea').style.display='block';drawCanvas=document.getElementById('drawCanvas');drawCtx=drawCanvas.getContext('2d');drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,200,200);var d=false;drawCanvas.onmousedown=function(e){d=true;draw(e);};drawCanvas.onmouseup=function(){d=false;drawCtx.beginPath();};drawCanvas.onmousemove=function(e){if(d)draw(e);};drawCanvas.ontouchstart=function(e){e.preventDefault();d=true;draw(e.touches[0]);};drawCanvas.ontouchend=function(){d=false;drawCtx.beginPath();};drawCanvas.ontouchmove=function(e){e.preventDefault();if(d)draw(e.touches[0]);};function draw(e){var r=drawCanvas.getBoundingClientRect();var x=(e.clientX-r.left)*(200/r.width);var y=(e.clientY-r.top)*(200/r.height);drawCtx.fillStyle=drawColor;drawCtx.beginPath();drawCtx.arc(x,y,5,0,Math.PI*2);drawCtx.fill();}}
+function changeDrawColor(c){drawColor=c;}
+function clearDrawCanvas(){if(drawCtx){drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,200,200);}}
+function saveDrawnAvatar(){if(!drawCanvas)return;var d=drawCanvas.toDataURL('image/png');selectedAvatar={type:'image',value:d};selectedAvatarType='image';updateAvatarPreview();document.getElementById('drawArea').style.display='none';}
+function saveProfile(){var n=document.getElementById('newNameInput').value.trim();if(!n){alert('Введи имя!');return;}localStorage.setItem('tildochka_username',n);localStorage.setItem('tildochka_avatar_data',JSON.stringify(selectedAvatar));document.getElementById('profileName').textContent=n;if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar;else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';document.getElementById('profileModal').classList.remove('show');}
 function closeProfileModal(){document.getElementById('profileModal').classList.remove('show');}
 
 function showScreen(id){
@@ -357,28 +306,20 @@ function adminDelete(path){if(!isAdmin)return;if(confirm("👑 Удалить?")
 function setupReviewStars(){var stars=document.querySelectorAll('#revStars .star');stars.forEach(function(s){s.onclick=function(){reviewRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,reviewRating);document.getElementById('ratingText').textContent=reviewRating+'/10';};s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,reviewRating);};});updateStars(stars,10);}
 function updateStars(stars,r){stars.forEach(function(s){var v=parseInt(s.getAttribute('data-v'))*2;s.classList.remove('full','half','hover-full','hover-half');if(r>=v)s.classList.add('full');else if(r===v-1)s.classList.add('half');});}
 
-function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;
-var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
-db.ref('reviews/'+currentMovieId).push({name:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,text:t,rating:reviewRating,timestamp:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';});}
-function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push({id:c.key,name:c.val().name,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'🐔',text:c.val().text,rating:c.val().rating,timestamp:c.val().timestamp});});revs.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('reviews');if(!revs.length){c.innerHTML='<p style="color:#888">Пока нет отзывов. Будьте первым!</p>';}else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var avatarHTML=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':r.avatarValue;var d=document.createElement('div');d.className='review';d.innerHTML=(isAdmin?'<button class="delete-review" onclick="adminDelete(\'reviews/'+mid+'/'+r.id+'\')">👑🗑️</button>':'<button class="delete-review" onclick="db.ref(\'reviews/'+mid+'/'+r.id+'\').remove()">🗑️</button>')+'<span class="review-avatar">'+avatarHTML+'</span> <span class="review-name">'+r.name+'</span><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div><div class="review-date">'+new Date(r.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});}updateMovieRating(mid,revs);});}
+function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;var ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');db.ref('reviews/'+currentMovieId).push({name:localStorage.getItem('tildochka_username')||'Гость',avatarType:ad.type,avatarValue:ad.value,text:t,rating:reviewRating,timestamp:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';});}
+function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push({id:c.key,name:c.val().name,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'🐔',text:c.val().text,rating:c.val().rating,timestamp:c.val().timestamp});});revs.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('reviews');if(!revs.length)c.innerHTML='<p style="color:#888">Пока нет отзывов. Будьте первым!</p>';else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var ah=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':r.avatarValue;var d=document.createElement('div');d.className='review';d.innerHTML=(isAdmin?'<button class="delete-review" onclick="adminDelete(\'reviews/'+mid+'/'+r.id+'\')">👑🗑️</button>':'<button class="delete-review" onclick="db.ref(\'reviews/'+mid+'/'+r.id+'\').remove()">🗑️</button>')+'<span class="review-avatar">'+ah+'</span> <span class="review-name">'+r.name+'</span><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div><div class="review-date">'+new Date(r.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});}updateMovieRating(mid,revs);});}
 function updateMovieRating(mid,revs){if(!revs.length){document.getElementById('movieRatingHero').textContent='Нет оценок';document.getElementById('totalRatingDisplay').textContent='Нет оценок';document.getElementById('reviewsCountDisplay').textContent='0 отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='Нет оценок';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';document.getElementById('reviewsCountDisplay').textContent='На основе '+revs.length+' отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+' / 10';}
 
-function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;
-var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
-db.ref('chat').push({name:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,text:m,timestamp:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});}
-function loadChatMessages(){db.ref('chat').on('value',function(snap){var msgs=[];snap.forEach(function(c){msgs.push(c.val());});msgs.sort(function(a,b){return(a.timestamp||0)-(b.timestamp||0);});var c=document.getElementById('chatMessagesLive');c.innerHTML='';msgs.forEach(function(m){var avatarHTML=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':(m.avatarValue||'🐔');var d=document.createElement('div');d.className='message';d.innerHTML='<span class="message-avatar">'+avatarHTML+'</span> <strong>'+m.name+':</strong> '+m.text+'<div class="message-time">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});c.scrollTop=c.scrollHeight;});}
+function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;var ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');db.ref('chat').push({name:localStorage.getItem('tildochka_username')||'Гость',avatarType:ad.type,avatarValue:ad.value,text:m,timestamp:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});}
+function loadChatMessages(){db.ref('chat').on('value',function(snap){var msgs=[];snap.forEach(function(c){msgs.push(c.val());});msgs.sort(function(a,b){return(a.timestamp||0)-(b.timestamp||0);});var c=document.getElementById('chatMessagesLive');c.innerHTML='';msgs.forEach(function(m){var ah=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':(m.avatarValue||'🐔');var d=document.createElement('div');d.className='message';d.innerHTML='<span class="message-avatar">'+ah+'</span> <strong>'+m.name+':</strong> '+m.text+'<div class="message-time">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});c.scrollTop=c.scrollHeight;});}
 
 function previewMemeMedia(type){var inp=type==='photo'?document.getElementById('memePhoto'):document.getElementById('memeVideo');if(!inp.files||!inp.files[0])return;var r=new FileReader();r.onload=function(e){memeMedia=e.target.result;memeMediaType=type;document.getElementById('memePreview').innerHTML=type==='photo'?'<img src="'+e.target.result+'" style="max-width:300px;border-radius:8px">':'<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};r.readAsDataURL(inp.files[0]);}
-function postMeme(){var cap=document.getElementById('memeCaption').value.trim();if(!cap&&!memeMedia)return;
-var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
-db.ref('memes').push({author:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,caption:cap,media:memeMedia||null,mediaType:memeMediaType||null,reactions:{laugh:0,fire:0,wow:0,cry:0},timestamp:Date.now()}).then(function(){document.getElementById('memeCaption').value='';document.getElementById('memePhoto').value='';document.getElementById('memeVideo').value='';document.getElementById('memePreview').innerHTML='';memeMedia=null;memeMediaType=null;});}
-function loadMemes(){db.ref('memes').on('value',function(snap){var memes=[];snap.forEach(function(c){memes.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'😂',caption:c.val().caption,media:c.val().media,mediaType:c.val().mediaType,reactions:c.val().reactions||{},timestamp:c.val().timestamp});});memes.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('memesList');if(!memes.length){c.innerHTML='<p style="color:#888">Пока нет мемов. Будь первым!</p>';return;}c.innerHTML='';memes.forEach(function(m){var mediaHTML='';if(m.media)mediaHTML=m.mediaType==='photo'?'<img src="'+m.media+'" onclick="window.open(this.src)">':'<video src="'+m.media+'" controls></video>';var avatarHTML=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':m.avatarValue;var d=document.createElement('div');d.className='meme-card';d.innerHTML=(isAdmin?'<button style="float:right;color:#f44;background:none;border:none;font-size:18px" onclick="adminDelete(\'memes/'+m.id+'\')">👑🗑️</button>':'')+'<span class="review-avatar">'+avatarHTML+'</span> <span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mediaHTML+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂 '+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥 '+(m.reactions.fire||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'wow\','+(m.reactions.wow||0)+')">😮 '+(m.reactions.wow||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'cry\','+(m.reactions.cry||0)+')">😢 '+(m.reactions.cry||0)+'</button></div><div style="color:#888;font-size:12px;margin-top:5px">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});});}
+function postMeme(){var cap=document.getElementById('memeCaption').value.trim();if(!cap&&!memeMedia)return;var ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');db.ref('memes').push({author:localStorage.getItem('tildochka_username')||'Гость',avatarType:ad.type,avatarValue:ad.value,caption:cap,media:memeMedia||null,mediaType:memeMediaType||null,reactions:{laugh:0,fire:0,wow:0,cry:0},timestamp:Date.now()}).then(function(){document.getElementById('memeCaption').value='';document.getElementById('memePhoto').value='';document.getElementById('memeVideo').value='';document.getElementById('memePreview').innerHTML='';memeMedia=null;memeMediaType=null;});}
+function loadMemes(){db.ref('memes').on('value',function(snap){var memes=[];snap.forEach(function(c){memes.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'😂',caption:c.val().caption,media:c.val().media,mediaType:c.val().mediaType,reactions:c.val().reactions||{},timestamp:c.val().timestamp});});memes.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('memesList');if(!memes.length)c.innerHTML='<p style="color:#888">Пока нет мемов. Будь первым!</p>';else{c.innerHTML='';memes.forEach(function(m){var mh='';if(m.media)mh=m.mediaType==='photo'?'<img src="'+m.media+'" onclick="window.open(this.src)">':'<video src="'+m.media+'" controls></video>';var ah=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':m.avatarValue;var d=document.createElement('div');d.className='meme-card';d.innerHTML=(isAdmin?'<button style="float:right;color:#f44;background:none;border:none;font-size:18px" onclick="adminDelete(\'memes/'+m.id+'\')">👑🗑️</button>':'')+'<span class="review-avatar">'+ah+'</span> <span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mh+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂 '+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥 '+(m.reactions.fire||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'wow\','+(m.reactions.wow||0)+')">😮 '+(m.reactions.wow||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'cry\','+(m.reactions.cry||0)+')">😢 '+(m.reactions.cry||0)+'</button></div><div style="color:#888;font-size:12px;margin-top:5px">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});});}
 function reactMeme(id,type,count){var u={};u['reactions/'+type]=(count||0)+1;db.ref('memes/'+id).update(u);}
 
-function addIdea(){var t=document.getElementById('ideaText').value.trim();if(!t)return;
-var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
-db.ref('ideas').push({author:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,text:t,likes:0,timestamp:Date.now()}).then(function(){document.getElementById('ideaText').value='';});}
-function loadIdeas(){db.ref('ideas').on('value',function(snap){var ideas=[];snap.forEach(function(c){ideas.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'💡',text:c.val().text,likes:c.val().likes||0,timestamp:c.val().timestamp});});ideas.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('ideasList');if(!ideas.length){c.innerHTML='<p style="color:#888">Пока нет идей. Предложите первую!</p>';return;}c.innerHTML='';ideas.forEach(function(i){var avatarHTML=i.avatarType==='image'?'<img src="'+i.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':i.avatarValue;var d=document.createElement('div');d.className='idea-card';d.innerHTML='<span class="review-avatar">'+avatarHTML+'</span> <span class="idea-author">💡 '+i.author+' предлагает:</span><p>'+i.text+'</p><div class="idea-likes"><button class="like-btn" onclick="db.ref(\'ideas/'+i.id+'\').update({likes:'+(i.likes+1)+'})">❤️</button><span>'+i.likes+'</span></div>';c.appendChild(d);});});}
+function addIdea(){var t=document.getElementById('ideaText').value.trim();if(!t)return;var ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');db.ref('ideas').push({author:localStorage.getItem('tildochka_username')||'Гость',avatarType:ad.type,avatarValue:ad.value,text:t,likes:0,timestamp:Date.now()}).then(function(){document.getElementById('ideaText').value='';});}
+function loadIdeas(){db.ref('ideas').on('value',function(snap){var ideas=[];snap.forEach(function(c){ideas.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'💡',text:c.val().text,likes:c.val().likes||0,timestamp:c.val().timestamp});});ideas.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('ideasList');if(!ideas.length)c.innerHTML='<p style="color:#888">Пока нет идей. Предложите первую!</p>';else{c.innerHTML='';ideas.forEach(function(i){var ah=i.avatarType==='image'?'<img src="'+i.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':i.avatarValue;var d=document.createElement('div');d.className='idea-card';d.innerHTML='<span class="review-avatar">'+ah+'</span> <span class="idea-author">💡 '+i.author+' предлагает:</span><p>'+i.text+'</p><div class="idea-likes"><button class="like-btn" onclick="db.ref(\'ideas/'+i.id+'\').update({likes:'+(i.likes+1)+'})">❤️</button><span>'+i.likes+'</span></div>';c.appendChild(d);});});}
 
 function loadLeaderboard(type){db.ref('gameRatings/'+type).on('value',function(snap){var rats=[];snap.forEach(function(c){rats.push(c.val());});rats.sort(function(a,b){return(b.score||0)-(a.score||0);});var h='<h3>🏆 Лидеры</h3>';if(!rats.length)h+='<p style="color:#888">Пока нет игроков. Будьте первым!</p>';else{for(var i=0;i<rats.length&&i<10;i++)h+='<div class="leaderboard-item"><span>'+(i+1)+'. '+(rats[i].name||'Аноним')+'</span><span>Счёт: '+rats[i].score+' | ⭐'+rats[i].rating+'/10</span></div>';var sum=0;rats.forEach(function(r){sum+=r.rating||0;});var el=document.getElementById('rating-'+type);if(el)el.textContent='⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';}document.getElementById('leaderboard').innerHTML=h;});}
 function createGameRating(){document.getElementById('gameRatingArea').innerHTML='<div class="stars-container" id="gameStars"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="gameRatingText">10/10</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';var stars=document.querySelectorAll('#gameStars .star');stars.forEach(function(s){s.onclick=function(){gameRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,gameRating);document.getElementById('gameRatingText').textContent=gameRating+'/10';};s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,gameRating);};});updateStars(stars,10);}
@@ -393,34 +334,82 @@ function initFlappy(){document.getElementById('gameContent').innerHTML='<canvas 
 function initPong(){document.getElementById('gameContent').innerHTML='<canvas id="pc" width="500" height="300" class="game-canvas"></canvas><div class="mobile-controls"><div class="mobile-row"><button class="mobile-btn" id="plu">↑</button><button class="mobile-btn" id="pld">↓</button></div></div><p>W/S или кнопки — левый | ↑↓ — правый</p>';createGameRating();var c=document.getElementById('pc'),ctx=c.getContext('2d'),l={y:120},r={y:120},ball={x:250,y:150,vx:4,vy:3},scoreL=0,scoreR=0,over=false;document.onkeydown=function(e){if(e.key==='w')l.y=Math.max(0,l.y-20);if(e.key==='s')l.y=Math.min(240,l.y+20);if(e.key==='ArrowUp')r.y=Math.max(0,r.y-20);if(e.key==='ArrowDown')r.y=Math.min(240,r.y+20);};document.getElementById('plu').onclick=function(){l.y=Math.max(0,l.y-20);};document.getElementById('pld').onclick=function(){l.y=Math.min(240,l.y+20);};function loop(){if(over)return;ctx.clearRect(0,0,500,300);ctx.fillStyle='#fff';ctx.fillRect(10,l.y,10,60);ctx.fillRect(480,r.y,10,60);ctx.fillRect(245,0,10,300);ball.x+=ball.vx;ball.y+=ball.vy;if(ball.y<=0||ball.y>=290)ball.vy*=-1;if(ball.x<=20&&ball.y>l.y&&ball.y<l.y+60)ball.vx*=-1;if(ball.x>=470&&ball.y>r.y&&ball.y<r.y+60)ball.vx*=-1;if(ball.x<0){scoreR++;document.getElementById('gameScoreDisplay').textContent='Левый: '+scoreL+' | Правый: '+scoreR;resetBall();}if(ball.x>500){scoreL++;document.getElementById('gameScoreDisplay').textContent='Левый: '+scoreL+' | Правый: '+scoreR;resetBall();}ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fill();if(scoreL>=5){over=true;alert('Левый победил! 🏆');showPongRestart();}if(scoreR>=5){over=true;alert('Правый победил! 🏆');showPongRestart();}}function resetBall(){ball={x:250,y:150,vx:(Math.random()>0.5?4:-4),vy:(Math.random()*4-2)};}function showPongRestart(){clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initPong();};document.getElementById('gameContent').appendChild(b);}gameInterval=setInterval(loop,20);}
 function initXO(){document.getElementById('gameContent').innerHTML='<div class="xo-board" id="xoBoard"></div><p id="xoTurn">Ход: ❌</p>';createGameRating();var board=['','','','','','','','',''],turn='X',over=false;function render(){var h='';for(var i=0;i<9;i++){var cell=board[i]||'';h+='<div class="xo-cell '+(cell==='X'?'x':cell==='O'?'o':'')+'" onclick="xoClick('+i+')">'+(cell==='X'?'❌':cell==='O'?'⭕':'')+'</div>';}document.getElementById('xoBoard').innerHTML=h;document.getElementById('xoTurn').textContent=over?'Игра окончена!':'Ход: '+(turn==='X'?'❌ Крестики':'⭕ Нолики');}window.xoClick=function(i){if(over||board[i])return;board[i]=turn;render();var wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var w=0;w<wins.length;w++){if(board[wins[w][0]]&&board[wins[w][0]]===board[wins[w][1]]&&board[wins[w][1]]===board[wins[w][2]]){over=true;alert('Победил: '+(turn==='X'?'❌':'⭕'));render();showXORestart();return;}}if(!board.includes('')){over=true;alert('Ничья!');render();showXORestart();return;}turn=turn==='X'?'O':'X';render();};function showXORestart(){var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initXO();};document.getElementById('gameContent').appendChild(b);}render();}
 
-// Пасхалка (исправленная)
-var eggsFound=parseInt(localStorage.getItem('tildochka_eggs')||'0');
-function showEggCounter(){
-  document.getElementById('eggCount').textContent=eggsFound;
-  document.getElementById('easterCounter').style.display='block';
-  document.getElementById('easterCounter').style.animation='none';
-  document.getElementById('easterCounter').offsetHeight;
-  document.getElementById('easterCounter').style.animation='fadeInOut 5s forwards';
-  if(eggTimer)clearTimeout(eggTimer);
-  eggTimer=setTimeout(function(){
-    document.getElementById('easterCounter').style.display='none';
-  },5000);
+// Пасхалка - прячется в случайном месте
+eggsFound=parseInt(localStorage.getItem('tildochka_eggs')||'0');
+var easterEgg=document.getElementById('easterEgg');
+if(eggsFound>0){document.getElementById('eggCountBadge').textContent=eggsFound;document.getElementById('eggCountBadge').style.display='flex';}
+moveEasterEgg();
+
+function moveEasterEgg(){
+var maxX=window.innerWidth-60;
+var maxY=window.innerHeight-60;
+var x=Math.floor(Math.random()*maxX)+10;
+var y=Math.floor(Math.random()*maxY)+10;
+easterEgg.style.left=x+'px';
+easterEgg.style.top=y+'px';
+easterEgg.style.right='auto';
+easterEgg.style.bottom='auto';
 }
+
+function showEggCounter(){
+document.getElementById('eggCount').textContent=eggsFound;
+document.getElementById('easterCounter').style.display='block';
+document.getElementById('easterCounter').style.animation='none';
+document.getElementById('easterCounter').offsetHeight;
+document.getElementById('easterCounter').style.animation='slideUp 0.5s ease';
+if(eggTimer)clearTimeout(eggTimer);
+eggTimer=setTimeout(function(){document.getElementById('easterCounter').style.display='none';},4000);
+}
+
+function spawnConfetti(){
+var colors=['#ffd700','#ff6b6b','#4ecdc4','#45b7d1','#f7dc6f','#bb8fce','#85c1e9','#f8c471'];
+for(var i=0;i<50;i++){
+var confetti=document.createElement('div');
+confetti.className='confetti';
+confetti.style.left=Math.random()*100+'%';
+confetti.style.top=-(Math.random()*20+10)+'px';
+confetti.style.width=(Math.random()*10+5)+'px';
+confetti.style.height=(Math.random()*10+5)+'px';
+confetti.style.background=colors[Math.floor(Math.random()*colors.length)];
+confetti.style.borderRadius=Math.random()>0.5?'50%':'2px';
+confetti.style.animationDuration=(Math.random()*2+2)+'s';
+confetti.style.animationDelay=Math.random()*0.5+'s';
+document.body.appendChild(confetti);
+setTimeout(function(){confetti.remove();},3500);
+}
+}
+
+function playClickSound(){
+try{
+var audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+var osc=audioCtx.createOscillator();
+var gain=audioCtx.createGain();
+osc.connect(gain);gain.connect(audioCtx.destination);
+osc.frequency.setValueAtTime(800,audioCtx.currentTime);
+osc.frequency.exponentialRampToValueAtTime(400,audioCtx.currentTime+0.1);
+gain.gain.setValueAtTime(0.3,audioCtx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.2);
+osc.start(audioCtx.currentTime);osc.stop(audioCtx.currentTime+0.2);
+}catch(e){}
+}
+
 function foundEasterEgg(){
-  var egg=document.getElementById('easterEgg');
-  egg.classList.add('found');
-  eggsFound++;
-  localStorage.setItem('tildochka_eggs',eggsFound);
-  var msgs=['🐔 Ты нашла секретное яйцо! Куры гордятся тобой!','🥚 Вау! Это золотое яйцо! +1 к удаче!','🐣 Из яйца вылупился цыплёнок счастья!','🌟 Пасхалка найдена! Ты настоящий искатель приключений!','💛 Секрет раскрыт! Это яйцо приносит удачу!','🎉 Бинго! Ты нашла то, что искала!','🪶 Легендарное яйцо четырёх куриц найдено!'];
-  alert(msgs[Math.floor(Math.random()*msgs.length)]+'\n\n🥚 Всего найдено: '+eggsFound);
-  showEggCounter();
-  setTimeout(function(){
-    egg.classList.remove('found');
-    egg.style.opacity='0.1';
-  },30000);
-  if(eggsFound===5){
-    setTimeout(function(){alert('🏆 ПОЗДРАВЛЯЮ! Ты нашла 5 пасхалок!\nТы получаешь звание "Почётный куровод"! 🐔👑');},1500);
-  }
+playClickSound();
+easterEgg.classList.add('found');
+eggsFound++;
+localStorage.setItem('tildochka_eggs',eggsFound);
+document.getElementById('eggCountBadge').textContent=eggsFound;
+document.getElementById('eggCountBadge').style.display='flex';
+var msgs=['🐔 Ты нашла секретное яйцо! Куры гордятся тобой!','🥚 Вау! Это золотое яйцо! +1 к удаче!','🐣 Из яйца вылупился цыплёнок счастья!','🌟 Пасхалка найдена! Ты настоящий искатель приключений!','💛 Секрет раскрыт! Это яйцо приносит удачу!'];
+alert(msgs[Math.floor(Math.random()*msgs.length)]+'\n\n🥚 Всего найдено: '+eggsFound);
+showEggCounter();
+if(eggsFound%5===0)spawnConfetti();
+if(eggsFound===10){document.body.style.background='#2a1a3a';setTimeout(function(){document.body.style.background='#1a1a1a';},3000);alert('🌈 Ты нашла 10 яиц! Секретный цвет фона активирован!');}
+setTimeout(function(){
+easterEgg.classList.remove('found');
+easterEgg.style.opacity='0.15';
+moveEasterEgg();
+},600);
 }
 
 // Цитата
@@ -429,7 +418,6 @@ function getDailyQuote(){var t=new Date();return quotes[(t.getFullYear()*10000+(
 function showDailyQuote(){var q=getDailyQuote(),h='<div class="quote-box"><div class="quote-text">«'+q.text+'»</div><div class="quote-author">— '+q.author+'</div><div class="quote-movie">🎬 '+q.movie+'</div></div>';var cat=document.querySelector('#home-screen .catalog');if(cat){var ex=document.getElementById('dailyQuote');if(ex)ex.innerHTML=h;else{var d=document.createElement('div');d.id='dailyQuote';d.style.cssText='max-width:600px;margin:30px auto 0';d.innerHTML='<h3 style="color:#ffd700;margin-bottom:10px">💬 Цитата дня</h3>'+h;cat.appendChild(d);}}}
 showDailyQuote();
 
-// Старт
 var pass=prompt("🔐 Введите кодовое слово:");
 if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){
 document.getElementById("app").style.display="block";
@@ -439,4 +427,4 @@ loadChatMessages();loadMemes();loadIdeas();
 }else document.getElementById("blocked").style.display="flex";
 </script>
 </body>
-                                                                                                                                                                                                                                                                                                                                              </html>
+                                                                                                          </html>
