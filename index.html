@@ -705,6 +705,63 @@
         font-size: 28px;
         width: 28px;
       }
+          /* Пасхалка */
+    #easterEgg {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      font-size: 40px;
+      cursor: pointer;
+      opacity: 0.1;
+      transition: all 0.3s;
+      z-index: 50;
+      user-select: none;
+    }
+    
+    #easterEgg:hover {
+      opacity: 1;
+      transform: scale(1.2) rotate(10deg);
+    }
+    
+    #easterEgg.found {
+      animation: eggCrack 0.5s ease;
+    }
+    
+    @keyframes eggCrack {
+      0% { transform: scale(1); }
+      50% { transform: scale(2) rotate(180deg); opacity: 1; }
+      100% { transform: scale(0); opacity: 0; }
+    }
+    
+    /* Цитата дня */
+    .quote-box {
+      background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,215,0,0.05));
+      border-left: 3px solid #ffd700;
+      padding: 15px 20px;
+      margin: 15px 0;
+      border-radius: 8px;
+      font-style: italic;
+      position: relative;
+    }
+    
+    .quote-box .quote-text {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 10px;
+    }
+    
+    .quote-box .quote-author {
+      color: #ffd700;
+      font-size: 0.9rem;
+      text-align: right;
+    }
+    
+    .quote-box .quote-movie {
+      color: #aaa;
+      font-size: 0.8rem;
+      text-align: right;
+      margin-top: 3px;
+    }
     }
   </style>
 </head>
@@ -1943,6 +2000,118 @@
     } else {
       document.getElementById("blocked").style.display = "flex";
     }
+      <!-- Пасхалка - секретное яйцо -->
+  <div id="easterEgg" style="position:fixed;bottom:20px;right:20px;font-size:40px;cursor:pointer;opacity:0.1;transition:all 0.3s;z-index:50;user-select:none;" onclick="foundEasterEgg()" title="Нашёл пасхалку!">
+    🥚
+  </div>
+  
+  <!-- Счётчик найденных пасхалок -->
+  <div id="easterCounter" style="position:fixed;bottom:70px;right:20px;color:#ffd700;font-size:14px;z-index:50;display:none;">
+    🥚 Найдено: <span id="eggCount">0</span>
+  </div>
+      // ==================== ПАСХАЛКА ====================
+    var eggsFound = parseInt(localStorage.getItem('tildochka_eggs') || '0');
+    
+    if (eggsFound > 0) {
+      document.getElementById('easterCounter').style.display = 'block';
+      document.getElementById('eggCount').textContent = eggsFound;
+    }
+    
+    function foundEasterEgg() {
+      var egg = document.getElementById('easterEgg');
+      
+      // Анимация
+      egg.classList.add('found');
+      
+      // Увеличиваем счётчик
+      eggsFound++;
+      localStorage.setItem('tildochka_eggs', eggsFound);
+      
+      // Секретные сообщения
+      var messages = [
+        '🐔 Ты нашла секретное яйцо! Куры гордятся тобой!',
+        '🥚 Вау! Это золотое яйцо! +1 к удаче!',
+        '🐣 Из яйца вылупился цыплёнок счастья!',
+        '🌟 Пасхалка найдена! Ты настоящий искатель приключений!',
+        '💛 Секрет раскрыт! Это яйцо приносит удачу!',
+        '🎉 Бинго! Ты нашла то, что искала!',
+        '🪶 Легендарное яйцо четырёх куриц найдено!'
+      ];
+      
+      var randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      
+      // Показываем результат
+      setTimeout(function() {
+        alert(randomMsg + '\n\n🥚 Всего найдено: ' + eggsFound);
+        document.getElementById('easterCounter').style.display = 'block';
+        document.getElementById('eggCount').textContent = eggsFound;
+        
+        // Восстанавливаем яйцо через 30 секунд
+        setTimeout(function() {
+          egg.classList.remove('found');
+          egg.style.opacity = '0.1';
+        }, 30000);
+      }, 500);
+      
+      // Если 5 яиц - особое сообщение
+      if (eggsFound === 5) {
+        setTimeout(function() {
+          alert('🏆 ПОЗДРАВЛЯЮ! Ты нашла 5 пасхалок!\nТы получаешь звание "Почётный куровод"! 🐔👑');
+        }, 1500);
+      }
+    }
+    
+    // ==================== ЦИТАТА ДНЯ ====================
+    var quotes = [
+      { text: 'Расческа нужна каждому. Даже если кажется, что не нужна.', author: 'Главный герой', movie: 'Расческа для лысых' },
+      { text: 'Куры не летают. Но мечтают об этом каждую ночь.', author: 'Курица №3', movie: 'Приключения 4 куриц' },
+      { text: 'Пираты не делятся сокровищами. Но делятся приключениями.', author: 'Капитан', movie: 'Пираты' },
+      { text: 'Американцы не зло. Они просто... ну ладно, иногда зло.', author: 'Мудрец', movie: 'Американцы зло' },
+      { text: 'Реклама — двигатель прогресса. А смешная реклама — двигатель настроения.', author: 'Рекламщик', movie: 'Рекламки' },
+      { text: 'Если жизнь подкинула яйца — сделай яичницу!', author: 'Курица-философ', movie: 'Приключения 4 куриц' },
+      { text: 'Лысина — это не приговор. Это простор для фантазии.', author: 'Парикмахер', movie: 'Расческа для лысых' },
+      { text: 'В море главное — не карта. Главное — команда.', author: 'Штурман', movie: 'Пираты' },
+      { text: 'Культурные различия — это повод посмеяться вместе.', author: 'Турист', movie: 'Американцы зло' },
+      { text: 'Лучшая реклама — та, которую пересылают друзьям.', author: 'Маркетолог', movie: 'Рекламки' },
+      { text: 'Курица — не птица. Курица — это состояние души.', author: 'Курица №1', movie: 'Приключения 4 куриц' },
+      { text: 'Смех продлевает жизнь. А наши фильмы продлевают смех.', author: 'Tildochka', movie: 'Все фильмы' }
+    ];
+    
+    function getDailyQuote() {
+      // Используем дату как seed для одинаковой цитаты весь день
+      var today = new Date();
+      var seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+      var index = seed % quotes.length;
+      return quotes[index];
+    }
+    
+    function showDailyQuote() {
+      var quote = getDailyQuote();
+      var quoteHTML = 
+        '<div class="quote-box">' +
+          '<div class="quote-text">«' + quote.text + '»</div>' +
+          '<div class="quote-author">— ' + quote.author + '</div>' +
+          '<div class="quote-movie">🎬 ' + quote.movie + '</div>' +
+        '</div>';
+      
+      // Вставляем цитату на главную страницу
+      var catalog = document.querySelector('#home-screen .catalog');
+      if (catalog) {
+        var existingQuote = document.getElementById('dailyQuote');
+        if (existingQuote) {
+          existingQuote.innerHTML = quoteHTML;
+        } else {
+          var quoteDiv = document.createElement('div');
+          quoteDiv.id = 'dailyQuote';
+          quoteDiv.style.cssText = 'max-width:600px;margin:30px auto 0;';
+          quoteDiv.innerHTML = '<h3 style="color:#ffd700;margin-bottom:10px;">💬 Цитата дня</h3>' + quoteHTML;
+          catalog.appendChild(quoteDiv);
+        }
+      }
+    }
+    
+    // Показываем цитату при загрузке главной
+    showDailyQuote();
   </script>
 </body>
   </html>
