@@ -354,25 +354,93 @@ function adminDelete(path){if(!isAdmin)return;if(confirm("👑 Удалить?")
 function setupReviewStars(){var stars=document.querySelectorAll('#revStars .star');stars.forEach(function(s){s.onclick=function(){reviewRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,reviewRating);document.getElementById('ratingText').textContent=reviewRating+'/10';};s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,reviewRating);};});updateStars(stars,10);}
 function updateStars(stars,r){stars.forEach(function(s){var v=parseInt(s.getAttribute('data-v'))*2;s.classList.remove('full','half','hover-full','hover-half');if(r>=v)s.classList.add('full');else if(r===v-1)s.classList.add('half');});}
 
-function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;
+function addReview(){
+var t=document.getElementById('reviewText').value.trim();
+if(!t)return alert("Напишите отзыв!");
+var name=localStorage.getItem('tildochka_username')||'Гость';
+db.ref('reviews').child(currentMovieId).push({
+name:name,
+text:t,
+rating:reviewRating,
+timestamp:Date.now()
+}).then(function(){
+document.getElementById('reviewText').value='';
+reviewRating=10;
+updateStars(document.querySelectorAll('#revStars .star'),10);
+document.getElementById('ratingText').textContent='10/10';
+alert('✅ Отзыв отправлен!');
+}).catch(function(error){
+alert('❌ Ошибка: '+error.message);
+});
+}
 var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
 db.ref('reviews/'+currentMovieId).push({name:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,text:t,rating:reviewRating,timestamp:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';});}
 function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push({id:c.key,name:c.val().name,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'🐔',text:c.val().text,rating:c.val().rating,timestamp:c.val().timestamp});});revs.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('reviews');if(!revs.length){c.innerHTML='<p style="color:#888">Пока нет отзывов. Будьте первым!</p>';}else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var avatarHTML=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':r.avatarValue;var d=document.createElement('div');d.className='review';d.innerHTML=(isAdmin?'<button class="delete-review" onclick="adminDelete(\'reviews/'+mid+'/'+r.id+'\')">👑🗑️</button>':'<button class="delete-review" onclick="db.ref(\'reviews/'+mid+'/'+r.id+'\').remove()">🗑️</button>')+'<span class="review-avatar">'+avatarHTML+'</span> <span class="review-name">'+r.name+'</span><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div><div class="review-date">'+new Date(r.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});}updateMovieRating(mid,revs);});}
 function updateMovieRating(mid,revs){if(!revs.length){document.getElementById('movieRatingHero').textContent='Нет оценок';document.getElementById('totalRatingDisplay').textContent='Нет оценок';document.getElementById('reviewsCountDisplay').textContent='0 отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='Нет оценок';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';document.getElementById('reviewsCountDisplay').textContent='На основе '+revs.length+' отзывов';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+' / 10';}
 
-function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;
+function sendChatMessage(){
+var m=document.getElementById('chatMessageLive').value.trim();
+if(!m)return alert("Напишите сообщение!");
+var name=localStorage.getItem('tildochka_username')||'Гость';
+db.ref('chat').push({
+name:name,
+text:m,
+timestamp:Date.now()
+}).then(function(){
+document.getElementById('chatMessageLive').value='';
+}).catch(function(error){
+alert('❌ Ошибка: '+error.message);
+});
+}
 var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
 db.ref('chat').push({name:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,text:m,timestamp:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});}
 function loadChatMessages(){db.ref('chat').on('value',function(snap){var msgs=[];snap.forEach(function(c){msgs.push(c.val());});msgs.sort(function(a,b){return(a.timestamp||0)-(b.timestamp||0);});var c=document.getElementById('chatMessagesLive');c.innerHTML='';msgs.forEach(function(m){var avatarHTML=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':(m.avatarValue||'🐔');var d=document.createElement('div');d.className='message';d.innerHTML='<span class="message-avatar">'+avatarHTML+'</span> <strong>'+m.name+':</strong> '+m.text+'<div class="message-time">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});c.scrollTop=c.scrollHeight;});}
 
 function previewMemeMedia(type){var inp=type==='photo'?document.getElementById('memePhoto'):document.getElementById('memeVideo');if(!inp.files||!inp.files[0])return;var r=new FileReader();r.onload=function(e){memeMedia=e.target.result;memeMediaType=type;document.getElementById('memePreview').innerHTML=type==='photo'?'<img src="'+e.target.result+'" style="max-width:300px;border-radius:8px">':'<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};r.readAsDataURL(inp.files[0]);}
-function postMeme(){var cap=document.getElementById('memeCaption').value.trim();if(!cap&&!memeMedia)return;
+function postMeme(){
+var cap=document.getElementById('memeCaption').value.trim();
+if(!cap&&!memeMedia)return alert("Добавь подпись или медиа!");
+var name=localStorage.getItem('tildochka_username')||'Гость';
+db.ref('memes').push({
+author:name,
+caption:cap,
+media:memeMedia||null,
+mediaType:memeMediaType||null,
+reactions:{laugh:0,fire:0},
+timestamp:Date.now()
+}).then(function(){
+document.getElementById('memeCaption').value='';
+document.getElementById('memePhoto').value='';
+document.getElementById('memeVideo').value='';
+document.getElementById('memePreview').innerHTML='';
+memeMedia=null;
+memeMediaType=null;
+alert('✅ Мем опубликован!');
+}).catch(function(error){
+alert('❌ Ошибка: '+error.message);
+});
+}
 var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
 db.ref('memes').push({author:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,caption:cap,media:memeMedia||null,mediaType:memeMediaType||null,reactions:{laugh:0,fire:0,wow:0,cry:0},timestamp:Date.now()}).then(function(){document.getElementById('memeCaption').value='';document.getElementById('memePhoto').value='';document.getElementById('memeVideo').value='';document.getElementById('memePreview').innerHTML='';memeMedia=null;memeMediaType=null;});}
 function loadMemes(){db.ref('memes').on('value',function(snap){var memes=[];snap.forEach(function(c){memes.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'😂',caption:c.val().caption,media:c.val().media,mediaType:c.val().mediaType,reactions:c.val().reactions||{},timestamp:c.val().timestamp});});memes.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('memesList');if(!memes.length){c.innerHTML='<p style="color:#888">Пока нет мемов. Будь первым!</p>';return;}c.innerHTML='';memes.forEach(function(m){var mediaHTML='';if(m.media)mediaHTML=m.mediaType==='photo'?'<img src="'+m.media+'" onclick="window.open(this.src)">':'<video src="'+m.media+'" controls></video>';var avatarHTML=m.avatarType==='image'?'<img src="'+m.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':m.avatarValue;var d=document.createElement('div');d.className='meme-card';d.innerHTML=(isAdmin?'<button style="float:right;color:#f44;background:none;border:none;font-size:18px" onclick="adminDelete(\'memes/'+m.id+'\')">👑🗑️</button>':'')+'<span class="review-avatar">'+avatarHTML+'</span> <span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mediaHTML+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂 '+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥 '+(m.reactions.fire||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'wow\','+(m.reactions.wow||0)+')">😮 '+(m.reactions.wow||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'cry\','+(m.reactions.cry||0)+')">😢 '+(m.reactions.cry||0)+'</button></div><div style="color:#888;font-size:12px;margin-top:5px">'+new Date(m.timestamp).toLocaleString('ru-RU')+'</div>';c.appendChild(d);});});}
 function reactMeme(id,type,count){var u={};u['reactions/'+type]=(count||0)+1;db.ref('memes/'+id).update(u);}
 
-function addIdea(){var t=document.getElementById('ideaText').value.trim();if(!t)return;
+function addIdea(){
+var t=document.getElementById('ideaText').value.trim();
+if(!t)return alert("Напишите идею!");
+var name=localStorage.getItem('tildochka_username')||'Гость';
+db.ref('ideas').push({
+author:name,
+text:t,
+likes:0,
+timestamp:Date.now()
+}).then(function(){
+document.getElementById('ideaText').value='';
+alert('✅ Идея отправлена!');
+}).catch(function(error){
+alert('❌ Ошибка: '+error.message);
+});
+}
 var avatarData=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
 db.ref('ideas').push({author:localStorage.getItem('tildochka_username')||'Гость',avatarType:avatarData.type,avatarValue:avatarData.value,text:t,likes:0,timestamp:Date.now()}).then(function(){document.getElementById('ideaText').value='';});}
 function loadIdeas(){db.ref('ideas').on('value',function(snap){var ideas=[];snap.forEach(function(c){ideas.push({id:c.key,author:c.val().author,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'💡',text:c.val().text,likes:c.val().likes||0,timestamp:c.val().timestamp});});ideas.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('ideasList');if(!ideas.length){c.innerHTML='<p style="color:#888">Пока нет идей. Предложите первую!</p>';return;}c.innerHTML='';ideas.forEach(function(i){var avatarHTML=i.avatarType==='image'?'<img src="'+i.avatarValue+'" style="width:100%;height:100%;object-fit:cover">':i.avatarValue;var d=document.createElement('div');d.className='idea-card';d.innerHTML='<span class="review-avatar">'+avatarHTML+'</span> <span class="idea-author">💡 '+i.author+' предлагает:</span><p>'+i.text+'</p><div class="idea-likes"><button class="like-btn" onclick="db.ref(\'ideas/'+i.id+'\').update({likes:'+(i.likes+1)+'})">❤️</button><span>'+i.likes+'</span></div>';c.appendChild(d);});});}
