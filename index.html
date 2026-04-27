@@ -338,6 +338,7 @@ function initPong(){document.getElementById('gameContent').innerHTML='<canvas id
 function initXO(){document.getElementById('gameContent').innerHTML='<div class="xo-board" id="xoBoard"></div><p id="xoTurn">Ход: ❌</p>';createGameRating();var board=['','','','','','','','',''],turn='X',over=false;function render(){var h='';for(var i=0;i<9;i++){var cell=board[i]||'';h+='<div class="xo-cell '+(cell==='X'?'x':cell==='O'?'o':'')+'" onclick="xoClick('+i+')">'+(cell==='X'?'❌':cell==='O'?'⭕':'')+'</div>';}document.getElementById('xoBoard').innerHTML=h;document.getElementById('xoTurn').textContent=over?'Игра окончена!':'Ход: '+(turn==='X'?'❌ Крестики':'⭕ Нолики');}window.xoClick=function(i){if(over||board[i])return;board[i]=turn;render();var wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var w=0;w<wins.length;w++){if(board[wins[w][0]]&&board[wins[w][0]]===board[wins[w][1]]&&board[wins[w][1]]===board[wins[w][2]]){over=true;alert('Победил: '+(turn==='X'?'❌':'⭕'));render();showXORestart();return;}}if(!board.includes('')){over=true;alert('Ничья!');render();showXORestart();return;}turn=turn==='X'?'O':'X';render();};function showXORestart(){var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';initXO();};document.getElementById('gameContent').appendChild(b);}render();}
 
 function initMemory(){
+createGameRating();
 var emojis=['🐔','🥚','🐣','🐓','🌾','🦊','🐍','🪨'];
 var cards=emojis.concat(emojis).sort(function(){return Math.random()-0.5;});
 var flipped=[],matched=[],moves=0;
@@ -347,6 +348,7 @@ renderM();
 }
 
 function initGuess(){
+createGameRating();
 var number=Math.floor(Math.random()*100)+1,attempts=0;
 document.getElementById('gameContent').innerHTML='<p>Я загадал число от 1 до 100!</p><input id="gi" type="number" min="1" max="100" placeholder="Твоё число"><br><button onclick="guessClick()">Угадать</button><p id="gh"></p>';
 document.getElementById('gameScoreDisplay').textContent='Попыток: 0';
@@ -354,6 +356,7 @@ window.guessClick=function(){var g=parseInt(document.getElementById('gi').value)
 }
 
 function initRPS(){
+createGameRating();
 var score={p:0,b:0};
 document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button onclick="rpsClick(0)" style="font-size:24px;padding:20px">🪨 Камень</button><button onclick="rpsClick(1)" style="font-size:24px;padding:20px">📄 Бумага</button><button onclick="rpsClick(2)" style="font-size:24px;padding:20px">✂️ Ножницы</button></div><p id="rr"></p>';
 document.getElementById('gameScoreDisplay').textContent='Ты: 0 | Бот: 0';
