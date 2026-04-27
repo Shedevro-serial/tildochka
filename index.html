@@ -57,33 +57,24 @@
     .leaderboard h3{color:#ffd700}
     .leaderboard-item{display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #333}
     .review{border-top:1px solid #444;padding:20px 0;position:relative}
-    .review-avatar{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:16px;background:rgba(0,0,0,.5);border:1px solid #ffd700;margin-right:8px;vertical-align:middle;overflow:hidden}
-    .review-avatar img{width:100%;height:100%;object-fit:cover}
     .review-name{font-weight:700}.review-stars-display{color:#ffd700}
     .review-text{margin:10px 0}.review-date{color:#888;font-size:.85rem}
     input,textarea{width:100%;max-width:500px;padding:12px;margin:10px 0;background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:8px}
     textarea{min-height:100px;resize:vertical}
     .chat-container{max-width:700px;margin:0 auto;padding:20px}
     .message{background:rgba(0,0,0,.5);padding:12px 15px;border-radius:8px;margin-bottom:10px}
-    .message-avatar{width:25px;height:25px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:14px;background:rgba(0,0,0,.5);border:1px solid #ffd700;margin-right:5px;vertical-align:middle;overflow:hidden}
-    .message-avatar img{width:100%;height:100%;object-fit:cover}
     .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:300;justify-content:center;align-items:center}
     .modal-overlay.show{display:flex}
     .modal-box{background:#1a1a1a;border:2px solid #ffd700;border-radius:15px;padding:30px;max-width:500px;width:90%}
     .avatar-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0}
     .avatar-option{width:50px;height:50px;border-radius:50%;border:3px solid transparent;cursor:pointer;font-size:26px;background:rgba(0,0,0,.5)}
     .avatar-option.selected{border-color:#ffd700;background:rgba(255,215,0,.2)}
-    #easterEgg{position:fixed;font-size:35px;cursor:pointer;opacity:.15;transition:.3s;z-index:50;animation:eggFloat 3s ease-in-out infinite}
-    #easterEgg:hover{opacity:1;transform:scale(1.3)}
-    @keyframes eggFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-    .confetti{position:fixed;pointer-events:none;z-index:999;animation:confettiFall 3s forwards}
-    @keyframes confettiFall{0%{transform:translateY(-100vh)}100%{transform:translateY(100vh)}}
+    #easterEgg{position:fixed;bottom:20px;right:20px;font-size:40px;cursor:pointer;opacity:.1;transition:.3s;z-index:50}
+    #easterEgg:hover{opacity:1;transform:scale(1.2)}
     .quote-box{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,215,0,.05));border-left:3px solid #ffd700;padding:15px 20px;margin:15px 0;border-radius:8px;font-style:italic}
     .meme-card{background:rgba(0,0,0,.5);padding:15px;border-radius:10px;margin-bottom:15px}
-    .meme-card img,.meme-card video{max-width:100%;max-height:400px;border-radius:8px;margin-top:10px}
     .xo-board{display:grid;grid-template-columns:repeat(3,100px);grid-template-rows:repeat(3,100px);gap:5px;justify-content:center;margin:20px auto}
     .xo-cell{width:100px;height:100px;background:#333;border:2px solid #555;border-radius:10px;font-size:50px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-    .xo-cell.x{color:#ffd700}.xo-cell.o{color:#f60}
     @media(max-width:768px){.logo{font-size:24px}.hero h1{font-size:1.8rem}.movie-card,.game-card{width:calc(50% - 10px);min-width:140px;padding:10px}.xo-board{grid-template-columns:repeat(3,80px);grid-template-rows:repeat(3,80px)}.xo-cell{width:80px;height:80px;font-size:40px}}
   </style>
 </head>
@@ -94,11 +85,7 @@
 <div class="header">
 <div class="logo" onclick="showScreen('home')">Tildochka</div>
 <div style="display:flex;align-items:center;gap:15px">
-<span id="onlineCount" style="color:#4f4;font-size:14px">🟢 1</span>
-<div class="profile-area" onclick="openProfileModal()">
-<div class="avatar" id="headerAvatar">🐔</div>
-<span class="profile-name" id="profileName">Гость</span>
-</div>
+<div class="profile-area" onclick="openProfileModal()"><div class="avatar" id="headerAvatar">🐔</div><span class="profile-name" id="profileName">Гость</span></div>
 <div class="burger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
 </div>
 </div>
@@ -109,6 +96,7 @@
 <a onclick="showScreen('ideas');closeMenu()">💡 Идеи</a>
 </div>
 <div id="content">
+
 <div id="home-screen" class="screen active"><div class="catalog">
 <h2>🎬 Сериалы</h2><div class="movie-grid"><div class="movie-card" onclick="openMovie('series')"><img src="cover.jpg"><h3>Приключения 4 куриц</h3><div class="rating" id="rating-series">⭐ 9.5/10</div></div></div>
 <h2 style="margin-top:50px">🎥 Фильмы</h2><div class="movie-grid">
@@ -134,7 +122,7 @@
 <div class="section"><h2>📖 Описание</h2><p id="movieDescription"></p></div>
 <div class="section" id="seasonsSection" style="display:none"><h2>📺 Сезоны</h2><div id="seasonsContent"></div></div>
 <div class="section"><h2>▶️ Смотреть</h2><video id="player" controls><source id="videosrc"></video></div>
-<div class="section"><h2>💭 Отзывы</h2><div class="stars-container" id="revStars"><span>Оценка: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="ratingText">10/10</span></div><textarea id="reviewText" placeholder="Отзыв..."></textarea><button onclick="addReview()">📝 Отправить</button><div id="reviews"></div></div>
+<div class="section"><h2>💭 Отзывы</h2><div class="stars-container"><span class="star" data-v="1" onclick="setRating(1)">★</span><span class="star" data-v="2" onclick="setRating(2)">★</span><span class="star" data-v="3" onclick="setRating(3)">★</span><span class="star" data-v="4" onclick="setRating(4)">★</span><span class="star" data-v="5" onclick="setRating(5)">★</span><span id="ratingText">10/10</span></div><textarea id="reviewText" placeholder="Отзыв..."></textarea><button onclick="addReview()">📝 Отправить</button><div id="reviews"></div></div>
 </div>
 </div>
 
@@ -148,15 +136,12 @@
 </div>
 </div>
 
-<div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:80px;height:80px;border-radius:50%;border:3px solid #ffd700;margin:10px auto;display:flex;align-items:center;justify-content:center;font-size:45px;background:rgba(0,0,0,.5)"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя"><br><button onclick="document.getElementById('customAvatarInput').click()">📷 Загрузить</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><p style="color:#ffd700;margin-top:10px">Выбери аватар:</p><div class="avatar-grid" id="avatarGrid"><span class="avatar-option selected" onclick="selectAvatar('🐔')">🐔</span><span class="avatar-option" onclick="selectAvatar('🐣')">🐣</span><span class="avatar-option" onclick="selectAvatar('🥚')">🥚</span><span class="avatar-option" onclick="selectAvatar('🐓')">🐓</span><span class="avatar-option" onclick="selectAvatar('🐧')">🐧</span><span class="avatar-option" onclick="selectAvatar('👑')">👑</span><span class="avatar-option" onclick="selectAvatar('🌟')">🌟</span><span class="avatar-option" onclick="selectAvatar('🔥')">🔥</span></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:5px">Отмена</button></div></div>
-
 <div id="easterEgg" onclick="foundEasterEgg()">🥚</div>
 
 <script>
 firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
 var db=firebase.database();
 var currentGame=null,gameInterval=null,reviewRating=10,currentMovieId='',memeMedia=null,memeMediaType=null;
-var selectedAvatar='🐔',selectedAvatarType='emoji',eggsFound=0;
 
 var moviesData={
 series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',description:'Очень увлекательный сериал о четырёх курицах и их невероятных приключениях!',type:'series'},
@@ -167,48 +152,9 @@ ads1:{title:'Рекламки (ч.1)',poster:'cover-ads.jpg',video:'ads-part1.mp
 ads2:{title:'Рекламки (ч.2)',poster:'cover-ads.jpg',video:'ads-part2.mp4',description:'Вторая часть смешных реклам!',type:'ads'}
 };
 
-eggsFound=parseInt(localStorage.getItem('tildochka_eggs')||'0');
-moveEasterEgg();
-
-function moveEasterEgg(){
-var egg=document.getElementById('easterEgg');
-var maxX=window.innerWidth-60;
-var maxY=window.innerHeight-60;
-egg.style.left=Math.floor(Math.random()*maxX)+10+'px';
-egg.style.top=Math.floor(Math.random()*maxY)+10+'px';
-}
-
-function foundEasterEgg(){
-var egg=document.getElementById('easterEgg');
-eggsFound++;
-localStorage.setItem('tildochka_eggs',eggsFound);
-alert('🥚 Нашла яйцо! Всего: '+eggsFound);
-egg.style.opacity='0';
-setTimeout(function(){egg.style.opacity='0.15';moveEasterEgg();},500);
-if(eggsFound%5===0){
-for(var i=0;i<30;i++){var c=document.createElement('div');c.className='confetti';c.style.left=Math.random()*100+'%';c.style.top='-10px';c.style.width='10px';c.style.height='10px';c.style.background=['#ffd700','#f00','#0f0','#00f','#f0f'][Math.floor(Math.random()*5)];c.style.animationDelay=Math.random()+'s';document.body.appendChild(c);setTimeout(function(){c.remove();},3000);}
-}
-}
-
-function loadProfile(){
-var n=localStorage.getItem('tildochka_username')||'Гость';
-document.getElementById('profileName').textContent=n;
-var avatarStr=localStorage.getItem('tildochka_avatar_data');
-if(avatarStr){try{var ad=JSON.parse(avatarStr);selectedAvatar=ad;selectedAvatarType=ad.type;if(ad.type==='emoji')document.getElementById('headerAvatar').textContent=ad.value;else document.getElementById('headerAvatar').innerHTML='<img src="'+ad.value+'" style="width:100%;height:100%;object-fit:cover">';}catch(e){document.getElementById('headerAvatar').textContent='🐔';}}
-}
-
-function openProfileModal(){
-document.getElementById('newNameInput').value=localStorage.getItem('tildochka_username')||'';
-var avatarStr=localStorage.getItem('tildochka_avatar_data');
-if(avatarStr){try{selectedAvatar=JSON.parse(avatarStr);selectedAvatarType=selectedAvatar.type;}catch(e){selectedAvatar='🐔';selectedAvatarType='emoji';}}
-updateAvatarPreview();
-document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(selectedAvatarType==='emoji'&&el.textContent===selectedAvatar)el.classList.add('selected');});
-document.getElementById('profileModal').classList.add('show');
-}
-function updateAvatarPreview(){var p=document.getElementById('avatarPreviewContent');if(selectedAvatarType==='emoji')p.innerHTML=selectedAvatar;else p.innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
-function selectAvatar(e){selectedAvatar=e;selectedAvatarType='emoji';updateAvatarPreview();document.querySelectorAll('.avatar-option').forEach(function(el){el.classList.remove('selected');if(el.textContent===e)el.classList.add('selected');});}
-function loadCustomAvatar(){var f=document.getElementById('customAvatarInput').files[0];if(!f)return;var r=new FileReader();r.onload=function(e){selectedAvatar={type:'image',value:e.target.result};selectedAvatarType='image';updateAvatarPreview();};r.readAsDataURL(f);}
-function saveProfile(){var n=document.getElementById('newNameInput').value.trim();if(!n)return;localStorage.setItem('tildochka_username',n);localStorage.setItem('tildochka_avatar_data',JSON.stringify(selectedAvatar));document.getElementById('profileName').textContent=n;if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar;else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';document.getElementById('profileModal').classList.remove('show');}
+function loadProfile(){var n=localStorage.getItem('tildochka_username')||'Гость';document.getElementById('profileName').textContent=n;var a=localStorage.getItem('tildochka_avatar');if(a)document.getElementById('headerAvatar').textContent=a;}
+function openProfileModal(){document.getElementById('profileModal').classList.add('show');}
+function saveProfile(){var n=document.getElementById('newNameInput').value.trim();if(!n)return;localStorage.setItem('tildochka_username',n);document.getElementById('profileName').textContent=n;document.getElementById('profileModal').classList.remove('show');}
 function closeProfileModal(){document.getElementById('profileModal').classList.remove('show');}
 
 function showScreen(id){
@@ -225,28 +171,14 @@ document.getElementById('movieTitle').textContent=m.title;
 document.getElementById('movieDescription').textContent=m.description;
 document.getElementById('videosrc').src=m.video;document.getElementById('player').load();
 if(m.type==='series'){document.getElementById('seasonsSection').style.display='block';document.getElementById('seasonsContent').innerHTML='<button onclick="toggleSeason(\'season1\')">Сезон 1</button><div class="episodes" id="season1"><button onclick="playEpisode(\'episode1.mp4\')">▶ 1 серия</button><button onclick="playEpisode(\'episode2.mp4\')">▶ 2 серия</button><button onclick="playEpisode(\'episode3.mp4\')">▶ 3 серия</button><button onclick="playEpisode(\'episode4.mp4\')">▶ 4 серия</button></div>';}else document.getElementById('seasonsSection').style.display='none';
-showScreen('movie');loadMovieReviews(id);setupReviewStars();
+showScreen('movie');loadMovieReviews(id);
 }
 function toggleSeason(id){var s=document.getElementById(id);if(!s)return;document.querySelectorAll('.episodes').forEach(function(e){if(e.id!==id)e.classList.remove('show');});s.classList.toggle('show');}
 function playEpisode(src){document.getElementById('videosrc').src=src;document.getElementById('player').load();document.getElementById('player').play();}
 
-function showGame(type){
-stopGame();currentGame=type;showScreen('game');
-var titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy',pong:'🏓 Пинг-понг',xo:'❌ X/O'};
-document.getElementById('gameTitle').textContent=titles[type];
-document.getElementById('gameContent').innerHTML='';
-document.getElementById('gameScoreDisplay').textContent='Счёт: 0';
-if(type==='snake')initSnake();if(type==='tetris')initTetris();if(type==='runner')initRunner();
-if(type==='chickenrain')initChickenRain();if(type==='flappy')initFlappy();if(type==='pong')initPong();if(type==='xo')initXO();
-}
-function stopGame(){if(gameInterval){clearInterval(gameInterval);gameInterval=null;}currentGame=null;document.onkeydown=null;}
-function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}
-function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
+function setRating(v){reviewRating=v*2;document.querySelectorAll('#movie-screen .star').forEach(function(s,i){s.classList.remove('full');if(i<v)s.classList.add('full');});document.getElementById('ratingText').textContent=reviewRating+'/10';}
 
-function setupReviewStars(){var stars=document.querySelectorAll('#revStars .star');stars.forEach(function(s){s.onclick=function(){reviewRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,reviewRating);document.getElementById('ratingText').textContent=reviewRating+'/10';};});updateStars(stars,10);}
-function updateStars(stars,r){stars.forEach(function(s){var v=parseInt(s.getAttribute('data-v'))*2;s.classList.remove('full');if(r>=v)s.classList.add('full');});}
-
-function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;db.ref('reviews/'+currentMovieId).push({name:localStorage.getItem('tildochka_username')||'Гость',text:t,rating:reviewRating,timestamp:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';});}
+function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;db.ref('reviews/'+currentMovieId).push({name:localStorage.getItem('tildochka_username')||'Гость',text:t,rating:reviewRating,timestamp:Date.now()}).then(function(){document.getElementById('reviewText').value='';});}
 function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push(c.val());});revs.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('reviews');if(!revs.length)c.innerHTML='<p style="color:#888">Нет отзывов</p>';else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':'☆';var d=document.createElement('div');d.className='review';d.innerHTML='<span class="review-name">'+r.name+'</span><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div>';c.appendChild(d);});}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=revs.length?(sum/revs.length).toFixed(1):'9.5';document.getElementById('movieRatingHero').textContent='⭐ '+avg+'/10';});}
 
 function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;db.ref('chat').push({name:localStorage.getItem('tildochka_username')||'Гость',text:m,timestamp:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});}
@@ -259,23 +191,28 @@ function loadMemes(){db.ref('memes').on('value',function(snap){var memes=[];snap
 function addIdea(){var t=document.getElementById('ideaText').value.trim();if(!t)return;db.ref('ideas').push({author:localStorage.getItem('tildochka_username')||'Гость',text:t,likes:0,timestamp:Date.now()}).then(function(){document.getElementById('ideaText').value='';});}
 function loadIdeas(){db.ref('ideas').on('value',function(snap){var ideas=[];snap.forEach(function(c){ideas.push({id:c.key,author:c.val().author,text:c.val().text,likes:c.val().likes||0});});ideas.sort(function(a,b){return(b.timestamp||0)-(a.timestamp||0);});var c=document.getElementById('ideasList');if(!ideas.length)c.innerHTML='<p style="color:#888">Нет идей</p>';else{c.innerHTML='';ideas.forEach(function(i){var d=document.createElement('div');d.className='meme-card';d.innerHTML='<span style="color:#ffd700">💡 '+i.author+':</span><p>'+i.text+'</p><button onclick="db.ref(\'ideas/'+i.id+'\').update({likes:'+(i.likes+1)+'})">❤️ '+i.likes+'</button>';c.appendChild(d);});});}
 
+function showGame(type){
+stopGame();currentGame=type;showScreen('game');
+var titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy',pong:'🏓 Пинг-понг',xo:'❌ X/O'};
+document.getElementById('gameTitle').textContent=titles[type];
+document.getElementById('gameContent').innerHTML='';document.getElementById('gameScoreDisplay').textContent='Счёт: 0';
+if(type==='snake')initSnake();if(type==='tetris')initTetris();if(type==='runner')initRunner();
+if(type==='chickenrain')initChickenRain();if(type==='flappy')initFlappy();if(type==='pong')initPong();if(type==='xo')initXO();
+}
+function stopGame(){if(gameInterval){clearInterval(gameInterval);gameInterval=null;}currentGame=null;document.onkeydown=null;}
+function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}
+function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
+
 function initSnake(){document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" id="su">↑</button><div class="mobile-row"><button class="mobile-btn" id="sl">←</button><button class="mobile-btn" id="sd">↓</button><button class="mobile-btn" id="sr">→</button></div></div>';var c=document.getElementById('sc'),ctx=c.getContext('2d'),snake=[{x:200,y:200}],food=rf(),dir={x:20,y:0},score=0,over=false;function rf(){return{x:Math.floor(Math.random()*20)*20,y:Math.floor(Math.random()*20)*20};}function cd(nd){if(over)return;if(nd.x===-dir.x&&nd.y===-dir.y)return;if(nd.x!==0&&dir.x!==0)return;if(nd.y!==0&&dir.y!==0)return;dir=nd;}document.getElementById('su').onclick=function(){cd({x:0,y:-20});};document.getElementById('sd').onclick=function(){cd({x:0,y:20});};document.getElementById('sl').onclick=function(){cd({x:-20,y:0});};document.getElementById('sr').onclick=function(){cd({x:20,y:0});};document.onkeydown=function(e){if(e.key==='ArrowLeft')cd({x:-20,y:0});if(e.key==='ArrowRight')cd({x:20,y:0});if(e.key==='ArrowUp')cd({x:0,y:-20});if(e.key==='ArrowDown')cd({x:0,y:20});e.preventDefault();};var tx=0,ty=0;c.addEventListener('touchstart',function(e){tx=e.touches[0].clientX;ty=e.touches[0].clientY;});c.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>Math.abs(dy)){if(dx>0)cd({x:20,y:0});else cd({x:-20,y:0});}else{if(dy>0)cd({x:0,y:20});else cd({x:0,y:-20});}});function loop(){if(over)return;var h={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(h.x<0||h.x>=400||h.y<0||h.y>=400||snake.some(function(s){return s.x===h.x&&s.y===h.y;})){end(score);return;}snake.unshift(h);if(h.x===food.x&&h.y===food.y){score++;document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;food=rf();}else snake.pop();ctx.clearRect(0,0,400,400);ctx.fillStyle='#ffd700';ctx.fillRect(food.x,food.y,18,18);ctx.fillStyle='#4CAF50';snake.forEach(function(s){ctx.fillRect(s.x,s.y,18,18);});}function end(s){over=true;clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initSnake();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+s);}gameInterval=setInterval(loop,100);}
-
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="600" class="game-canvas"></canvas><div class="mobile-controls"><div class="mobile-row"><button class="mobile-btn" id="bl">←</button><button class="mobile-btn" id="brt">↻</button><button class="mobile-btn" id="br">→</button><button class="mobile-btn" id="bd">↓</button></div></div>';var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=20,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=[];for(var y=0;y<ROWS;y++){board[y]=[];for(var x=0;x<COLS;x++)board[y][x]=0;}var shapes=[[[1,1,1,1]],[[1,1],[1,1]]];var piece=newPiece(),score=0,over=false,lastDrop=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){var by=piece.y+y,bx=piece.x+x;if(by>=ROWS||bx<0||bx>=COLS)return true;if(by>=0&&board[by][bx])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=0)board[piece.y+y][piece.x+x]=1;}}function rotate(){var rot=[],rs=piece.shape.length,cs=piece.shape[0].length;for(var i=0;i<cs;i++){rot[i]=[];for(var j=rs-1;j>=0;j--)rot[i][rs-1-j]=piece.shape[j][i];}var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(cell){return cell;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));score+=100;document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;y++;}}}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();}lastDrop=Date.now();}function ml(){piece.x--;if(collide())piece.x++;}function mr(){piece.x++;if(collide())piece.x--;}function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++)if(board[y][x]){ctx.fillStyle='#ffd700';ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK-1,BLOCK-1);}if(piece)for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){ctx.fillStyle='#f60';ctx.fillRect((piece.x+x)*BLOCK,(piece.y+y)*BLOCK,BLOCK-1,BLOCK-1);}}function loop(){if(over)return;if(Date.now()-lastDrop>500)drop();draw();requestAnimationFrame(loop);}function end(){over=true;var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initTetris();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+score);}document.onkeydown=function(e){if(over)return;if(e.key==='ArrowLeft')ml();if(e.key==='ArrowRight')mr();if(e.key==='ArrowDown')drop();if(e.key==='ArrowUp')rotate();e.preventDefault();};document.getElementById('bl').onclick=function(){if(!over)ml();};document.getElementById('br').onclick=function(){if(!over)mr();};document.getElementById('brt').onclick=function(){if(!over)rotate();};document.getElementById('bd').onclick=function(){if(!over)drop();};requestAnimationFrame(loop);}
-
 function initRunner(){document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><p>Пробел/клик — прыжок!</p>';var c=document.getElementById('rc'),ctx=c.getContext('2d'),y=150,vy=0,obs=[{x:600,y:160}],score=0,over=false;function jump(){if(y>=150&&!over)vy=-12;}document.onkeydown=function(e){if(e.key===' ')jump();};c.onclick=jump;c.addEventListener('touchstart',function(e){e.preventDefault();jump();});function loop(){if(over)return;ctx.clearRect(0,0,600,200);ctx.fillStyle='#4CAF50';ctx.fillRect(0,170,600,30);ctx.font='30px Arial';ctx.fillText('🐔',50,y);for(var i=0;i<obs.length;i++){ctx.fillText('🪨',obs[i].x,obs[i].y);obs[i].x-=5;}obs=obs.filter(function(o){return o.x>-30;});if(!obs.length||obs[obs.length-1].x<400)obs.push({x:600,y:160});if(obs.some(function(o){return o.x<80&&o.x>20&&y>130;}))end();y+=vy;vy+=0.8;if(y>150){y=150;vy=0;}score++;document.getElementById('gameScoreDisplay').textContent='Счёт: '+Math.floor(score/10);}function end(){over=true;clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initRunner();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+Math.floor(score/10));}gameInterval=setInterval(loop,20);}
-
 function initChickenRain(){document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div class="mobile-controls"><div class="mobile-row"><button class="mobile-btn" id="crl">←</button><button class="mobile-btn" id="crr">→</button></div></div><p>← → лови яйца</p>';var c=document.getElementById('cr'),ctx=c.getContext('2d'),chicken={x:180,y:440},eggs=[],score=0,over=false;function spawnEgg(){return{x:Math.random()*370,y:-20,speed:1.5+Math.random()*2};}document.onkeydown=function(e){if(e.key==='ArrowLeft')chicken.x=Math.max(0,chicken.x-25);if(e.key==='ArrowRight')chicken.x=Math.min(350,chicken.x+25);};document.getElementById('crl').onclick=function(){chicken.x=Math.max(0,chicken.x-25);};document.getElementById('crr').onclick=function(){chicken.x=Math.min(350,chicken.x+25);};c.addEventListener('touchmove',function(e){e.preventDefault();var r=c.getBoundingClientRect();chicken.x=e.touches[0].clientX-r.left-25;chicken.x=Math.max(0,Math.min(350,chicken.x));});function loop(){if(over)return;ctx.clearRect(0,0,400,500);ctx.fillStyle='#4CAF50';ctx.fillRect(0,460,400,40);ctx.font='40px Arial';ctx.fillText('🐔',chicken.x,chicken.y);if(Math.random()<0.02)eggs.push(spawnEgg());for(var i=eggs.length-1;i>=0;i--){eggs[i].y+=eggs[i].speed;ctx.fillText('🥚',eggs[i].x,eggs[i].y);if(eggs[i].y>420&&eggs[i].y<460&&Math.abs(eggs[i].x-chicken.x)<35){eggs.splice(i,1);score++;document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;}else if(eggs[i].y>500){eggs.splice(i,1);end(score);}}}function end(s){over=true;clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initChickenRain();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+s);}gameInterval=setInterval(loop,20);}
-
 function initFlappy(){document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик — лететь!</p>';var c=document.getElementById('fc'),ctx=c.getContext('2d'),bird={x:80,y:250},pipes=[],score=0,over=false,vy=0;function spawnPipe(){var gap=120,top=Math.random()*250+50;return{x:400,top:top,bottom:top+gap};}document.onkeydown=function(e){if(e.key===' ')vy=-8;};c.onclick=function(){vy=-8;};c.addEventListener('touchstart',function(e){e.preventDefault();vy=-8;});function loop(){if(over)return;ctx.clearRect(0,0,400,500);ctx.fillStyle='#87CEEB';ctx.fillRect(0,0,400,500);vy+=0.5;bird.y+=vy;ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(bird.x,bird.y,15,0,Math.PI*2);ctx.fill();ctx.font='20px Arial';ctx.fillText('🐔',bird.x-15,bird.y+8);if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(spawnPipe());for(var i=pipes.length-1;i>=0;i--){pipes[i].x-=3;ctx.fillStyle='#4CAF50';ctx.fillRect(pipes[i].x,0,50,pipes[i].top);ctx.fillRect(pipes[i].x,pipes[i].bottom,50,500);if(pipes[i].x+50<0){pipes.splice(i,1);score++;document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;}if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+50&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();}if(bird.y>480||bird.y<0)end();}function end(){over=true;clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initFlappy();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+score);}gameInterval=setInterval(loop,20);}
-
 function initPong(){document.getElementById('gameContent').innerHTML='<canvas id="pc" width="500" height="300" class="game-canvas"></canvas><div class="mobile-controls"><div class="mobile-row"><button class="mobile-btn" id="plu">↑</button><button class="mobile-btn" id="pld">↓</button></div></div><p>W/S — левый | ↑↓ — правый</p>';var c=document.getElementById('pc'),ctx=c.getContext('2d'),l={y:120},r={y:120},ball={x:250,y:150,vx:4,vy:3},sl=0,sr=0,over=false;document.onkeydown=function(e){if(e.key==='w')l.y=Math.max(0,l.y-20);if(e.key==='s')l.y=Math.min(240,l.y+20);if(e.key==='ArrowUp')r.y=Math.max(0,r.y-20);if(e.key==='ArrowDown')r.y=Math.min(240,r.y+20);};document.getElementById('plu').onclick=function(){l.y=Math.max(0,l.y-20);};document.getElementById('pld').onclick=function(){l.y=Math.min(240,l.y+20);};function loop(){if(over)return;ctx.clearRect(0,0,500,300);ctx.fillStyle='#fff';ctx.fillRect(10,l.y,10,60);ctx.fillRect(480,r.y,10,60);ctx.fillRect(245,0,10,300);ball.x+=ball.vx;ball.y+=ball.vy;if(ball.y<=0||ball.y>=290)ball.vy*=-1;if(ball.x<=20&&ball.y>l.y&&ball.y<l.y+60)ball.vx*=-1;if(ball.x>=470&&ball.y>r.y&&ball.y<r.y+60)ball.vx*=-1;if(ball.x<0){sr++;document.getElementById('gameScoreDisplay').textContent='Левый: '+sl+' | Правый: '+sr;resetBall();}if(ball.x>500){sl++;document.getElementById('gameScoreDisplay').textContent='Левый: '+sl+' | Правый: '+sr;resetBall();}ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fill();if(sl>=5){over=true;alert('Левый победил!');showPRestart();}if(sr>=5){over=true;alert('Правый победил!');showPRestart();}}function resetBall(){ball={x:250,y:150,vx:(Math.random()>0.5?4:-4),vy:(Math.random()*4-2)};}function showPRestart(){clearInterval(gameInterval);var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initPong();};document.getElementById('gameContent').appendChild(b);}gameInterval=setInterval(loop,20);}
+function initXO(){document.getElementById('gameContent').innerHTML='<div class="xo-board" id="xoBoard"></div><p id="xoTurn">Ход: ❌</p>';var board=['','','','','','','','',''],turn='X',over=false;function render(){var h='';for(var i=0;i<9;i++){var cell=board[i]||'';h+='<div class="xo-cell" onclick="xoClick('+i+')">'+(cell==='X'?'❌':cell==='O'?'⭕':'')+'</div>';}document.getElementById('xoBoard').innerHTML=h;document.getElementById('xoTurn').textContent=over?'Игра окончена!':'Ход: '+(turn==='X'?'❌':'⭕');}window.xoClick=function(i){if(over||board[i])return;board[i]=turn;render();var wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var w=0;w<wins.length;w++){if(board[wins[w][0]]&&board[wins[w][0]]===board[wins[w][1]]&&board[wins[w][1]]===board[wins[w][2]]){over=true;alert('Победил: '+(turn==='X'?'❌':'⭕'));render();showXORestart();return;}}if(!board.includes('')){over=true;alert('Ничья!');render();showXORestart();return;}turn=turn==='X'?'O':'X';render();};function showXORestart(){var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initXO();};document.getElementById('gameContent').appendChild(b);}render();}
 
-function initXO(){document.getElementById('gameContent').innerHTML='<div class="xo-board" id="xoBoard"></div><p id="xoTurn">Ход: ❌</p>';var board=['','','','','','','','',''],turn='X',over=false;function render(){var h='';for(var i=0;i<9;i++){var cell=board[i]||'';h+='<div class="xo-cell '+(cell==='X'?'x':cell==='O'?'o':'')+'" onclick="xoClick('+i+')">'+(cell==='X'?'❌':cell==='O'?'⭕':'')+'</div>';}document.getElementById('xoBoard').innerHTML=h;document.getElementById('xoTurn').textContent=over?'Игра окончена!':'Ход: '+(turn==='X'?'❌':'⭕');}window.xoClick=function(i){if(over||board[i])return;board[i]=turn;render();var wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var w=0;w<wins.length;w++){if(board[wins[w][0]]&&board[wins[w][0]]===board[wins[w][1]]&&board[wins[w][1]]===board[wins[w][2]]){over=true;alert('Победил: '+(turn==='X'?'❌':'⭕'));render();showXORestart();return;}}if(!board.includes('')){over=true;alert('Ничья!');render();showXORestart();return;}turn=turn==='X'?'O':'X';render();};function showXORestart(){var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:20px auto;font-size:20px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initXO();};document.getElementById('gameContent').appendChild(b);}render();}
-
-var quotes=[{text:'Расческа нужна каждому.',author:'Главный герой',movie:'Расческа для лысых'},{text:'Куры не летают. Но мечтают.',author:'Курица №3',movie:'Приключения 4 куриц'}];
-function showDailyQuote(){var q=quotes[new Date().getDate()%quotes.length];var h='<div class="quote-box">«'+q.text+'»<br><span style="color:#ffd700">— '+q.author+'</span></div>';var cat=document.querySelector('#home-screen .catalog');if(cat){var ex=document.getElementById('dailyQuote');if(ex)ex.innerHTML=h;else{var d=document.createElement('div');d.id='dailyQuote';d.style.cssText='max-width:600px;margin:30px auto 0';d.innerHTML='<h3 style="color:#ffd700">💬 Цитата дня</h3>'+h;cat.appendChild(d);}}}
-showDailyQuote();
+var eggsFound=parseInt(localStorage.getItem('tildochka_eggs')||'0');
+function foundEasterEgg(){eggsFound++;localStorage.setItem('tildochka_eggs',eggsFound);alert('🥚 Нашла яйцо! Всего: '+eggsFound);}
 
 var pass=prompt("🔐 Кодовое слово:");
 if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){
@@ -285,4 +222,4 @@ loadChatMessages();loadMemes();loadIdeas();
 }else document.getElementById("blocked").style.display="flex";
 </script>
 </body>
-                                                                                                                                                                                                                                                                                                                                                                </html>
+</html>
