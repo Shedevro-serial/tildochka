@@ -86,6 +86,18 @@
       color: #ffd700;
     }
     
+    .profile-name {
+      color: #ffd700;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 15px;
+      transition: color 0.3s;
+    }
+    
+    .profile-name:hover {
+      color: #fff;
+    }
+    
     .burger {
       width: 35px;
       height: 25px;
@@ -191,7 +203,7 @@
       background: rgba(255,215,0,0.1);
     }
     
-   .movie-card img {
+    .movie-card img {
       width: 100%;
       border-radius: 12px;
       margin-bottom: 10px;
@@ -404,10 +416,15 @@
     
     .mobile-controls {
       display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
       margin: 10px 0;
+    }
+    
+    .mobile-controls-row {
+      display: flex;
+      gap: 10px;
     }
     
     .mobile-btn {
@@ -580,76 +597,7 @@
       margin-top: 5px;
     }
     
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
-    
-    .modal img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
-    }
-    
-   @media (max-width: 768px) {
-      .logo {
-        font-size: 24px;
-      }
-      
-      .hero h1 {
-        font-size: 1.8rem;
-      }
-      
-      .hero h2 {
-        font-size: 1.5rem;
-      }
-      
-      .movie-grid, .games-grid {
-        gap: 10px;
-      }
-      
-      .movie-card, .game-card {
-        width: calc(50% - 10px);
-        min-width: 140px;
-        padding: 10px;
-      }
-      
-      .movie-card h3, .game-card h3 {
-        font-size: 0.9rem;
-      }
-      
-      .game-icon {
-        font-size: 40px;
-      }
-      
-      .content {
-        padding: 10px;
-      }
-      
-      .section {
-        padding: 15px;
-      }
-      
-      button {
-        padding: 10px 15px;
-        font-size: 14px;
-      }
-      
-      .star {
-        font-size: 28px;
-        width: 28px;
-      }
-    }
-        /* Модальное окно смены имени */
+    /* Модальное окно смены имени */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -708,6 +656,56 @@
     .modal-box button:hover {
       background: #ffed4a;
     }
+    
+    @media (max-width: 768px) {
+      .logo {
+        font-size: 24px;
+      }
+      
+      .hero h1 {
+        font-size: 1.8rem;
+      }
+      
+      .hero h2 {
+        font-size: 1.5rem;
+      }
+      
+      .movie-grid, .games-grid {
+        gap: 10px;
+      }
+      
+      .movie-card, .game-card {
+        width: calc(50% - 10px);
+        min-width: 140px;
+        padding: 10px;
+      }
+      
+      .movie-card h3, .game-card h3 {
+        font-size: 0.9rem;
+      }
+      
+      .game-icon {
+        font-size: 40px;
+      }
+      
+      .content {
+        padding: 10px;
+      }
+      
+      .section {
+        padding: 15px;
+      }
+      
+      button {
+        padding: 10px 15px;
+        font-size: 14px;
+      }
+      
+      .star {
+        font-size: 28px;
+        width: 28px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -720,17 +718,17 @@
 
   <div id="app" style="display: none;">
     
-<div class="header">
+    <div class="header">
       <div class="logo" onclick="showScreen('home')">Tildochka</div>
       <div style="display:flex;align-items:center;gap:15px;">
-        <span id="profileName" style="color:#ffd700;cursor:pointer;font-size:16px;" onclick="changeName()">👤 Гость</span>
+        <span class="profile-name" id="profileName" onclick="changeName()">👤 Гость</span>
         <div class="burger" onclick="toggleMenu()">
           <span></span>
           <span></span>
           <span></span>
         </div>
       </div>
-</div>
+    </div>
 
     <div class="menu" id="menuDropdown">
       <a onclick="showScreen('home'); closeMenu()">🏠 Главная</a>
@@ -853,7 +851,6 @@
           <div class="section">
             <h2>💭 Отзывы</h2>
             
-            
             <div class="stars-container" id="revStars">
               <span>Оценка: </span>
               <span class="star" data-v="1">★</span>
@@ -878,7 +875,6 @@
         <div class="game-container">
           <button onclick="stopGame(); showScreen('home')">← На главную</button>
           <h2 id="gameTitle">Игра</h2>
-          <input type="text" class="player-name-input" id="playerNameInput" placeholder="Введи своё имя">
           <div class="game-score" id="gameScoreDisplay">Счёт: 0</div>
           <div id="gameContent"></div>
           <div id="gameRatingArea"></div>
@@ -912,6 +908,7 @@
 
     </div>
   </div>
+
   <!-- Модальное окно смены имени -->
   <div class="modal-overlay" id="nameModal">
     <div class="modal-box">
@@ -923,22 +920,23 @@
       <button onclick="closeNameModal()" style="background:#444;color:#fff;margin-left:5px;">Отмена</button>
     </div>
   </div>
+
   <script>
     // ==================== FIREBASE ====================
     firebase.initializeApp({
       databaseURL: "https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"
     });
-    const db = firebase.database();
+    var db = firebase.database();
     
     // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
-    let currentGame = null;
-    let gameInterval = null;
-    let reviewRating = 10;
-    let gameRating = 10;
-    let currentMovieId = '';
+    var currentGame = null;
+    var gameInterval = null;
+    var reviewRating = 10;
+    var gameRating = 10;
+    var currentMovieId = '';
 
     // ==================== ДАННЫЕ ФИЛЬМОВ ====================
-    const moviesData = {
+    var moviesData = {
       series: {
         title: 'Приключения 4 куриц',
         poster: 'cover.jpg',
@@ -951,7 +949,7 @@
         title: 'Расческа для лысых',
         poster: 'cover-comb.jpg',
         video: 'comb.mp4',
-        description: 'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески. Комедийная драма о поиске себя, принятии своей внешности и о том, что настоящая красота идёт изнутри. Главный герой отправляется в удивительное путешествие, чтобы доказать всему миру — расческа нужна каждому.',
+        description: 'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески. Комедийная драма о поиске себя, принятии своей внешности и о том, что настоящая красота идёт изнутри.',
         tags: ['драма', 'комедия', 'философия'],
         type: 'movie'
       },
@@ -959,7 +957,7 @@
         title: 'Пираты',
         poster: 'cover-pirates.jpg',
         video: 'pirates.mp4',
-        description: 'Захватывающий приключенческий фильм о команде отважных пиратов, которые отправляются на поиски легендарных сокровищ. Но на их пути встают не только морские чудовища и штормы, но и коварные конкуренты. Кто первым доберётся до заветного клада и чем придётся пожертвовать ради богатства?',
+        description: 'Захватывающий приключенческий фильм о команде отважных пиратов, которые отправляются на поиски легендарных сокровищ. Но на их пути встают не только морские чудовища и штормы, но и коварные конкуренты.',
         tags: ['приключения', 'экшн', 'пираты'],
         type: 'movie'
       },
@@ -967,7 +965,7 @@
         title: 'Американцы зло',
         poster: 'cover-americans.jpg',
         video: 'americans.mp4',
-        description: 'Острая сатирическая комедия о столкновении культур. Группа друзей из маленького городка встречает американских туристов, и начинается череда нелепых ситуаций, недопониманий и смешных конфликтов. Но в итоге все понимают — неважно откуда ты, главное — какой ты человек.',
+        description: 'Острая сатирическая комедия о столкновении культур. Группа друзей из маленького городка встречает американских туристов, и начинается череда нелепых ситуаций, недопониманий и смешных конфликтов.',
         tags: ['комедия', 'сатира', 'приключения'],
         type: 'movie'
       },
@@ -975,7 +973,7 @@
         title: 'Рекламки (часть 1)',
         poster: 'cover-ads.jpg',
         video: 'ads-part1.mp4',
-        description: 'Первая часть сборника самых смешных, нелепых и креативных рекламных роликов. Подборка забавных моментов и курьёзных ситуаций, которые заставят вас смеяться до слёз. Идеально для поднятия настроения!',
+        description: 'Первая часть сборника самых смешных, нелепых и креативных рекламных роликов. Подборка забавных моментов и курьёзных ситуаций, которые заставят вас смеяться до слёз.',
         tags: ['юмор', 'реклама', 'подборка'],
         type: 'ads'
       },
@@ -983,7 +981,7 @@
         title: 'Рекламки (часть 2)',
         poster: 'cover-ads.jpg',
         video: 'ads-part2.mp4',
-        description: 'Вторая часть популярного сборника рекламных роликов! Ещё больше смешных моментов, неожиданных поворотов и креативных идей из мира рекламы. Продолжение, которое не оставит вас равнодушными!',
+        description: 'Вторая часть популярного сборника рекламных роликов! Ещё больше смешных моментов, неожиданных поворотов и креативных идей из мира рекламы.',
         tags: ['юмор', 'реклама', 'подборка'],
         type: 'ads'
       }
@@ -991,9 +989,10 @@
 
     // ==================== НАВИГАЦИЯ ====================
     function showScreen(id) {
-      document.querySelectorAll('.screen').forEach(function(s) {
-        s.classList.remove('active');
-      });
+      var screens = document.querySelectorAll('.screen');
+      for (var i = 0; i < screens.length; i++) {
+        screens[i].classList.remove('active');
+      }
       var target = document.getElementById(id + '-screen');
       if (target) {
         target.classList.add('active');
@@ -1013,18 +1012,15 @@
       document.getElementById('movieTitle').textContent = movie.title;
       document.getElementById('movieDescription').textContent = movie.description;
       
-      // Теги
       var tagsHTML = '';
-      movie.tags.forEach(function(tag) {
-        tagsHTML += '<span class="tag">' + tag + '</span>';
-      });
+      for (var i = 0; i < movie.tags.length; i++) {
+        tagsHTML += '<span class="tag">' + movie.tags[i] + '</span>';
+      }
       document.getElementById('movieTags').innerHTML = tagsHTML;
       
-      // Видео
       document.getElementById('videosrc').src = movie.video;
       document.getElementById('player').load();
       
-      // Сезоны (только для сериала)
       var seasonsSection = document.getElementById('seasonsSection');
       var seasonsContent = document.getElementById('seasonsContent');
       
@@ -1058,9 +1054,12 @@
     function toggleSeason(id) {
       var season = document.getElementById(id);
       if (!season) return;
-      document.querySelectorAll('.episodes').forEach(function(e) {
-        if (e.id !== id) e.classList.remove('show');
-      });
+      var allEpisodes = document.querySelectorAll('.episodes');
+      for (var i = 0; i < allEpisodes.length; i++) {
+        if (allEpisodes[i].id !== id) {
+          allEpisodes[i].classList.remove('show');
+        }
+      }
       season.classList.toggle('show');
     }
 
@@ -1117,50 +1116,81 @@
       }
     });
 
+    // ==================== ПРОФИЛЬ ====================
+    function loadProfile() {
+      var savedName = localStorage.getItem('tildochka_username');
+      if (savedName) {
+        document.getElementById('profileName').textContent = '👤 ' + savedName;
+      }
+    }
+    
+    function changeName() {
+      var savedName = localStorage.getItem('tildochka_username') || '';
+      document.getElementById('newNameInput').value = savedName;
+      document.getElementById('nameModal').classList.add('show');
+      document.getElementById('newNameInput').focus();
+    }
+    
+    function saveName() {
+      var newName = document.getElementById('newNameInput').value.trim();
+      if (!newName) {
+        alert('Введи имя!');
+        return;
+      }
+      localStorage.setItem('tildochka_username', newName);
+      document.getElementById('profileName').textContent = '👤 ' + newName;
+      document.getElementById('nameModal').classList.remove('show');
+      alert('✅ Имя сохранено! Теперь ты ' + newName);
+    }
+    
+    function closeNameModal() {
+      document.getElementById('nameModal').classList.remove('show');
+    }
+
     // ==================== ЗВЁЗДЫ ДЛЯ ОТЗЫВОВ ====================
     function setupReviewStars() {
       var stars = document.querySelectorAll('#revStars .star');
-      stars.forEach(function(star) {
-        star.onclick = function() {
+      for (var i = 0; i < stars.length; i++) {
+        stars[i].onclick = function() {
           reviewRating = parseInt(this.getAttribute('data-v')) * 2;
           updateStars(stars, reviewRating);
           document.getElementById('ratingText').textContent = reviewRating + '/10';
         };
         
-        star.onmouseenter = function() {
+        stars[i].onmouseenter = function() {
           var val = parseInt(this.getAttribute('data-v')) * 2;
-          stars.forEach(function(s) {
-            var sVal = parseInt(s.getAttribute('data-v')) * 2;
-            s.classList.remove('hover-full', 'hover-half');
-            if (sVal <= val) s.classList.add('hover-full');
-            else if (sVal - 1 === val) s.classList.add('hover-half');
-          });
+          for (var j = 0; j < stars.length; j++) {
+            var sVal = parseInt(stars[j].getAttribute('data-v')) * 2;
+            stars[j].classList.remove('hover-full', 'hover-half');
+            if (sVal <= val) stars[j].classList.add('hover-full');
+            else if (sVal - 1 === val) stars[j].classList.add('hover-half');
+          }
         };
         
-        star.onmouseleave = function() {
-          stars.forEach(function(s) {
-            s.classList.remove('hover-full', 'hover-half');
-          });
+        stars[i].onmouseleave = function() {
+          for (var j = 0; j < stars.length; j++) {
+            stars[j].classList.remove('hover-full', 'hover-half');
+          }
           updateStars(stars, reviewRating);
         };
-      });
+      }
       updateStars(stars, 10);
     }
 
     function updateStars(stars, rating) {
-      stars.forEach(function(star) {
-        var val = parseInt(star.getAttribute('data-v')) * 2;
-        star.classList.remove('full', 'half', 'hover-full', 'hover-half');
+      for (var i = 0; i < stars.length; i++) {
+        var val = parseInt(stars[i].getAttribute('data-v')) * 2;
+        stars[i].classList.remove('full', 'half', 'hover-full', 'hover-half');
         if (rating >= val) {
-          star.classList.add('full');
+          stars[i].classList.add('full');
         } else if (rating === val - 1) {
-          star.classList.add('half');
+          stars[i].classList.add('half');
         }
-      });
+      }
     }
 
     // ==================== ОТЗЫВЫ ====================
-function addReview() {
+    function addReview() {
       var text = document.getElementById('reviewText').value.trim();
       
       if (!text) {
@@ -1184,23 +1214,6 @@ function addReview() {
       }).catch(function(error) {
         alert('Ошибка при отправке: ' + error.message);
       });
-}
-
-      db.ref('reviews/' + currentMovieId).push({
-        name: name,
-        text: text,
-        rating: reviewRating,
-        timestamp: Date.now()
-      }).then(function() {
-        document.getElementById('reviewName').value = '';
-        document.getElementById('reviewText').value = '';
-        reviewRating = 10;
-        var stars = document.querySelectorAll('#revStars .star');
-        updateStars(stars, 10);
-        document.getElementById('ratingText').textContent = '10/10';
-      }).catch(function(error) {
-        alert('Ошибка при отправке: ' + error.message);
-      });
     }
 
     function loadMovieReviews(movieId) {
@@ -1216,11 +1229,12 @@ function addReview() {
           container.innerHTML = '<p style="color:#888;">Пока нет отзывов. Будьте первым!</p>';
         } else {
           container.innerHTML = '';
-          revs.forEach(function(r) {
+          for (var i = 0; i < revs.length; i++) {
+            var r = revs[i];
             var starsDisplay = '';
-            for (var i = 1; i <= 5; i++) {
-              if (r.rating >= i * 2) starsDisplay += '⭐';
-              else if (r.rating === i * 2 - 1) starsDisplay += '🌓';
+            for (var j = 1; j <= 5; j++) {
+              if (r.rating >= j * 2) starsDisplay += '⭐';
+              else if (r.rating === j * 2 - 1) starsDisplay += '🌓';
               else starsDisplay += '☆';
             }
             
@@ -1233,7 +1247,7 @@ function addReview() {
               '<div class="review-text">' + r.text + '</div>' +
               '<div class="review-date">' + new Date(r.timestamp).toLocaleString('ru-RU') + '</div>';
             container.appendChild(div);
-          });
+          }
         }
         
         updateMovieRating(movieId, revs);
@@ -1251,7 +1265,9 @@ function addReview() {
       }
       
       var sum = 0;
-      revs.forEach(function(r) { sum += r.rating; });
+      for (var i = 0; i < revs.length; i++) {
+        sum += revs[i].rating;
+      }
       var avg = (sum / revs.length).toFixed(1);
       
       document.getElementById('movieRatingHero').textContent = '⭐ ' + avg + ' / 10';
@@ -1263,7 +1279,7 @@ function addReview() {
     }
 
     // ==================== ОБСУЖДЕНИЯ ====================
-function sendMessage() {
+    function sendMessage() {
       var msg = document.getElementById('chatMessage').value.trim();
       
       if (!msg) {
@@ -1278,18 +1294,6 @@ function sendMessage() {
         text: msg,
         timestamp: Date.now()
       }).then(function() {
-        document.getElementById('chatMessage').value = '';
-      }).catch(function(error) {
-        alert('Ошибка: ' + error.message);
-      });
-}
-
-      db.ref('messages').push({
-        name: name,
-        text: msg,
-        timestamp: Date.now()
-      }).then(function() {
-        document.getElementById('chatName').value = '';
         document.getElementById('chatMessage').value = '';
       }).catch(function(error) {
         alert('Ошибка: ' + error.message);
@@ -1309,19 +1313,20 @@ function sendMessage() {
           container.innerHTML = '<p style="color:#888;">Нет сообщений. Начните обсуждение!</p>';
         } else {
           container.innerHTML = '';
-          msgs.forEach(function(m) {
+          for (var i = 0; i < msgs.length; i++) {
+            var m = msgs[i];
             var div = document.createElement('div');
             div.className = 'message';
             div.innerHTML = '<strong>' + m.name + ':</strong> ' + m.text +
               '<div class="message-time">' + new Date(m.timestamp).toLocaleString('ru-RU') + '</div>';
             container.appendChild(div);
-          });
+          }
         }
       });
     }
 
     // ==================== ИДЕИ ====================
-function addIdea() {
+    function addIdea() {
       var text = document.getElementById('ideaText').value.trim();
       
       if (!text) {
@@ -1341,19 +1346,6 @@ function addIdea() {
       }).catch(function(error) {
         alert('Ошибка: ' + error.message);
       });
-}
-
-      db.ref('ideas').push({
-        author: author,
-        text: text,
-        likes: 0,
-        timestamp: Date.now()
-      }).then(function() {
-        document.getElementById('ideaAuthor').value = '';
-        document.getElementById('ideaText').value = '';
-      }).catch(function(error) {
-        alert('Ошибка: ' + error.message);
-      });
     }
 
     function loadIdeas() {
@@ -1369,19 +1361,20 @@ function addIdea() {
           container.innerHTML = '<p style="color:#888;">Пока нет идей. Предложите первую!</p>';
         } else {
           container.innerHTML = '';
-          ideas.forEach(function(i) {
+          for (var i = 0; i < ideas.length; i++) {
+            var idea = ideas[i];
             var div = document.createElement('div');
             div.className = 'idea-card';
             div.innerHTML = 
-              '<div class="idea-author">💡 ' + i.author + ' предлагает:</div>' +
-              '<p>' + i.text + '</p>' +
-              '<div style="color:#888;font-size:12px;">' + new Date(i.timestamp).toLocaleString('ru-RU') + '</div>' +
+              '<div class="idea-author">💡 ' + idea.author + ' предлагает:</div>' +
+              '<p>' + idea.text + '</p>' +
+              '<div style="color:#888;font-size:12px;">' + new Date(idea.timestamp).toLocaleString('ru-RU') + '</div>' +
               '<div class="idea-likes">' +
-                '<button class="like-btn" onclick="likeIdea(\'' + i.id + '\', ' + i.likes + ')">❤️</button>' +
-                '<span>' + i.likes + '</span>' +
+                '<button class="like-btn" onclick="likeIdea(\'' + idea.id + '\', ' + idea.likes + ')">❤️</button>' +
+                '<span>' + idea.likes + '</span>' +
               '</div>';
             container.appendChild(div);
-          });
+          }
         }
       });
     }
@@ -1407,15 +1400,18 @@ function addIdea() {
         if (rats.length === 0) {
           html += '<p style="color:#888;">Пока нет игроков. Будьте первым!</p>';
         } else {
-          rats.slice(0, 10).forEach(function(r, i) {
+          for (var i = 0; i < rats.length && i < 10; i++) {
+            var r = rats[i];
             html += '<div class="leaderboard-item">' +
               '<span>' + (i+1) + '. ' + (r.name || 'Аноним') + '</span>' +
               '<span>Счёт: ' + (r.score || 0) + ' | ⭐' + (r.rating || 0) + '/10</span>' +
             '</div>';
-          });
+          }
           
           var sum = 0;
-          rats.forEach(function(r) { sum += (r.rating || 0); });
+          for (var i = 0; i < rats.length; i++) {
+            sum += (rats[i].rating || 0);
+          }
           var avg = (sum / rats.length).toFixed(1);
           var ratingEl = document.getElementById('rating-' + type);
           if (ratingEl) ratingEl.textContent = '⭐ ' + avg + '/10 (' + rats.length + ')';
@@ -1444,34 +1440,34 @@ function addIdea() {
 
     function setupGameStars() {
       var stars = document.querySelectorAll('#gameStars .star');
-      stars.forEach(function(star) {
-        star.onclick = function() {
+      for (var i = 0; i < stars.length; i++) {
+        stars[i].onclick = function() {
           gameRating = parseInt(this.getAttribute('data-v')) * 2;
           updateStars(stars, gameRating);
           document.getElementById('gameRatingText').textContent = gameRating + '/10';
         };
         
-        star.onmouseenter = function() {
+        stars[i].onmouseenter = function() {
           var val = parseInt(this.getAttribute('data-v')) * 2;
-          stars.forEach(function(s) {
-            var sVal = parseInt(s.getAttribute('data-v')) * 2;
-            s.classList.remove('hover-full', 'hover-half');
-            if (sVal <= val) s.classList.add('hover-full');
-            else if (sVal - 1 === val) s.classList.add('hover-half');
-          });
+          for (var j = 0; j < stars.length; j++) {
+            var sVal = parseInt(stars[j].getAttribute('data-v')) * 2;
+            stars[j].classList.remove('hover-full', 'hover-half');
+            if (sVal <= val) stars[j].classList.add('hover-full');
+            else if (sVal - 1 === val) stars[j].classList.add('hover-half');
+          }
         };
         
-        star.onmouseleave = function() {
-          stars.forEach(function(s) {
-            s.classList.remove('hover-full', 'hover-half');
-          });
+        stars[i].onmouseleave = function() {
+          for (var j = 0; j < stars.length; j++) {
+            stars[j].classList.remove('hover-full', 'hover-half');
+          }
           updateStars(stars, gameRating);
         };
-      });
+      }
       updateStars(stars, 10);
     }
 
-function submitGameRating() {
+    function submitGameRating() {
       var name = localStorage.getItem('tildochka_username') || 'Аноним';
       var scoreText = document.getElementById('gameScoreDisplay').textContent.replace(/\D/g, '');
       var score = parseInt(scoreText) || 0;
@@ -1486,7 +1482,7 @@ function submitGameRating() {
       }).catch(function(error) {
         alert('❌ Ошибка: ' + error.message);
       });
-}
+    }
 
     // ==================== ЗМЕЙКА ====================
     function initSnake() {
@@ -1494,7 +1490,7 @@ function submitGameRating() {
         '<canvas id="sc" width="400" height="400" class="game-canvas"></canvas>' +
         '<div class="mobile-controls">' +
           '<button class="mobile-btn" id="snakeUp">↑</button>' +
-          '<div style="display:flex;gap:10px;">' +
+          '<div class="mobile-controls-row">' +
             '<button class="mobile-btn" id="snakeLeft">←</button>' +
             '<button class="mobile-btn" id="snakeDown">↓</button>' +
             '<button class="mobile-btn" id="snakeRight">→</button>' +
@@ -1527,7 +1523,6 @@ function submitGameRating() {
         dir = newDir;
       }
       
-      // Кнопки джойстика
       document.getElementById('snakeUp').onclick = function() {
         changeDirection({x: 0, y: -20});
       };
@@ -1541,7 +1536,6 @@ function submitGameRating() {
         changeDirection({x: 20, y: 0});
       };
       
-      // Клавиатура
       document.onkeydown = function(e) {
         if (e.key === 'ArrowLeft') changeDirection({x: -20, y: 0});
         if (e.key === 'ArrowRight') changeDirection({x: 20, y: 0});
@@ -1550,7 +1544,6 @@ function submitGameRating() {
         e.preventDefault();
       };
       
-      // Свайпы
       var touchStartX = 0, touchStartY = 0;
       canvas.addEventListener('touchstart', function(e) {
         touchStartX = e.touches[0].clientX;
@@ -1623,10 +1616,12 @@ function submitGameRating() {
       document.getElementById('gameContent').innerHTML = 
         '<canvas id="tc" width="300" height="600" class="game-canvas"></canvas>' +
         '<div class="mobile-controls">' +
-          '<button class="mobile-btn" id="btnLeft">←</button>' +
-          '<button class="mobile-btn" id="btnRotate">↻</button>' +
-          '<button class="mobile-btn" id="btnRight">→</button>' +
-          '<button class="mobile-btn" id="btnDown">↓</button>' +
+          '<div class="mobile-controls-row">' +
+            '<button class="mobile-btn" id="btnLeft">←</button>' +
+            '<button class="mobile-btn" id="btnRotate">↻</button>' +
+            '<button class="mobile-btn" id="btnRight">→</button>' +
+            '<button class="mobile-btn" id="btnDown">↓</button>' +
+          '</div>' +
         '</div>' +
         '<p>Клавиши или кнопки — управление</p>';
       
@@ -1849,6 +1844,7 @@ function submitGameRating() {
       lastDrop = Date.now();
       requestAnimationFrame(gameLoop);
     }
+
     // ==================== РАННЕР ====================
     function initRunner() {
       document.getElementById('gameContent').innerHTML = 
@@ -1887,21 +1883,21 @@ function submitGameRating() {
         ctx.font = '30px Arial';
         ctx.fillText('🐔', 50, y);
         
-        obstacles.forEach(function(o) {
-          ctx.fillText('🪨', o.x, o.y);
-          o.x -= 5;
-        });
+        for (var i = 0; i < obstacles.length; i++) {
+          ctx.fillText('🪨', obstacles[i].x, obstacles[i].y);
+          obstacles[i].x -= 5;
+        }
         
         obstacles = obstacles.filter(function(o) { return o.x > -30; });
         if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < 400) {
           obstacles.push({x: 600, y: 160});
         }
         
-        obstacles.forEach(function(o) {
-          if (o.x < 80 && o.x > 20 && y > 130) {
+        for (var i = 0; i < obstacles.length; i++) {
+          if (obstacles[i].x < 80 && obstacles[i].x > 20 && y > 130) {
             endGame(Math.floor(score / 10));
           }
-        });
+        }
         
         y += vy;
         vy += 0.8;
@@ -1947,36 +1943,6 @@ function submitGameRating() {
     } else {
       document.getElementById("blocked").style.display = "flex";
     }
-      // ==================== ПРОФИЛЬ ====================
-    function loadProfile() {
-      var savedName = localStorage.getItem('tildochka_username');
-      if (savedName) {
-        document.getElementById('profileName').textContent = '👤 ' + savedName;
-      }
-    }
-    
-    function changeName() {
-      var savedName = localStorage.getItem('tildochka_username') || '';
-      document.getElementById('newNameInput').value = savedName;
-      document.getElementById('nameModal').classList.add('show');
-      document.getElementById('newNameInput').focus();
-    }
-    
-    function saveName() {
-      var newName = document.getElementById('newNameInput').value.trim();
-      if (!newName) {
-        alert('Введи имя!');
-        return;
-      }
-      localStorage.setItem('tildochka_username', newName);
-      document.getElementById('profileName').textContent = '👤 ' + newName;
-      document.getElementById('nameModal').classList.remove('show');
-      alert('✅ Имя сохранено! Теперь ты ' + newName);
-    }
-    
-    function closeNameModal() {
-      document.getElementById('nameModal').classList.remove('show');
-    }
   </script>
 </body>
-</html>
+  </html>
