@@ -111,13 +111,15 @@
     .battle-cell{width:30px;height:30px;background:#222;border:1px solid #444;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;border-radius:4px}
     .battle-cell:hover{background:#444}
     .battle-cell.ship{background:#ffd700}
-    .battle-cell.hit{background:#f44}
+    .battle-cell.hit{background:#f44;animation:explode 0.3s ease}
+    @keyframes explode{0%{transform:scale(1)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
     .battle-cell.miss{background:#555}
     .battle-cell.my-ship{background:rgba(255,215,0,.3)}
     .quote-box{background:linear-gradient(135deg,rgba(255,215,0,.1),rgba(255,215,0,.05));border-left:3px solid #ffd700;padding:12px 15px;margin:15px 0;border-radius:8px}
     .quote-text{font-size:.9rem;margin-bottom:5px}.quote-author{color:#ffd700;font-size:.8rem}
     .short-card{background:rgba(0,0,0,.5);border-radius:15px;padding:12px;margin-bottom:15px}
     .short-video{width:100%;max-height:300px;border-radius:10px}
+    .tag{background:#444;padding:4px 12px;border-radius:20px;margin:5px;display:inline-block;font-size:12px}
     @media(max-width:650px){.battle-board{grid-template-columns:repeat(10,26px)}.battle-cell{width:26px;height:26px;font-size:10px}.movie-card,.game-card{width:calc(50% - 8px);min-width:140px}.logo{font-size:20px}.profile-name{max-width:60px;font-size:11px}}
   </style>
 </head>
@@ -209,24 +211,29 @@ var myChannel=localStorage.getItem('tildochka_channel')||'';
 var userMovies={};
 var audioCtx=null;
 var musicPlaying=true;
+var musicInterval=null;
 
-// ==================== ФОНОВАЯ МУЗЫКА ====================
+// ==================== НОВАЯ СПОКОЙНАЯ МУЗЫКА (ПИАНИНО) ====================
 function playBackgroundMusic() {
   if(!musicPlaying) return;
   try {
     if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
     var now = audioCtx.currentTime;
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.type = "sine";
-    gain.gain.value = 0.03;
-    osc.frequency.value = 261.63;
-    osc.start();
-    gain.gain.exponentialRampToValueAtTime(0.00001, now+2);
-    osc.stop(now+2);
-    if(musicPlaying) setTimeout(playBackgroundMusic, 3000);
+    // Мелодия из 4 нот (C-D-E-C) - спокойная
+    var notes = [261.63, 293.66, 329.63, 261.63];
+    for(var i=0;i<notes.length;i++){
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.type = "sine";
+      gain.gain.value = 0.04;
+      osc.frequency.value = notes[i];
+      osc.start(now + i*0.8);
+      gain.gain.exponentialRampToValueAtTime(0.00001, now + i*0.8 + 0.6);
+      osc.stop(now + i*0.8 + 0.6);
+    }
+    if(musicPlaying) setTimeout(playBackgroundMusic, 4000);
   } catch(e){}
 }
 function toggleMusic() {
@@ -254,18 +261,17 @@ function playSound(type) {
     osc.stop(audioCtx.currentTime+0.2);
   } catch(e){}
 }
-
 var moviesData={
-series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',description:'Очень увлекательный сериал про четырёх куриц.',tags:['комедия','боевик'],type:'series'},
-comb:{title:'Расческа для лысых',poster:'cover-comb.jpg',video:'comb.mp4',description:'Трогательная история о человеке и расческе.',tags:['драма','комедия'],type:'movie'},
-pirates:{title:'Пираты',poster:'cover-pirates.jpg',video:'pirates.mp4',description:'Захватывающий приключенческий фильм.',tags:['приключения'],type:'movie'},
-americans:{title:'Американцы зло',poster:'cover-americans.jpg',video:'americans.mp4',description:'Сатирическая комедия.',tags:['комедия'],type:'movie'},
-ads1:{title:'Рекламки ч.1',poster:'cover-ads.jpg',video:'ads-part1.mp4',description:'Сборник рекламных роликов.',tags:['юмор'],type:'movie'},
-ads2:{title:'Рекламки ч.2',poster:'cover-ads.jpg',video:'ads-part2.mp4',description:'Вторая часть сборника.',tags:['юмор'],type:'movie'}
+series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',description:'Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия. С каждой серией герои сталкиваются с новыми испытаниями, которые заставляют их меняться, расти и по-новому смотреть на мир.',tags:['комедия','боевик','романтика'],type:'series'},
+comb:{title:'Расческа для лысых',poster:'cover-comb.jpg',video:'comb.mp4',description:'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески. Комедийная драма о поиске себя, принятии своей внешности и о том, что настоящая красота идёт изнутри. Главный герой отправляется в удивительное путешествие, чтобы доказать всему миру — расческа нужна каждому, даже если кажется, что не нужна.',tags:['драма','комедия','философия'],type:'movie'},
+pirates:{title:'Пираты',poster:'cover-pirates.jpg',video:'pirates.mp4',description:'Захватывающий приключенческий фильм о команде отважных пиратов, которые отправляются на поиски легендарных сокровищ. Но на их пути встают не только морские чудовища и свирепые штормы, но и коварные конкуренты — другие пиратские кланы. Кто первым доберётся до заветного клада и чем придётся пожертвовать ради богатства?',tags:['приключения','экшн','пираты'],type:'movie'},
+americans:{title:'Американцы зло',poster:'cover-americans.jpg',video:'americans.mp4',description:'Острая сатирическая комедия о столкновении культур и стереотипах. Группа друзей из маленького городка встречает американских туристов, и начинается череда нелепых ситуаций, недопониманий и смешных конфликтов. Но в итоге все понимают — неважно откуда ты, главное — какой ты человек.',tags:['комедия','сатира'],type:'movie'},
+ads1:{title:'Рекламки (ч.1)',poster:'cover-ads.jpg',video:'ads-part1.mp4',description:'Сборник самых смешных, нелепых и креативных рекламных роликов. Подборка забавных моментов, курьёзных ситуаций и неожиданных поворотов, которые заставят вас смеяться до слёз.',tags:['юмор','реклама'],type:'movie'},
+ads2:{title:'Рекламки (ч.2)',poster:'cover-ads.jpg',video:'ads-part2.mp4',description:'Вторая часть популярного сборника рекламных роликов! Ещё больше смешных моментов, неожиданных поворотов и креативных идей из мира рекламы.',tags:['юмор','реклама'],type:'movie'}
 };
 var moviesDataRatings={};
 var shopItems={'👑':50,'🌟':30,'💎':100,'🔥':40,'💀':60,'🤖':70,'👻':50,'🎭':30,'🦄':150,'🐉':200};
-var questTemplates=[{text:'Сыграй 3 игры',type:'play',target:3,reward:10},{text:'Напиши отзыв',type:'review',target:1,reward:15},{text:'Отправь 5 сообщений',type:'chat',target:5,reward:12}];
+var questTemplates=[{text:'Сыграй 3 игры',type:'play',target:3,reward:10},{text:'Напиши отзыв',type:'review',target:1,reward:15},{text:'Отправь 5 сообщений',type:'chat',target:5,reward:12},{text:'Поставь лайк 3 идеям',type:'like',target:3,reward:8}];
 
 function loadAllData(){
   loadProfile();setupOnline();
@@ -320,21 +326,35 @@ function showDrawCanvas(){
   drawCanvas=document.getElementById('drawCanvas');
   drawCtx=drawCanvas.getContext('2d');
   drawCtx.fillStyle='#fff';
-  drawCtx.fillRect(0,0,200,200);
+  drawCtx.fillRect(0,0,180,180);
   var drawing=false;
+  function getCoords(e){
+    var rect=drawCanvas.getBoundingClientRect();
+    var scaleX=180/rect.width;
+    var scaleY=180/rect.height;
+    var clientX,clientY;
+    if(e.touches){clientX=e.touches[0].clientX;clientY=e.touches[0].clientY;}
+    else{clientX=e.clientX;clientY=e.clientY;}
+    var x=(clientX-rect.left)*scaleX;
+    var y=(clientY-rect.top)*scaleY;
+    return {x:Math.min(180,Math.max(0,x)),y:Math.min(180,Math.max(0,y))};
+  }
+  function draw(e){
+    var coords=getCoords(e);
+    drawCtx.fillStyle=drawColor;
+    drawCtx.beginPath();
+    drawCtx.arc(coords.x,coords.y,4,0,Math.PI*2);
+    drawCtx.fill();
+  }
   drawCanvas.onmousedown=e=>{drawing=true;draw(e);};
   drawCanvas.onmouseup=()=>{drawing=false;drawCtx.beginPath();};
   drawCanvas.onmousemove=e=>{if(drawing)draw(e);};
-  function draw(e){
-    var r=drawCanvas.getBoundingClientRect();
-    drawCtx.fillStyle=drawColor;
-    drawCtx.beginPath();
-    drawCtx.arc((e.clientX-r.left)*(200/r.width),(e.clientY-r.top)*(200/r.height),5,0,Math.PI*2);
-    drawCtx.fill();
-  }
+  drawCanvas.ontouchstart=e=>{e.preventDefault();drawing=true;draw(e);};
+  drawCanvas.ontouchmove=e=>{e.preventDefault();if(drawing)draw(e);};
+  drawCanvas.ontouchend=()=>{drawing=false;drawCtx.beginPath();};
 }
 function changeDrawColor(c){drawColor=c;}
-function clearDrawCanvas(){if(drawCtx){drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,200,200);}}
+function clearDrawCanvas(){if(drawCtx){drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,180,180);}}
 function saveDrawnAvatar(){
   var d=drawCanvas.toDataURL('image/png');
   selectedAvatar={type:'image',value:d};selectedAvatarType='image';
@@ -537,7 +557,6 @@ function renderMovieLists(){
     var m=userMovies[id];
     if(!m||!m.title) continue;
     if(shownIds.has(id)) continue;
-    if(id==='series'||id==='comb'||id==='pirates'||id==='americans'||id==='ads1'||id==='ads2') continue;
     var poster=m.poster||'cover.jpg';
     var rating=m.avgRating?m.avgRating.toFixed(1):'—';
     var canDelete=(m.author===myUid||myName==='Admin');
@@ -560,7 +579,7 @@ function openUserMovie(id){
   var delBtn=document.getElementById('deleteMovieBtn');
   if(delBtn) delBtn.style.display=(currentMovieData.author===myUid||myName==='Admin')?'inline-block':'none';
   var tagsHtml='';
-  if(currentMovieData.tags) currentMovieData.tags.forEach(t=>tagsHtml+='<span style="background:#444;padding:4px 12px;border-radius:20px;margin:5px;display:inline-block">#'+t+'</span>');
+  if(currentMovieData.tags) currentMovieData.tags.forEach(t=>tagsHtml+='<span class="tag">#'+t+'</span>');
   document.getElementById('movieTags').innerHTML=tagsHtml;
   var ss=document.getElementById('seasonsSection');
   if(ss&&currentMovieData.type==='series'&&currentMovieData.seasons){
@@ -669,7 +688,7 @@ function openMovie(id){
   document.getElementById('moviePoster').src=m.poster;
   document.getElementById('movieTitle').textContent=m.title;
   document.getElementById('movieDescription').textContent=m.description;
-  var tags='';if(m.tags)m.tags.forEach(t=>tags+='<span class="tag">'+t+'</span>');
+  var tags='';if(m.tags)m.tags.forEach(t=>tags+='<span class="tag">#'+t+'</span>');
   document.getElementById('movieTags').innerHTML=tags;
   document.getElementById('videosrc').src=m.video;
   document.getElementById('player').load();
@@ -789,7 +808,15 @@ function submitGameRating(){
   addEggs(Math.floor(sc/10));
 }
 var tamagotchiData=null;
-var pets={'🐣':{name:'Цыпа',hr:3,pr:2,er:2,type:'normal',desc:'Обычный цыплёнок',hint:'Сбалансированный',growthAge:30},'🐤':{name:'Желток',hr:4,pr:1,er:3,type:'hungry',desc:'Вечно голодный',hint:'Часто хочет есть',growthAge:25},'🐥':{name:'Пушистик',hr:2,pr:4,er:2,type:'playful',desc:'Энерджайзер',hint:'Требует внимания',growthAge:35},'🐔':{name:'Коко',hr:2,pr:2,er:4,type:'sleepy',desc:'Соня',hint:'Любит спать',growthAge:40},'🦊':{name:'Лисёнок',hr:3,pr:3,er:2,type:'wild',desc:'Хитренький',hint:'Осторожный',growthAge:45},'🐱':{name:'Котёнок',hr:2,pr:4,er:3,type:'lazy',desc:'Ленивый',hint:'Соня',growthAge:35},'🐶':{name:'Щенок',hr:4,pr:3,er:3,type:'active',desc:'Активный',hint:'Энергичный',growthAge:30}};
+var pets={
+'🐣':{name:'Цыпа',hr:3,pr:2,er:2,type:'normal',desc:'Обычный цыплёнок. Любит играть и кушать в меру. Идеален для новичков!',hint:'Сбалансированный питомец',growthAge:30},
+'🐤':{name:'Желток',hr:4,pr:1,er:3,type:'hungry',desc:'Вечно голодный! Ест за троих, но не любит играть. Следи чтоб не перекормить!',hint:'Часто хочет есть',growthAge:25},
+'🐥':{name:'Пушистик',hr:2,pr:4,er:2,type:'playful',desc:'Энерджайзер! Обожает играть, но быстро устаёт. Не давай ему скучать!',hint:'Требует много внимания',growthAge:35},
+'🐔':{name:'Коко',hr:2,pr:2,er:4,type:'sleepy',desc:'Соня-засоня. Любит поспать больше всего. Если много спит — меньше хочет есть.',hint:'Очень любит спать',growthAge:40},
+'🦊':{name:'Лисёнок',hr:3,pr:3,er:2,type:'wild',desc:'Хитренький лисёнок! Любит играть, но может украсть еду.',hint:'Осторожный питомец',growthAge:45},
+'🐱':{name:'Котёнок',hr:2,pr:4,er:3,type:'lazy',desc:'Ленивый, но милый. Много спит, но когда играет — счастлив.',hint:'Соня',growthAge:35},
+'🐶':{name:'Щенок',hr:4,pr:3,er:3,type:'active',desc:'Очень активный! Нужно много гулять и играть.',hint:'Энергичный',growthAge:30}
+};
 function initTamagotchi(){
   if(tamaInterval)clearInterval(tamaInterval);
   var saved=localStorage.getItem('tildochka_tamagotchi');
@@ -810,14 +837,14 @@ function renderTamagotchi(){
   var t=tamagotchiData;
   if(!t||!t.isAlive){
     var deadName=t?t.name:'Питомец';
-    document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+(t?t.age:0)+'</p><button onclick="resetTamagotchi()">🔄 Новый питомец</button></div>';
+    document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+(t?t.age:0)+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()">🔄 Новый питомец</button></div>';
     if(tamaInterval)clearInterval(tamaInterval);
     return;
   }
   var petClass='tamagotchi-pet'+(t.isFat?' fat':'')+(t.isTired?' tired':'')+(t.isSick?' sick':'');
   var h='<div class="tamagotchi-room" onclick="playWithPet()"><div class="'+petClass+'" id="petAvatar">'+t.emoji+'</div>';
   t.poops.forEach((p,i)=>{h+='<div class="poop" style="left:'+p.x+'px;top:'+p.y+'px" onclick="event.stopPropagation();cleanPoop('+i+')">💩</div>';});
-  h+='</div><h3>'+t.name+' | '+t.age+' дн.</h3><p style="color:#aaa">'+t.hint+'</p>';
+  h+='</div><h3>'+t.name+' | '+t.age+' дн.</h3><p style="color:#aaa;font-size:12px">'+t.hint+'</p>';
   h+='<div><p>😊</p><div class="stat-bar"><div class="stat-fill happy" style="width:'+t.happy+'%"></div></div><p>🍗</p><div class="stat-bar"><div class="stat-fill hunger" style="width:'+t.hunger+'%"></div></div><p>⚡</p><div class="stat-bar"><div class="stat-fill energy" style="width:'+t.energy+'%"></div></div></div>';
   h+='<button onclick="feedPet()">🍗 Кормить</button><button onclick="playWithPet()">🎾 Играть</button><button onclick="sleepPet()">😴 Спать</button>';
   h+='<button onclick="healPet()">💊 Лечить</button><button onclick="washPet()">🧼 Мыть</button><button onclick="walkPet()">🚶 Гулять</button>';
@@ -916,9 +943,8 @@ function startTamagotchiLoop(){
     else if(t.energy>55)t.isTired=false;
     renderTamagotchi();
   },3000);
-}
-
-function showOnlineGame(type){
+  }
+  function showOnlineGame(type){
   var users=Object.keys(onlineUsers);
   if(users.length===0){alert('Нет никого онлайн!');return;}
   var h='<p>Выбери соперника:</p>';
@@ -970,21 +996,15 @@ function startBattleshipSetup(opp,rid){
   document.getElementById('gameTitle').textContent='🚢 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?')+' — Расстановка';
   var S=10,mB=Array(S).fill().map(function(){return Array(S).fill(0);}),ships=[4,3,3,2,2,2,1,1,1,1],idx=0,hor=true;
   function cp(x,y,s,h){
-    if(h){
-      if(x+s>S)return false;
+    if(h){if(x+s>S)return false;
       for(var i=0;i<s;i++)for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){var nx=x+i+dx,ny=y+dy;if(nx>=0&&nx<S&&ny>=0&&ny<S&&mB[ny][nx]===1)return false;}
-    }else{
-      if(y+s>S)return false;
+    }else{if(y+s>S)return false;
       for(var i=0;i<s;i++)for(var dy=-1;dy<=1;dy++)for(var dx=-1;dx<=1;dx++){var nx=x+dx,ny=y+i+dy;if(nx>=0&&nx<S&&ny>=0&&ny<S&&mB[ny][nx]===1)return false;}
-    }
-    return true;
+    }return true;
   }
-  function rS(){
-    var h='<p>Осталось: '+(ships.length-idx)+' | <button onclick="toggleSD()">↻ '+(hor?'Гориз':'Верт')+'</button> | <button onclick="autoP()">🎲</button> | <button onclick="clS()">🗑️</button></p><div class="battle-board">';
+  function rS(){var h='<p>Осталось: '+(ships.length-idx)+' | <button onclick="toggleSD()">↻ '+(hor?'Гориз':'Верт')+'</button> | <button onclick="autoP()">🎲</button> | <button onclick="clS()">🗑️</button></p><div class="battle-board">';
     for(var y=0;y<S;y++)for(var x=0;x<S;x++)h+='<div class="battle-cell'+(mB[y][x]===1?' ship':'')+'" onclick="plS('+x+','+y+')"></div>';
-    h+='</div>';
-    if(idx>=ships.length)h+='<button onclick="rdy(\''+rid+'\')" style="background:#4f4">✅ Готов!</button>';
-    document.getElementById('gameContent').innerHTML=h;
+    h+='</div>';if(idx>=ships.length)h+='<button onclick="rdy(\''+rid+'\')" style="background:#4f4">✅ Готов!</button>';document.getElementById('gameContent').innerHTML=h;
   }
   window.plS=function(x,y){if(idx>=ships.length)return;var s=ships[idx];if(!cp(x,y,s,hor)){alert('❌ Нельзя!');return;}if(hor)for(var i=0;i<s;i++)mB[y][x+i]=1;else for(var i=0;i<s;i++)mB[y+i][x]=1;idx++;rS();playSound("coin");};
   window.toggleSD=function(){hor=!hor;rS();};
@@ -1101,6 +1121,7 @@ function initOnlinePong(opp,rid){
   },20);
   gameInterval=loop;
 }
+
 function initSnake(){
   document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div>';
   createGameRating();
@@ -1196,7 +1217,7 @@ function initChickenRain(){
   createGameRating();
   var c=document.getElementById('cr'),ctx=c.getContext('2d');c.width=400;c.height=500;
   var chickenX=180,eggs=[],score=0,ov=false,particles=[],rainX=0;
-  function spawnEgg(){if(Math.random()<0.025)eggs.push({x:Math.random()*370,y:-20,speed:1.5+Math.random()*3,type:Math.random()>0.85?'gold':'normal'});}
+  function spawnEgg(){if(Math.random()<0.02)eggs.push({x:Math.random()*370,y:-20,speed:1.2+Math.random()*2.5,type:Math.random()>0.85?'gold':'normal'});}
   function addParticle(x,y){for(var i=0;i<5;i++)particles.push({x:x+Math.random()*20-10,y:y+Math.random()*20-10,life:1});}
   document.onkeydown=e=>{if(e.key==='ArrowLeft')chickenX=Math.max(10,chickenX-30);if(e.key==='ArrowRight')chickenX=Math.min(360,chickenX+30);playSound("jump");};
   document.getElementById('crl').onclick=function(){chickenX=Math.max(10,chickenX-30);playSound("jump");};
@@ -1242,7 +1263,7 @@ function initFlappy(){
     ctx.fillStyle='#f60';ctx.beginPath();ctx.arc(bird.x+8,bird.y+2,5,0,Math.PI*2);ctx.fill();
     if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());
     for(var i=pipes.length-1;i>=0;i--){pipes[i].x-=2;ctx.fillStyle='#2d5a1e';ctx.fillRect(pipes[i].x,0,45,pipes[i].top);ctx.fillRect(pipes[i].x,pipes[i].bottom,45,500-pipes[i].bottom);ctx.fillStyle='#4a8c2a';ctx.fillRect(pipes[i].x-3,pipes[i].top-20,51,20);ctx.fillRect(pipes[i].x-3,pipes[i].bottom,51,20);
-      if(pipes[i].x+45<0){pipes.splice(i,1);score++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}
+      if(pipes[i].x+45<0){pipes.splice(i,1);score++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;}
       if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();
     }
     if(bird.y>480||bird.y<0)end();
