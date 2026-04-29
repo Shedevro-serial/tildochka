@@ -463,7 +463,7 @@ function declineInvite(){if(!pendingInvite)return;document.getElementById('invit
 function showWaiting(msg,dur){var w=document.getElementById('waitingModal');if(!w){w=document.createElement('div');w.className='modal-overlay';w.id='waitingModal';w.innerHTML='<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';document.body.appendChild(w);}document.getElementById('waitingContent').textContent='⏳ '+msg;w.classList.add('show');if(window._wt)clearTimeout(window._wt);window._wt=setTimeout(function(){w.classList.remove('show');},dur);}
 function hideWaiting(){var w=document.getElementById('waitingModal');if(w){w.classList.remove('show');if(window._wt)clearTimeout(window._wt);}}
 
-// ==================== ИСПРАВЛЕННЫЙ МОРСКОЙ БОЙ (ОДИН ХОД) ====================
+// ==================== ИСПРАВЛЕННЫЙ МОРСКОЙ БОЙ (1 ХОД) ====================
 function startBSG(opp,rid,mB){
 document.getElementById('gameTitle').textContent='🚢 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
 var S=10;
@@ -549,14 +549,14 @@ addEggs(10,'Победа в морском бою!');
 return;
 }
 alert('💥 ПОПАДАНИЕ! Ещё ход!');
-myTurn=true; // остаётся ход
+myTurn=true;
 waitingForResponse=false;
 rG();
 } else {
 eB[y][x]=3;
 playSound("coin");
 db.ref('og/'+rid+'/sh'+myUid).set({x:x,y:y,hit:false,ts:now});
-myTurn=false; // ход сопернику
+myTurn=false;
 waitingForResponse=false;
 rG();
 }
@@ -580,12 +580,12 @@ rG();
 alert('😢 Поражение... Соперник победил');
 return;
 }
-myTurn=false; // соперник продолжает ход
+myTurn=false;
 } else {
 mB[s.y][s.x]=3;
 playSound("coin");
 db.ref('og/'+rid+'/rs'+myUid).set({x:s.x,y:s.y,hit:false,ts:Date.now()});
-myTurn=true; // ход нам
+myTurn=true;
 }
 waitingForResponse=false;
 rG();
@@ -636,7 +636,7 @@ function startMemory(size){var ae=['🐔','🥚','🐣','🐓','🌾','🦊','�
 
 function initFlappy(){document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p>';createGameRating();var c=document.getElementById('fc'),ctx=c.getContext('2d'),bird={x:80,y:250},pipes=[],sc=0,ov=false,vy=0;function sp(){var gap=130,top=Math.random()*250+50;return{x:400,top:top,bottom:top+gap};}function jump(){if(!ov){vy=-8;playSound("jump");}}document.onkeydown=function(e){if(e.key===' '||e.key==='ArrowUp'){e.preventDefault();jump();}};c.onclick=jump;c.addEventListener('touchstart',function(e){e.preventDefault();jump();});pipes.push(sp());function loop(){if(ov)return;ctx.clearRect(0,0,400,500);var grad=ctx.createLinearGradient(0,0,0,500);grad.addColorStop(0,'#4a90d9');grad.addColorStop(1,'#87CEEB');ctx.fillStyle=grad;ctx.fillRect(0,0,400,500);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.fillRect(50,50,60,20);ctx.fillRect(300,80,80,25);vy+=0.5;bird.y+=vy;ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(bird.x,bird.y,15,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.arc(bird.x+5,bird.y-5,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f60';ctx.beginPath();ctx.arc(bird.x+8,bird.y+2,5,0,Math.PI*2);ctx.fill();if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());for(var i=pipes.length-1;i>=0;i--){pipes[i].x-=2;ctx.fillStyle='#2d5a1e';ctx.fillRect(pipes[i].x,0,45,pipes[i].top);ctx.fillRect(pipes[i].x,pipes[i].bottom,45,500-pipes[i].bottom);ctx.fillStyle='#4a8c2a';ctx.fillRect(pipes[i].x-3,pipes[i].top-20,51,20);ctx.fillRect(pipes[i].x-3,pipes[i].bottom,51,20);if(pipes[i].x+45<0){pipes.splice(i,1);sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();}if(bird.y>480||bird.y<0)end();}function end(){ov=true;clearInterval(gameInterval);playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:15px auto;font-size:18px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initFlappy();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+sc);}gameInterval=setInterval(loop,20);}
 
-// ==================== ИСПРАВЛЕННЫЙ РАННЕР (КОЛЛИЗИЯ) ====================
+// ==================== ИСПРАВЛЕННЫЙ РАННЕР ====================
 function initRunner(){
 document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
 createGameRating();
@@ -684,7 +684,6 @@ ctx.fillStyle='#333';
 ctx.fillRect(obstacles[i].x+5,obstacles[i].y-5,15,8);
 obstacles[i].x-=6;
 
-// улучшенная коллизия
 if(obstacles[i].x+obstacles[i].width > 50 && obstacles[i].x < 90 && y+35 > obstacles[i].y && y < obstacles[i].y+obstacles[i].height){
 end();
 }
@@ -747,12 +746,12 @@ var particles=[];
 var rainX=0;
 
 function spawnEgg(){
-if(Math.random()<0.02){ // уменьшено с 0.04 до 0.02
+if(Math.random()<0.01){ // ЕЩЁ МЕНЬШЕ ЯИЦ (было 0.02, стало 0.01)
 eggs.push({
 x:Math.random()*370,
 y:-20,
-speed:1.5+Math.random()*3, // чуть медленнее
-type:Math.random()>0.85?'gold':'normal'
+speed:1+Math.random()*2.5, // ещё медленнее
+type:Math.random()>0.9?'gold':'normal' // золотые реже
 });
 }
 }
@@ -858,4 +857,4 @@ if(["четыре курицы","Четыре курицы","4 курицы"].in
 else{document.getElementById("blocked").style.display="flex";document.getElementById("loading").style.display="none";}
 </script>
 </body>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 </html>
+                                                                                                                                                                                                                                                                                                                                                                                                                  </html>
