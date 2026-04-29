@@ -33,12 +33,12 @@
     .catalog{max-width:1200px;margin:0 auto;padding:30px 20px}.catalog h2{margin-bottom:25px;font-size:1.8rem;border-bottom:2px solid #ffd700;padding-bottom:8px;display:inline-block}
     .add-btn{background:#ffd700;color:#000;border:none;margin-left:15px;padding:5px 12px;font-size:14px}
     .movie-grid,.games-grid{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
-    .movie-card,.game-card{width:200px;cursor:pointer;transition:.3s;text-align:center;background:rgba(0,0,0,.3);border-radius:15px;padding:12px;border:1px solid rgba(255,255,255,.1)}
+    .movie-card,.game-card{width:200px;cursor:pointer;transition:.3s;text-align:center;background:rgba(0,0,0,.3);border-radius:15px;padding:12px;border:1px solid rgba(255,255,255,.1);position:relative}
     .movie-card:hover,.game-card:hover{transform:translateY(-8px);background:rgba(255,215,0,.1)}
     .movie-card img{width:100%;border-radius:12px;margin-bottom:8px;aspect-ratio:2/3;object-fit:cover}
     .game-icon{font-size:50px;display:block;margin-bottom:8px}
     .movie-card h3,.game-card h3{margin:8px 0 5px;font-size:1rem}.rating,.game-rating{color:#ffd700;font-weight:700;font-size:.9rem}
-    .delete-movie{position:absolute;background:#f00;border-radius:50%;width:25px;height:25px;display:flex;align-items:center;justify-content:center;font-size:14px;margin-top:-10px;margin-left:160px;cursor:pointer}
+    .delete-movie{position:absolute;top:5px;right:5px;background:#f00;border-radius:50%;width:25px;height:25px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;z-index:10}
     .hero{text-align:center;padding:30px 20px}.poster{width:100%;max-width:350px;border-radius:15px;margin-bottom:15px}
     .hero h1{font-size:2rem;margin-bottom:8px}.hero h2{color:#ffd700;font-size:1.5rem}
     .content{max-width:900px;margin:0 auto;padding:15px}
@@ -49,7 +49,7 @@
     button:hover{background:#555}button:disabled{opacity:.5}
     .episodes{margin-top:12px;padding:12px;background:rgba(0,0,0,.3);border-radius:8px;display:none}.episodes.show{display:block}
     .season-selector{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
-    .season-btn{background:#444;padding:8px 16px;border-radius:20px}
+    .season-btn{background:#444;padding:8px 16px;border-radius:20px;cursor:pointer}
     .season-btn.active{background:#ffd700;color:#000}
     .episode-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}
     .episode-item{background:rgba(0,0,0,.5);padding:10px;border-radius:8px;cursor:pointer}
@@ -154,7 +154,7 @@
 <div class="modal-overlay" id="onlineModal"><div class="modal-box"><h3>🟢 Онлайн</h3><div id="onlineList"></div><button onclick="document.getElementById('onlineModal').classList.remove('show')">Закрыть</button></div></div>
 <div class="modal-overlay" id="inviteModal"><div class="modal-box"><h3 id="inviteTitle">📨 Приглашение</h3><div id="inviteContent"></div><div id="inviteActions"></div></div></div>
 <div class="modal-overlay" id="shopModal" style="z-index:400"><div class="modal-box"><h3>🛒 Магазин</h3><p>🥚 <span id="shopEggs">0</span></p><div class="shop-grid" id="shopGrid"></div><button onclick="document.getElementById('shopModal').classList.remove('show')">Закрыть</button></div></div>
-<div class="modal-overlay" id="addMovieModal"><div class="modal-box"><h3>➕ Добавить фильм/сериал</h3><input id="newMovieTitle" placeholder="Название"><textarea id="newMovieDesc" placeholder="Описание"></textarea><select id="newMovieType"><option value="movie">Фильм</option><option value="series">Сериал</option></select><div id="seriesConfig" style="display:none"><input id="newMovieSeasons" type="number" placeholder="Количество сезонов" min="1" value="1"><div id="episodesConfig"></div></div><div class="media-upload"><label for="newMoviePoster">📷 Обложка</label><input type="file" id="newMoviePoster" accept="image/*"></div><div class="media-upload"><label for="newMovieVideo">🎬 Видео</label><input type="file" id="newMovieVideo" accept="video/*"></div><button onclick="uploadMovie()">📤 Выложить (50🥚)</button><button onclick="document.getElementById('addMovieModal').classList.remove('show')">Отмена</button></div></div>
+<div class="modal-overlay" id="addMovieModal"><div class="modal-box"><h3>➕ Добавить фильм/сериал</h3><input id="newMovieTitle" placeholder="Название"><textarea id="newMovieDesc" placeholder="Описание"></textarea><select id="newMovieType"><option value="movie">Фильм</option><option value="series">Сериал</option></select><div id="seriesConfig" style="display:none"><input id="newMovieSeasons" type="number" placeholder="Количество сезонов" min="1" value="1"><div id="episodesPerSeason"></div></div><div class="media-upload"><label for="newMoviePoster">📷 Обложка</label><input type="file" id="newMoviePoster" accept="image/*"></div><div class="media-upload"><label for="newMovieVideo">🎬 Видео</label><input type="file" id="newMovieVideo" accept="video/*"></div><button onclick="uploadMovie()">📤 Выложить (50🥚)</button><button onclick="document.getElementById('addMovieModal').classList.remove('show')">Отмена</button></div></div>
 
 <div id="app" style="display:none">
 <div class="header">
@@ -248,83 +248,194 @@ function playSound(type) {
   } catch(e) {}
 }
 
-function loadAllData(){
-  loadProfile(); setupOnline();
-  let savedEggs=parseInt(localStorage.getItem('tildochka_eggs')||'0');
-  Promise.all([
-    new Promise(r=>db.ref('users/'+myUid+'/eggs').once('value',s=>{myEggs=s.val()||savedEggs||0; if(myEggs<savedEggs){myEggs=savedEggs; db.ref('users/'+myUid).update({eggs:myEggs});} document.getElementById('headerEggs').textContent=myEggs; r();})),
-    new Promise(r=>db.ref('users/'+myUid+'/boughtAvatars').once('value',s=>{boughtAvatars=s.val()||[]; r();}))
-  ]).then(()=>{
-    document.getElementById('loading').style.display='none';
-    document.getElementById('app').style.display='block';
-    showScreen('home');
-    showDailyQuote();
-    loadChatMessages();
-    loadMemes();
-    loadIdeas();
-    loadShorts();
-    loadUserMovies();
-    ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(g=>loadLeaderboard(g));
-  });
-  setInterval(syncOnlineProfile,5000);
+// ==================== СТАРЫЕ ФИЛЬМЫ И СЕРИАЛЫ ====================
+const defaultMovies = {
+  series: {
+    title: 'Приключения 4 куриц',
+    poster: 'cover.jpg',
+    video: 'episode1.mp4',
+    description: 'Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия.',
+    tags: ['комедия', 'боевик', 'романтика'],
+    type: 'series',
+    seasons: {
+      1: { episodes: { 1: { src: 'episode1.mp4', title: 'Серия 1' }, 2: { src: 'episode2.mp4', title: 'Серия 2' }, 3: { src: 'episode3.mp4', title: 'Серия 3' }, 4: { src: 'episode4.mp4', title: 'Серия 4' } } },
+      2: { episodes: { 1: { src: 'episode5.mp4', title: 'Серия 1' }, 2: { src: 'episode6.mp4', title: 'Серия 2' } } },
+      3: { episodes: { 1: { src: 'episode7.mp4', title: 'Серия 1' } } }
+    }
+  },
+  comb: {
+    title: 'Расческа для лысых',
+    poster: 'cover-comb.jpg',
+    video: 'comb.mp4',
+    description: 'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески. Комедийная драма о поиске себя, принятии своей внешности и о том, что настоящая красота идёт изнутри.',
+    tags: ['драма', 'комедия', 'философия'],
+    type: 'movie'
+  },
+  pirates: {
+    title: 'Пираты',
+    poster: 'cover-pirates.jpg',
+    video: 'pirates.mp4',
+    description: 'Захватывающий приключенческий фильм о команде отважных пиратов, которые отправляются на поиски легендарных сокровищ. Но на их пути встают не только морские чудовища и свирепые штормы, но и коварные конкуренты.',
+    tags: ['приключения', 'экшн', 'пираты'],
+    type: 'movie'
+  },
+  americans: {
+    title: 'Американцы зло',
+    poster: 'cover-americans.jpg',
+    video: 'americans.mp4',
+    description: 'Острая сатирическая комедия о столкновении культур и стереотипах. Группа друзей из маленького городка встречает американских туристов, и начинается череда нелепых ситуаций.',
+    tags: ['комедия', 'сатира'],
+    type: 'movie'
+  },
+  ads1: {
+    title: 'Рекламки (ч.1)',
+    poster: 'cover-ads.jpg',
+    video: 'ads-part1.mp4',
+    description: 'Сборник самых смешных, нелепых и креативных рекламных роликов. Подборка забавных моментов, курьёзных ситуаций и неожиданных поворотов.',
+    tags: ['юмор', 'реклама'],
+    type: 'movie'
+  },
+  ads2: {
+    title: 'Рекламки (ч.2)',
+    poster: 'cover-ads.jpg',
+    video: 'ads-part2.mp4',
+    description: 'Вторая часть популярного сборника рекламных роликов! Ещё больше смешных моментов, неожиданных поворотов и креативных идей.',
+    tags: ['юмор', 'реклама'],
+    type: 'movie'
+  }
+};
+
+function initDefaultMovies() {
+  for(let id in defaultMovies) {
+    db.ref('movies/'+id).once('value', snap => {
+      if(!snap.exists()) {
+        db.ref('movies/'+id).set({...defaultMovies[id], id: id, author: 'system', authorName: 'Tildochka', ts: Date.now()});
+      }
+    });
+  }
 }
 
-function loadUserMovies(){
-  db.ref('movies').on('value',snap=>{
-    userMovies=snap.val()||{};
+// ==================== СМЕШНЫЕ ЦИТАТЫ ДНЯ ====================
+const funnyQuotes = [
+  {text: 'Я не говорю, что я крутой. Я просто говорю, что моя курица круче твоей.', author: 'Курица №1', movie: 'Приключения 4 куриц'},
+  {text: 'Расческа нужна каждому. Даже если кажется, что не нужна. Особенно если кажется.', author: 'Лысый дядька', movie: 'Расческа для лысых'},
+  {text: 'Куры не летают. Но мечтают об этом каждую ночь. А утром просыпаются и несут яйца.', author: 'Философ', movie: 'Приключения 4 куриц'},
+  {text: 'Лысина — это не приговор. Это просто место для хранения расчески.', author: 'Парикмахер', movie: 'Расческа для лысых'},
+  {text: 'Пираты грабят не потому что злые, а потому что у них нет яиц.', author: 'Капитан', movie: 'Пираты'},
+  {text: 'Американцы? Зло? Нет, они просто не знают, что такое настоящий куриный бульон.', author: 'Бабушка', movie: 'Американцы зло'},
+  {text: 'Реклама — это когда тебе продают то, что ты не хотел, но после рекламы не можешь жить без этого.', author: 'Маркетолог', movie: 'Рекламки'},
+  {text: 'Если курица переела, она не толстеет — она становится стратегическим запасом яиц.', author: 'Ветеринар', movie: 'Тамагочи'},
+  {text: 'В морском бое главное не победить, а чтобы соперник не узнал, где твои корабли. А они и так не узнают, потому что ты сам их забыл.', author: 'Адмирал', movie: 'Морской бой'},
+  {text: 'Ловить яйца в курином дожде — это как ловить счастье: чем больше ловишь, тем больше падает.', author: 'Фермер', movie: 'Куриный дождь'},
+  {text: 'Змейка — единственная игра, где чем длиннее становишься, тем сложнее не наступить на себя.', author: 'Геймер', movie: 'Игры'},
+  {text: 'Тетрис учит нас главному: если ты не вписываешься — исчезни и освободи место для других.', author: 'Мудрец', movie: 'Тетрис'},
+  {text: 'Раннер — это единственное место, где ты можешь бежать сколько угодно, но всё равно оказаться в той же точке.', author: 'Спортсмен', movie: 'Раннер'},
+  {text: 'Flappy курица — это симулятор жизни: ты пытаешься лететь, а тебя всё время опускают вниз.', author: 'Птица', movie: 'Flappy'}
+];
+
+function getDailyQuote() {
+  let day = new Date().getDate();
+  let index = day % funnyQuotes.length;
+  return funnyQuotes[index];
+}
+
+function showDailyQuote() {
+  let q = getDailyQuote();
+  let h = `<div class="quote-box"><div class="quote-text">«${q.text}»</div><div class="quote-author">— ${q.author}</div><div class="quote-movie">🎬 ${q.movie}</div></div>`;
+  let cat = document.querySelector('#home-screen .catalog');
+  if(cat) {
+    let ex = document.getElementById('dailyQuote');
+    if(ex) ex.innerHTML = h;
+    else {
+      let d = document.createElement('div');
+      d.id = 'dailyQuote';
+      d.style.cssText = 'max-width:600px;margin:25px auto 0';
+      d.innerHTML = '<h3 style="color:#ffd700">💬 Цитата дня</h3>' + h;
+      cat.appendChild(d);
+    }
+  }
+}
+
+function loadUserMovies() {
+  db.ref('movies').on('value', snap => {
+    userMovies = snap.val() || {};
     renderMovieLists();
   });
 }
 
-function renderMovieLists(){
-  let seriesHtml='', moviesHtml='';
-  for(let id in userMovies){
-    let m=userMovies[id];
-    let card=`<div class="movie-card" style="position:relative" onclick="openMovie('${id}')"><img src="${m.poster||'cover.jpg'}" onerror="this.src='cover.jpg'"><h3>${m.title}</h3><div class="rating">⭐ ${m.avgRating||'—'}/10</div>${(m.author===myUid||myName==='Admin')?`<div class="delete-movie" onclick="event.stopPropagation();deleteMovie('${id}')">🗑️</div>`:''}</div>`;
-    if(m.type==='series') seriesHtml+=card;
-    else moviesHtml+=card;
+function renderMovieLists() {
+  let seriesHtml = '', moviesHtml = '';
+  for(let id in userMovies) {
+    let m = userMovies[id];
+    if(!m || !m.title) continue;
+    let poster = m.poster || 'cover.jpg';
+    let rating = m.avgRating ? m.avgRating.toFixed(1) : '—';
+    let canDelete = (m.author === myUid || myName === 'Admin');
+    let card = `<div class="movie-card" onclick="openMovie('${id}')">
+      <img src="${poster}" onerror="this.src='cover.jpg'">
+      <h3>${m.title}</h3>
+      <div class="rating">⭐ ${rating}/10</div>
+      ${canDelete ? `<div class="delete-movie" onclick="event.stopPropagation();deleteMovie('${id}')">🗑️</div>` : ''}
+    </div>`;
+    if(m.type === 'series') seriesHtml += card;
+    else moviesHtml += card;
   }
-  document.getElementById('seriesGrid').innerHTML=seriesHtml||'<p>Нет сериалов. Добавьте первый!</p>';
-  document.getElementById('moviesGrid').innerHTML=moviesHtml||'<p>Нет фильмов. Добавьте первый!</p>';
+  document.getElementById('seriesGrid').innerHTML = seriesHtml || '<p>Нет сериалов. Добавьте первый!</p>';
+  document.getElementById('moviesGrid').innerHTML = moviesHtml || '<p>Нет фильмов. Добавьте первый!</p>';
 }
 
-function openAddMovieModal(){
-  if(myEggs<50){ alert('Нужно 50 яиц для добавления контента!'); return; }
+function openAddMovieModal() {
+  if(myEggs < 50) { alert('Нужно 50 яиц для добавления контента!'); return; }
   document.getElementById('addMovieModal').classList.add('show');
-  document.getElementById('newMovieType').onchange=function(){
-    document.getElementById('seriesConfig').style.display=this.value==='series'?'block':'none';
+  document.getElementById('newMovieType').onchange = function() {
+    document.getElementById('seriesConfig').style.display = this.value === 'series' ? 'block' : 'none';
+    if(this.value === 'series') updateEpisodesConfig();
   };
+  updateEpisodesConfig();
 }
 
-function uploadMovie(){
-  let title=document.getElementById('newMovieTitle').value.trim();
-  let desc=document.getElementById('newMovieDesc').value.trim();
-  let type=document.getElementById('newMovieType').value;
-  let posterFile=document.getElementById('newMoviePoster').files[0];
-  let videoFile=document.getElementById('newMovieVideo').files[0];
-  if(!title || !desc || !posterFile || !videoFile){ alert('Заполните все поля и выберите файлы!'); return; }
-  if(myEggs<50){ alert('Не хватает яиц!'); return; }
+function updateEpisodesConfig() {
+  let seasons = parseInt(document.getElementById('newMovieSeasons').value) || 1;
+  let html = '';
+  for(let s = 1; s <= seasons; s++) {
+    html += `<div style="margin:10px 0;padding:10px;background:#2a2a2a;border-radius:10px">
+      <h4>Сезон ${s}</h4>
+      <input type="number" id="season_${s}_episodes" placeholder="Количество серий" min="1" max="20" value="4">
+    </div>`;
+  }
+  document.getElementById('episodesPerSeason').innerHTML = html;
+}
+
+function uploadMovie() {
+  let title = document.getElementById('newMovieTitle').value.trim();
+  let desc = document.getElementById('newMovieDesc').value.trim();
+  let type = document.getElementById('newMovieType').value;
+  let posterFile = document.getElementById('newMoviePoster').files[0];
+  let videoFile = document.getElementById('newMovieVideo').files[0];
+  if(!title || !desc || !posterFile || !videoFile) { alert('Заполните все поля и выберите файлы!'); return; }
+  if(myEggs < 50) { alert('Не хватает яиц!'); return; }
   
-  myEggs-=50;
-  localStorage.setItem('tildochka_eggs',myEggs);
-  document.getElementById('headerEggs').textContent=myEggs;
-  db.ref('users/'+myUid).update({eggs:myEggs});
+  myEggs -= 50;
+  localStorage.setItem('tildochka_eggs', myEggs);
+  document.getElementById('headerEggs').textContent = myEggs;
+  db.ref('users/'+myUid).update({eggs: myEggs});
   
-  let movieId=Date.now()+'_'+myUid;
-  let posterRef=storage.ref('posters/'+movieId);
-  let videoRef=storage.ref('videos/'+movieId);
+  let movieId = Date.now() + '_' + myUid;
+  let posterRef = storage.ref('posters/' + movieId);
+  let videoRef = storage.ref('videos/' + movieId);
   
   Promise.all([
-    posterRef.put(posterFile).then(()=>posterRef.getDownloadURL()),
-    videoRef.put(videoFile).then(()=>videoRef.getDownloadURL())
-  ]).then(([posterUrl, videoUrl])=>{
-    let movieData={id:movieId, title, desc, type, poster:posterUrl, video:videoUrl, author:myUid, authorName:myName, ts:Date.now(), seasons:{}};
-    if(type==='series'){
-      let seasonsCount=parseInt(document.getElementById('newMovieSeasons').value)||1;
-      for(let s=1;s<=seasonsCount;s++){
-        movieData.seasons[s]={episodes:{}};
-        for(let e=1;e<=4;e++){
-          movieData.seasons[s].episodes[e]={src:videoUrl, title:`Серия ${e}`};
+    posterRef.put(posterFile).then(() => posterRef.getDownloadURL()),
+    videoRef.put(videoFile).then(() => videoRef.getDownloadURL())
+  ]).then(([posterUrl, videoUrl]) => {
+    let movieData = {id: movieId, title, desc, type, poster: posterUrl, video: videoUrl, author: myUid, authorName: myName, ts: Date.now(), seasons: {}};
+    if(type === 'series') {
+      let seasons = parseInt(document.getElementById('newMovieSeasons').value) || 1;
+      for(let s = 1; s <= seasons; s++) {
+        let episodesCount = parseInt(document.getElementById(`season_${s}_episodes`).value) || 4;
+        movieData.seasons[s] = {episodes: {}};
+        for(let e = 1; e <= episodesCount; e++) {
+          movieData.seasons[s].episodes[e] = {src: videoUrl, title: `Серия ${e}`};
         }
       }
     }
@@ -332,17 +443,17 @@ function uploadMovie(){
     document.getElementById('addMovieModal').classList.remove('show');
     alert('Контент добавлен! -50🥚');
     loadUserMovies();
-  }).catch(e=>alert('Ошибка загрузки: '+e));
+  }).catch(e => alert('Ошибка загрузки: '+e));
 }
 
-function deleteMovie(id){
+function deleteMovie(id) {
   if(confirm('Удалить фильм/сериал? Это нельзя отменить!')){
     db.ref('movies/'+id).remove();
     alert('Удалено');
   }
 }
 
-function deleteCurrentMovie(){
+function deleteCurrentMovie() {
   if(currentMovieId && confirm('Удалить этот контент?')){
     db.ref('movies/'+currentMovieId).remove();
     showScreen('home');
@@ -350,205 +461,232 @@ function deleteCurrentMovie(){
   }
 }
 
-function openMovie(id){
-  currentMovieId=id;
-  currentMovieData=userMovies[id];
+function openMovie(id) {
+  currentMovieId = id;
+  currentMovieData = userMovies[id];
   if(!currentMovieData) return;
-  document.getElementById('moviePoster').src=currentMovieData.poster||'cover.jpg';
-  document.getElementById('movieTitle').textContent=currentMovieData.title;
-  document.getElementById('movieDescription').textContent=currentMovieData.desc;
-  document.getElementById('videosrc').src=currentMovieData.video;
+  document.getElementById('moviePoster').src = currentMovieData.poster || 'cover.jpg';
+  document.getElementById('movieTitle').textContent = currentMovieData.title;
+  document.getElementById('movieDescription').textContent = currentMovieData.desc;
+  document.getElementById('videosrc').src = currentMovieData.video;
   document.getElementById('player').load();
-  let delBtn=document.getElementById('deleteMovieBtn');
-  delBtn.style.display=(currentMovieData.author===myUid||myName==='Admin')?'inline-block':'none';
+  let delBtn = document.getElementById('deleteMovieBtn');
+  delBtn.style.display = (currentMovieData.author === myUid || myName === 'Admin') ? 'inline-block' : 'none';
   
-  let ss=document.getElementById('seasonsSection');
-  if(currentMovieData.type==='series'){
-    ss.style.display='block';
-    let seasonsHtml='<div class="season-selector">';
-    for(let s in currentMovieData.seasons){
-      seasonsHtml+=`<button class="season-btn" onclick="showSeason(${s})">Сезон ${s}</button>`;
+  let tagsHtml = '';
+  if(currentMovieData.tags) currentMovieData.tags.forEach(t => tagsHtml += `<span style="background:#444;padding:4px 12px;border-radius:20px;margin:5px;display:inline-block">#${t}</span>`);
+  document.getElementById('movieTags').innerHTML = tagsHtml;
+  
+  let ss = document.getElementById('seasonsSection');
+  if(currentMovieData.type === 'series' && currentMovieData.seasons) {
+    ss.style.display = 'block';
+    let seasonsHtml = '<div class="season-selector">';
+    for(let s in currentMovieData.seasons) {
+      seasonsHtml += `<button class="season-btn" onclick="showSeason(${s})">Сезон ${s}</button>`;
     }
-    seasonsHtml+='</div><div id="episodesContainer"></div>';
-    document.getElementById('seasonsContent').innerHTML=seasonsHtml;
+    seasonsHtml += '</div><div id="episodesContainer"></div>';
+    document.getElementById('seasonsContent').innerHTML = seasonsHtml;
     showSeason(1);
   } else {
-    ss.style.display='none';
+    ss.style.display = 'none';
   }
   showScreen('movie');
   loadMovieReviews(id);
   setupReviewStars();
 }
 
-function showSeason(season){
-  currentEditSeason=season;
-  let seasonData=currentMovieData.seasons[season];
+function showSeason(season) {
+  currentEditSeason = season;
+  let seasonData = currentMovieData.seasons[season];
   if(!seasonData) return;
-  let epsHtml='<div class="episode-list">';
-  for(let e in seasonData.episodes){
-    epsHtml+=`<div class="episode-item" onclick="playEpisode('${seasonData.episodes[e].src}')">🎬 Серия ${e}: ${seasonData.episodes[e].title}</div>`;
+  let epsHtml = '<div class="episode-list">';
+  for(let e in seasonData.episodes) {
+    epsHtml += `<div class="episode-item" onclick="playEpisode('${seasonData.episodes[e].src}')">🎬 Серия ${e}: ${seasonData.episodes[e].title}</div>`;
   }
-  epsHtml+='</div>';
-  document.getElementById('episodesContainer').innerHTML=epsHtml;
-  document.querySelectorAll('.season-btn').forEach(btn=>btn.classList.remove('active'));
-  event.target.classList.add('active');
+  epsHtml += '</div>';
+  document.getElementById('episodesContainer').innerHTML = epsHtml;
+  document.querySelectorAll('.season-btn').forEach(btn => btn.classList.remove('active'));
+  if(event && event.target) event.target.classList.add('active');
+  else document.querySelector('.season-btn')?.classList.add('active');
 }
 
-function playEpisode(src){
-  document.getElementById('videosrc').src=src;
+function playEpisode(src) {
+  document.getElementById('videosrc').src = src;
   document.getElementById('player').load();
   document.getElementById('player').play();
 }
 
-function setupReviewStars(){
-  let stars=document.querySelectorAll('#revStars .star');
-  stars.forEach(s=>{
-    s.onclick=function(){ reviewRating=parseInt(this.getAttribute('data-v'))*2; updateStars(stars,reviewRating); document.getElementById('ratingText').textContent=reviewRating+'/10'; };
+function setupReviewStars() {
+  let stars = document.querySelectorAll('#revStars .star');
+  stars.forEach(s => {
+    s.onclick = function() { reviewRating = parseInt(this.getAttribute('data-v')) * 2; updateStars(stars, reviewRating); document.getElementById('ratingText').textContent = reviewRating+'/10'; };
   });
-  updateStars(stars,10);
+  updateStars(stars, 10);
 }
 
-function updateStars(stars,r){
-  stars.forEach(s=>{
-    let v=parseInt(s.getAttribute('data-v'))*2;
-    s.classList.remove('full','half');
-    if(r>=v) s.classList.add('full');
-    else if(r===v-1) s.classList.add('half');
+function updateStars(stars, r) {
+  stars.forEach(s => {
+    let v = parseInt(s.getAttribute('data-v')) * 2;
+    s.classList.remove('full', 'half');
+    if(r >= v) s.classList.add('full');
+    else if(r === v-1) s.classList.add('half');
   });
 }
 
-function addReview(){
-  let t=document.getElementById('reviewText').value.trim();
+function addReview() {
+  let t = document.getElementById('reviewText').value.trim();
   if(!t) return;
-  let ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');
-  db.ref('reviews/'+currentMovieId).push({name:myName,avatarType:ad.type,avatarValue:ad.value,text:t,rating:reviewRating,ts:Date.now()}).then(()=>{
-    document.getElementById('reviewText').value='';
-    reviewRating=10;
-    updateStars(document.querySelectorAll('#revStars .star'),10);
-    document.getElementById('ratingText').textContent='10/10';
+  let ad = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
+  db.ref('reviews/'+currentMovieId).push({name: myName, avatarType: ad.type, avatarValue: ad.value, text: t, rating: reviewRating, ts: Date.now()}).then(() => {
+    document.getElementById('reviewText').value = '';
+    reviewRating = 10;
+    updateStars(document.querySelectorAll('#revStars .star'), 10);
+    document.getElementById('ratingText').textContent = '10/10';
     addEggs(2);
   });
 }
 
-function loadMovieReviews(mid){
-  db.ref('reviews/'+mid).on('value',s=>{
-    let revs=[];
-    s.forEach(c=>revs.push(c.val()));
-    revs.sort((a,b)=>(b.ts||0)-(a.ts||0));
-    let c=document.getElementById('reviews');
-    if(!revs.length) c.innerHTML='<p>Нет отзывов</p>';
-    else{
-      c.innerHTML='';
-      revs.forEach(r=>{
-        let sd='';
-        for(let j=1;j<=5;j++) sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';
-        let av=r.avatarType==='image'?`<img src="${r.avatarValue}">`:r.avatarValue;
-        c.innerHTML+=`<div class="review"><span class="review-avatar">${av}</span> <strong>${r.name}</strong><div class="review-stars-display">${sd} ${r.rating}/10</div><div class="review-text">${r.text}</div></div>`;
+function loadMovieReviews(mid) {
+  db.ref('reviews/'+mid).on('value', s => {
+    let revs = [];
+    s.forEach(c => revs.push(c.val()));
+    revs.sort((a,b) => (b.ts||0) - (a.ts||0));
+    let c = document.getElementById('reviews');
+    if(!revs.length) c.innerHTML = '<p>Нет отзывов</p>';
+    else {
+      c.innerHTML = '';
+      revs.forEach(r => {
+        let sd = '';
+        for(let j=1; j<=5; j++) sd += r.rating >= j*2 ? '⭐' : (r.rating === j*2-1 ? '🌓' : '☆');
+        let av = r.avatarType === 'image' ? `<img src="${r.avatarValue}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">` : r.avatarValue;
+        c.innerHTML += `<div class="review"><span class="review-avatar">${av}</span> <strong>${r.name}</strong><div class="review-stars-display">${sd} ${r.rating}/10</div><div class="review-text">${r.text}</div></div>`;
       });
     }
-    if(revs.length){
-      let sum=revs.reduce((a,b)=>a+b.rating,0);
-      let avg=(sum/revs.length).toFixed(1);
-      document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';
-      document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';
-      if(userMovies[mid]) db.ref('movies/'+mid).update({avgRating:avg});
+    if(revs.length) {
+      let sum = revs.reduce((a,b) => a + b.rating, 0);
+      let avg = (sum / revs.length).toFixed(1);
+      document.getElementById('movieRatingHero').textContent = '⭐ '+avg+' / 10';
+      document.getElementById('totalRatingDisplay').textContent = '⭐ '+avg+' / 10';
+      if(userMovies[mid]) db.ref('movies/'+mid).update({avgRating: parseFloat(avg)});
     }
   });
+}
+
+function loadAllData(){
+  initDefaultMovies();
+  loadProfile(); setupOnline();
+  let savedEggs = parseInt(localStorage.getItem('tildochka_eggs')||'0');
+  Promise.all([
+    new Promise(r => db.ref('users/'+myUid+'/eggs').once('value', s => { myEggs = s.val() || savedEggs || 0; if(myEggs < savedEggs){ myEggs = savedEggs; db.ref('users/'+myUid).update({eggs:myEggs}); } document.getElementById('headerEggs').textContent = myEggs; r(); })),
+    new Promise(r => db.ref('users/'+myUid+'/boughtAvatars').once('value', s => { boughtAvatars = s.val() || []; r(); }))
+  ]).then(() => {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    showScreen('home');
+    showDailyQuote();
+    loadChatMessages();
+    loadMemes();
+    loadIdeas();
+    loadShorts();
+    loadUserMovies();
+    ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(g => loadLeaderboard(g));
+  });
+  setInterval(syncOnlineProfile, 5000);
 }
 
 function loadProfile(){
-  myName=localStorage.getItem('tildochka_username')||'Гость';
-  let as=localStorage.getItem('tildochka_avatar_data');
-  if(as){ try{ let ad=JSON.parse(as); selectedAvatar=ad; selectedAvatarType=ad.type; }catch(e){} }
-  else{ selectedAvatar={type:'emoji',value:'🐔'}; selectedAvatarType='emoji'; }
+  myName = localStorage.getItem('tildochka_username') || 'Гость';
+  let as = localStorage.getItem('tildochka_avatar_data');
+  if(as){ try{ let ad = JSON.parse(as); selectedAvatar = ad; selectedAvatarType = ad.type; }catch(e){} }
+  else{ selectedAvatar = {type:'emoji', value:'🐔'}; selectedAvatarType = 'emoji'; }
   updateHeaderAvatar();
-  document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;
+  document.getElementById('headerName').textContent = myName.length > 15 ? myName.slice(0,15)+'..' : myName;
 }
 
 function updateHeaderAvatar(){
-  if(selectedAvatarType==='emoji') document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';
-  else document.getElementById('headerAvatar').innerHTML=`<img src="${selectedAvatar.value}">`;
+  if(selectedAvatarType === 'emoji') document.getElementById('headerAvatar').textContent = selectedAvatar.value || '🐔';
+  else document.getElementById('headerAvatar').innerHTML = `<img src="${selectedAvatar.value}">`;
 }
 
 function syncOnlineProfile(){
-  if(myName==='Гость') return;
-  db.ref('online/'+myUid).update({name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,ts:Date.now()});
-  db.ref('users/'+myUid).update({name:myName,eggs:myEggs,channel:myChannel});
+  if(myName === 'Гость') return;
+  db.ref('online/'+myUid).update({name: myName, avatarType: selectedAvatarType, avatarValue: selectedAvatarType === 'emoji' ? selectedAvatar.value : selectedAvatar.value, ts: Date.now()});
+  db.ref('users/'+myUid).update({name: myName, eggs: myEggs, channel: myChannel});
 }
 
 function openProfileModal(){
-  document.getElementById('newNameInput').value=myName;
+  document.getElementById('newNameInput').value = myName;
   updateAvatarPreview();
-  let freeDiv=document.getElementById('avatarGridFree');
-  freeDiv.innerHTML='';
-  ['🐔','🐣','🥚','🐤'].forEach(em=>{
-    let btn=document.createElement('span'); btn.className='shop-item'; btn.textContent=em;
-    btn.onclick=()=>{ selectedAvatar={type:'emoji',value:em}; selectedAvatarType='emoji'; updateAvatarPreview(); };
-    if(selectedAvatarType==='emoji' && selectedAvatar.value===em) btn.classList.add('selected');
+  let freeDiv = document.getElementById('avatarGridFree');
+  freeDiv.innerHTML = '';
+  ['🐔','🐣','🥚','🐤'].forEach(em => {
+    let btn = document.createElement('span'); btn.className = 'shop-item'; btn.textContent = em;
+    btn.onclick = () => { selectedAvatar = {type:'emoji', value:em}; selectedAvatarType = 'emoji'; updateAvatarPreview(); };
+    if(selectedAvatarType === 'emoji' && selectedAvatar.value === em) btn.classList.add('selected');
     freeDiv.appendChild(btn);
   });
-  let boughtDiv=document.getElementById('avatarGridBought');
-  boughtDiv.innerHTML='';
-  boughtAvatars.forEach(av=>{
-    let btn=document.createElement('span'); btn.className='shop-item'; btn.textContent=av;
-    btn.onclick=()=>{ selectedAvatar={type:'emoji',value:av}; selectedAvatarType='emoji'; updateAvatarPreview(); };
-    if(selectedAvatarType==='emoji' && selectedAvatar.value===av) btn.classList.add('selected');
+  let boughtDiv = document.getElementById('avatarGridBought');
+  boughtDiv.innerHTML = '';
+  boughtAvatars.forEach(av => {
+    let btn = document.createElement('span'); btn.className = 'shop-item'; btn.textContent = av;
+    btn.onclick = () => { selectedAvatar = {type:'emoji', value:av}; selectedAvatarType = 'emoji'; updateAvatarPreview(); };
+    if(selectedAvatarType === 'emoji' && selectedAvatar.value === av) btn.classList.add('selected');
     boughtDiv.appendChild(btn);
   });
   document.getElementById('profileModal').classList.add('show');
 }
 
 function updateAvatarPreview(){
-  let p=document.getElementById('avatarPreviewContent');
-  if(selectedAvatarType==='emoji') p.innerHTML=selectedAvatar.value;
-  else p.innerHTML=`<img src="${selectedAvatar.value}" style="width:100%;height:100%;object-fit:cover">`;
+  let p = document.getElementById('avatarPreviewContent');
+  if(selectedAvatarType === 'emoji') p.innerHTML = selectedAvatar.value;
+  else p.innerHTML = `<img src="${selectedAvatar.value}" style="width:100%;height:100%;object-fit:cover">`;
 }
 
 function showDrawCanvas(){
-  document.getElementById('drawArea').style.display='block';
-  drawCanvas=document.getElementById('drawCanvas');
-  drawCtx=drawCanvas.getContext('2d');
-  drawCtx.fillStyle='#fff';
+  document.getElementById('drawArea').style.display = 'block';
+  drawCanvas = document.getElementById('drawCanvas');
+  drawCtx = drawCanvas.getContext('2d');
+  drawCtx.fillStyle = '#fff';
   drawCtx.fillRect(0,0,200,200);
-  let drawing=false;
-  drawCanvas.onmousedown=e=>{ drawing=true; draw(e); };
-  drawCanvas.onmouseup=()=>{ drawing=false; drawCtx.beginPath(); };
-  drawCanvas.onmousemove=e=>{ if(drawing) draw(e); };
+  let drawing = false;
+  drawCanvas.onmousedown = e => { drawing = true; draw(e); };
+  drawCanvas.onmouseup = () => { drawing = false; drawCtx.beginPath(); };
+  drawCanvas.onmousemove = e => { if(drawing) draw(e); };
   function draw(e){
-    let r=drawCanvas.getBoundingClientRect();
-    drawCtx.fillStyle=drawColor;
+    let r = drawCanvas.getBoundingClientRect();
+    drawCtx.fillStyle = drawColor;
     drawCtx.beginPath();
-    drawCtx.arc((e.clientX-r.left)*(200/r.width),(e.clientY-r.top)*(200/r.height),5,0,Math.PI*2);
+    drawCtx.arc((e.clientX - r.left) * (200/r.width), (e.clientY - r.top) * (200/r.height), 5, 0, Math.PI*2);
     drawCtx.fill();
   }
 }
 
-function changeDrawColor(c){ drawColor=c; }
-function clearDrawCanvas(){ if(drawCtx){ drawCtx.fillStyle='#fff'; drawCtx.fillRect(0,0,200,200); } }
+function changeDrawColor(c){ drawColor = c; }
+function clearDrawCanvas(){ if(drawCtx){ drawCtx.fillStyle = '#fff'; drawCtx.fillRect(0,0,200,200); } }
 function saveDrawnAvatar(){
-  let d=drawCanvas.toDataURL('image/png');
-  selectedAvatar={type:'image',value:d};
-  selectedAvatarType='image';
+  let d = drawCanvas.toDataURL('image/png');
+  selectedAvatar = {type:'image', value:d};
+  selectedAvatarType = 'image';
   updateAvatarPreview();
-  document.getElementById('drawArea').style.display='none';
+  document.getElementById('drawArea').style.display = 'none';
 }
 
 function loadCustomAvatar(){
-  let f=document.getElementById('customAvatarInput').files[0];
+  let f = document.getElementById('customAvatarInput').files[0];
   if(!f) return;
-  let r=new FileReader();
-  r.onload=e=>{ selectedAvatar={type:'image',value:e.target.result}; selectedAvatarType='image'; updateAvatarPreview(); };
+  let r = new FileReader();
+  r.onload = e => { selectedAvatar = {type:'image', value:e.target.result}; selectedAvatarType = 'image'; updateAvatarPreview(); };
   r.readAsDataURL(f);
 }
 
 function saveProfile(){
-  let n=document.getElementById('newNameInput').value.trim();
+  let n = document.getElementById('newNameInput').value.trim();
   if(!n) return;
-  if(n.length>20) n=n.slice(0,20);
-  localStorage.setItem('tildochka_username',n);
-  localStorage.setItem('tildochka_avatar_data',JSON.stringify(selectedAvatar));
-  myName=n;
-  document.getElementById('headerName').textContent=n.length>15?n.slice(0,15)+'..':n;
+  if(n.length > 20) n = n.slice(0,20);
+  localStorage.setItem('tildochka_username', n);
+  localStorage.setItem('tildochka_avatar_data', JSON.stringify(selectedAvatar));
+  myName = n;
+  document.getElementById('headerName').textContent = n.length > 15 ? n.slice(0,15)+'..' : n;
   updateHeaderAvatar();
   syncOnlineProfile();
   document.getElementById('profileModal').classList.remove('show');
@@ -557,439 +695,439 @@ function saveProfile(){
 function closeProfileModal(){ document.getElementById('profileModal').classList.remove('show'); }
 
 function openShop(){
-  document.getElementById('shopEggs').textContent=myEggs;
-  let g=document.getElementById('shopGrid');
-  g.innerHTML='';
-  let items={'👑':50,'🌟':30,'💎':100,'🔥':40,'💀':60,'🤖':70,'👻':50,'🎭':30,'🦄':150,'🐉':200};
-  for(let [em,price] of Object.entries(items)){
-    let owned=boughtAvatars.includes(em);
-    let d=document.createElement('div');
-    d.className='shop-item'+(owned||myEggs<price?' locked':'');
-    d.innerHTML=em+`<span class="price">${price}</span>`;
-    if(!owned && myEggs>=price) d.onclick=()=>buyAvatar(em,price);
-    if(owned) d.style.border='2px solid #4f4';
+  document.getElementById('shopEggs').textContent = myEggs;
+  let g = document.getElementById('shopGrid');
+  g.innerHTML = '';
+  let items = {'👑':50, '🌟':30, '💎':100, '🔥':40, '💀':60, '🤖':70, '👻':50, '🎭':30, '🦄':150, '🐉':200};
+  for(let [em, price] of Object.entries(items)) {
+    let owned = boughtAvatars.includes(em);
+    let d = document.createElement('div');
+    d.className = 'shop-item' + (owned || myEggs < price ? ' locked' : '');
+    d.innerHTML = em + `<span class="price">${price}</span>`;
+    if(!owned && myEggs >= price) d.onclick = () => buyAvatar(em, price);
+    if(owned) d.style.border = '2px solid #4f4';
     g.appendChild(d);
   }
   document.getElementById('shopModal').classList.add('show');
 }
 
-function buyAvatar(em,price){
-  if(myEggs<price) return;
+function buyAvatar(em, price){
+  if(myEggs < price) return;
   if(boughtAvatars.includes(em)) return;
-  myEggs-=price;
+  myEggs -= price;
   boughtAvatars.push(em);
-  localStorage.setItem('tildochka_eggs',myEggs);
-  document.getElementById('headerEggs').textContent=myEggs;
-  db.ref('users/'+myUid).update({eggs:myEggs,boughtAvatars});
+  localStorage.setItem('tildochka_eggs', myEggs);
+  document.getElementById('headerEggs').textContent = myEggs;
+  db.ref('users/'+myUid).update({eggs: myEggs, boughtAvatars: boughtAvatars});
   openShop();
 }
 
-function addEggs(amt){ myEggs+=amt; localStorage.setItem('tildochka_eggs',myEggs); document.getElementById('headerEggs').textContent=myEggs; db.ref('users/'+myUid).update({eggs:myEggs}); }
+function addEggs(amt){ myEggs += amt; localStorage.setItem('tildochka_eggs', myEggs); document.getElementById('headerEggs').textContent = myEggs; db.ref('users/'+myUid).update({eggs: myEggs}); }
 
-let dailyQuests=[];
-let questTemplates=[{text:'Сыграй 3 игры',type:'play',target:3,reward:10},{text:'Напиши отзыв',type:'review',target:1,reward:15},{text:'Отправь 5 сообщений',type:'chat',target:5,reward:12},{text:'Поставь лайк 3 идеям',type:'like',target:3,reward:8}];
+let dailyQuests = [];
+let questTemplates = [{text:'Сыграй 3 игры',type:'play',target:3,reward:10},{text:'Напиши отзыв',type:'review',target:1,reward:15},{text:'Отправь 5 сообщений',type:'chat',target:5,reward:12},{text:'Поставь лайк 3 идеям',type:'like',target:3,reward:8}];
 
 function generateDailyQuests(force){
-  if(force && myEggs>=5){ myEggs-=5; localStorage.setItem('tildochka_eggs',myEggs); document.getElementById('headerEggs').textContent=myEggs; db.ref('users/'+myUid).update({eggs:myEggs}); localStorage.removeItem('tildochka_quests_'+new Date().toDateString()); }
-  let saved=localStorage.getItem('tildochka_quests_'+new Date().toDateString());
-  if(saved && !force){ dailyQuests=JSON.parse(saved); renderQuests(); return; }
-  dailyQuests=[];
-  let shuffled=[...questTemplates].sort(()=>Math.random()-0.5);
-  for(let i=0;i<3;i++) dailyQuests.push({id:i,text:shuffled[i].text,type:shuffled[i].type,target:shuffled[i].target,reward:shuffled[i].reward,progress:0,completed:false});
-  localStorage.setItem('tildochka_quests_'+new Date().toDateString(),JSON.stringify(dailyQuests));
+  if(force && myEggs >= 5){ myEggs -= 5; localStorage.setItem('tildochka_eggs', myEggs); document.getElementById('headerEggs').textContent = myEggs; db.ref('users/'+myUid).update({eggs: myEggs}); localStorage.removeItem('tildochka_quests_'+new Date().toDateString()); }
+  let saved = localStorage.getItem('tildochka_quests_'+new Date().toDateString());
+  if(saved && !force){ dailyQuests = JSON.parse(saved); renderQuests(); return; }
+  dailyQuests = [];
+  let shuffled = [...questTemplates].sort(() => Math.random() - 0.5);
+  for(let i=0; i<3; i++) dailyQuests.push({id: i, text: shuffled[i].text, type: shuffled[i].type, target: shuffled[i].target, reward: shuffled[i].reward, progress: 0, completed: false});
+  localStorage.setItem('tildochka_quests_'+new Date().toDateString(), JSON.stringify(dailyQuests));
   renderQuests();
 }
 
 function renderQuests(){
-  let c=document.getElementById('questsList');
+  let c = document.getElementById('questsList');
   if(!c) return;
-  c.innerHTML=dailyQuests.map(q=>`<div class="daily-quest${q.completed?' completed':''}"><div><b>${q.text}</b><br><small>${q.progress}/${q.target}</small></div><div>${q.completed?`✅ <button onclick="claimQuest(${q.id})">🥚${q.reward}</button>`:`🥚${q.reward}`}</div></div>`).join('');
+  c.innerHTML = dailyQuests.map(q => `<div class="daily-quest${q.completed ? ' completed' : ''}"><div><b>${q.text}</b><br><small>${q.progress}/${q.target}</small></div><div>${q.completed ? `✅ <button onclick="claimQuest(${q.id})">🥚${q.reward}</button>` : `🥚${q.reward}`}</div></div>`).join('');
 }
 
-function progressQuest(type,amt){
-  dailyQuests.forEach(q=>{ if(q.type===type && !q.completed){ q.progress=Math.min(q.target,q.progress+amt); if(q.progress>=q.target) q.completed=true; } });
-  let qp={}; dailyQuests.forEach(q=>{ qp[q.id]=q.progress; });
-  localStorage.setItem('tildochka_qp',JSON.stringify(qp));
+function progressQuest(type, amt){
+  dailyQuests.forEach(q => { if(q.type === type && !q.completed){ q.progress = Math.min(q.target, q.progress + amt); if(q.progress >= q.target) q.completed = true; } });
+  let qp = {}; dailyQuests.forEach(q => { qp[q.id] = q.progress; });
+  localStorage.setItem('tildochka_qp', JSON.stringify(qp));
   renderQuests();
 }
 
 function claimQuest(id){
-  let q=dailyQuests[id];
-  if(!q||!q.completed) return;
+  let q = dailyQuests[id];
+  if(!q || !q.completed) return;
   dailyQuests.splice(id,1);
   addEggs(q.reward);
-  localStorage.setItem('tildochka_quests_'+new Date().toDateString(),JSON.stringify(dailyQuests));
+  localStorage.setItem('tildochka_quests_'+new Date().toDateString(), JSON.stringify(dailyQuests));
   renderQuests();
 }
 
 function loadEggsLeaderboard(){
-  db.ref('users').orderByChild('eggs').limitToLast(20).on('value',s=>{
-    let u=[]; s.forEach(c=>u.push({name:c.val().name,eggs:c.val().eggs||0}));
-    u.sort((a,b)=>b.eggs-a.eggs);
-    let h=''; u.forEach((u,i)=>h+=`<div class="eggs-leaderboard-item"><span>${i+1}</span><span>${u.name}</span><span>🥚${u.eggs}</span></div>`);
-    document.getElementById('eggsLeaderboard').innerHTML=h||'<p>Нет данных</p>';
+  db.ref('users').orderByChild('eggs').limitToLast(20).on('value', s => {
+    let u = []; s.forEach(c => u.push({name: c.val().name, eggs: c.val().eggs || 0}));
+    u.sort((a,b) => b.eggs - a.eggs);
+    let h = ''; u.forEach((u,i) => h += `<div class="eggs-leaderboard-item"><span>${i+1}</span><span>${u.name}</span><span>🥚${u.eggs}</span></div>`);
+    document.getElementById('eggsLeaderboard').innerHTML = h || '<p>Нет данных</p>';
   });
 }
 
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  let t=document.getElementById(id+'-screen');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  let t = document.getElementById(id+'-screen');
   if(t) t.classList.add('active');
   closeMenu();
   window.scrollTo(0,0);
-  if(id==='quests') generateDailyQuests(false);
-  if(id==='eggsLB') loadEggsLeaderboard();
-  if(id==='chickentube') loadShorts();
+  if(id === 'quests') generateDailyQuests(false);
+  if(id === 'eggsLB') loadEggsLeaderboard();
+  if(id === 'chickentube') loadShorts();
 }
 
 function toggleMenu(){ document.getElementById('menuDropdown').classList.toggle('show'); }
 function closeMenu(){ document.getElementById('menuDropdown').classList.remove('show'); }
 
 function setupOnline(){
-  let ref=db.ref('online/'+myUid);
+  let ref = db.ref('online/'+myUid);
   ref.onDisconnect().remove();
-  db.ref('online').on('value',s=>{ onlineUsers={}; s.forEach(c=>{ if(c.key!==myUid) onlineUsers[c.key]=c.val(); }); document.getElementById('onlineCount').textContent='🟢 '+(Object.keys(onlineUsers).length+1); });
+  db.ref('online').on('value', s => { onlineUsers = {}; s.forEach(c => { if(c.key !== myUid) onlineUsers[c.key] = c.val(); }); document.getElementById('onlineCount').textContent = '🟢 '+(Object.keys(onlineUsers).length+1); });
   syncOnlineProfile();
 }
 
 function showOnlineList(){
-  let h=''; let all={}; all[myUid]={name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value};
-  Object.assign(all,onlineUsers);
+  let h = ''; let all = {}; all[myUid] = {name: myName, avatarType: selectedAvatarType, avatarValue: selectedAvatarType === 'emoji' ? selectedAvatar.value : selectedAvatar.value};
+  Object.assign(all, onlineUsers);
   for(let uid in all){
-    let u=all[uid];
-    let av=(u.avatarType==='image')?`<img src="${u.avatarValue}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">`:(u.avatarValue||'🐔');
-    h+=`<div class="online-user"><span>${av}</span><span>${u.name}</span>${uid===myUid?' (вы)':''}</div>`;
+    let u = all[uid];
+    let av = (u.avatarType === 'image') ? `<img src="${u.avatarValue}" style="width:24px;height:24px;border-radius:50%;object-fit:cover">` : (u.avatarValue || '🐔');
+    h += `<div class="online-user"><span>${av}</span><span>${u.name}</span>${uid === myUid ? ' (вы)' : ''}</div>`;
   }
-  document.getElementById('onlineList').innerHTML=h;
+  document.getElementById('onlineList').innerHTML = h;
   document.getElementById('onlineModal').classList.add('show');
 }
 
-let lastCounts={chat:0,memes:0,ideas:0};
-function markRead(k){ localStorage.setItem('tildochka_read_'+k,lastCounts[k]||0); }
+let lastCounts = {chat:0, memes:0, ideas:0};
+function markRead(k){ localStorage.setItem('tildochka_read_'+k, lastCounts[k]||0); }
 
 function sendChatMessage(){
-  let m=document.getElementById('chatMessageLive').value.trim();
+  let m = document.getElementById('chatMessageLive').value.trim();
   if(!m) return;
-  db.ref('chat').push({name:myName,text:m,ts:Date.now()}).then(()=>{ document.getElementById('chatMessageLive').value=''; progressQuest('chat',1); });
+  db.ref('chat').push({name: myName, text: m, ts: Date.now()}).then(() => { document.getElementById('chatMessageLive').value = ''; progressQuest('chat',1); });
 }
 
 function loadChatMessages(){
-  db.ref('chat').limitToLast(50).on('value',s=>{
-    let ms=[]; s.forEach(c=>ms.push(c.val()));
-    ms.sort((a,b)=>(a.ts||0)-(b.ts||0));
-    lastCounts.chat=ms.length;
-    let c=document.getElementById('chatMessagesLive');
-    c.innerHTML='';
-    ms.forEach(m=>{ let d=document.createElement('div'); d.className='message'; d.innerHTML='<strong>'+m.name+':</strong> '+m.text; c.appendChild(d); });
-    c.scrollTop=c.scrollHeight;
+  db.ref('chat').limitToLast(50).on('value', s => {
+    let ms = []; s.forEach(c => ms.push(c.val()));
+    ms.sort((a,b) => (a.ts||0) - (b.ts||0));
+    lastCounts.chat = ms.length;
+    let c = document.getElementById('chatMessagesLive');
+    c.innerHTML = '';
+    ms.forEach(m => { let d = document.createElement('div'); d.className = 'message'; d.innerHTML = '<strong>'+m.name+':</strong> '+m.text; c.appendChild(d); });
+    c.scrollTop = c.scrollHeight;
   });
 }
 
 function previewMemeMedia(t){
-  let i=t==='photo'?document.getElementById('memePhoto'):document.getElementById('memeVideo');
+  let i = t === 'photo' ? document.getElementById('memePhoto') : document.getElementById('memeVideo');
   if(!i.files[0]) return;
-  let r=new FileReader();
-  r.onload=e=>{ memeMedia=e.target.result; memeMediaType=t; document.getElementById('memePreview').innerHTML=t==='photo'?`<img src="${e.target.result}" style="max-width:300px">`:`<video src="${e.target.result}" controls style="max-width:300px"></video>`; };
+  let r = new FileReader();
+  r.onload = e => { memeMedia = e.target.result; memeMediaType = t; document.getElementById('memePreview').innerHTML = t === 'photo' ? `<img src="${e.target.result}" style="max-width:300px">` : `<video src="${e.target.result}" controls style="max-width:300px"></video>`; };
   r.readAsDataURL(i.files[0]);
 }
 
 function postMeme(){
-  let c=document.getElementById('memeCaption').value.trim();
+  let c = document.getElementById('memeCaption').value.trim();
   if(!c && !memeMedia) return;
-  db.ref('memes').push({author:myName,caption:c,media:memeMedia||null,mediaType:memeMediaType||null,reactions:{laugh:0,fire:0},ts:Date.now()}).then(()=>{
-    document.getElementById('memeCaption').value=''; document.getElementById('memePhoto').value=''; document.getElementById('memeVideo').value='';
-    document.getElementById('memePreview').innerHTML=''; memeMedia=null;
+  db.ref('memes').push({author: myName, caption: c, media: memeMedia || null, mediaType: memeMediaType || null, reactions: {laugh:0, fire:0}, ts: Date.now()}).then(() => {
+    document.getElementById('memeCaption').value = ''; document.getElementById('memePhoto').value = ''; document.getElementById('memeVideo').value = '';
+    document.getElementById('memePreview').innerHTML = ''; memeMedia = null;
   });
 }
 
 function loadMemes(){
-  db.ref('memes').limitToLast(30).on('value',s=>{
-    let ms=[]; s.forEach(c=>ms.push({id:c.key,author:c.val().author,caption:c.val().caption,media:c.val().media,mediaType:c.val().mediaType,reactions:c.val().reactions||{},ts:c.val().ts}));
-    ms.sort((a,b)=>(b.ts||0)-(a.ts||0));
-    lastCounts.memes=ms.length;
-    let c=document.getElementById('memesList');
-    if(!ms.length) c.innerHTML='<p>Нет мемов</p>';
-    else{
-      c.innerHTML='';
-      ms.forEach(m=>{
-        let mh=''; if(m.media) mh=m.mediaType==='photo'?`<img src="${m.media}">`:`<video src="${m.media}" controls></video>`;
-        c.innerHTML+=`<div class="meme-card"><span class="meme-author">${m.author}</span>${m.caption?`<div>${m.caption}</div>`:''}${mh}<div class="meme-reactions"><button onclick="reactMeme('${m.id}','laugh',${m.reactions.laugh||0})">😂${m.reactions.laugh||0}</button><button onclick="reactMeme('${m.id}','fire',${m.reactions.fire||0})">🔥${m.reactions.fire||0}</button></div></div>`;
+  db.ref('memes').limitToLast(30).on('value', s => {
+    let ms = []; s.forEach(c => ms.push({id: c.key, author: c.val().author, caption: c.val().caption, media: c.val().media, mediaType: c.val().mediaType, reactions: c.val().reactions || {}, ts: c.val().ts}));
+    ms.sort((a,b) => (b.ts||0) - (a.ts||0));
+    lastCounts.memes = ms.length;
+    let c = document.getElementById('memesList');
+    if(!ms.length) c.innerHTML = '<p>Нет мемов</p>';
+    else {
+      c.innerHTML = '';
+      ms.forEach(m => {
+        let mh = ''; if(m.media) mh = m.mediaType === 'photo' ? `<img src="${m.media}">` : `<video src="${m.media}" controls></video>`;
+        c.innerHTML += `<div class="meme-card"><span class="meme-author">${m.author}</span>${m.caption ? `<div>${m.caption}</div>` : ''}${mh}<div class="meme-reactions"><button onclick="reactMeme('${m.id}','laugh',${m.reactions.laugh||0})">😂${m.reactions.laugh||0}</button><button onclick="reactMeme('${m.id}','fire',${m.reactions.fire||0})">🔥${m.reactions.fire||0}</button></div></div>`;
       });
     }
   });
 }
 
-function reactMeme(id,t,c){ let u={}; u['reactions/'+t]=(c||0)+1; db.ref('memes/'+id).update(u); }
+function reactMeme(id,t,c){ let u = {}; u['reactions/'+t] = (c||0)+1; db.ref('memes/'+id).update(u); }
 
 function addIdea(){
-  let t=document.getElementById('ideaText').value.trim();
+  let t = document.getElementById('ideaText').value.trim();
   if(!t) return;
-  db.ref('ideas').push({author:myName,text:t,likes:0,ts:Date.now()}).then(()=>{ document.getElementById('ideaText').value=''; });
+  db.ref('ideas').push({author: myName, text: t, likes: 0, ts: Date.now()}).then(() => { document.getElementById('ideaText').value = ''; });
 }
 
 function loadIdeas(){
-  db.ref('ideas').limitToLast(30).on('value',s=>{
-    let is=[]; s.forEach(c=>is.push({id:c.key,author:c.val().author,text:c.val().text,likes:c.val().likes||0,ts:c.val().ts}));
-    is.sort((a,b)=>(b.ts||0)-(a.ts||0));
-    lastCounts.ideas=is.length;
-    let c=document.getElementById('ideasList');
-    if(!is.length) c.innerHTML='<p>Нет идей</p>';
-    else{
-      c.innerHTML='';
-      is.forEach(i=>{ c.innerHTML+=`<div class="idea-card"><span class="idea-author">💡 ${i.author}:</span><p>${i.text}</p><div class="idea-likes"><button class="like-btn" onclick="likeIdea('${i.id}',${i.likes})">❤️</button><span>${i.likes}</span></div></div>`; });
+  db.ref('ideas').limitToLast(30).on('value', s => {
+    let is = []; s.forEach(c => is.push({id: c.key, author: c.val().author, text: c.val().text, likes: c.val().likes || 0, ts: c.val().ts}));
+    is.sort((a,b) => (b.ts||0) - (a.ts||0));
+    lastCounts.ideas = is.length;
+    let c = document.getElementById('ideasList');
+    if(!is.length) c.innerHTML = '<p>Нет идей</p>';
+    else {
+      c.innerHTML = '';
+      is.forEach(i => { c.innerHTML += `<div class="idea-card"><span class="idea-author">💡 ${i.author}:</span><p>${i.text}</p><div class="idea-likes"><button class="like-btn" onclick="likeIdea('${i.id}',${i.likes})">❤️</button><span>${i.likes}</span></div></div>`; });
     }
   });
 }
 
-function likeIdea(id,l){ db.ref('ideas/'+id).update({likes:l+1}); progressQuest('like',1); }
+function likeIdea(id,l){ db.ref('ideas/'+id).update({likes: l+1}); progressQuest('like',1); }
 
-function createChannel(){ let n=prompt('Название канала:'); if(n){ myChannel=n; localStorage.setItem('tildochka_channel',n); syncOnlineProfile(); alert('✅ Канал создан!'); } }
+function createChannel(){ let n = prompt('Название канала:'); if(n){ myChannel = n; localStorage.setItem('tildochka_channel', n); syncOnlineProfile(); alert('✅ Канал создан!'); } }
 function previewShortVideo(){
-  let f=document.getElementById('shortVideo').files[0];
+  let f = document.getElementById('shortVideo').files[0];
   if(!f) return;
-  let r=new FileReader();
-  r.onload=e=>{ shortMedia=e.target.result; document.getElementById('shortPreview').innerHTML=`<video src="${e.target.result}" controls style="max-width:300px"></video>`; };
+  let r = new FileReader();
+  r.onload = e => { shortMedia = e.target.result; document.getElementById('shortPreview').innerHTML = `<video src="${e.target.result}" controls style="max-width:300px"></video>`; };
   r.readAsDataURL(f);
 }
 function postShort(){
-  let cap=document.getElementById('shortCaption').value.trim();
+  let cap = document.getElementById('shortCaption').value.trim();
   if(!cap && !shortMedia) return;
   if(!myChannel){ alert('Создай канал!'); return; }
-  db.ref('shorts').push({channel:myChannel,author:myName,caption:cap,media:shortMedia||null,likes:0,comments:{},ts:Date.now()}).then(()=>{
-    document.getElementById('shortCaption').value=''; document.getElementById('shortVideo').value=''; document.getElementById('shortPreview').innerHTML=''; shortMedia=null;
+  db.ref('shorts').push({channel: myChannel, author: myName, caption: cap, media: shortMedia || null, likes: 0, comments: {}, ts: Date.now()}).then(() => {
+    document.getElementById('shortCaption').value = ''; document.getElementById('shortVideo').value = ''; document.getElementById('shortPreview').innerHTML = ''; shortMedia = null;
   });
 }
 function loadShorts(){
-  db.ref('shorts').on('value',s=>{
-    let shorts=[]; s.forEach(c=>shorts.push({id:c.key,channel:c.val().channel,author:c.val().author,caption:c.val().caption,media:c.val().media,likes:c.val().likes||0,comments:c.val().comments||{},ts:c.val().ts}));
-    shorts.sort((a,b)=>(b.ts||0)-(a.ts||0));
-    let c=document.getElementById('shortsList');
-    if(!shorts.length) c.innerHTML='<p>Нет шортсов</p>';
-    else{
-      c.innerHTML='';
-      shorts.forEach(sh=>{
-        let comms=''; Object.keys(sh.comments).forEach(k=>comms+=`<div class="short-comment"><b>${sh.comments[k].name}:</b> ${sh.comments[k].text}</div>`);
-        c.innerHTML+=`<div class="short-card"><div style="color:#ffd700">${sh.channel} | ${sh.author}</div>${sh.caption?`<div>${sh.caption}</div>`:''}${sh.media?`<video src="${sh.media}" class="short-video" controls></video>`:''}<div class="short-actions"><button onclick="likeShort('${sh.id}',${sh.likes})">❤️ ${sh.likes}</button></div><div class="short-comments">${comms}</div><input id="sc_${sh.id}" placeholder="Коммент..."><button onclick="addShortComment('${sh.id}')">💬</button></div>`;
+  db.ref('shorts').on('value', s => {
+    let shorts = []; s.forEach(c => shorts.push({id: c.key, channel: c.val().channel, author: c.val().author, caption: c.val().caption, media: c.val().media, likes: c.val().likes || 0, comments: c.val().comments || {}, ts: c.val().ts}));
+    shorts.sort((a,b) => (b.ts||0) - (a.ts||0));
+    let c = document.getElementById('shortsList');
+    if(!shorts.length) c.innerHTML = '<p>Нет шортсов</p>';
+    else {
+      c.innerHTML = '';
+      shorts.forEach(sh => {
+        let comms = ''; Object.keys(sh.comments).forEach(k => comms += `<div class="short-comment"><b>${sh.comments[k].name}:</b> ${sh.comments[k].text}</div>`);
+        c.innerHTML += `<div class="short-card"><div style="color:#ffd700">${sh.channel} | ${sh.author}</div>${sh.caption ? `<div>${sh.caption}</div>` : ''}${sh.media ? `<video src="${sh.media}" class="short-video" controls></video>` : ''}<div class="short-actions"><button onclick="likeShort('${sh.id}',${sh.likes})">❤️ ${sh.likes}</button></div><div class="short-comments">${comms}</div><input id="sc_${sh.id}" placeholder="Коммент..."><button onclick="addShortComment('${sh.id}')">💬</button></div>`;
       });
     }
   });
 }
-function likeShort(id,l){ db.ref('shorts/'+id).update({likes:l+1}); }
+function likeShort(id,l){ db.ref('shorts/'+id).update({likes: l+1}); }
 function addShortComment(id){
-  let inp=document.getElementById('sc_'+id);
+  let inp = document.getElementById('sc_'+id);
   if(!inp) return;
-  let t=inp.value.trim();
+  let t = inp.value.trim();
   if(!t) return;
-  db.ref('shorts/'+id+'/comments').push({name:myName,text:t,ts:Date.now()});
-  inp.value='';
+  db.ref('shorts/'+id+'/comments').push({name: myName, text: t, ts: Date.now()});
+  inp.value = '';
 }
 
 function showGame(type){
   stopGame();
-  currentGame=type;
+  currentGame = type;
   showScreen('game');
-  let titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy курица',memory:'🧠 Memory',tamagotchi:'🐣 Тамагочи',guess:'🔢 Угадай число',rps:'✂️ Камень-ножницы'};
-  document.getElementById('gameTitle').textContent=titles[type]||type;
-  document.getElementById('gameContent').innerHTML='';
-  document.getElementById('gameRatingArea').innerHTML='';
-  document.getElementById('gameScoreDisplay').textContent='Счёт: 0';
-  if(type==='snake') initSnake();
-  if(type==='tetris') initTetris();
-  if(type==='runner') initRunner();
-  if(type==='chickenrain') initChickenRain();
-  if(type==='flappy') initFlappy();
-  if(type==='memory') initMemory();
-  if(type==='tamagotchi') initTamagotchi();
-  if(type==='guess') initGuess();
-  if(type==='rps') initRPS();
+  let titles = {snake:'🐍 Змейка', tetris:'🧱 Тетрис', runner:'🏃 Раннер', chickenrain:'🌧️ Кур. дождь', flappy:'🐔 Flappy курица', memory:'🧠 Memory', tamagotchi:'🐣 Тамагочи', guess:'🔢 Угадай число', rps:'✂️ Камень-ножницы'};
+  document.getElementById('gameTitle').textContent = titles[type] || type;
+  document.getElementById('gameContent').innerHTML = '';
+  document.getElementById('gameRatingArea').innerHTML = '';
+  document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+  if(type === 'snake') initSnake();
+  if(type === 'tetris') initTetris();
+  if(type === 'runner') initRunner();
+  if(type === 'chickenrain') initChickenRain();
+  if(type === 'flappy') initFlappy();
+  if(type === 'memory') initMemory();
+  if(type === 'tamagotchi') initTamagotchi();
+  if(type === 'guess') initGuess();
+  if(type === 'rps') initRPS();
   progressQuest('play',1);
   loadLeaderboard(type);
 }
 
 function stopGame(){
-  if(gameInterval){ clearInterval(gameInterval); gameInterval=null; }
-  if(tamaInterval){ clearInterval(tamaInterval); tamaInterval=null; }
-  currentGame=null;
-  document.onkeydown=null;
+  if(gameInterval){ clearInterval(gameInterval); gameInterval = null; }
+  if(tamaInterval){ clearInterval(tamaInterval); tamaInterval = null; }
+  currentGame = null;
+  document.onkeydown = null;
 }
 
 function loadLeaderboard(type){
-  db.ref('gameRatings/'+type).on('value',s=>{
-    let rats=[]; s.forEach(c=>rats.push(c.val()));
-    rats.sort((a,b)=>(b.score||0)-(a.score||0));
-    let h='<h3>🏆 Лидеры</h3>';
-    if(!rats.length) h+='<p>Нет игроков</p>';
-    else{
-      for(let i=0;i<Math.min(rats.length,10);i++) h+=`<div class="leaderboard-item"><span>${i+1}. ${rats[i].name||'—'}</span><span>${rats[i].score} | ⭐${rats[i].rating}/10</span></div>`;
-      let sum=rats.reduce((a,b)=>a+(b.rating||0),0);
-      let el=document.getElementById('rating-'+type);
-      if(el) el.textContent=`⭐ ${(sum/rats.length).toFixed(1)}/10 (${rats.length})`;
+  db.ref('gameRatings/'+type).on('value', s => {
+    let rats = []; s.forEach(c => rats.push(c.val()));
+    rats.sort((a,b) => (b.score||0) - (a.score||0));
+    let h = '<h3>🏆 Лидеры</h3>';
+    if(!rats.length) h += '<p>Нет игроков</p>';
+    else {
+      for(let i=0; i<Math.min(rats.length,10); i++) h += `<div class="leaderboard-item"><span>${i+1}. ${rats[i].name||'—'}</span><span>${rats[i].score} | ⭐${rats[i].rating}/10</span></div>`;
+      let sum = rats.reduce((a,b) => a + (b.rating||0), 0);
+      let el = document.getElementById('rating-'+type);
+      if(el) el.textContent = `⭐ ${(sum/rats.length).toFixed(1)}/10 (${rats.length})`;
     }
-    document.getElementById('leaderboard').innerHTML=h;
+    document.getElementById('leaderboard').innerHTML = h;
   });
 }
 
 function createGameRating(){
-  document.getElementById('gameRatingArea').innerHTML='<div class="stars-container"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';
-  let stars=document.querySelectorAll('#gameRatingArea .star');
-  stars.forEach(s=>{ s.onclick=function(){ gameRating=parseInt(this.getAttribute('data-v'))*2; updateStars(stars,gameRating); }; });
+  document.getElementById('gameRatingArea').innerHTML = '<div class="stars-container"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';
+  let stars = document.querySelectorAll('#gameRatingArea .star');
+  stars.forEach(s => { s.onclick = function(){ gameRating = parseInt(this.getAttribute('data-v'))*2; updateStars(stars, gameRating); }; });
   updateStars(stars,10);
 }
 
 function submitGameRating(){
-  let sc=parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0;
-  db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:sc,ts:Date.now()});
+  let sc = parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,'')) || 0;
+  db.ref('gameRatings/'+currentGame).push({name: myName, rating: gameRating, score: sc, ts: Date.now()});
   addEggs(Math.floor(sc/10));
 }
 
 // ==================== ТАМАГОЧИ ====================
-let tamagotchiData=null;
-let pets={'🐣':{name:'Цыпа',hr:3,pr:2,er:2,type:'normal',desc:'Обычный цыплёнок',hint:'Сбалансированный',growthAge:30},'🐤':{name:'Желток',hr:4,pr:1,er:3,type:'hungry',desc:'Вечно голодный',hint:'Часто хочет есть',growthAge:25},'🐥':{name:'Пушистик',hr:2,pr:4,er:2,type:'playful',desc:'Энерджайзер',hint:'Требует внимания',growthAge:35},'🐔':{name:'Коко',hr:2,pr:2,er:4,type:'sleepy',desc:'Соня',hint:'Любит спать',growthAge:40},'🦊':{name:'Лисёнок',hr:3,pr:3,er:2,type:'wild',desc:'Хитренький',hint:'Осторожный',growthAge:45},'🐱':{name:'Котёнок',hr:2,pr:4,er:3,type:'lazy',desc:'Ленивый',hint:'Соня',growthAge:35},'🐶':{name:'Щенок',hr:4,pr:3,er:3,type:'active',desc:'Активный',hint:'Энергичный',growthAge:30}};
+let tamagotchiData = null;
+let pets = {'🐣':{name:'Цыпа',hr:3,pr:2,er:2,type:'normal',desc:'Обычный цыплёнок',hint:'Сбалансированный',growthAge:30},'🐤':{name:'Желток',hr:4,pr:1,er:3,type:'hungry',desc:'Вечно голодный',hint:'Часто хочет есть',growthAge:25},'🐥':{name:'Пушистик',hr:2,pr:4,er:2,type:'playful',desc:'Энерджайзер',hint:'Требует внимания',growthAge:35},'🐔':{name:'Коко',hr:2,pr:2,er:4,type:'sleepy',desc:'Соня',hint:'Любит спать',growthAge:40},'🦊':{name:'Лисёнок',hr:3,pr:3,er:2,type:'wild',desc:'Хитренький',hint:'Осторожный',growthAge:45},'🐱':{name:'Котёнок',hr:2,pr:4,er:3,type:'lazy',desc:'Ленивый',hint:'Соня',growthAge:35},'🐶':{name:'Щенок',hr:4,pr:3,er:3,type:'active',desc:'Активный',hint:'Энергичный',growthAge:30}};
 
 function initTamagotchi(){
   if(tamaInterval) clearInterval(tamaInterval);
-  let saved=localStorage.getItem('tildochka_tamagotchi');
-  if(saved){ try{ let p=JSON.parse(saved); if(p&&p.isAlive){ tamagotchiData=p; renderTamagotchi(); startTamagotchiLoop(); return; } }catch(e){} }
-  tamagotchiData=null;
-  let h='<p>Выбери питомца:</p>';
-  for(let e in pets){ let p=pets[e]; h+=`<div class="pet-card" onclick="choosePet('${e}')"><span class="pet-emoji">${e}</span><span class="pet-name">${p.name}</span><span class="pet-desc">${p.desc}</span></div>`; }
-  document.getElementById('gameContent').innerHTML=h;
-  document.getElementById('gameScoreDisplay').textContent='Выбери питомца';
+  let saved = localStorage.getItem('tildochka_tamagotchi');
+  if(saved){ try{ let p = JSON.parse(saved); if(p && p.isAlive){ tamagotchiData = p; renderTamagotchi(); startTamagotchiLoop(); return; } }catch(e){} }
+  tamagotchiData = null;
+  let h = '<p>Выбери питомца:</p>';
+  for(let e in pets){ let p = pets[e]; h += `<div class="pet-card" onclick="choosePet('${e}')"><span class="pet-emoji">${e}</span><span class="pet-name">${p.name}</span><span class="pet-desc">${p.desc}</span></div>`; }
+  document.getElementById('gameContent').innerHTML = h;
+  document.getElementById('gameScoreDisplay').textContent = 'Выбери питомца';
 }
 
-window.choosePet=function(e){
-  let p=pets[e];
-  tamagotchiData={emoji:e,name:p.name,hunger:80,happy:80,energy:80,age:0,isAlive:true,poops:[],isFat:false,isTired:false,isVomiting:false,hr:p.hr,pr:p.pr,er:p.er,type:p.type,hint:p.hint,growthAge:p.growthAge};
-  localStorage.setItem('tildochka_tamagotchi',JSON.stringify(tamagotchiData));
+window.choosePet = function(e){
+  let p = pets[e];
+  tamagotchiData = {emoji: e, name: p.name, hunger: 80, happy: 80, energy: 80, age: 0, isAlive: true, poops: [], isFat: false, isTired: false, isVomiting: false, hr: p.hr, pr: p.pr, er: p.er, type: p.type, hint: p.hint, growthAge: p.growthAge};
+  localStorage.setItem('tildochka_tamagotchi', JSON.stringify(tamagotchiData));
   renderTamagotchi();
   startTamagotchiLoop();
 };
 
 function renderTamagotchi(){
-  let t=tamagotchiData;
-  if(!t||!t.isAlive){
-    document.getElementById('gameContent').innerHTML=`<div style="text-align:center"><h3>💀 ${t?t.name:'Питомец'} умер...</h3><p>Возраст: ${t?t.age:0}</p><button onclick="resetTamagotchi()">🔄 Новый питомец</button></div>`;
+  let t = tamagotchiData;
+  if(!t || !t.isAlive){
+    document.getElementById('gameContent').innerHTML = `<div style="text-align:center"><h3>💀 ${t ? t.name : 'Питомец'} умер...</h3><p>Возраст: ${t ? t.age : 0}</p><button onclick="resetTamagotchi()">🔄 Новый питомец</button></div>`;
     if(tamaInterval) clearInterval(tamaInterval);
     return;
   }
-  let petClass='tamagotchi-pet'+(t.isFat?' fat':'')+(t.isTired?' tired':'');
-  let h=`<div class="tamagotchi-room" onclick="playWithPet()"><div class="${petClass}" id="petAvatar">${t.emoji}</div>`;
-  t.poops.forEach((p,i)=>{ h+=`<div class="poop" style="left:${p.x}px;top:${p.y}px" onclick="event.stopPropagation();cleanPoop(${i})">💩</div>`; });
-  h+=`</div><h3>${t.name} | ${t.age} дн.</h3><p style="color:#aaa">${t.hint}</p>`;
-  h+=`<div><p>😊</p><div class="stat-bar"><div class="stat-fill happy" style="width:${t.happy}%"></div></div><p>🍗</p><div class="stat-bar"><div class="stat-fill hunger" style="width:${t.hunger}%"></div></div><p>⚡</p><div class="stat-bar"><div class="stat-fill energy" style="width:${t.energy}%"></div></div></div>`;
-  h+=`<button onclick="feedPet()">🍗 Кормить</button><button onclick="playWithPet()">🎾 Играть</button><button onclick="sleepPet()">😴 Спать</button>`;
-  document.getElementById('gameContent').innerHTML=h;
-  document.getElementById('gameScoreDisplay').textContent='Возраст: '+t.age;
-  localStorage.setItem('tildochka_tamagotchi',JSON.stringify(t));
+  let petClass = 'tamagotchi-pet' + (t.isFat ? ' fat' : '') + (t.isTired ? ' tired' : '');
+  let h = `<div class="tamagotchi-room" onclick="playWithPet()"><div class="${petClass}" id="petAvatar">${t.emoji}</div>`;
+  t.poops.forEach((p,i) => { h += `<div class="poop" style="left:${p.x}px;top:${p.y}px" onclick="event.stopPropagation();cleanPoop(${i})">💩</div>`; });
+  h += `</div><h3>${t.name} | ${t.age} дн.</h3><p style="color:#aaa">${t.hint}</p>`;
+  h += `<div><p>😊</p><div class="stat-bar"><div class="stat-fill happy" style="width:${t.happy}%"></div></div><p>🍗</p><div class="stat-bar"><div class="stat-fill hunger" style="width:${t.hunger}%"></div></div><p>⚡</p><div class="stat-bar"><div class="stat-fill energy" style="width:${t.energy}%"></div></div></div>`;
+  h += `<button onclick="feedPet()">🍗 Кормить</button><button onclick="playWithPet()">🎾 Играть</button><button onclick="sleepPet()">😴 Спать</button>`;
+  document.getElementById('gameContent').innerHTML = h;
+  document.getElementById('gameScoreDisplay').textContent = 'Возраст: ' + t.age;
+  localStorage.setItem('tildochka_tamagotchi', JSON.stringify(t));
 }
 
-window.feedPet=function(){
-  let t=tamagotchiData; if(!t||!t.isAlive) return;
+window.feedPet = function(){
+  let t = tamagotchiData; if(!t || !t.isAlive) return;
   if(t.isVomiting){ alert('Сейчас тошнит!'); return; }
-  t.hunger=Math.min(100,t.hunger+25);
-  t.energy=Math.max(0,t.energy-5);
-  if(t.hunger>95 && !t.isFat){ t.isFat=true; t.energy=Math.max(0,t.energy-15); }
-  if(t.hunger>98){
-    t.isVomiting=true;
+  t.hunger = Math.min(100, t.hunger + 25);
+  t.energy = Math.max(0, t.energy - 5);
+  if(t.hunger > 95 && !t.isFat){ t.isFat = true; t.energy = Math.max(0, t.energy - 15); }
+  if(t.hunger > 98){
+    t.isVomiting = true;
     alert('Переел! 🤢');
-    t.hunger=Math.max(30,t.hunger-50);
-    t.isFat=false;
-    setTimeout(()=>{ if(tamagotchiData) tamagotchiData.isVomiting=false; renderTamagotchi(); },2000);
+    t.hunger = Math.max(30, t.hunger - 50);
+    t.isFat = false;
+    setTimeout(() => { if(tamagotchiData) tamagotchiData.isVomiting = false; renderTamagotchi(); }, 2000);
   }
-  if(Math.random()<0.5 && t.poops.length<4) t.poops.push({x:Math.random()*240+20,y:Math.random()*240+20});
+  if(Math.random() < 0.5 && t.poops.length < 4) t.poops.push({x: Math.random()*240+20, y: Math.random()*240+20});
   renderTamagotchi();
 };
 
-window.playWithPet=function(){
-  let t=tamagotchiData; if(!t||!t.isAlive) return;
-  if(t.energy<15){ alert('Устал!'); return; }
-  t.happy=Math.min(100,t.happy+22);
-  t.hunger=Math.max(0,t.hunger-12);
-  t.energy=Math.max(0,t.energy-22);
-  t.isFat=false;
-  if(t.energy<10) t.isTired=true;
-  if(Math.random()<0.3 && t.poops.length<4) t.poops.push({x:Math.random()*240+20,y:Math.random()*240+20});
+window.playWithPet = function(){
+  let t = tamagotchiData; if(!t || !t.isAlive) return;
+  if(t.energy < 15){ alert('Устал!'); return; }
+  t.happy = Math.min(100, t.happy + 22);
+  t.hunger = Math.max(0, t.hunger - 12);
+  t.energy = Math.max(0, t.energy - 22);
+  t.isFat = false;
+  if(t.energy < 10) t.isTired = true;
+  if(Math.random() < 0.3 && t.poops.length < 4) t.poops.push({x: Math.random()*240+20, y: Math.random()*240+20});
   renderTamagotchi();
 };
 
-window.sleepPet=function(){
-  let t=tamagotchiData; if(!t||!t.isAlive) return;
-  t.energy=Math.min(100,t.energy+38);
-  t.hunger=Math.max(0,t.hunger-6);
-  t.isTired=false;
+window.sleepPet = function(){
+  let t = tamagotchiData; if(!t || !t.isAlive) return;
+  t.energy = Math.min(100, t.energy + 38);
+  t.hunger = Math.max(0, t.hunger - 6);
+  t.isTired = false;
   renderTamagotchi();
 };
 
-window.cleanPoop=function(i){ if(tamagotchiData){ tamagotchiData.poops.splice(i,1); tamagotchiData.happy=Math.min(100,tamagotchiData.happy+8); renderTamagotchi(); } };
-window.resetTamagotchi=function(){ tamagotchiData=null; localStorage.removeItem('tildochka_tamagotchi'); if(tamaInterval) clearInterval(tamaInterval); initTamagotchi(); };
+window.cleanPoop = function(i){ if(tamagotchiData){ tamagotchiData.poops.splice(i,1); tamagotchiData.happy = Math.min(100, tamagotchiData.happy + 8); renderTamagotchi(); } };
+window.resetTamagotchi = function(){ tamagotchiData = null; localStorage.removeItem('tildochka_tamagotchi'); if(tamaInterval) clearInterval(tamaInterval); initTamagotchi(); };
 
 function startTamagotchiLoop(){
   if(tamaInterval) clearInterval(tamaInterval);
-  tamaInterval=setInterval(()=>{
-    let t=tamagotchiData; if(!t||!t.isAlive){ clearInterval(tamaInterval); renderTamagotchi(); return; }
-    t.hunger=Math.max(0,t.hunger-t.hr);
-    t.happy=Math.max(0,t.happy-t.pr);
-    t.energy=Math.max(0,t.energy-t.er);
+  tamaInterval = setInterval(() => {
+    let t = tamagotchiData; if(!t || !t.isAlive){ clearInterval(tamaInterval); renderTamagotchi(); return; }
+    t.hunger = Math.max(0, t.hunger - t.hr);
+    t.happy = Math.max(0, t.happy - t.pr);
+    t.energy = Math.max(0, t.energy - t.er);
     t.age++;
-    if(t.age===t.growthAge){
-      let emojis=Object.keys(pets);
-      let newEmoji=emojis[Math.floor(Math.random()*emojis.length)];
-      t.emoji=newEmoji;
-      t.name=pets[newEmoji].name;
-      t.growthAge+=25;
+    if(t.age === t.growthAge){
+      let emojis = Object.keys(pets);
+      let newEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+      t.emoji = newEmoji;
+      t.name = pets[newEmoji].name;
+      t.growthAge += 25;
       alert(`${t.name} вырос! Теперь он ${t.emoji}`);
     }
-    if(t.poops.length>0){ t.happy=Math.max(0,t.happy-4); t.energy=Math.max(0,t.energy-2); }
-    if(t.hunger<=0||t.happy<=0||t.energy<=0){ t.isAlive=false; renderTamagotchi(); clearInterval(tamaInterval); return; }
-    if(t.hunger>88) t.isFat=true;
-    else if(t.hunger<45) t.isFat=false;
-    if(t.energy<18) t.isTired=true;
-    else if(t.energy>55) t.isTired=false;
+    if(t.poops.length > 0){ t.happy = Math.max(0, t.happy - 4); t.energy = Math.max(0, t.energy - 2); }
+    if(t.hunger <= 0 || t.happy <= 0 || t.energy <= 0){ t.isAlive = false; renderTamagotchi(); clearInterval(tamaInterval); return; }
+    if(t.hunger > 88) t.isFat = true;
+    else if(t.hunger < 45) t.isFat = false;
+    if(t.energy < 18) t.isTired = true;
+    else if(t.energy > 55) t.isTired = false;
     renderTamagotchi();
-  },3000);
+  }, 3000);
 }
 
-// ==================== ОНЛАЙН-ИГРЫ С ИСПРАВЛЕННЫМ МОРСКИМ БОЕМ ====================
+// ==================== ОНЛАЙН-ИГРЫ ====================
 function showOnlineGame(type){
-  let users=Object.keys(onlineUsers);
-  if(users.length===0){ alert('Нет никого онлайн!'); return; }
-  let h='<p>Выбери соперника:</p>';
-  users.forEach(u=>{ h+=`<button onclick="sendInvite('${u}','${type}')" style="display:block;width:100%;margin:4px 0">${onlineUsers[u].name}</button>`; });
-  document.getElementById('inviteContent').innerHTML=h;
-  document.getElementById('inviteTitle').textContent='🎮 Пригласить';
+  let users = Object.keys(onlineUsers);
+  if(users.length === 0){ alert('Нет никого онлайн!'); return; }
+  let h = '<p>Выбери соперника:</p>';
+  users.forEach(u => { h += `<button onclick="sendInvite('${u}','${type}')" style="display:block;width:100%;margin:4px 0">${onlineUsers[u].name}</button>`; });
+  document.getElementById('inviteContent').innerHTML = h;
+  document.getElementById('inviteTitle').textContent = '🎮 Пригласить';
   document.getElementById('inviteModal').classList.add('show');
 }
 
-function sendInvite(uid,game){
+function sendInvite(uid, game){
   document.getElementById('inviteModal').classList.remove('show');
-  let rid=myUid+'_'+uid+'_'+game+'_'+Date.now();
-  db.ref('game_invites/'+rid).set({from:myUid,fromName:myName,game:game,to:uid,status:'pending',ts:Date.now()});
-  let ref=db.ref('game_invites/'+rid+'/status');
-  ref.on('value',snap=>{
-    if(snap.val()==='accepted'){
+  let rid = myUid+'_'+uid+'_'+game+'_'+Date.now();
+  db.ref('game_invites/'+rid).set({from: myUid, fromName: myName, game: game, to: uid, status: 'pending', ts: Date.now()});
+  let ref = db.ref('game_invites/'+rid+'/status');
+  ref.on('value', snap => {
+    if(snap.val() === 'accepted'){
       ref.off();
       db.ref('game_invites/'+rid).remove();
       hideWaiting();
-      if(game==='battleship') startBattleshipSetup(uid,rid);
-      if(game==='pong') initOnlinePong(uid,rid);
-      if(game==='xo') initOnlineXO(uid,rid);
-    } else if(snap.val()==='declined'){
+      if(game === 'battleship') startBattleshipSetup(uid, rid);
+      if(game === 'pong') initOnlinePong(uid, rid);
+      if(game === 'xo') initOnlineXO(uid, rid);
+    } else if(snap.val() === 'declined'){
       ref.off();
       db.ref('game_invites/'+rid).remove();
       hideWaiting();
       alert('❌ Отклонено');
     }
   });
-  showWaiting('Ожидаем '+onlineUsers[uid].name+'...',30000);
+  showWaiting('Ожидаем '+onlineUsers[uid].name+'...', 30000);
 }
 
-db.ref('game_invites').on('child_added',snap=>{
-  let inv=snap.val();
-  if(inv.to===myUid && inv.status==='pending' && inv.ts>Date.now()-15000){
-    pendingInvite={id:snap.key,from:inv.from,fromName:inv.fromName,game:inv.game};
-    document.getElementById('inviteContent').innerHTML=`<p>${inv.fromName} зовёт в <b>${inv.game}</b>!</p>`;
-    document.getElementById('inviteActions').innerHTML=`<button onclick="acceptInvite()" style="background:#4f4">✅</button><button onclick="declineInvite()" style="background:#f44">❌</button>`;
-    document.getElementById('inviteTitle').textContent='📨 Приглашение';
+db.ref('game_invites').on('child_added', snap => {
+  let inv = snap.val();
+  if(inv.to === myUid && inv.status === 'pending' && inv.ts > Date.now() - 15000){
+    pendingInvite = {id: snap.key, from: inv.from, fromName: inv.fromName, game: inv.game};
+    document.getElementById('inviteContent').innerHTML = `<p>${inv.fromName} зовёт в <b>${inv.game}</b>!</p>`;
+    document.getElementById('inviteActions').innerHTML = `<button onclick="acceptInvite()" style="background:#4f4">✅</button><button onclick="declineInvite()" style="background:#f44">❌</button>`;
+    document.getElementById('inviteTitle').textContent = '📨 Приглашение';
     document.getElementById('inviteModal').classList.add('show');
   }
 });
@@ -997,467 +1135,467 @@ db.ref('game_invites').on('child_added',snap=>{
 function acceptInvite(){
   if(!pendingInvite) return;
   document.getElementById('inviteModal').classList.remove('show');
-  let inv=pendingInvite;
+  let inv = pendingInvite;
   db.ref('game_invites/'+inv.id+'/status').set('accepted');
-  setTimeout(()=>{
-    if(inv.game==='battleship') startBattleshipSetup(inv.from,inv.id);
-    if(inv.game==='pong') initOnlinePong(inv.from,inv.id);
-    if(inv.game==='xo') initOnlineXO(inv.from,inv.id);
-  },300);
-  pendingInvite=null;
+  setTimeout(() => {
+    if(inv.game === 'battleship') startBattleshipSetup(inv.from, inv.id);
+    if(inv.game === 'pong') initOnlinePong(inv.from, inv.id);
+    if(inv.game === 'xo') initOnlineXO(inv.from, inv.id);
+  }, 300);
+  pendingInvite = null;
 }
 
 function declineInvite(){
   if(!pendingInvite) return;
   document.getElementById('inviteModal').classList.remove('show');
   db.ref('game_invites/'+pendingInvite.id+'/status').set('declined');
-  pendingInvite=null;
+  pendingInvite = null;
 }
 
-function showWaiting(msg,dur){
-  let w=document.getElementById('waitingModal');
+function showWaiting(msg, dur){
+  let w = document.getElementById('waitingModal');
   if(!w){
-    w=document.createElement('div');
-    w.className='modal-overlay';
-    w.id='waitingModal';
-    w.innerHTML='<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';
+    w = document.createElement('div');
+    w.className = 'modal-overlay';
+    w.id = 'waitingModal';
+    w.innerHTML = '<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';
     document.body.appendChild(w);
   }
-  document.getElementById('waitingContent').textContent='⏳ '+msg;
+  document.getElementById('waitingContent').textContent = '⏳ '+msg;
   w.classList.add('show');
   if(window._wt) clearTimeout(window._wt);
-  window._wt=setTimeout(()=>w.classList.remove('show'),dur);
+  window._wt = setTimeout(() => w.classList.remove('show'), dur);
 }
 
 function hideWaiting(){
-  let w=document.getElementById('waitingModal');
+  let w = document.getElementById('waitingModal');
   if(w) w.classList.remove('show');
 }
 
-// ИСПРАВЛЕННЫЙ МОРСКОЙ БОЙ - строго 1 ход
-function startBattleshipSetup(opp,rid){
-  currentGame='battleship';
+// ИСПРАВЛЕННЫЙ МОРСКОЙ БОЙ - 1 ХОД
+function startBattleshipSetup(opp, rid){
+  currentGame = 'battleship';
   showScreen('game');
-  document.getElementById('gameTitle').textContent='🚢 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?')+' — Расстановка';
-  let S=10, mB=Array(S).fill().map(()=>Array(S).fill(0)), ships=[4,3,3,2,2,2,1,1,1,1], idx=0, hor=true;
+  document.getElementById('gameTitle').textContent = '🚢 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?')+' — Расстановка';
+  let S = 10, mB = Array(S).fill().map(() => Array(S).fill(0)), ships = [4,3,3,2,2,2,1,1,1,1], idx = 0, hor = true;
   function cp(x,y,s,h){
     if(h){
-      if(x+s>S) return false;
-      for(let i=0;i<s;i++) for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ let nx=x+i+dx, ny=y+dy; if(nx>=0&&nx<S&&ny>=0&&ny<S&&mB[ny][nx]===1) return false; }
+      if(x+s > S) return false;
+      for(let i=0; i<s; i++) for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++){ let nx = x+i+dx, ny = y+dy; if(nx>=0 && nx<S && ny>=0 && ny<S && mB[ny][nx] === 1) return false; }
     } else {
-      if(y+s>S) return false;
-      for(let i=0;i<s;i++) for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ let nx=x+dx, ny=y+i+dy; if(nx>=0&&nx<S&&ny>=0&&ny<S&&mB[ny][nx]===1) return false; }
+      if(y+s > S) return false;
+      for(let i=0; i<s; i++) for(let dy=-1; dy<=1; dy++) for(let dx=-1; dx<=1; dx++){ let nx = x+dx, ny = y+i+dy; if(nx>=0 && nx<S && ny>=0 && ny<S && mB[ny][nx] === 1) return false; }
     }
     return true;
   }
   function rS(){
-    let h=`<p>Осталось: ${ships.length-idx} | <button onclick="toggleSD()">↻ ${hor?'Гориз':'Верт'}</button> | <button onclick="autoP()">🎲</button> | <button onclick="clS()">🗑️</button></p><div class="battle-board">`;
-    for(let y=0;y<S;y++) for(let x=0;x<S;x++) h+=`<div class="battle-cell${mB[y][x]===1?' ship':''}" onclick="plS(${x},${y})"></div>`;
-    h+='</div>';
-    if(idx>=ships.length) h+=`<button onclick="rdy('${rid}')" style="background:#4f4">✅ Готов!</button>`;
-    document.getElementById('gameContent').innerHTML=h;
+    let h = `<p>Осталось: ${ships.length-idx} | <button onclick="toggleSD()">↻ ${hor?'Гориз':'Верт'}</button> | <button onclick="autoP()">🎲</button> | <button onclick="clS()">🗑️</button></p><div class="battle-board">`;
+    for(let y=0; y<S; y++) for(let x=0; x<S; x++) h += `<div class="battle-cell${mB[y][x]===1?' ship':''}" onclick="plS(${x},${y})"></div>`;
+    h += '</div>';
+    if(idx >= ships.length) h += `<button onclick="rdy('${rid}')" style="background:#4f4">✅ Готов!</button>`;
+    document.getElementById('gameContent').innerHTML = h;
   }
-  window.plS=function(x,y){
-    if(idx>=ships.length) return;
-    let s=ships[idx];
+  window.plS = function(x,y){
+    if(idx >= ships.length) return;
+    let s = ships[idx];
     if(!cp(x,y,s,hor)){ alert('❌ Нельзя!'); return; }
-    if(hor) for(let i=0;i<s;i++) mB[y][x+i]=1;
-    else for(let i=0;i<s;i++) mB[y+i][x]=1;
+    if(hor) for(let i=0; i<s; i++) mB[y][x+i] = 1;
+    else for(let i=0; i<s; i++) mB[y+i][x] = 1;
     idx++; rS(); playSound("coin");
   };
-  window.toggleSD=function(){ hor=!hor; rS(); };
-  window.autoP=function(){
-    mB=Array(S).fill().map(()=>Array(S).fill(0)); idx=0;
-    let ss=[4,3,3,2,2,2,1,1,1,1];
-    ss.forEach(s=>{ let placed=false, attempts=0; while(!placed && attempts<500){ attempts++; let h=Math.random()>0.5, x=Math.floor(Math.random()*S), y=Math.floor(Math.random()*S); if(cp(x,y,s,h)){ if(h) for(let i=0;i<s;i++) mB[y][x+i]=1; else for(let i=0;i<s;i++) mB[y+i][x]=1; placed=true; } } });
-    idx=ss.length; rS();
+  window.toggleSD = function(){ hor = !hor; rS(); };
+  window.autoP = function(){
+    mB = Array(S).fill().map(() => Array(S).fill(0)); idx = 0;
+    let ss = [4,3,3,2,2,2,1,1,1,1];
+    ss.forEach(s => { let placed = false, attempts = 0; while(!placed && attempts < 500){ attempts++; let h = Math.random() > 0.5, x = Math.floor(Math.random()*S), y = Math.floor(Math.random()*S); if(cp(x,y,s,h)){ if(h) for(let i=0; i<s; i++) mB[y][x+i] = 1; else for(let i=0; i<s; i++) mB[y+i][x] = 1; placed = true; } } });
+    idx = ss.length; rS();
   };
-  window.clS=function(){ mB=Array(S).fill().map(()=>Array(S).fill(0)); idx=0; rS(); };
-  window.rdy=function(rid){
+  window.clS = function(){ mB = Array(S).fill().map(() => Array(S).fill(0)); idx = 0; rS(); };
+  window.rdy = function(rid){
     db.ref('og/'+rid+'/b'+myUid).set(mB);
     db.ref('og/'+rid+'/r'+myUid).set(true);
-    showWaiting('Ожидаем соперника...',30000);
-    db.ref('og/'+rid).on('value',snap=>{
+    showWaiting('Ожидаем соперника...', 30000);
+    db.ref('og/'+rid).on('value', snap => {
       if(snap.child('r'+myUid).val() && snap.child('r'+opp).val()){
         db.ref('og/'+rid).off();
         hideWaiting();
-        startBSG(opp,rid,mB);
+        startBSG(opp, rid, mB);
       }
     });
   };
   rS();
 }
 
-// ОСНОВНАЯ ЛОГИКА МОРСКОГО БОЯ - 1 ХОД
-function startBSG(opp,rid,mB){
-  document.getElementById('gameTitle').textContent='🚢 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
-  let S=10;
-  let eB=Array(S).fill().map(()=>Array(S).fill(0));
-  let myTurn=(myUid<opp);
-  let gameOver=false;
-  let waitingForMove=false;
+// ОСНОВНАЯ ЛОГИКА МОРСКОГО БОЯ - СТРОГО 1 ХОД
+function startBSG(opp, rid, mB){
+  document.getElementById('gameTitle').textContent = '🚢 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
+  let S = 10;
+  let eB = Array(S).fill().map(() => Array(S).fill(0));
+  let myTurn = (myUid < opp);
+  let gameOver = false;
+  let waitingForMove = false;
+  let lastMoveTime = 0;
   
-  db.ref('og/'+rid+'/b'+opp).once('value',snap=>{
-    let eb=snap.val();
+  db.ref('og/'+rid+'/b'+opp).once('value', snap => {
+    let eb = snap.val();
     if(eb){
-      for(let y=0;y<S;y++) for(let x=0;x<S;x++) eB[y][x]=eb[y][x]||0;
+      for(let y=0; y<S; y++) for(let x=0; x<S; x++) eB[y][x] = eb[y][x] || 0;
     }
     renderBoard();
   });
   
   function checkWin(field){
-    for(let y=0;y<S;y++) for(let x=0;x<S;x++) if(field[y][x]===1) return false;
+    for(let y=0; y<S; y++) for(let x=0; x<S; x++) if(field[y][x] === 1) return false;
     return true;
   }
   
   function renderBoard(){
-    let h='<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">';
-    h+='<div><h4>Твоё поле</h4><div class="battle-board">';
-    for(let y=0;y<S;y++){
-      for(let x=0;x<S;x++){
-        let cls='battle-cell';
-        if(mB[y][x]===1) cls+=' my-ship';
-        if(mB[y][x]===2) cls+=' hit';
-        if(mB[y][x]===3) cls+=' miss';
-        h+=`<div class="${cls}">${mB[y][x]===2?'💥':mB[y][x]===3?'•':''}</div>`;
+    let h = '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">';
+    h += '<div><h4>Твоё поле</h4><div class="battle-board">';
+    for(let y=0; y<S; y++){
+      for(let x=0; x<S; x++){
+        let cls = 'battle-cell';
+        if(mB[y][x] === 1) cls += ' my-ship';
+        if(mB[y][x] === 2) cls += ' hit';
+        if(mB[y][x] === 3) cls += ' miss';
+        h += `<div class="${cls}">${mB[y][x]===2?'💥':mB[y][x]===3?'•':''}</div>`;
       }
     }
-    h+='</div></div><div><h4>Поле врага</h4><div class="battle-board">';
-    for(let y=0;y<S;y++){
-      for(let x=0;x<S;x++){
-        let cls='battle-cell';
-        if(eB[y][x]===2) cls+=' hit';
-        if(eB[y][x]===3) cls+=' miss';
-        let canClick=(myTurn && !gameOver && eB[y][x]===0 && !waitingForMove);
-        h+=`<div class="${cls}"${canClick?` onclick="makeMove(${x},${y},'${rid}')"`:''}>${eB[y][x]===2?'💥':eB[y][x]===3?'•':''}</div>`;
+    h += '</div></div><div><h4>Поле врага</h4><div class="battle-board">';
+    for(let y=0; y<S; y++){
+      for(let x=0; x<S; x++){
+        let cls = 'battle-cell';
+        if(eB[y][x] === 2) cls += ' hit';
+        if(eB[y][x] === 3) cls += ' miss';
+        let canClick = (myTurn && !gameOver && eB[y][x] === 0 && !waitingForMove);
+        h += `<div class="${cls}"${canClick ? ` onclick="makeMove(${x},${y},'${rid}')"` : ''}>${eB[y][x]===2?'💥':eB[y][x]===3?'•':''}</div>`;
       }
     }
-    h+=`</div></div></div><p>${gameOver?'Конец!':(myTurn?'🔫 ТВОЙ ХОД!':'⏳ Ход соперника...')}</p>`;
-    document.getElementById('gameContent').innerHTML=h;
+    h += `</div></div></div><p>${gameOver ? 'Конец!' : (myTurn ? '🔫 ТВОЙ ХОД!' : '⏳ Ход соперника...')}</p>`;
+    document.getElementById('gameContent').innerHTML = h;
   }
   
-  window.makeMove=function(x,y,rid){
+  window.makeMove = function(x, y, rid){
     if(!myTurn || gameOver || waitingForMove) return;
-    if(eB[y][x]!==0){ alert("Сюда уже стреляли!"); return; }
-    waitingForMove=true;
+    if(eB[y][x] !== 0){ alert("Сюда уже стреляли!"); return; }
+    let now = Date.now();
+    if(now - lastMoveTime < 500) return;
+    lastMoveTime = now;
+    
+    waitingForMove = true;
     renderBoard();
     
-    let hit=(eB[y][x]===1);
+    let hit = (eB[y][x] === 1);
     if(hit){
-      eB[y][x]=2;
+      eB[y][x] = 2;
       playSound("hit");
-      db.ref('og/'+rid+'/move').set({x:x,y:y,hit:true,ts:Date.now(),player:myUid});
+      db.ref('og/'+rid+'/move').set({x: x, y: y, hit: true, ts: now, player: myUid});
       if(checkWin(eB)){
-        gameOver=true;
+        gameOver = true;
+        waitingForMove = false;
         renderBoard();
         alert('🎉 ПОБЕДА! +10 яиц');
         addEggs(10);
-      } else {
-        // ПОПАДАНИЕ - ход остается у текущего игрока
-        myTurn=true;
-        waitingForMove=false;
-        renderBoard();
+        return;
       }
+      // ПОПАДАНИЕ - ход остается у текущего игрока!
+      setTimeout(() => {
+        waitingForMove = false;
+        renderBoard();
+      }, 300);
     } else {
-      eB[y][x]=3;
+      eB[y][x] = 3;
       playSound("coin");
-      db.ref('og/'+rid+'/move').set({x:x,y:y,hit:false,ts:Date.now(),player:myUid});
+      db.ref('og/'+rid+'/move').set({x: x, y: y, hit: false, ts: now, player: myUid});
       // ПРОМАХ - ход переходит сопернику
-      myTurn=false;
-      waitingForMove=false;
+      myTurn = false;
+      waitingForMove = false;
       renderBoard();
     }
   };
   
-  db.ref('og/'+rid+'/move').on('value',snap=>{
+  db.ref('og/'+rid+'/move').on('value', snap => {
     if(gameOver) return;
-    let move=snap.val();
-    if(move && move.player!==myUid && !myTurn && !waitingForMove){
-      waitingForMove=true;
+    let move = snap.val();
+    if(move && move.player !== myUid && !myTurn && !waitingForMove){
+      waitingForMove = true;
       if(move.hit){
-        mB[move.y][move.x]=2;
+        mB[move.y][move.x] = 2;
         playSound("hit");
         if(checkWin(mB)){
-          gameOver=true;
+          gameOver = true;
+          waitingForMove = false;
           renderBoard();
           alert('😢 Поражение... Соперник победил');
-        } else {
-          // Соперник попал - его ход продолжается (myTurn остается false)
-          myTurn=false;
-          waitingForMove=false;
-          renderBoard();
+          return;
         }
+        // Соперник попал - его ход продолжается (myTurn остается false)
+        setTimeout(() => {
+          waitingForMove = false;
+          renderBoard();
+        }, 300);
       } else {
-        mB[move.y][move.x]=3;
+        mB[move.y][move.x] = 3;
         playSound("coin");
         // Соперник промахнулся - ход переходит нам
-        myTurn=true;
-        waitingForMove=false;
+        myTurn = true;
+        waitingForMove = false;
         renderBoard();
       }
     }
   });
 }
 
-function initOnlineXO(opp,rid){
-  currentGame='onlinexo';
+function initOnlineXO(opp, rid){
+  currentGame = 'onlinexo';
   showScreen('game');
-  document.getElementById('gameTitle').textContent='❌ vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
-  let b=['','','','','','','','',''], mt=myUid<opp, ms=mt?'X':'O', go=false;
+  document.getElementById('gameTitle').textContent = '❌ vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
+  let b = ['','','','','','','','',''], mt = myUid < opp, ms = mt ? 'X' : 'O', go = false;
   function r(){
-    let h='<div class="xo-board">';
-    for(let i=0;i<9;i++){
-      let cl=mt && !b[i] && !go;
-      h+=`<div class="xo-cell${b[i]==='X'?' x':b[i]==='O'?' o':''}"${cl?` onclick="xoClick(${i},'${rid}')"`:''}>${b[i]==='X'?'❌':b[i]==='O'?'⭕':''}</div>`;
+    let h = '<div class="xo-board">';
+    for(let i=0; i<9; i++){
+      let cl = mt && !b[i] && !go;
+      h += `<div class="xo-cell${b[i]==='X'?' x':b[i]==='O'?' o':''}"${cl ? ` onclick="xoClick(${i},'${rid}')"` : ''}>${b[i]==='X'?'❌':b[i]==='O'?'⭕':''}</div>`;
     }
-    h+=`</div><p>${go?'Конец':(mt?'Твой ход':'Ход соперника')}</p>`;
-    document.getElementById('gameContent').innerHTML=h;
+    h += `</div><p>${go ? 'Конец' : (mt ? 'Твой ход' : 'Ход соперника')}</p>`;
+    document.getElementById('gameContent').innerHTML = h;
   }
-  window.xoClick=function(i,rid){
+  window.xoClick = function(i, rid){
     if(!mt || b[i] || go) return;
-    b[i]=ms; mt=false;
-    db.ref('og/'+rid).set({b:b,t:opp});
+    b[i] = ms; mt = false;
+    db.ref('og/'+rid).set({b: b, t: opp});
     r(); cw(); playSound("jump");
   };
-  db.ref('og/'+rid).on('value',s=>{ let d=s.val(); if(d&&d.t===myUid){ b=d.b; mt=true; r(); cw(); } });
+  db.ref('og/'+rid).on('value', s => { let d = s.val(); if(d && d.t === myUid){ b = d.b; mt = true; r(); cw(); } });
   function cw(){
-    let w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-    for(let i=0;i<w.length;i++) if(b[w[i][0]] && b[w[i][0]]===b[w[i][1]] && b[w[i][1]]===b[w[i][2]]){ go=true; r(); alert((b[w[i][0]]===ms?'Ты':'Соперник')+' победил!'); addEggs(5); return; }
-    if(!b.includes('')){ go=true; r(); alert('Ничья!'); }
+    let w = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    for(let i=0; i<w.length; i++) if(b[w[i][0]] && b[w[i][0]] === b[w[i][1]] && b[w[i][1]] === b[w[i][2]]){ go = true; r(); alert((b[w[i][0]] === ms ? 'Ты' : 'Соперник')+' победил!'); addEggs(5); return; }
+    if(!b.includes('')){ go = true; r(); alert('Ничья!'); }
   }
   r();
 }
 
-function initOnlinePong(opp,rid){
-  currentGame='onlinepong';
+function initOnlinePong(opp, rid){
+  currentGame = 'onlinepong';
   showScreen('game');
-  document.getElementById('gameTitle').textContent='🏓 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
-  document.getElementById('gameContent').innerHTML='<canvas id="pc" width="500" height="300" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="pu">↑</button><div></div><button class="ds4-btn" id="pl">←</button><div></div><button class="ds4-btn" id="pr">→</button><div></div><button class="ds4-btn" id="pd">↓</button><div></div></div>';
-  let c=document.getElementById('pc'), ctx=c.getContext('2d'), pad={};
-  pad[myUid]={y:120}; pad[opp]={y:120};
-  let ball={x:250,y:150,vx:4,vy:3}, sc={}; sc[myUid]=0; sc[opp]=0, go=false;
+  document.getElementById('gameTitle').textContent = '🏓 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
+  document.getElementById('gameContent').innerHTML = '<canvas id="pc" width="500" height="300" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="pu">↑</button><div></div><button class="ds4-btn" id="pl">←</button><div></div><button class="ds4-btn" id="pr">→</button><div></div><button class="ds4-btn" id="pd">↓</button><div></div></div>';
+  let c = document.getElementById('pc'), ctx = c.getContext('2d'), pad = {};
+  pad[myUid] = {y: 120}; pad[opp] = {y: 120};
+  let ball = {x: 250, y: 150, vx: 4, vy: 3}, sc = {}; sc[myUid] = 0; sc[opp] = 0, go = false;
   function mvPaddle(dir){
     if(go) return;
-    if(dir==='up') pad[myUid].y=Math.max(0,pad[myUid].y-20);
-    if(dir==='down') pad[myUid].y=Math.min(240,pad[myUid].y+20);
+    if(dir === 'up') pad[myUid].y = Math.max(0, pad[myUid].y - 20);
+    if(dir === 'down') pad[myUid].y = Math.min(240, pad[myUid].y + 20);
     db.ref('og/'+rid+'/p'+myUid).set(pad[myUid]); playSound("jump");
   }
-  document.getElementById('pu').onclick=()=>mvPaddle('up');
-  document.getElementById('pd').onclick=()=>mvPaddle('down');
-  document.getElementById('pl').onclick=()=>mvPaddle('up');
-  document.getElementById('pr').onclick=()=>mvPaddle('down');
-  document.onkeydown=e=>{ if(go) return; let ch=0; if(e.key==='w'||e.key==='ArrowUp') ch=-20; if(e.key==='s'||e.key==='ArrowDown') ch=20; if(ch!==0){ pad[myUid].y=Math.max(0,Math.min(240,pad[myUid].y+ch)); db.ref('og/'+rid+'/p'+myUid).set(pad[myUid]); playSound("jump"); } };
-  db.ref('og/'+rid+'/p'+opp).on('value',s=>{ if(s.val()) pad[opp]=s.val(); });
-  db.ref('og/'+rid+'/ball').on('value',s=>{ if(s.val()) ball=s.val(); });
-  let loop=setInterval(()=>{
+  document.getElementById('pu').onclick = () => mvPaddle('up');
+  document.getElementById('pd').onclick = () => mvPaddle('down');
+  document.getElementById('pl').onclick = () => mvPaddle('up');
+  document.getElementById('pr').onclick = () => mvPaddle('down');
+  document.onkeydown = e => { if(go) return; let ch = 0; if(e.key === 'w' || e.key === 'ArrowUp') ch = -20; if(e.key === 's' || e.key === 'ArrowDown') ch = 20; if(ch !== 0){ pad[myUid].y = Math.max(0, Math.min(240, pad[myUid].y + ch)); db.ref('og/'+rid+'/p'+myUid).set(pad[myUid]); playSound("jump"); } };
+  db.ref('og/'+rid+'/p'+opp).on('value', s => { if(s.val()) pad[opp] = s.val(); });
+  db.ref('og/'+rid+'/ball').on('value', s => { if(s.val()) ball = s.val(); });
+  let loop = setInterval(() => {
     if(go){ clearInterval(loop); return; }
     ctx.clearRect(0,0,500,300);
-    ctx.fillStyle='#4f4'; ctx.fillRect(3,pad[myUid].y,8,60);
-    ctx.fillStyle='#f44'; ctx.fillRect(489,pad[opp].y,8,60);
-    ball.x+=ball.vx; ball.y+=ball.vy;
-    if(ball.y<=0||ball.y>=290) ball.vy*=-1;
-    if(ball.x<=15&&ball.y>pad[myUid].y-5&&ball.y<pad[myUid].y+65) ball.vx=Math.abs(ball.vx);
-    if(ball.x>=485&&ball.y>pad[opp].y-5&&ball.y<pad[opp].y+65) ball.vx=-Math.abs(ball.vx);
-    if(ball.x<0){ sc[opp]++; ball={x:250,y:150,vx:4,vy:3}; playSound("hit"); }
-    if(ball.x>500){ sc[myUid]++; ball={x:250,y:150,vx:-4,vy:3}; playSound("coin"); }
-    document.getElementById('gameScoreDisplay').textContent=`Ты: ${sc[myUid]} | Соперник: ${sc[opp]}`;
-    ctx.beginPath(); ctx.arc(ball.x,ball.y,8,0,Math.PI*2); ctx.fillStyle='#ffd700'; ctx.fill();
-    if(sc[myUid]>=5||sc[opp]>=5){ go=true; alert((sc[myUid]>=5?'Ты':'Соперник')+' победил!'); addEggs(5); }
+    ctx.fillStyle = '#4f4'; ctx.fillRect(3, pad[myUid].y, 8, 60);
+    ctx.fillStyle = '#f44'; ctx.fillRect(489, pad[opp].y, 8, 60);
+    ball.x += ball.vx; ball.y += ball.vy;
+    if(ball.y <= 0 || ball.y >= 290) ball.vy *= -1;
+    if(ball.x <= 15 && ball.y > pad[myUid].y-5 && ball.y < pad[myUid].y+65) ball.vx = Math.abs(ball.vx);
+    if(ball.x >= 485 && ball.y > pad[opp].y-5 && ball.y < pad[opp].y+65) ball.vx = -Math.abs(ball.vx);
+    if(ball.x < 0){ sc[opp]++; ball = {x:250, y:150, vx:4, vy:3}; playSound("hit"); }
+    if(ball.x > 500){ sc[myUid]++; ball = {x:250, y:150, vx:-4, vy:3}; playSound("coin"); }
+    document.getElementById('gameScoreDisplay').textContent = `Ты: ${sc[myUid]} | Соперник: ${sc[opp]}`;
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, 8, 0, Math.PI*2); ctx.fillStyle = '#ffd700'; ctx.fill();
+    if(sc[myUid] >= 5 || sc[opp] >= 5){ go = true; alert((sc[myUid] >= 5 ? 'Ты' : 'Соперник')+' победил!'); addEggs(5); }
     else db.ref('og/'+rid+'/ball').set(ball);
-  },20);
-  gameInterval=loop;
-}
-
-let quotes=[{text:'Расческа нужна каждому.',author:'Главный герой',movie:'Расческа для лысых'}];
-function getDailyQuote(){ return quotes[new Date().getDate()%quotes.length]; }
-function showDailyQuote(){
-  let q=getDailyQuote();
-  let h=`<div class="quote-box"><div class="quote-text">«${q.text}»</div><div class="quote-author">— ${q.author}</div><div class="quote-movie">🎬 ${q.movie}</div></div>`;
-  let cat=document.querySelector('#home-screen .catalog');
-  if(cat){ let ex=document.getElementById('dailyQuote'); if(ex) ex.innerHTML=h; else{ let d=document.createElement('div'); d.id='dailyQuote'; d.style.cssText='max-width:600px;margin:25px auto 0'; d.innerHTML='<h3 style="color:#ffd700">💬 Цитата дня</h3>'+h; cat.appendChild(d); } }
+  }, 20);
+  gameInterval = loop;
 }
 
 // ИГРЫ (упрощенные версии)
 function initSnake(){
-  document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div>';
+  document.getElementById('gameContent').innerHTML = '<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div>';
   createGameRating();
-  let c=document.getElementById('sc'), ctx=c.getContext('2d'), sn=[{x:200,y:200}], food={x:100,y:100}, dir={x:20,y:0}, score=0, ov=false;
-  function spawnFood(){ food={x:Math.floor(Math.random()*20)*20,y:Math.floor(Math.random()*20)*20}; if(sn.some(s=>s.x===food.x&&s.y===food.y)) spawnFood(); }
-  function changeDir(nd){ if(ov||(nd.x===-dir.x&&nd.y===-dir.y)||(nd.x!==0&&dir.x!==0)||(nd.y!==0&&dir.y!==0)) return; dir=nd; playSound("jump"); }
-  document.getElementById('su').onclick=()=>changeDir({x:0,y:-20});
-  document.getElementById('sd').onclick=()=>changeDir({x:0,y:20});
-  document.getElementById('sl').onclick=()=>changeDir({x:-20,y:0});
-  document.getElementById('sr').onclick=()=>changeDir({x:20,y:0});
-  document.onkeydown=e=>{ if(e.key==='ArrowLeft') changeDir({x:-20,y:0}); if(e.key==='ArrowRight') changeDir({x:20,y:0}); if(e.key==='ArrowUp') changeDir({x:0,y:-20}); if(e.key==='ArrowDown') changeDir({x:0,y:20}); e.preventDefault(); };
+  let c = document.getElementById('sc'), ctx = c.getContext('2d'), sn = [{x:200, y:200}], food = {x:100, y:100}, dir = {x:20, y:0}, score = 0, ov = false;
+  function spawnFood(){ food = {x: Math.floor(Math.random()*20)*20, y: Math.floor(Math.random()*20)*20}; if(sn.some(s => s.x === food.x && s.y === food.y)) spawnFood(); }
+  function changeDir(nd){ if(ov || (nd.x === -dir.x && nd.y === -dir.y) || (nd.x !== 0 && dir.x !== 0) || (nd.y !== 0 && dir.y !== 0)) return; dir = nd; playSound("jump"); }
+  document.getElementById('su').onclick = () => changeDir({x:0, y:-20});
+  document.getElementById('sd').onclick = () => changeDir({x:0, y:20});
+  document.getElementById('sl').onclick = () => changeDir({x:-20, y:0});
+  document.getElementById('sr').onclick = () => changeDir({x:20, y:0});
+  document.onkeydown = e => { if(e.key === 'ArrowLeft') changeDir({x:-20, y:0}); if(e.key === 'ArrowRight') changeDir({x:20, y:0}); if(e.key === 'ArrowUp') changeDir({x:0, y:-20}); if(e.key === 'ArrowDown') changeDir({x:0, y:20}); e.preventDefault(); };
   function loop(){
     if(ov) return;
-    let head={x:sn[0].x+dir.x, y:sn[0].y+dir.y};
-    if(head.x<0||head.x>=400||head.y<0||head.y>=400||sn.some(s=>s.x===head.x&&s.y===head.y)){ ov=true; alert('Счёт: '+score); return; }
+    let head = {x: sn[0].x + dir.x, y: sn[0].y + dir.y};
+    if(head.x < 0 || head.x >= 400 || head.y < 0 || head.y >= 400 || sn.some(s => s.x === head.x && s.y === head.y)){ ov = true; alert('Счёт: '+score); return; }
     sn.unshift(head);
-    if(head.x===food.x&&head.y===food.y){ score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent='Счёт: '+score; spawnFood(); }
+    if(head.x === food.x && head.y === food.y){ score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent = 'Счёт: '+score; spawnFood(); }
     else sn.pop();
     ctx.clearRect(0,0,400,400);
-    ctx.fillStyle='#ffd700'; ctx.fillRect(food.x,food.y,18,18);
-    ctx.fillStyle='#4CAF50'; sn.forEach(s=>ctx.fillRect(s.x,s.y,18,18));
+    ctx.fillStyle = '#ffd700'; ctx.fillRect(food.x, food.y, 18, 18);
+    ctx.fillStyle = '#4CAF50'; sn.forEach(s => ctx.fillRect(s.x, s.y, 18, 18));
   }
   spawnFood();
-  gameInterval=setInterval(loop,100);
+  gameInterval = setInterval(loop, 100);
 }
 
 function initTetris(){
-  document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';
+  document.getElementById('gameContent').innerHTML = '<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';
   createGameRating();
-  let c=document.getElementById('tc'), ctx=c.getContext('2d'), COLS=10, ROWS=20, BLOCK=30;
-  c.width=COLS*BLOCK; c.height=ROWS*BLOCK;
-  let board=Array(ROWS).fill().map(()=>Array(COLS).fill(0));
-  let shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];
-  let piece, score=0, ov=false, lastDrop=Date.now();
-  function newPiece(){ let s=shapes[Math.floor(Math.random()*shapes.length)]; return {shape:s, x:Math.floor(COLS/2)-Math.floor(s[0].length/2), y:0}; }
-  piece=newPiece();
-  function collide(p){ for(let y=0;y<p.shape.length;y++) for(let x=0;x<p.shape[y].length;x++) if(p.shape[y][x]){ let ny=p.y+y, nx=p.x+x; if(ny>=ROWS||nx<0||nx>=COLS||(ny>=0&&board[ny][nx])) return true; } return false; }
-  function merge(){ for(let y=0;y<piece.shape.length;y++) for(let x=0;x<piece.shape[y].length;x++) if(piece.shape[y][x]) board[piece.y+y][piece.x+x]=1; }
-  function rotate(){ let rot=piece.shape[0].map((_,i)=>piece.shape.map(r=>r[i]).reverse()); let prev=piece.shape; piece.shape=rot; if(collide(piece)) piece.shape=prev; else playSound("jump"); }
-  function clearLines(){ for(let y=ROWS-1;y>=0;y--) if(board[y].every(c=>c)){ board.splice(y,1); board.unshift(Array(COLS).fill(0)); score+=100; playSound("coin"); y++; } document.getElementById('gameScoreDisplay').textContent='Счёт: '+score; }
-  function drop(){ piece.y++; if(collide(piece)){ piece.y--; merge(); clearLines(); piece=newPiece(); if(collide(piece)) ov=true; playSound("hit"); } lastDrop=Date.now(); }
-  function move(dx){ piece.x+=dx; if(collide(piece)) piece.x-=dx; else playSound("jump"); }
-  document.getElementById('tl').onclick=()=>{ if(!ov) move(-1); };
-  document.getElementById('tr').onclick=()=>{ if(!ov) move(1); };
-  document.getElementById('tu').onclick=()=>{ if(!ov) rotate(); };
-  document.getElementById('td').onclick=()=>{ if(!ov) drop(); };
-  document.onkeydown=e=>{ if(e.key==='ArrowLeft') move(-1); if(e.key==='ArrowRight') move(1); if(e.key==='ArrowDown') drop(); if(e.key==='ArrowUp') rotate(); e.preventDefault(); };
+  let c = document.getElementById('tc'), ctx = c.getContext('2d'), COLS = 10, ROWS = 20, BLOCK = 30;
+  c.width = COLS*BLOCK; c.height = ROWS*BLOCK;
+  let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+  let shapes = [[[1,1,1,1]], [[1,1],[1,1]], [[1,1,0],[0,1,1]], [[0,1,1],[1,1,0]], [[1,0,0],[1,1,1]]];
+  let piece, score = 0, ov = false, lastDrop = Date.now();
+  function newPiece(){ let s = shapes[Math.floor(Math.random()*shapes.length)]; return {shape: s, x: Math.floor(COLS/2) - Math.floor(s[0].length/2), y: 0}; }
+  piece = newPiece();
+  function collide(p){ for(let y=0; y<p.shape.length; y++) for(let x=0; x<p.shape[y].length; x++) if(p.shape[y][x]){ let ny = p.y+y, nx = p.x+x; if(ny >= ROWS || nx < 0 || nx >= COLS || (ny >= 0 && board[ny][nx])) return true; } return false; }
+  function merge(){ for(let y=0; y<piece.shape.length; y++) for(let x=0; x<piece.shape[y].length; x++) if(piece.shape[y][x]) board[piece.y+y][piece.x+x] = 1; }
+  function rotate(){ let rot = piece.shape[0].map((_,i) => piece.shape.map(r => r[i]).reverse()); let prev = piece.shape; piece.shape = rot; if(collide(piece)) piece.shape = prev; else playSound("jump"); }
+  function clearLines(){ for(let y=ROWS-1; y>=0; y--) if(board[y].every(c => c)){ board.splice(y,1); board.unshift(Array(COLS).fill(0)); score += 100; playSound("coin"); y++; } document.getElementById('gameScoreDisplay').textContent = 'Счёт: '+score; }
+  function drop(){ piece.y++; if(collide(piece)){ piece.y--; merge(); clearLines(); piece = newPiece(); if(collide(piece)) ov = true; playSound("hit"); } lastDrop = Date.now(); }
+  function move(dx){ piece.x += dx; if(collide(piece)) piece.x -= dx; else playSound("jump"); }
+  document.getElementById('tl').onclick = () => { if(!ov) move(-1); };
+  document.getElementById('tr').onclick = () => { if(!ov) move(1); };
+  document.getElementById('tu').onclick = () => { if(!ov) rotate(); };
+  document.getElementById('td').onclick = () => { if(!ov) drop(); };
+  document.onkeydown = e => { if(e.key === 'ArrowLeft') move(-1); if(e.key === 'ArrowRight') move(1); if(e.key === 'ArrowDown') drop(); if(e.key === 'ArrowUp') rotate(); e.preventDefault(); };
   function draw(){
-    ctx.fillStyle='#000'; ctx.fillRect(0,0,c.width,c.height);
-    for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++) if(board[y][x]){ ctx.fillStyle='#ffd700'; ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK-1,BLOCK-1); }
-    for(let y=0;y<piece.shape.length;y++) for(let x=0;x<piece.shape[y].length;x++) if(piece.shape[y][x]){ ctx.fillStyle='#f60'; ctx.fillRect((piece.x+x)*BLOCK,(piece.y+y)*BLOCK,BLOCK-1,BLOCK-1); }
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,c.width,c.height);
+    for(let y=0; y<ROWS; y++) for(let x=0; x<COLS; x++) if(board[y][x]){ ctx.fillStyle = '#ffd700'; ctx.fillRect(x*BLOCK, y*BLOCK, BLOCK-1, BLOCK-1); }
+    for(let y=0; y<piece.shape.length; y++) for(let x=0; x<piece.shape[y].length; x++) if(piece.shape[y][x]){ ctx.fillStyle = '#f60'; ctx.fillRect((piece.x+x)*BLOCK, (piece.y+y)*BLOCK, BLOCK-1, BLOCK-1); }
     requestAnimationFrame(draw);
   }
-  function gameLoop(){ if(!ov){ if(Date.now()-lastDrop>500) drop(); } requestAnimationFrame(gameLoop); }
+  function gameLoop(){ if(!ov){ if(Date.now() - lastDrop > 500) drop(); } requestAnimationFrame(gameLoop); }
   draw(); gameLoop();
 }
 
 function initRunner(){
-  document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div>';
+  document.getElementById('gameContent').innerHTML = '<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div>';
   createGameRating();
-  let c=document.getElementById('rc'), ctx=c.getContext('2d');
-  let y=140, vy=0, groundY=160, obstacles=[], score=0, ov=false, bgX=0;
-  function jump(){ if(y+30>=groundY-5 && !ov){ vy=-11; playSound("jump"); } }
-  window.runnerJump=jump;
-  document.onkeydown=e=>{ if(e.key===' ') jump(); };
-  c.onclick=jump;
+  let c = document.getElementById('rc'), ctx = c.getContext('2d');
+  let y = 140, vy = 0, groundY = 160, obstacles = [], score = 0, ov = false, bgX = 0;
+  function jump(){ if(y+30 >= groundY-5 && !ov){ vy = -11; playSound("jump"); } }
+  window.runnerJump = jump;
+  document.onkeydown = e => { if(e.key === ' ') jump(); };
+  c.onclick = jump;
   function update(){
     if(ov) return;
-    bgX=(bgX-2)%600;
-    ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,600,200);
-    ctx.fillStyle='#8B4513'; ctx.fillRect(0,groundY,600,40);
-    ctx.fillStyle='#228B22';
-    for(let i=0;i<5;i++) ctx.fillRect((bgX+i*150)%600,groundY-5,30,8);
-    ctx.font='40px Arial'; ctx.fillStyle='#ffd700'; ctx.fillText('🐔',50,y);
-    if(Math.random()<0.02 && obstacles.length<2) obstacles.push({x:600,y:groundY-15,width:25,height:25});
-    for(let i=0;i<obstacles.length;i++){
-      ctx.fillStyle='#555'; ctx.fillRect(obstacles[i].x,obstacles[i].y,obstacles[i].width,obstacles[i].height);
-      obstacles[i].x-=6;
-      if(obstacles[i].x+obstacles[i].width>50 && obstacles[i].x<90 && y+35>obstacles[i].y && y<obstacles[i].y+obstacles[i].height) end();
-      if(obstacles[i].x+obstacles[i].width<0){ obstacles.splice(i,1); score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent='Счёт: '+score; i--; }
+    bgX = (bgX - 2) % 600;
+    ctx.fillStyle = '#87CEEB'; ctx.fillRect(0,0,600,200);
+    ctx.fillStyle = '#8B4513'; ctx.fillRect(0, groundY, 600, 40);
+    ctx.fillStyle = '#228B22';
+    for(let i=0; i<5; i++) ctx.fillRect((bgX+i*150)%600, groundY-5, 30, 8);
+    ctx.font = '40px Arial'; ctx.fillStyle = '#ffd700'; ctx.fillText('🐔', 50, y);
+    if(Math.random() < 0.02 && obstacles.length < 2) obstacles.push({x: 600, y: groundY-15, width: 25, height: 25});
+    for(let i=0; i<obstacles.length; i++){
+      ctx.fillStyle = '#555'; ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+      obstacles[i].x -= 6;
+      if(obstacles[i].x + obstacles[i].width > 50 && obstacles[i].x < 90 && y+35 > obstacles[i].y && y < obstacles[i].y + obstacles[i].height) end();
+      if(obstacles[i].x + obstacles[i].width < 0){ obstacles.splice(i,1); score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent = 'Счёт: '+score; i--; }
     }
-    vy+=0.8; y+=vy;
-    if(y>=groundY-10){ y=groundY-10; vy=0; }
-    if(y<0){ y=0; vy=0; }
-    ctx.fillStyle='#ffd700'; ctx.font='16px Arial'; ctx.fillText('Счёт: '+score,500,30);
+    vy += 0.8; y += vy;
+    if(y >= groundY-10){ y = groundY-10; vy = 0; }
+    if(y < 0){ y = 0; vy = 0; }
+    ctx.fillStyle = '#ffd700'; ctx.font = '16px Arial'; ctx.fillText('Счёт: '+score, 500, 30);
     requestAnimationFrame(update);
   }
-  function end(){ ov=true; playSound("hit"); alert('Счёт: '+score); }
+  function end(){ ov = true; playSound("hit"); alert('Счёт: '+score); }
   update();
-  gameInterval=setInterval(()=>{},1000);
+  gameInterval = setInterval(() => {}, 1000);
 }
 
 function initChickenRain(){
-  document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div><button class="mobile-btn" id="crl">◀</button><button class="mobile-btn" id="crr">▶</button></div>';
+  document.getElementById('gameContent').innerHTML = '<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div><button class="mobile-btn" id="crl">◀</button><button class="mobile-btn" id="crr">▶</button></div>';
   createGameRating();
-  let c=document.getElementById('cr'), ctx=c.getContext('2d');
-  c.width=400; c.height=500;
-  let chickenX=180, eggs=[], score=0, ov=false, particles=[];
-  function spawn(){ if(Math.random()<0.015) eggs.push({x:Math.random()*370,y:-20,speed:1.5+Math.random()*2}); }
-  document.onkeydown=e=>{ if(e.key==='ArrowLeft') chickenX=Math.max(10,chickenX-30); if(e.key==='ArrowRight') chickenX=Math.min(360,chickenX+30); playSound("jump"); };
-  document.getElementById('crl').onclick=()=>{ chickenX=Math.max(10,chickenX-30); playSound("jump"); };
-  document.getElementById('crr').onclick=()=>{ chickenX=Math.min(360,chickenX+30); playSound("jump"); };
+  let c = document.getElementById('cr'), ctx = c.getContext('2d');
+  c.width = 400; c.height = 500;
+  let chickenX = 180, eggs = [], score = 0, ov = false;
+  function spawn(){ if(Math.random() < 0.015) eggs.push({x: Math.random()*370, y: -20, speed: 1.5+Math.random()*2}); }
+  document.onkeydown = e => { if(e.key === 'ArrowLeft') chickenX = Math.max(10, chickenX-30); if(e.key === 'ArrowRight') chickenX = Math.min(360, chickenX+30); playSound("jump"); };
+  document.getElementById('crl').onclick = () => { chickenX = Math.max(10, chickenX-30); playSound("jump"); };
+  document.getElementById('crr').onclick = () => { chickenX = Math.min(360, chickenX+30); playSound("jump"); };
   function update(){
     if(ov) return;
-    ctx.fillStyle='#2a5a8a'; ctx.fillRect(0,0,400,500);
-    ctx.fillStyle='#4a8a3a'; ctx.fillRect(0,460,400,40);
-    ctx.font='48px Arial'; ctx.fillStyle='#ffd700'; ctx.fillText('🐔',chickenX,450);
-    for(let i=eggs.length-1;i>=0;i--){
-      let e=eggs[i];
-      e.y+=e.speed;
-      ctx.fillStyle='#FFF8DC'; ctx.font='32px Arial'; ctx.fillText('🥚',e.x,e.y);
-      if(e.y+30>440 && e.y<480 && Math.abs(e.x+15-chickenX-25)<45){ eggs.splice(i,1); score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent='Счёт: '+score; }
-      else if(e.y>500){ eggs.splice(i,1); if(!ov){ ov=true; playSound("hit"); alert('Счёт: '+score); } }
+    ctx.fillStyle = '#2a5a8a'; ctx.fillRect(0,0,400,500);
+    ctx.fillStyle = '#4a8a3a'; ctx.fillRect(0,460,400,40);
+    ctx.font = '48px Arial'; ctx.fillStyle = '#ffd700'; ctx.fillText('🐔', chickenX, 450);
+    for(let i=eggs.length-1; i>=0; i--){
+      let e = eggs[i];
+      e.y += e.speed;
+      ctx.fillStyle = '#FFF8DC'; ctx.font = '32px Arial'; ctx.fillText('🥚', e.x, e.y);
+      if(e.y+30 > 440 && e.y < 480 && Math.abs(e.x+15 - chickenX-25) < 45){ eggs.splice(i,1); score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent = 'Счёт: '+score; }
+      else if(e.y > 500){ eggs.splice(i,1); if(!ov){ ov = true; playSound("hit"); alert('Счёт: '+score); } }
     }
     spawn();
     requestAnimationFrame(update);
   }
   update();
-  gameInterval=setInterval(()=>{},1000);
+  gameInterval = setInterval(() => {}, 1000);
 }
 
 function initFlappy(){
-  document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик — лететь!</p>';
+  document.getElementById('gameContent').innerHTML = '<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик — лететь!</p>';
   createGameRating();
-  let c=document.getElementById('fc'), ctx=c.getContext('2d');
-  let bird={x:80,y:250,vy:0}, pipes=[], score=0, ov=false;
-  function jump(){ if(!ov){ bird.vy=-8; playSound("jump"); } }
-  document.onkeydown=e=>{ if(e.key===' ') jump(); };
-  c.onclick=jump;
+  let c = document.getElementById('fc'), ctx = c.getContext('2d');
+  let bird = {x: 80, y: 250, vy: 0}, pipes = [], score = 0, ov = false;
+  function jump(){ if(!ov){ bird.vy = -8; playSound("jump"); } }
+  document.onkeydown = e => { if(e.key === ' ') jump(); };
+  c.onclick = jump;
   function update(){
     if(ov) return;
-    ctx.fillStyle='#4a90d9'; ctx.fillRect(0,0,400,500);
-    bird.vy+=0.5; bird.y+=bird.vy;
-    if(Math.random()<0.02) pipes.push({x:400,top:Math.random()*200+50,gap:130});
-    ctx.fillStyle='#ffd700'; ctx.fillRect(bird.x,bird.y,25,25);
-    for(let i=0;i<pipes.length;i++){
-      ctx.fillStyle='#2d5a1e'; ctx.fillRect(pipes[i].x,0,40,pipes[i].top);
-      ctx.fillRect(pipes[i].x,pipes[i].top+pipes[i].gap,40,500);
-      pipes[i].x-=3;
-      if(pipes[i].x+40<0){ pipes.splice(i,1); score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent='Счёт: '+score; i--; continue; }
-      if(bird.x+25>pipes[i].x && bird.x<pipes[i].x+40 && (bird.y<pipes[i].top || bird.y+25>pipes[i].top+pipes[i].gap)) end();
+    ctx.fillStyle = '#4a90d9'; ctx.fillRect(0,0,400,500);
+    bird.vy += 0.5; bird.y += bird.vy;
+    if(Math.random() < 0.02) pipes.push({x: 400, top: Math.random()*200+50, gap: 130});
+    ctx.fillStyle = '#ffd700'; ctx.fillRect(bird.x, bird.y, 25, 25);
+    for(let i=0; i<pipes.length; i++){
+      ctx.fillStyle = '#2d5a1e'; ctx.fillRect(pipes[i].x, 0, 40, pipes[i].top);
+      ctx.fillRect(pipes[i].x, pipes[i].top + pipes[i].gap, 40, 500);
+      pipes[i].x -= 3;
+      if(pipes[i].x + 40 < 0){ pipes.splice(i,1); score++; playSound("coin"); document.getElementById('gameScoreDisplay').textContent = 'Счёт: '+score; i--; continue; }
+      if(bird.x+25 > pipes[i].x && bird.x < pipes[i].x+40 && (bird.y < pipes[i].top || bird.y+25 > pipes[i].top + pipes[i].gap)) end();
     }
-    if(bird.y>480||bird.y<0) end();
+    if(bird.y > 480 || bird.y < 0) end();
     requestAnimationFrame(update);
   }
-  function end(){ ov=true; playSound("hit"); alert('Счёт: '+score); }
+  function end(){ ov = true; playSound("hit"); alert('Счёт: '+score); }
   update();
-  gameInterval=setInterval(()=>{},1000);
+  gameInterval = setInterval(() => {}, 1000);
 }
 
 function initMemory(){
-  document.getElementById('gameContent').innerHTML='<button onclick="startMemory(4)">4×4</button><button onclick="startMemory(6)">6×6</button>';
-  window.startMemory=function(size){
-    let icons=['🐔','🥚','🐣','🐓','🌾','🦊','🐍','🐧','🐤','🐙','🦋','🐸','🐶','🐱','🦁','🐯'];
-    let selected=icons.slice(0,(size*size)/2);
-    let cards=[...selected,...selected].sort(()=>Math.random()-0.5);
-    let flipped=[], matched=[], moves=0;
+  document.getElementById('gameContent').innerHTML = '<button onclick="startMemory(4)">4×4</button><button onclick="startMemory(6)">6×6</button>';
+  window.startMemory = function(size){
+    let icons = ['🐔','🥚','🐣','🐓','🌾','🦊','🐍','🐧','🐤','🐙','🦋','🐸','🐶','🐱','🦁','🐯'];
+    let selected = icons.slice(0, (size*size)/2);
+    let cards = [...selected, ...selected].sort(() => Math.random() - 0.5);
+    let flipped = [], matched = [], moves = 0;
     function render(){
-      let cs=size===4?75:50;
-      let h='<div style="display:grid;grid-template-columns:repeat('+size+','+cs+'px);gap:5px;justify-content:center">';
-      for(let i=0;i<cards.length;i++){
-        if(matched.includes(i)) h+=`<div style="width:${cs}px;height:${cs}px;background:#4CAF50;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px">${cards[i]}</div>`;
-        else if(flipped.includes(i)) h+=`<div style="width:${cs}px;height:${cs}px;background:#ffd700;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px">${cards[i]}</div>`;
-        else h+=`<div style="width:${cs}px;height:${cs}px;background:#333;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px" onclick="flipCard(${i})">?</div>`;
+      let cs = size === 4 ? 75 : 50;
+      let h = '<div style="display:grid;grid-template-columns:repeat('+size+','+cs+'px);gap:5px;justify-content:center">';
+      for(let i=0; i<cards.length; i++){
+        if(matched.includes(i)) h += `<div style="width:${cs}px;height:${cs}px;background:#4CAF50;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px">${cards[i]}</div>`;
+        else if(flipped.includes(i)) h += `<div style="width:${cs}px;height:${cs}px;background:#ffd700;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:30px">${cards[i]}</div>`;
+        else h += `<div style="width:${cs}px;height:${cs}px;background:#333;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px" onclick="flipCard(${i})">?</div>`;
       }
-      h+=`</div><p>Ходы: ${moves}</p>`;
-      document.getElementById('gameContent').innerHTML=h;
-      document.getElementById('gameScoreDisplay').textContent='Ходы: '+moves;
+      h += `</div><p>Ходы: ${moves}</p>`;
+      document.getElementById('gameContent').innerHTML = h;
+      document.getElementById('gameScoreDisplay').textContent = 'Ходы: '+moves;
     }
-    window.flipCard=function(i){
-      if(flipped.length>=2 || flipped.includes(i) || matched.includes(i)) return;
+    window.flipCard = function(i){
+      if(flipped.length >= 2 || flipped.includes(i) || matched.includes(i)) return;
       flipped.push(i);
       render();
-      if(flipped.length===2){
+      if(flipped.length === 2){
         moves++;
-        if(cards[flipped[0]]===cards[flipped[1]]){
+        if(cards[flipped[0]] === cards[flipped[1]]){
           matched.push(...flipped);
-          flipped=[];
-          if(matched.length===cards.length) setTimeout(()=>{ alert('Победа! Ходов: '+moves); addEggs(size*2); },100);
-        } else setTimeout(()=>{ flipped=[]; render(); },700);
+          flipped = [];
+          if(matched.length === cards.length) setTimeout(() => { alert('Победа! Ходов: '+moves); addEggs(size*2); }, 100);
+        } else setTimeout(() => { flipped = []; render(); }, 700);
         render();
       }
     };
@@ -1467,37 +1605,37 @@ function initMemory(){
 
 function initGuess(){
   createGameRating();
-  let num=Math.floor(Math.random()*100)+1, attempts=0;
-  document.getElementById('gameContent').innerHTML='<p>Угадай число 1-100</p><input id="guessInput" type="number"><button onclick="checkGuess()">Угадать</button><p id="guessHint"></p>';
-  window.checkGuess=function(){
-    let g=parseInt(document.getElementById('guessInput').value);
+  let num = Math.floor(Math.random()*100)+1, attempts = 0;
+  document.getElementById('gameContent').innerHTML = '<p>Угадай число 1-100</p><input id="guessInput" type="number"><button onclick="checkGuess()">Угадать</button><p id="guessHint"></p>';
+  window.checkGuess = function(){
+    let g = parseInt(document.getElementById('guessInput').value);
     if(isNaN(g)) return;
     attempts++;
-    if(g===num){ alert('Победа! Попыток: '+attempts); addEggs(5); }
-    else document.getElementById('guessHint').textContent=g<num?'🔺 Больше!':'🔻 Меньше!';
-    document.getElementById('gameScoreDisplay').textContent='Попыток: '+attempts;
+    if(g === num){ alert('Победа! Попыток: '+attempts); addEggs(5); }
+    else document.getElementById('guessHint').textContent = g < num ? '🔺 Больше!' : '🔻 Меньше!';
+    document.getElementById('gameScoreDisplay').textContent = 'Попыток: '+attempts;
   };
 }
 
 function initRPS(){
   createGameRating();
-  let pScore=0, bScore=0;
-  document.getElementById('gameContent').innerHTML='<div><button onclick="rps(0)">🪨</button><button onclick="rps(1)">📄</button><button onclick="rps(2)">✂️</button></div><p id="rpsResult"></p>';
-  window.rps=function(p){
-    let bot=Math.floor(Math.random()*3);
-    if(p===bot) document.getElementById('rpsResult').textContent='Ничья!';
-    else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){ pScore++; document.getElementById('rpsResult').textContent='Ты победил!'; addEggs(2); }
-    else{ bScore++; document.getElementById('rpsResult').textContent='Бот победил!'; }
-    document.getElementById('gameScoreDisplay').textContent=`Ты: ${pScore} | Бот: ${bScore}`;
+  let pScore = 0, bScore = 0;
+  document.getElementById('gameContent').innerHTML = '<div><button onclick="rps(0)">🪨</button><button onclick="rps(1)">📄</button><button onclick="rps(2)">✂️</button></div><p id="rpsResult"></p>';
+  window.rps = function(p){
+    let bot = Math.floor(Math.random()*3);
+    if(p === bot) document.getElementById('rpsResult').textContent = 'Ничья!';
+    else if((p===0 && bot===2) || (p===1 && bot===0) || (p===2 && bot===1)){ pScore++; document.getElementById('rpsResult').textContent = 'Ты победил!'; addEggs(2); }
+    else{ bScore++; document.getElementById('rpsResult').textContent = 'Бот победил!'; }
+    document.getElementById('gameScoreDisplay').textContent = `Ты: ${pScore} | Бот: ${bScore}`;
   };
 }
 
-let savedTama=localStorage.getItem('tildochka_tamagotchi');
-if(savedTama){ try{ tamagotchiData=JSON.parse(savedTama); if(tamagotchiData&&tamagotchiData.isAlive) startTamagotchiLoop(); }catch(e){} }
+let savedTama = localStorage.getItem('tildochka_tamagotchi');
+if(savedTama){ try{ tamagotchiData = JSON.parse(savedTama); if(tamagotchiData && tamagotchiData.isAlive) startTamagotchiLoop(); }catch(e){} }
 
-let pass=prompt("🔐 Введите кодовое слово:");
+let pass = prompt("🔐 Введите кодовое слово:");
 if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)) loadAllData();
-else{ document.getElementById("blocked").style.display="flex"; document.getElementById("loading").style.display="none"; }
+else{ document.getElementById("blocked").style.display = "flex"; document.getElementById("loading").style.display = "none"; }
 </script>
 </body>
-  </html>
+                                                                                      </html>
