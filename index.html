@@ -378,6 +378,8 @@ function submitGameRating(){var sc=parseInt(document.getElementById('gameScoreDi
 
 // ==================== ТАМАГОЧИ ====================
 var tamagotchiData=null;
+var activeEmotions = [];
+
 var pets={
 '🐣':{name:'Цыпа',hr:3,pr:2,er:2,type:'normal',desc:'Обычный цыплёнок. Любит играть и кушать в меру. Идеален для новичков!',hint:'Сбалансированный питомец',growthAge:25,images:{baby:'🐣',adult:'🐔',elder:'🐓'}},
 '🐤':{name:'Желток',hr:4,pr:1,er:3,type:'hungry',desc:'Вечно голодный! Ест за троих, но не любит играть.',hint:'Часто хочет есть',growthAge:25,images:{baby:'🐤',adult:'🐥',elder:'🦃'}},
@@ -386,6 +388,26 @@ var pets={
 '🐱':{name:'Котёнок',hr:2,pr:4,er:3,type:'lazy',desc:'Ленивый, но милый. Много спит, но когда играет — счастлив.',hint:'Соня',growthAge:25,images:{baby:'🐱',adult:'🐈',elder:'🐈‍⬛'}},
 '🐶':{name:'Щенок',hr:4,pr:3,er:3,type:'active',desc:'Очень активный! Нужно много гулять и играть.',hint:'Энергичный',growthAge:25,images:{baby:'🐶',adult:'🐕',elder:'🐕‍🦺'}}
 };
+
+function showEmotion(emotion, x, y) {
+    var id = Date.now() + Math.random();
+    activeEmotions.push({
+        id: id,
+        emotion: emotion,
+        x: x,
+        y: y,
+        life: 1
+    });
+    setTimeout(function() {
+        for(var i = 0; i < activeEmotions.length; i++) {
+            if(activeEmotions[i].id === id) {
+                activeEmotions.splice(i, 1);
+                break;
+            }
+        }
+    }, 1000);
+}
+
 function initTamagotchi(){
 if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
 var saved=localStorage.getItem('tildochka_tamagotchi');
@@ -399,12 +421,14 @@ h+='<div class="pet-card" onclick="choosePet(\''+e+'\')"><span class="pet-emoji"
 document.getElementById('gameContent').innerHTML=h;
 document.getElementById('gameScoreDisplay').textContent='Выбери питомца';
 }
+
 window.choosePet=function(e){
 var p=pets[e];
 tamagotchiData={emoji:e,name:p.name,hunger:80,happy:80,energy:80,age:0,isAlive:true,poops:[],isFat:false,isTired:false,isVomiting:false,hr:p.hr,pr:p.pr,er:p.er,type:p.type,desc:p.desc,hint:p.hint,growthAge:p.growthAge,images:p.images,stage:'baby'};
 localStorage.setItem('tildochka_tamagotchi',JSON.stringify(tamagotchiData));
 renderTamagotchi();startTamagotchiLoop();
 };
+
 function renderTamagotchi(){
 var t=tamagotchiData;
 if(!t||!t.isAlive){
@@ -412,103 +436,6 @@ var deadName=t?t.name:'Питомец';
 document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+(t?t.age:0)+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div>';
 if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
 return;
-}
-var petClass='tamagotchi-pet';
-if(t.isFat)petClass+=' fat';
-if(t.isTired)petClass+=' tired';
-var currentEmoji=t.emoji;
-if(t.age>=50){currentEmoji=t.images.elder;t.stage='elder';}
-else if(t.age>=25){currentEmoji=t.images.adult;t.stage='adult';}
-else{currentEmoji=t.images.baby;t.stage='baby';}
-var h='<div class="tamagotchi-room" onclick="playWithPet()"><div class="'+petClass+'" id="petAvatar" style="font-size:65px">'+currentEmoji+'</div>';
-if(t.poops && t.poops.length>0){
-t.poops.forEach(function(p,i){h+='<div class="poop" style="left:'+p.x+'px;top:'+p.y+'px" onclick="event.stopPropagation();cleanPoop('+i+')">💩</div>';});
-h+='<button onclick="cleanAllPoops()" style="background:#ff6600;margin-top:5px;padding:5px 10px;font-size:12px">🧹 Убрать все какашки</button>';
-}
-h+='</div><h3>'+t.name+' ('+t.stage+') | '+t.age+' дн.</h3>';
-h+='<p style="color:#aaa;font-size:12px;margin-bottom:8px">'+t.hint+'</p>';
-h+='<div style="max-width:250px;margin:0 auto"><p>😊</p><div class="stat-bar"><div class="stat-fill happy" style="width:'+t.happy+'%"></div></div><p>🍗</p><div class="stat-bar"><div class="stat-fill hunger" style="width:'+t.hunger+'%"></div></div><p>⚡</p><div class="stat-bar"><div class="stat-fill energy" style="width:'+t.energy+'%"></div></div></div>';
-h+='<button onclick="feedPet()">🍗 Кормить</button><button onclick="playWithPet()">🎾 Играть</button><button onclick="sleepPet()">😴 Спать</button>';
-document.getElementById('gameContent').innerHTML=h;
-document.getElementById('gameScoreDisplay').textContent='Возраст: '+t.age;
-localStorage.setItem('tildochka_tamagotchi',JSON.stringify(t));
-}
-// ==================== АНИМАЦИЯ ЭМОЦИЙ ДЛЯ ТАМАГОЧИ ====================
-var activeEmotions = [];
-
-function showEmotion(emotion, x, y) {
-    var id = Date.now() + Math.random();
-    activeEmotions.push({
-        id: id,
-        emotion: emotion,
-        x: x,
-        y: y,
-        life: 1
-    });
-    
-    // Удаляем через 1 секунду
-    setTimeout(function() {
-        for(var i = 0; i < activeEmotions.length; i++) {
-            if(activeEmotions[i].id === id) {
-                activeEmotions.splice(i, 1);
-                break;
-            }
-        }
-    }, 1000);
-}
-
-function drawEmotions(ctx, roomX, roomY) {
-    for(var i = 0; i < activeEmotions.length; i++) {
-        var e = activeEmotions[i];
-        var alpha = e.life;
-        ctx.font = (30 * alpha) + 'px Arial';
-        ctx.fillStyle = 'rgba(0,0,0,' + alpha + ')';
-        ctx.fillText(e.emotion, e.x - 20, e.y - 30 - (1 - alpha) * 20);
-        e.life -= 0.03;
-        if(e.life <= 0) {
-            activeEmotions.splice(i, 1);
-            i--;
-        }
-    }
-}
-
-// ==================== ДОБАВЛЯЕМ В renderTamagotchi ОТРИСОВКУ ЭМОЦИЙ ====================
-// НАЙДИ в renderTamagotchi() строчку:
-// document.getElementById('gameContent').innerHTML = h;
-// и ПЕРЕД НЕЙ добавь проверку на эмоции
-
-// ЛУЧШЕ ЗАМЕНИ ВЕСЬ renderTamagotchi НА ЭТОТ (С ЭМОЦИЯМИ):
-function renderTamagotchi(){
-var t=tamagotchiData;
-if(!t||!t.isAlive){
-var deadName=t?t.name:'Питомец';
-document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+(t?t.age:0)+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div>';
-if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
-return;
-}
-
-// Проверяем состояние питомца для эмоций
-var room = document.getElementById('tamagotchiRoom');
-if(!room) {
-    // Если комнаты нет, просто рисуем статику
-} else {
-    var rect = room.getBoundingClientRect();
-    var petX = rect.left + rect.width/2;
-    var petY = rect.top + rect.height/2;
-    
-    // ЭМОЦИИ ПО СОСТОЯНИЮ
-    if(t.happy > 80 && Math.random() < 0.05) {
-        showEmotion('❤️', petX, petY);
-    }
-    if(t.hunger < 30 && Math.random() < 0.05) {
-        showEmotion('🍗', petX, petY);
-    }
-    if(t.energy < 25 && Math.random() < 0.05) {
-        showEmotion('😴', petX, petY);
-    }
-    if(t.happy < 40 && Math.random() < 0.05) {
-        showEmotion('😢', petX, petY);
-    }
 }
 
 var petClass='tamagotchi-pet';
@@ -519,9 +446,9 @@ if(t.age>=50){currentEmoji=t.images.elder;t.stage='elder';}
 else if(t.age>=25){currentEmoji=t.images.adult;t.stage='adult';}
 else{currentEmoji=t.images.baby;t.stage='baby';}
 
-var h='<div class="tamagotchi-room" id="tamagotchiRoom" onclick="playWithPet()"><div class="'+petClass+'" id="petAvatar" style="font-size:65px">'+currentEmoji+'</div>';
+var h='<div class="tamagotchi-room" id="tamagotchiRoom" style="position:relative;cursor:pointer"><div class="'+petClass+'" id="petAvatar" style="font-size:65px;text-align:center;line-height:200px">'+currentEmoji+'</div>';
 if(t.poops && t.poops.length>0){
-t.poops.forEach(function(p,i){h+='<div class="poop" style="left:'+p.x+'px;top:'+p.y+'px" onclick="event.stopPropagation();cleanPoop('+i+')">💩</div>';});
+t.poops.forEach(function(p,i){h+='<div class="poop" style="left:'+p.x+'px;top:'+p.y+'px;position:absolute" onclick="event.stopPropagation();cleanPoop('+i+')">💩</div>';});
 h+='<button onclick="cleanAllPoops()" style="background:#ff6600;margin-top:5px;padding:5px 10px;font-size:12px">🧹 Убрать все какашки</button>';
 }
 h+='</div><h3>'+t.name+' ('+t.stage+') | '+t.age+' дн.</h3>';
@@ -532,41 +459,69 @@ document.getElementById('gameContent').innerHTML=h;
 document.getElementById('gameScoreDisplay').textContent='Возраст: '+t.age;
 localStorage.setItem('tildochka_tamagotchi',JSON.stringify(t));
 
-// ДОБАВЛЯЕМ АНИМАЦИЮ ЭМОЦИЙ
-var canvas = document.createElement('canvas');
-canvas.style.position = 'absolute';
-canvas.style.top = '0';
-canvas.style.left = '0';
-canvas.style.width = '100%';
-canvas.style.height = '100%';
-canvas.style.pointerEvents = 'none';
+// СОЗДАЁМ КАНВАС ДЛЯ ЭМОЦИЙ
 var roomEl = document.getElementById('tamagotchiRoom');
 if(roomEl) {
-    roomEl.style.position = 'relative';
     var oldCanvas = roomEl.querySelector('.emotion-canvas');
     if(oldCanvas) oldCanvas.remove();
+    var canvas = document.createElement('canvas');
     canvas.className = 'emotion-canvas';
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+    canvas.style.pointerEvents = 'none';
     canvas.width = 280;
     canvas.height = 280;
     roomEl.appendChild(canvas);
     var ctx = canvas.getContext('2d');
     
     function animateEmotions() {
-        if(!tamagotchiData || !tamagotchiData.isAlive) return;
+        if(!tamagotchiData || !tamagotchiData.isAlive) {
+            requestAnimationFrame(animateEmotions);
+            return;
+        }
         if(!document.getElementById('tamagotchiRoom')) return;
-        ctx.clearRect(0, 0, 280, 280);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         for(var i=0; i<activeEmotions.length; i++) {
             var e = activeEmotions[i];
             var alpha = e.life;
             ctx.font = (28 * alpha) + 'px Arial';
             ctx.fillStyle = 'rgba(0,0,0,' + alpha + ')';
-            ctx.fillText(e.emotion, e.x - 20, e.y - 30 - (1 - alpha) * 20);
+            ctx.fillText(e.emotion, e.x - 15, e.y - 20 - (1 - alpha) * 20);
+            e.life -= 0.03;
+            if(e.life <= 0) {
+                activeEmotions.splice(i, 1);
+                i--;
+            }
         }
         requestAnimationFrame(animateEmotions);
     }
     animateEmotions();
+    
+    // СЛУЧАЙНЫЕ ЭМОЦИИ ПО СОСТОЯНИЮ
+    setInterval(function() {
+        if(!tamagotchiData || !tamagotchiData.isAlive) return;
+        var rect = roomEl.getBoundingClientRect();
+        var centerX = canvas.width/2;
+        var centerY = canvas.height/2 - 40;
+        if(tamagotchiData.happy > 80 && Math.random() < 0.1) {
+            showEmotion('❤️', centerX, centerY);
+        }
+        if(tamagotchiData.hunger < 30 && Math.random() < 0.1) {
+            showEmotion('🍗', centerX, centerY);
+        }
+        if(tamagotchiData.energy < 25 && Math.random() < 0.1) {
+            showEmotion('😴', centerX, centerY);
+        }
+        if(tamagotchiData.happy < 40 && Math.random() < 0.1) {
+            showEmotion('😢', centerX, centerY);
+        }
+    }, 3000);
 }
 }
+
 window.cleanAllPoops=function(){
 if(!tamagotchiData||!tamagotchiData.isAlive)return;
 tamagotchiData.poops=[];
@@ -574,28 +529,27 @@ tamagotchiData.happy=Math.min(100,tamagotchiData.happy+15);
 playSound("coin");
 renderTamagotchi();
 };
+
 window.feedPet = function(){
 var t = tamagotchiData;
 if(!t || !t.isAlive) return;
 
-// Получаем координаты комнаты для эмоций
-var room = document.getElementById('tamagotchiRoom');
-var rect = null;
-if(room) rect = room.getBoundingClientRect();
+var roomEl = document.getElementById('tamagotchiRoom');
+var canvas = roomEl ? roomEl.querySelector('.emotion-canvas') : null;
+var centerX = canvas ? canvas.width/2 : 140;
+var centerY = canvas ? canvas.height/2 - 40 : 100;
 
 if(t.isVomiting){
     alert(t.name + ' сейчас тошнит, подожди!');
-    if(rect) showEmotion('🤢', rect.left + rect.width/2, rect.top + rect.height/2);
+    showEmotion('🤢', centerX, centerY);
     return;
 }
 
-var oldHunger = t.hunger;
 t.hunger = Math.min(100, t.hunger + 25);
 t.energy = Math.max(0, t.energy - 5);
 playSound("eat");
 
-// СЕРДЕЧКИ ПРИ КОРМЛЕНИИ
-if(rect) showEmotion('❤️', rect.left + rect.width/2, rect.top + rect.height/2);
+showEmotion('❤️', centerX, centerY);
 
 if(t.hunger > 95 && !t.isFat){
     t.isFat = true;
@@ -605,15 +559,8 @@ if(t.hunger > 95 && !t.isFat){
 if(t.hunger > 98){
     t.isVomiting = true;
     playSound("vomit");
-    // ТОШНОТА
-    if(rect) showEmotion('🤢', rect.left + rect.width/2, rect.top + rect.height/2);
+    showEmotion('🤢', centerX, centerY);
     alert(t.name + ' переел(а) и его вырвало! 🤢');
-        // 🤢 ТОШНОТА ПРИ ПЕРЕЕДАНИИ
-    var room = document.getElementById('tamagotchiRoom');
-    if(room) {
-        var rect = room.getBoundingClientRect();
-        showEmotion('🤢', rect.left + rect.width/2, rect.top + rect.height/2);
-    }
     t.hunger = Math.max(30, t.hunger - 50);
     t.isFat = false;
     setTimeout(function(){
@@ -632,61 +579,85 @@ if(petEl){
     petEl.classList.add('happy-anim');
     setTimeout(function(){ petEl.classList.remove('happy-anim'); }, 500);
 }
-
 renderTamagotchi();
 };
+
 window.playWithPet=function(){
 var t=tamagotchiData;if(!t||!t.isAlive)return;
+
+var roomEl = document.getElementById('tamagotchiRoom');
+var canvas = roomEl ? roomEl.querySelector('.emotion-canvas') : null;
+var centerX = canvas ? canvas.width/2 : 140;
+var centerY = canvas ? canvas.height/2 - 40 : 100;
+
 if(t.energy < 15){
     alert(t.name + ' слишком устал(а)! Сначала отдохни.');
-    // 😴 ЭМОЦИЯ "ХОЧУ СПАТЬ"
-    var room = document.getElementById('tamagotchiRoom');
-    if(room) {
-        var rect = room.getBoundingClientRect();
-        showEmotion('😴', rect.left + rect.width/2, rect.top + rect.height/2);
-    }
+    showEmotion('😴', centerX, centerY);
     return;
 }
+
 t.happy=Math.min(100,t.happy+22);
-// МЯЧИК ПРИ ИГРЕ
-var room = document.getElementById('tamagotchiRoom');
-if(room) {
-    var rect = room.getBoundingClientRect();
-    showEmotion('🎾', rect.left + rect.width/2, rect.top + rect.height/2);
-}
+showEmotion('🎾', centerX, centerY);
 t.hunger=Math.max(0,t.hunger-12);
 t.energy=Math.max(0,t.energy-22);
 t.isFat=false;
 if(t.energy<10)t.isTired=true;
 playSound("jump");
+
 if(Math.random()<0.3 && (!t.poops || t.poops.length<4)){
-if(!t.poops) t.poops=[];
-t.poops.push({x:Math.floor(Math.random()*240)+20,y:Math.floor(Math.random()*240)+20});
+    if(!t.poops) t.poops=[];
+    t.poops.push({x:Math.floor(Math.random()*240)+20,y:Math.floor(Math.random()*240)+20});
 }
-var petEl=document.getElementById('petAvatar');if(petEl){petEl.classList.add('happy-anim');setTimeout(function(){petEl.classList.remove('happy-anim');},500);}
+var petEl=document.getElementById('petAvatar');
+if(petEl){
+    petEl.classList.add('happy-anim');
+    setTimeout(function(){ petEl.classList.remove('happy-anim'); },500);
+}
 renderTamagotchi();
 };
+
 window.sleepPet=function(){
 var t=tamagotchiData;if(!t||!t.isAlive)return;
+
+var roomEl = document.getElementById('tamagotchiRoom');
+var canvas = roomEl ? roomEl.querySelector('.emotion-canvas') : null;
+var centerX = canvas ? canvas.width/2 : 140;
+var centerY = canvas ? canvas.height/2 - 40 : 100;
+
 t.energy=Math.min(100,t.energy+38);
 t.hunger=Math.max(0,t.hunger-6);
 t.isTired=false;
 playSound("jump");
-// 😴 ЭМОЦИЯ СНА
-    var room = document.getElementById('tamagotchiRoom');
-    if(room) {
-        var rect = room.getBoundingClientRect();
-        showEmotion('😴', rect.left + rect.width/2, rect.top + rect.height/2);
-    }
+showEmotion('😴', centerX, centerY);
+
 if(t.type==='sleepy'){t.hunger=Math.max(0,t.hunger-5);t.energy=Math.min(100,t.energy+15);}
 renderTamagotchi();
 };
-window.cleanPoop=function(i){if(!tamagotchiData||!tamagotchiData.isAlive)return;tamagotchiData.poops.splice(i,1);tamagotchiData.happy=Math.min(100,tamagotchiData.happy+8);playSound("coin");renderTamagotchi();};
-window.resetTamagotchi=function(){tamagotchiData=null;localStorage.removeItem('tildochka_tamagotchi');if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}initTamagotchi();};
+
+window.cleanPoop=function(i){
+if(!tamagotchiData||!tamagotchiData.isAlive)return;
+tamagotchiData.poops.splice(i,1);
+tamagotchiData.happy=Math.min(100,tamagotchiData.happy+8);
+playSound("coin");
+renderTamagotchi();
+};
+
+window.resetTamagotchi=function(){
+tamagotchiData=null;
+localStorage.removeItem('tildochka_tamagotchi');
+if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
+initTamagotchi();
+};
+
 function startTamagotchiLoop(){
 if(tamaInterval)clearInterval(tamaInterval);
 tamaInterval=setInterval(function(){
-var t=tamagotchiData;if(!t||!t.isAlive){if(tamaInterval)clearInterval(tamaInterval);renderTamagotchi();return;}
+var t=tamagotchiData;
+if(!t||!t.isAlive){
+    if(tamaInterval)clearInterval(tamaInterval);
+    renderTamagotchi();
+    return;
+}
 t.hunger=Math.max(0,t.hunger-t.hr);
 t.happy=Math.max(0,t.happy-t.pr);
 t.energy=Math.max(0,t.energy-t.er);
