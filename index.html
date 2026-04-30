@@ -693,87 +693,125 @@ gameInterval=setInterval(function(){},1000);
 
 // ==================== РАННЕР (ПРЫГАЕТ!) ====================
 function initRunner(){
-    document.getElementById('gameContent').innerHTML = '<canvas id="runnerCanvas" width="600" height="220" class="game-canvas" style="cursor:pointer;background:#87CEEB;display:block;margin:0 auto;border-radius:12px"></canvas><p style="text-align:center;margin-top:8px;color:#ffd700">👇 Нажми В ЛЮБОМ МЕСТЕ - прыжок!</p>';
+    // Очищаем контейнер
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
     createGameRating();
     
-    var canvas = document.getElementById('runnerCanvas');
-    if(!canvas) return;
-    var ctx = canvas.getContext('2d');
+    // Создаём канвас
+    var canvas = document.createElement('canvas');
     canvas.width = 600;
     canvas.height = 220;
+    canvas.style.display = 'block';
+    canvas.style.margin = '0 auto';
+    canvas.style.border = '2px solid #444';
+    canvas.style.borderRadius = '12px';
+    canvas.style.backgroundColor = '#87CEEB';
+    canvas.style.cursor = 'pointer';
+    document.getElementById('gameContent').appendChild(canvas);
     
-    var y = 160, vy = 0, groundY = 175;
+    var ctx = canvas.getContext('2d');
+    
+    // Игровые переменные
+    var player = {
+        x: 60,
+        y: 160,
+        width: 35,
+        height: 35,
+        vy: 0,
+        grounded: true
+    };
+    
+    var groundY = 175;
     var obstacles = [];
     var score = 0;
-    var ov = false;
-    var bgX = 0;
+    var gameOver = false;
+    var frame = 0;
+    var gravity = 0.8;
+    var jumpPower = -9;
     
-    // ФУНКЦИЯ ПРЫЖКА
-    function doJump(){
-        if(ov) return;
-        if(y >= groundY - 15){
-            vy = -10;
+    // ПРЫЖОК
+    function jump() {
+        if (gameOver) return;
+        if (player.y >= groundY - 20) {
+            player.vy = jumpPower;
+            player.grounded = false;
             try { playSound("jump"); } catch(e) {}
         }
     }
     
-    // ПРЫЖОК ПО ЛЮБОМУ КЛИКУ НА СТРАНИЦЕ (во время игры)
-    var globalJumpHandler = function(e){
-        if(ov) return;
-        if(y >= groundY - 15){
-            vy = -10;
-            try { playSound("jump"); } catch(e) {}
+    // ПРЫЖОК ПО КЛИКУ НА КАНВАС
+    canvas.onclick = function(e) {
+        e.stopPropagation();
+        jump();
+    };
+    canvas.ontouchstart = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        jump();
+    };
+    
+    // ДОПОЛНИТЕЛЬНО: прыжок по пробелу
+    var keyHandler = function(e) {
+        if (e.code === 'Space' || e.code === 'ArrowUp') {
+            e.preventDefault();
+            jump();
         }
     };
-    document.addEventListener('click', globalJumpHandler);
-    document.addEventListener('touchstart', globalJumpHandler);
+    document.addEventListener('keydown', keyHandler);
     
-    // ИГРОВОЙ ЦИКЛ
-    function updateGame(){
-        if(ov) return;
-        bgX = (bgX - 3) % 600;
-        
-        ctx.fillStyle = '#87CEEB';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-        ctx.beginPath();
-        ctx.ellipse(80 + bgX/3, 40, 35, 25, 0, 0, Math.PI*2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(450 + bgX/4, 60, 45, 30, 0, 0, Math.PI*2);
-        ctx.fill();
-        
-        ctx.fillStyle = '#8B6914';
-        for(var i=0; i<12; i++){
-            ctx.fillRect(i*50, (groundY-5) + Math.sin(Date.now()/200 + i)*2, 45, 8);
+    // ПОЯВЛЕНИЕ ПРЕПЯТСТВИЙ
+    function spawnObstacle() {
+        if (gameOver) return;
+        if (Math.random() < 0.02 && obstacles.length < 2) {
+            obstacles.push({
+                x: canvas.width,
+                y: groundY - 22,
+                width: 28,
+                height: 28
+            });
         }
-        ctx.fillStyle = '#5a3a1a';
-        ctx.fillRect(0, groundY, canvas.width, 45);
-        for(var i=0; i<20; i++){
-            ctx.fillStyle = '#7a5a3a';
-            ctx.fillRect(i*30, groundY + Math.sin(Date.now()/150 + i)*2, 25, 5);
-        }
+    }
+    
+    // ОБНОВЛЕНИЕ
+    function update() {
+        if (gameOver) return;
         
-        ctx.font = '44px Arial';
-        ctx.fillStyle = '#FFD700';
-        ctx.fillText('🐓', 50, y);
+        frame++;
         
-        if(Math.random() < 0.02 && obstacles.length < 2){
-            obstacles.push({x: canvas.width, y: groundY - 18, w: 28, h: 28});
+        // Физика игрока
+        player.vy += gravity;
+        player.y += player.vy;
+        
+        // Земля
+        if (player.y >= groundY - player.height) {
+            player.y = groundY - player.height;
+            player.vy = 0;
+            player.grounded = true;
         }
         
-        for(var i=0; i<obstacles.length; i++){
-            ctx.font = '32px Arial';
-            ctx.fillStyle = '#888';
-            ctx.fillText('🪨', obstacles[i].x, obstacles[i].y + 25);
-            obstacles[i].x -= 7;
+        // Потолок
+        if (player.y < 0) {
+            player.y = 0;
+            player.vy = 0;
+        }
+        
+        // Движение препятствий
+        for (var i = 0; i < obstacles.length; i++) {
+            obstacles[i].x -= 5;
             
-            if(obstacles[i].x < 75 && obstacles[i].x + 28 > 35 && y + 35 > obstacles[i].y){
-                endGame();
+            // Коллизия
+            if (obstacles[i].x < player.x + player.width &&
+                obstacles[i].x + obstacles[i].width > player.x &&
+                obstacles[i].y < player.y + player.height &&
+                obstacles[i].y + obstacles[i].height > player.y) {
+                gameOver = true;
+                try { playSound("hit"); } catch(e) {}
             }
-            if(obstacles[i].x + 28 < 0){
-                obstacles.splice(i,1);
+            
+            // Удаление и набор очков
+            if (obstacles[i].x + obstacles[i].width < 0) {
+                obstacles.splice(i, 1);
                 score++;
                 document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
                 try { playSound("coin"); } catch(e) {}
@@ -781,44 +819,105 @@ function initRunner(){
             }
         }
         
-        vy += 0.8;
-        y += vy;
-        if(y >= groundY - 18){
-            y = groundY - 18;
-            vy = 0;
-        }
-        if(y < 0){
-            y = 0;
-            vy = 0;
-        }
-        
-        ctx.fillStyle = '#1a1a1a';
-        ctx.font = 'bold 22px Arial';
-        ctx.fillText('🏆 ' + score, canvas.width - 100, 35);
-        
-        requestAnimationFrame(updateGame);
+        // Спавн новых препятствий
+        spawnObstacle();
     }
     
-    function endGame(){
-        ov = true;
-        document.removeEventListener('click', globalJumpHandler);
-        document.removeEventListener('touchstart', globalJumpHandler);
-        clearInterval(gameInterval);
-        try { playSound("hit"); } catch(e) {}
+    // ОТРИСОВКА
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Небо
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Облака
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.beginPath();
+        ctx.ellipse(100 + frame/3, 50, 40, 25, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(450 + frame/4, 70, 45, 28, 0, 0, Math.PI*2);
+        ctx.fill();
+        
+        // Земля
+        ctx.fillStyle = '#8B6914';
+        for(var i=0; i<12; i++){
+            ctx.fillRect(i*55, groundY-6 + Math.sin(Date.now()/200 + i)*3, 50, 10);
+        }
+        ctx.fillStyle = '#5a3a1a';
+        ctx.fillRect(0, groundY, canvas.width, 45);
+        
+        // Трава
+        ctx.fillStyle = '#6aae5a';
+        for(var i=0; i<15; i++){
+            ctx.fillRect(i*42, groundY-3, 38, 6);
+        }
+        
+        // ПЕТУХ (большой чёткий)
+        ctx.font = '48px Arial';
+        ctx.fillStyle = '#FFD700';
+        ctx.fillText('🐓', player.x, player.y + player.height - 5);
+        
+        // КАМНИ (препятствия)
+        for(var i=0; i<obstacles.length; i++){
+            ctx.font = '34px Arial';
+            ctx.fillStyle = '#666';
+            ctx.fillText('🪨', obstacles[i].x, obstacles[i].y + obstacles[i].height);
+        }
+        
+        // Счёт
+        ctx.fillStyle = '#1a1a1a';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText('🏆 ' + score, canvas.width - 90, 40);
+        
+        // GAME OVER
+        if (gameOver) {
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 28px Arial';
+            ctx.fillText('GAME OVER', canvas.width/2 - 100, canvas.height/2 - 20);
+            ctx.font = '18px Arial';
+            ctx.fillText('Счёт: ' + score, canvas.width/2 - 50, canvas.height/2 + 20);
+        }
+    }
+    
+    // ИГРОВОЙ ЦИКЛ
+    var lastTime = 0;
+    function gameLoop() {
+        update();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+    
+    // КНОПКА ПЕРЕЗАПУСКА
+    function showRestartButton() {
+        if (!gameOver) return;
         var btn = document.createElement('button');
         btn.textContent = '🔄 Играть снова';
         btn.style.cssText = 'display:block;margin:20px auto;font-size:18px;padding:10px 25px;background:#ffd700;color:#000;border:none;border-radius:10px;cursor:pointer';
-        btn.onclick = function(){
+        btn.onclick = function() {
             document.getElementById('gameContent').innerHTML = '';
+            document.removeEventListener('keydown', keyHandler);
             initRunner();
         };
         document.getElementById('gameContent').appendChild(btn);
-        alert('Игра окончена! Твой счёт: ' + score);
     }
     
-    updateGame();
+    // Запускаем игру
+    gameLoop();
+    
+    // Следим за окончанием игры
+    var checkInterval = setInterval(function() {
+        if (gameOver) {
+            clearInterval(checkInterval);
+            showRestartButton();
+        }
+    }, 100);
+    
     gameInterval = setInterval(function(){}, 1000);
-}
+              }
 // ==================== ЗМЕЙКА, ТЕТРИС, УГАДАЙ ЧИСЛО, КАМЕНЬ-НОЖНИЦЫ ====================
 function initSnake(){document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div>';createGameRating();var c=document.getElementById('sc'),ctx=c.getContext('2d'),sn=[{x:200,y:200}],food=rf(),dir={x:20,y:0},sc=0,ov=false;function rf(){return{x:Math.floor(Math.random()*20)*20,y:Math.floor(Math.random()*20)*20};}function cd(nd){if(ov||(nd.x===-dir.x&&nd.y===-dir.y)||(nd.x!==0&&dir.x!==0)||(nd.y!==0&&dir.y!==0))return;dir=nd;playSound("jump");}document.getElementById('su').onclick=function(){cd({x:0,y:-20});};document.getElementById('sd').onclick=function(){cd({x:0,y:20});};document.getElementById('sl').onclick=function(){cd({x:-20,y:0});};document.getElementById('sr').onclick=function(){cd({x:20,y:0});};document.onkeydown=function(e){if(e.key==='ArrowLeft')cd({x:-20,y:0});if(e.key==='ArrowRight')cd({x:20,y:0});if(e.key==='ArrowUp')cd({x:0,y:-20});if(e.key==='ArrowDown')cd({x:0,y:20});e.preventDefault();};function loop(){if(ov)return;var h={x:sn[0].x+dir.x,y:sn[0].y+dir.y};if(h.x<0||h.x>=400||h.y<0||h.y>=400||sn.some(function(s){return s.x===h.x&&s.y===h.y;})){end(sc);return;}sn.unshift(h);if(h.x===food.x&&h.y===food.y){sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;food=rf();}else sn.pop();ctx.clearRect(0,0,400,400);ctx.fillStyle='#ffd700';ctx.fillRect(food.x,food.y,18,18);ctx.fillStyle='#4CAF50';sn.forEach(function(s){ctx.fillRect(s.x,s.y,18,18);});}function end(s){ov=true;clearInterval(gameInterval);playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initSnake();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+s);}gameInterval=setInterval(loop,100);}
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
