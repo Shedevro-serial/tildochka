@@ -635,7 +635,7 @@ var eggs=[];
 var score=0;
 var ov=false;
 var particles=[];
-function spawnEgg(){if(Math.random()<0.025){eggs.push({x:Math.random()*370,y:-20,speed:1.5+Math.random()*3,type:Math.random()>0.85?'gold':'normal'});}}
+function spawnEgg(){if(Math.random()<0.015){eggs.push({x:Math.random()*370,y:-20,speed:1.5+Math.random()*3,type:Math.random()>0.85?'gold':'normal'});}}
 function addParticle(x,y){for(var i=0;i<5;i++){particles.push({x:x+Math.random()*20-10,y:y+Math.random()*20-10,life:1});}}
 document.onkeydown=function(e){if(e.key==='ArrowLeft') chickenX=Math.max(10,chickenX-30);if(e.key==='ArrowRight') chickenX=Math.min(360,chickenX+30);playSound("jump");};
 document.getElementById('crl').onclick=function(){chickenX=Math.max(10,chickenX-30); playSound("jump");};
@@ -650,7 +650,7 @@ ctx.fillStyle='#6aae5a';
 for(var i=0;i<10;i++) ctx.fillRect(i*40,460,38,10);
 ctx.font='48px Arial';
 ctx.fillStyle='#ffd700';
-ctx.fillText('🐔',chickenX,450);
+ctx.fillText('🦅',chickenX,450);
 for(var i=eggs.length-1;i>=0;i--){
 var e=eggs[i];
 e.y+=e.speed;
