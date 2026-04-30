@@ -19,7 +19,7 @@
     .profile-area{display:flex;align-items:center;gap:8px;cursor:pointer;max-width:160px;overflow:hidden}
     .avatar{width:34px;height:34px;border-radius:50%;border:2px solid #ffd700;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(0,0,0,.5);flex-shrink:0}
     .avatar img{width:100%;height:100%;object-fit:cover}
-    .profile-name{color:#ffd700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}.profile-name:hover{color:#fff}
+    .profile-name{color:#ffd700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px}.profile-name:hover{color:#fff}
     .eggs-count{color:#ffd700;font-size:13px;margin-right:5px;flex-shrink:0;max-width:65px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.eggs-count span{font-size:16px}
     .online-count{color:#4f4;font-size:13px;cursor:pointer;flex-shrink:0}.online-count:hover{color:#0f0}
     .burger{width:30px;height:22px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;flex-shrink:0;z-index:101}.burger:hover{transform:scale(1.1)}
@@ -693,7 +693,7 @@ gameInterval=setInterval(function(){},1000);
 
 // ==================== РАННЕР (ПРЫГАЕТ!) ====================
 function initRunner(){
-    document.getElementById('gameContent').innerHTML = '<canvas id="runnerCanvas" width="600" height="220" class="game-canvas" style="cursor:pointer;background:#87CEEB;display:block;margin:0 auto;border-radius:12px"></canvas><p style="text-align:center;margin-top:8px;color:#ffd700">👇 Нажми на игровое поле - прыжок!</p>';
+    document.getElementById('gameContent').innerHTML = '<canvas id="runnerCanvas" width="600" height="220" class="game-canvas" style="cursor:pointer;background:#87CEEB;display:block;margin:0 auto;border-radius:12px"></canvas><p style="text-align:center;margin-top:8px;color:#ffd700">👇 Нажми В ЛЮБОМ МЕСТЕ - прыжок!</p>';
     createGameRating();
     
     var canvas = document.getElementById('runnerCanvas');
@@ -713,31 +713,29 @@ function initRunner(){
         if(ov) return;
         if(y >= groundY - 15){
             vy = -10;
-            playSound("jump");
+            try { playSound("jump"); } catch(e) {}
         }
     }
     
-    // Обработчики кликов по КАНВАСУ (игровому полю)
-    canvas.onclick = function(e){
-        e.stopPropagation();
-        doJump();
+    // ПРЫЖОК ПО ЛЮБОМУ КЛИКУ НА СТРАНИЦЕ (во время игры)
+    var globalJumpHandler = function(e){
+        if(ov) return;
+        if(y >= groundY - 15){
+            vy = -10;
+            try { playSound("jump"); } catch(e) {}
+        }
     };
-    canvas.ontouchstart = function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        doJump();
-    };
+    document.addEventListener('click', globalJumpHandler);
+    document.addEventListener('touchstart', globalJumpHandler);
     
     // ИГРОВОЙ ЦИКЛ
     function updateGame(){
         if(ov) return;
         bgX = (bgX - 3) % 600;
         
-        // Небо
         ctx.fillStyle = '#87CEEB';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Облачка для красоты
         ctx.fillStyle = 'rgba(255,255,255,0.6)';
         ctx.beginPath();
         ctx.ellipse(80 + bgX/3, 40, 35, 25, 0, 0, Math.PI*2);
@@ -746,7 +744,6 @@ function initRunner(){
         ctx.ellipse(450 + bgX/4, 60, 45, 30, 0, 0, Math.PI*2);
         ctx.fill();
         
-        // Земля
         ctx.fillStyle = '#8B6914';
         for(var i=0; i<12; i++){
             ctx.fillRect(i*50, (groundY-5) + Math.sin(Date.now()/200 + i)*2, 45, 8);
@@ -758,37 +755,32 @@ function initRunner(){
             ctx.fillRect(i*30, groundY + Math.sin(Date.now()/150 + i)*2, 25, 5);
         }
         
-        // ПЕТУХ (рисунок смайликом, но большой и чёткий)
         ctx.font = '44px Arial';
         ctx.fillStyle = '#FFD700';
         ctx.fillText('🐓', 50, y);
         
-        // Появление препятствий
         if(Math.random() < 0.02 && obstacles.length < 2){
             obstacles.push({x: canvas.width, y: groundY - 18, w: 28, h: 28});
         }
         
-        // Препятствия (камни)
         for(var i=0; i<obstacles.length; i++){
             ctx.font = '32px Arial';
             ctx.fillStyle = '#888';
             ctx.fillText('🪨', obstacles[i].x, obstacles[i].y + 25);
             obstacles[i].x -= 7;
             
-            // КОЛЛИЗИЯ (столкновение)
             if(obstacles[i].x < 75 && obstacles[i].x + 28 > 35 && y + 35 > obstacles[i].y){
                 endGame();
             }
             if(obstacles[i].x + 28 < 0){
                 obstacles.splice(i,1);
                 score++;
-                playSound("coin");
                 document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
+                try { playSound("coin"); } catch(e) {}
                 i--;
             }
         }
         
-        // ФИЗИКА ПРЫЖКА
         vy += 0.8;
         y += vy;
         if(y >= groundY - 18){
@@ -800,7 +792,6 @@ function initRunner(){
             vy = 0;
         }
         
-        // Счёт
         ctx.fillStyle = '#1a1a1a';
         ctx.font = 'bold 22px Arial';
         ctx.fillText('🏆 ' + score, canvas.width - 100, 35);
@@ -810,8 +801,10 @@ function initRunner(){
     
     function endGame(){
         ov = true;
+        document.removeEventListener('click', globalJumpHandler);
+        document.removeEventListener('touchstart', globalJumpHandler);
         clearInterval(gameInterval);
-        playSound("hit");
+        try { playSound("hit"); } catch(e) {}
         var btn = document.createElement('button');
         btn.textContent = '🔄 Играть снова';
         btn.style.cssText = 'display:block;margin:20px auto;font-size:18px;padding:10px 25px;background:#ffd700;color:#000;border:none;border-radius:10px;cursor:pointer';
