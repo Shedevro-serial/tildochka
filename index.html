@@ -237,7 +237,7 @@ var myChannel=localStorage.getItem('tildochka_channel')||'';
 var audioCtx=null;
 var lastSoundTime=0;
 
-// ==================== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗВУКОВ ====================
+// ==================== ФУНКЦИЯ ДЛЯ ЗВУКОВ ====================
 function initAudio() {
     if (audioCtx) return;
     try {
@@ -269,13 +269,26 @@ function playSound(type) {
 }
 document.body.addEventListener('click', function() { initAudio(); }, { once: true });
 
+// ==================== ДЛИННЫЕ ОПИСАНИЯ ФИЛЬМОВ ====================
 var moviesData={
-series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',description:'Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия. С каждой серией герои сталкиваются с новыми испытаниями, которые заставляют их меняться, расти и по-новому смотреть на мир.',tags:['комедия','боевик','романтика'],type:'series'},
-comb:{title:'Расческа для лысых',poster:'cover-comb.jpg',video:'comb.mp4',description:'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески. Комедийная драма о поиске себя, принятии своей внешности и о том, что настоящая красота идёт изнутри. Главный герой отправляется в удивительное путешествие, чтобы доказать всему миру — расческа нужна каждому, даже если кажется, что не нужна.',tags:['драма','комедия','философия'],type:'movie'},
-pirates:{title:'Пираты',poster:'cover-pirates.jpg',video:'pirates.mp4',description:'Захватывающий приключенческий фильм о команде отважных пиратов, которые отправляются на поиски легендарных сокровищ. Но на их пути встают не только морские чудовища и свирепые штормы, но и коварные конкуренты — другие пиратские кланы. Кто первым доберётся до заветного клада и чем придётся пожертвовать ради богатства?',tags:['приключения','экшн','пираты'],type:'movie'},
-americans:{title:'Американцы зло',poster:'cover-americans.jpg',video:'americans.mp4',description:'Острая сатирическая комедия о столкновении культур и стереотипах. Группа друзей из маленького городка встречает американских туристов, и начинается череда нелепых ситуаций, недопониманий и смешных конфликтов. Но в итоге все понимают — неважно откуда ты, главное — какой ты человек.',tags:['комедия','сатира'],type:'movie'},
-ads1:{title:'Рекламки (ч.1)',poster:'cover-ads.jpg',video:'ads-part1.mp4',description:'Сборник самых смешных, нелепых и креативных рекламных роликов. Подборка забавных моментов, курьёзных ситуаций и неожиданных поворотов, которые заставят вас смеяться до слёз.',tags:['юмор','реклама'],type:'ads'},
-ads2:{title:'Рекламки (ч.2)',poster:'cover-ads.jpg',video:'ads-part2.mp4',description:'Вторая часть популярного сборника рекламных роликов! Ещё больше смешных моментов, неожиданных поворотов и креативных идей из мира рекламы.',tags:['юмор','реклама'],type:'ads'}
+series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',
+description:'Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия. С каждой серией герои сталкиваются с новыми испытаниями, которые заставляют их меняться, расти и по-новому смотреть на мир.',
+tags:['комедия','боевик','романтика'],type:'series'},
+comb:{title:'Расческа для лысых',poster:'cover-comb.jpg',video:'comb.mp4',
+description:'Трогательная история о человеке, который несмотря на полное отсутствие волос, продолжает верить в магическую силу расчески. Комедийная драма о поиске себя, принятии своей внешности и о том, что настоящая красота идёт изнутри. Главный герой отправляется в удивительное путешествие, чтобы доказать всему миру — расческа нужна каждому, даже если кажется, что не нужна. По пути он встречает необычных персонажей, которые помогают ему понять истинную ценность вещей.',
+tags:['драма','комедия','философия'],type:'movie'},
+pirates:{title:'Пираты',poster:'cover-pirates.jpg',video:'pirates.mp4',
+description:'Захватывающий приключенческий фильм о команде отважных пиратов, которые отправляются на поиски легендарных сокровищ. Но на их пути встают не только морские чудовища и свирепые штормы, но и коварные конкуренты — другие пиратские кланы. Кто первым доберётся до заветного клада и чем придётся пожертвовать ради богатства? В фильме вас ждут эпические баталии, юмор и неожиданные повороты сюжета.',
+tags:['приключения','экшн','пираты'],type:'movie'},
+americans:{title:'Американцы зло',poster:'cover-americans.jpg',video:'americans.mp4',
+description:'Острая сатирическая комедия о столкновении культур и стереотипах. Группа друзей из маленького городка встречает американских туристов, и начинается череда нелепых ситуаций, недопониманий и смешных конфликтов. Но в итоге все понимают — неважно откуда ты, главное — какой ты человек. Фильм заставляет задуматься о том, как часто мы судим о других по шаблонам и предрассудкам.',
+tags:['комедия','сатира'],type:'movie'},
+ads1:{title:'Рекламки (ч.1)',poster:'cover-ads.jpg',video:'ads-part1.mp4',
+description:'Сборник самых смешных, нелепых и креативных рекламных роликов. Подборка забавных моментов, курьёзных ситуаций и неожиданных поворотов, которые заставят вас смеяться до слёз. От пылесоса, который никак не может пылесосить, до рекламы шампуня для лысых — здесь есть всё!',
+tags:['юмор','реклама'],type:'ads'},
+ads2:{title:'Рекламки (ч.2)',poster:'cover-ads.jpg',video:'ads-part2.mp4',
+description:'Вторая часть популярного сборника рекламных роликов! Ещё больше смешных моментов, неожиданных поворотов и креативных идей из мира рекламы. Новые персонажи, новые ситуации и порция отличного настроения на вечер.',
+tags:['юмор','реклама'],type:'ads'}
 };
 var shopItems={'👑':50,'🌟':30,'💎':100,'🔥':40,'💀':60,'🤖':70,'👻':50,'🎭':30,'🦄':150,'🐉':200,'🦋':80,'🌈':90};
 var questTemplates=[{text:'Сыграй 3 игры',type:'play',target:3,reward:10},{text:'Напиши отзыв',type:'review',target:1,reward:15},{text:'Отправь 5 сообщений',type:'chat',target:5,reward:12},{text:'Поставь лайк 3 идеям',type:'like',target:3,reward:8},{text:'Сыграй в Змейку',type:'playSnake',target:1,reward:5},{text:'Сыграй в Тетрис',type:'playTetris',target:1,reward:5},{text:'Сыграй в Раннер',type:'playRunner',target:1,reward:5}];
@@ -361,7 +374,7 @@ function loadLeaderboard(type){db.ref('gameRatings/'+type).on('value',function(s
 function createGameRating(){document.getElementById('gameRatingArea').innerHTML='<div class="stars-container"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';var stars=document.querySelectorAll('#gameRatingArea .star');stars.forEach(function(s){s.onclick=function(){gameRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,gameRating);};});updateStars(stars,10);}
 function submitGameRating(){var sc=parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0;db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:sc,ts:Date.now()});addEggs(Math.floor(sc/10),'Игра!');}
 
-// ==================== ТАМАГОЧИ (ИСПРАВЛЕННЫЙ, НЕ ЗАВИСАЕТ) ====================
+// ==================== ТАМАГОЧИ ====================
 var tamagotchiData=null;
 var pets={
 '🐣':{name:'Цыпа',hr:3,pr:2,er:2,type:'normal',desc:'Обычный цыплёнок. Любит играть и кушать в меру. Идеален для новичков!',hint:'Сбалансированный питомец',growthAge:30},
@@ -418,17 +431,13 @@ if(t.isVomiting){alert(t.name+' сейчас тошнит, подожди!');ret
 t.hunger=Math.min(100,t.hunger+25);
 t.energy=Math.max(0,t.energy-5);
 playSound("eat");
-if(t.hunger>95 && !t.isFat){
-t.isFat=true;
-t.energy=Math.max(0,t.energy-15);
-}
+if(t.hunger>95 && !t.isFat){t.isFat=true;t.energy=Math.max(0,t.energy-15);}
 if(t.hunger>98){
-t.isVomiting=true;
-playSound("vomit");
+t.isVomiting=true;playSound("vomit");
 alert(t.name+' переел(а) и его вырвало! 🤢');
 t.hunger=Math.max(30,t.hunger-50);
 t.isFat=false;
-setTimeout(function(){if(tamagotchiData)tamagotchiData.isVomiting=false; renderTamagotchi();}, 2000);
+setTimeout(function(){if(tamagotchiData)tamagotchiData.isVomiting=false; renderTamagotchi();},2000);
 }
 if(Math.random()<0.5 && (!t.poops || t.poops.length<4)){
 if(!t.poops) t.poops=[];
@@ -472,7 +481,7 @@ t.hunger=Math.max(0,t.hunger-t.hr);
 t.happy=Math.max(0,t.happy-t.pr);
 t.energy=Math.max(0,t.energy-t.er);
 t.age++;
-if(t.age === t.growthAge){
+if(t.age===t.growthAge){
 var emojis=Object.keys(pets);
 var newEmoji=emojis[Math.floor(Math.random()*emojis.length)];
 t.emoji=newEmoji;
@@ -490,7 +499,7 @@ renderTamagotchi();
 },3000);
 }
 
-// ==================== ОНЛАЙН-ИГРЫ ====================
+// ==================== ОНЛАЙН-ИГРЫ (сокращённые версии) ====================
 function showOnlineGame(type){var users=Object.keys(onlineUsers);if(users.length===0){alert('Нет никого онлайн!');return;}var h='<p>Выбери соперника:</p>';users.forEach(function(u){h+='<button onclick="sendInvite(\''+u+'\',\''+type+'\')" style="display:block;width:100%;margin:4px 0;background:#444">'+onlineUsers[u].name+'</button>';});document.getElementById('inviteContent').innerHTML=h;document.getElementById('inviteTitle').textContent='🎮 Пригласить';document.getElementById('inviteModal').classList.add('show');}
 function sendInvite(uid,game){document.getElementById('inviteModal').classList.remove('show');var rid=myUid+'_'+uid+'_'+game+'_'+Date.now();db.ref('game_invites/'+rid).set({from:myUid,fromName:myName,game:game,to:uid,status:'pending',ts:Date.now()});var ref=db.ref('game_invites/'+rid+'/status');ref.on('value',function(snap){if(snap.val()==='accepted'){ref.off();db.ref('game_invites/'+rid).remove();hideWaiting();if(game==='battleship')startBattleshipSetup(uid,rid);if(game==='pong')initOnlinePong(uid,rid);if(game==='xo')initOnlineXO(uid,rid);}else if(snap.val()==='declined'){ref.off();db.ref('game_invites/'+rid).remove();hideWaiting();alert('❌ Отклонено');}});showWaiting('Ожидаем '+onlineUsers[uid].name+'...',30000);}
 db.ref('game_invites').on('child_added',function(snap){var inv=snap.val();if(inv.to===myUid&&inv.status==='pending'&&inv.ts>Date.now()-15000){pendingInvite={id:snap.key,from:inv.from,fromName:inv.fromName,game:inv.game};document.getElementById('inviteContent').innerHTML='<p>'+inv.fromName+' зовёт в <b>'+inv.game+'</b>!</p>';document.getElementById('inviteActions').innerHTML='<button onclick="acceptInvite()" style="background:#4f4">✅</button><button onclick="declineInvite()" style="background:#f44">❌</button>';document.getElementById('inviteTitle').textContent='📨 Приглашение';document.getElementById('inviteModal').classList.add('show');}});
@@ -499,7 +508,7 @@ function declineInvite(){if(!pendingInvite)return;document.getElementById('invit
 function showWaiting(msg,dur){var w=document.getElementById('waitingModal');if(!w){w=document.createElement('div');w.className='modal-overlay';w.id='waitingModal';w.innerHTML='<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';document.body.appendChild(w);}document.getElementById('waitingContent').textContent='⏳ '+msg;w.classList.add('show');if(window._wt)clearTimeout(window._wt);window._wt=setTimeout(function(){w.classList.remove('show');},dur);}
 function hideWaiting(){var w=document.getElementById('waitingModal');if(w){w.classList.remove('show');if(window._wt)clearTimeout(window._wt);}}
 
-// ==================== МОРСКОЙ БОЙ ====================
+// ==================== МОРСКОЙ БОЙ (упрощённый) ====================
 function startBattleshipSetup(opp,rid){
 currentGame='battleship';
 showScreen('game');
@@ -538,7 +547,7 @@ document.onkeydown=function(e){if(go)return;var ch=0;if(e.key==='w'||e.key==='Ar
 db.ref('og/'+rid+'/p'+opp).on('value',function(s){if(s.val())pad[opp]=s.val();});db.ref('og/'+rid+'/ball').on('value',function(s){if(s.val())ball=s.val();});
 function loop(){if(go){clearInterval(gameInterval);return;}ctx.clearRect(0,0,500,300);ctx.fillStyle='#4f4';ctx.fillRect(3,pad[myUid].y,8,60);ctx.fillStyle='#f44';ctx.fillRect(489,pad[opp].y,8,60);ball.x+=ball.vx;ball.y+=ball.vy;if(ball.y<=0||ball.y>=290)ball.vy*=-1;if(ball.x<=15&&ball.y>pad[myUid].y-5&&ball.y<pad[myUid].y+65)ball.vx=Math.abs(ball.vx);if(ball.x>=485&&ball.y>pad[opp].y-5&&ball.y<pad[opp].y+65)ball.vx=-Math.abs(ball.vx);if(ball.x<0){sc[opp]++;ball={x:250,y:150,vx:4,vy:3};playSound("hit");}if(ball.x>500){sc[myUid]++;ball={x:250,y:150,vx:-4,vy:3};playSound("coin");}document.getElementById('gameScoreDisplay').textContent='Ты: '+sc[myUid]+' | Соперник: '+sc[opp];ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fillStyle='#ffd700';ctx.fill();if(sc[myUid]>=5||sc[opp]>=5){go=true;alert((sc[myUid]>=5?'Ты':'Соперник')+' победил!');addEggs(5,'Победа!');}else{db.ref('og/'+rid+'/ball').set(ball);}}gameInterval=setInterval(loop,20);}
 
-// ==================== MEMORY (8×8 - 32 пары) ====================
+// ==================== MEMORY ====================
 function initMemory(){
 var h='<p>Выбери уровень:</p>';
 h+='<button onclick="startMemory(4)" style="margin:8px">😊 4×4 (8 пар)</button>';
@@ -547,7 +556,7 @@ h+='<button onclick="startMemory(8)" style="margin:8px">💀 8×8 (32 пары)<
 document.getElementById('gameContent').innerHTML=h;
 }
 function startMemory(size){
-var allEmojis=['🐔','🥚','🐣','🐓','🌾','🦊','🐍','🪨','🐧','🦆','🦉','🐤','🐙','🦋','🐸','🐵','🦁','🐯','🐮','🐷','🐭','🐹','🐰','🐻','🐨','🐼','🐸','🐒','🐔','🦄','🐲','🐉','🐥','🦜','🐊','🦎','🐫','🦙','🐘','🦏'];
+var allEmojis=['🐔','🥚','🐣','🐓','🌾','🦊','🐍','🪨','🐧','🦆','🦉','🐤','🐙','🦋','🐸','🐵','🦁','🐯','🐮','🐷','🐭','🐹','🐰','🐻','🐨','🐼','🐒','🦄','🐲','🐉','🐥','🦜'];
 var pairsCount=(size*size)/2;
 var selectedEmojis=allEmojis.slice(0,pairsCount);
 var cards=selectedEmojis.concat(selectedEmojis);
@@ -594,7 +603,7 @@ playSound("hit");
 rM();
 }
 
-// ==================== ОРИГИНАЛЬНЫЙ FLAPPY BIRD ====================
+// ==================== FLAPPY КУРИЦА ====================
 function initFlappy(){
 document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p>';
 createGameRating();
@@ -605,152 +614,56 @@ document.onkeydown=function(e){if(e.key===' '||e.key==='ArrowUp'){e.preventDefau
 c.onclick=jump;
 c.addEventListener('touchstart',function(e){e.preventDefault();jump();});
 pipes.push(sp());
-function loop(){if(ov)return;ctx.clearRect(0,0,400,500);var grad=ctx.createLinearGradient(0,0,0,500);grad.addColorStop(0,'#4a90d9');grad.addColorStop(1,'#87CEEB');ctx.fillStyle=grad;ctx.fillRect(0,0,400,500);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.fillRect(50,50,60,20);ctx.fillRect(300,80,80,25);vy+=0.5;bird.y+=vy;ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(bird.x,bird.y,15,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.arc(bird.x+5,bird.y-5,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f60';ctx.beginPath();ctx.arc(bird.x+8,bird.y+2,5,0,Math.PI*2);ctx.fill();if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());for(var i=pipes.length-1;i>=0;i--){pipes[i].x-=2;ctx.fillStyle='#2d5a1e';ctx.fillRect(pipes[i].x,0,45,pipes[i].top);ctx.fillRect(pipes[i].x,pipes[i].bottom,45,500-pipes[i].bottom);ctx.fillStyle='#4a8c2a';ctx.fillRect(pipes[i].x-3,pipes[i].top-20,51,20);ctx.fillRect(pipes[i].x-3,pipes[i].bottom,51,20);if(pipes[i].x+45<0){pipes.splice(i,1);sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();}if(bird.y>480||bird.y<0)end();}function end(){ov=true;clearInterval(gameInterval);playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:15px auto;font-size:18px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initFlappy();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+sc);}gameInterval=setInterval(loop,20);}
+function loop(){if(ov)return;ctx.clearRect(0,0,400,500);var grad=ctx.createLinearGradient(0,0,0,500);grad.addColorStop(0,'#4a90d9');grad.addColorStop(1,'#87CEEB');ctx.fillStyle=grad;ctx.fillRect(0,0,400,500);vy+=0.5;bird.y+=vy;ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(bird.x,bird.y,15,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.arc(bird.x+5,bird.y-5,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f60';ctx.beginPath();ctx.arc(bird.x+8,bird.y+2,5,0,Math.PI*2);ctx.fill();if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());for(var i=pipes.length-1;i>=0;i--){pipes[i].x-=2;ctx.fillStyle='#2d5a1e';ctx.fillRect(pipes[i].x,0,45,pipes[i].top);ctx.fillRect(pipes[i].x,pipes[i].bottom,45,500-pipes[i].bottom);ctx.fillStyle='#4a8c2a';ctx.fillRect(pipes[i].x-3,pipes[i].top-20,51,20);ctx.fillRect(pipes[i].x-3,pipes[i].bottom,51,20);if(pipes[i].x+45<0){pipes.splice(i,1);sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();}if(bird.y>480||bird.y<0)end();}function end(){ov=true;clearInterval(gameInterval);playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initFlappy();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+sc);}gameInterval=setInterval(loop,20);}
 
-// ==================== ПИКСЕЛЬНЫЙ РАННЕР С КАСТОМНЫМ ПЕРСОНАЖЕМ ====================
+// ==================== РАННЕР С 🐓 И 🪨 ====================
 function initRunner(){
 document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
 createGameRating();
 var c=document.getElementById('rc'),ctx=c.getContext('2d');
-ctx.imageSmoothingEnabled=false;
-var y=140,vy=0,groundY=160;
+var y=140,vy=0,groundY=155;
 var obstacles=[];
 var score=0,ov=false;
 var bgX=0;
-var wingFlap=0;
-function runnerJump(){
-if(y>=groundY-10 && !ov){
-vy=-11;
-playSound("jump");
-}
-}
+function runnerJump(){if(y>=groundY-15 && !ov){vy=-11;playSound("jump");}}
 window.runnerJump=runnerJump;
 document.onkeydown=function(e){if(e.key===' ') runnerJump();};
 c.onclick=runnerJump;
 c.addEventListener('touchstart',function(e){e.preventDefault(); runnerJump();});
-
-function drawPixelChicken(x,y){
-wingFlap++;
-ctx.fillStyle='#FFD700';
-ctx.fillRect(x-12,y-18,24,24);
-ctx.fillStyle='#FF8C00';
-ctx.fillRect(x-8,y-22,16,8);
-ctx.fillStyle='#FF4500';
-ctx.fillRect(x-3,y-26,6,6);
-if(Math.floor(wingFlap/10)%2===0){
-ctx.fillStyle='#FFA500';
-ctx.fillRect(x-18,y-8,8,12);
-ctx.fillRect(x+10,y-8,8,12);
-} else {
-ctx.fillStyle='#FFA500';
-ctx.fillRect(x-20,y-12,10,10);
-ctx.fillRect(x+10,y-12,10,10);
-}
-ctx.fillStyle='#FFFFFF';
-ctx.fillRect(x-6,y-14,4,4);
-ctx.fillRect(x+2,y-14,4,4);
-ctx.fillStyle='#000000';
-ctx.fillRect(x-5,y-13,2,2);
-ctx.fillRect(x+3,y-13,2,2);
-ctx.fillStyle='#FF0000';
-ctx.fillRect(x-2,y-8,4,4);
-ctx.fillStyle='#FFD700';
-ctx.fillRect(x-4,y-2,8,4);
-}
-
-function drawObstacle(ox,oy,type){
-if(type===0){
-ctx.fillStyle='#2E7D32';
-ctx.fillRect(ox,oy,20,25);
-ctx.fillStyle='#1B5E20';
-for(var i=0;i<3;i++) ctx.fillRect(ox+4+i*4,oy-6,3,8);
-ctx.fillStyle='#FF0000';
-for(var i=0;i<3;i++) ctx.fillRect(ox+6+i*4,oy+8,2,6);
-} else if(type===1){
-ctx.fillStyle='#8B0000';
-ctx.fillRect(ox,oy,20,20);
-ctx.fillStyle='#FF4500';
-ctx.fillRect(ox+5,oy-5,10,6);
-ctx.fillStyle='#FFD700';
-ctx.fillRect(ox+8,oy+5,4,8);
-} else {
-ctx.fillStyle='#555';
-ctx.fillRect(ox,oy,18,22);
-ctx.fillStyle='#888';
-ctx.fillRect(ox+3,oy-4,12,5);
-for(var i=0;i<4;i++) ctx.fillRect(ox+3+i*3,oy+6,2,10);
-}
-}
-
 function update(){
 if(ov) return;
 bgX=(bgX-3)%600;
-ctx.fillStyle='#5c94fc';
+ctx.fillStyle='#87CEEB';
 ctx.fillRect(0,0,600,200);
-for(var i=0;i<60;i++){
-ctx.fillStyle='#7cb4fc';
-ctx.fillRect(i*10,(bgX+i*5)%100,4,3);
-}
 ctx.fillStyle='#8B6914';
-for(var i=0;i<12;i++){
-ctx.fillRect(i*50,(groundY-5)+Math.sin(Date.now()/200+i)*2,45,8);
-}
+for(var i=0;i<12;i++){ctx.fillRect(i*50,(groundY-5)+Math.sin(Date.now()/200+i)*2,45,8);}
 ctx.fillStyle='#5a3a1a';
-ctx.fillRect(0,groundY,600,40);
-for(var i=0;i<20;i++){
-ctx.fillStyle='#7a5a3a';
-ctx.fillRect(i*30,groundY+Math.sin(Date.now()/150+i)*2,25,5);
-}
-drawPixelChicken(55,y);
+ctx.fillRect(0,groundY,600,45);
+for(var i=0;i<20;i++){ctx.fillStyle='#7a5a3a';ctx.fillRect(i*30,groundY+Math.sin(Date.now()/150+i)*2,25,5);}
+ctx.font='48px Arial';
+ctx.fillStyle='#FFD700';
+ctx.fillText('🐓',55,y);
 if(Math.random()<0.025 && obstacles.length<2){
-var obsType=Math.floor(Math.random()*3);
-obstacles.push({x:600,y:groundY-20,width:20,height:25,type:obsType});
+obstacles.push({x:600,y:groundY-20,width:30,height:30});
 }
 for(var i=0;i<obstacles.length;i++){
-drawObstacle(obstacles[i].x,obstacles[i].y,obstacles[i].type);
+ctx.font='36px Arial';
+ctx.fillStyle='#888';
+ctx.fillText('🪨',obstacles[i].x,obstacles[i].y+25);
 obstacles[i].x-=6;
-if(obstacles[i].x < 70 && obstacles[i].x+obstacles[i].width > 35 && y+20 > obstacles[i].y){
-end();
-}
-if(obstacles[i].x+obstacles[i].width<0){
-obstacles.splice(i,1);
-score++;
-playSound("coin");
-document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;
-i--;
-}
+if(obstacles[i].x < 70 && obstacles[i].x+30 > 35 && y+35 > obstacles[i].y){end();}
+if(obstacles[i].x+30<0){obstacles.splice(i,1);score++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;i--;}
 }
 vy+=0.8;
 y+=vy;
-if(y>=groundY-12){
-y=groundY-12;
-vy=0;
-}
-if(y<0){
-y=0;
-vy=0;
-}
+if(y>=groundY-18){y=groundY-18;vy=0;}
+if(y<0){y=0;vy=0;}
 ctx.fillStyle='#FFF';
-ctx.font='bold 20px "Courier New", monospace';
-ctx.fillText('SCORE: '+score,480,25);
+ctx.font='bold 20px Arial';
+ctx.fillText('Счёт: '+score,480,25);
 requestAnimationFrame(update);
 }
-function end(){
-ov=true;
-function end(){
-ov=true;
-clearInterval(gameInterval);
-playSound("hit");
-var b=document.createElement('button');
-b.textContent='🔄 Заново';
-b.style.cssText='display:block;margin:15px auto;font-size:18px';
-b.onclick=function(){
-document.getElementById('gameContent').innerHTML='';
-initRunner();
-};
-document.getElementById('gameContent').appendChild(b);
-alert('Счёт: '+score);
-}
+function end(){ov=true;clearInterval(gameInterval);playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initRunner();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+score);}
 update();
 gameInterval=setInterval(function(){},1000);
 }
@@ -767,19 +680,9 @@ var score=0;
 var ov=false;
 var particles=[];
 var rainX=0;
-function spawnEgg(){
-if(Math.random()<0.025){
-eggs.push({x:Math.random()*370,y:-20,speed:1.5+Math.random()*3,type:Math.random()>0.85?'gold':'normal'});
-}
-}
-function addParticle(x,y){
-for(var i=0;i<5;i++){particles.push({x:x+Math.random()*20-10,y:y+Math.random()*20-10,life:1});}
-}
-document.onkeydown=function(e){
-if(e.key==='ArrowLeft') chickenX=Math.max(10,chickenX-30);
-if(e.key==='ArrowRight') chickenX=Math.min(360,chickenX+30);
-playSound("jump");
-};
+function spawnEgg(){if(Math.random()<0.025){eggs.push({x:Math.random()*370,y:-20,speed:1.5+Math.random()*3,type:Math.random()>0.85?'gold':'normal'});}}
+function addParticle(x,y){for(var i=0;i<5;i++){particles.push({x:x+Math.random()*20-10,y:y+Math.random()*20-10,life:1});}}
+document.onkeydown=function(e){if(e.key==='ArrowLeft') chickenX=Math.max(10,chickenX-30);if(e.key==='ArrowRight') chickenX=Math.min(360,chickenX+30);playSound("jump");};
 document.getElementById('crl').onclick=function(){chickenX=Math.max(10,chickenX-30); playSound("jump");};
 document.getElementById('crr').onclick=function(){chickenX=Math.min(360,chickenX+30); playSound("jump");};
 function update(){
@@ -817,7 +720,6 @@ ov=true;
 playSound("hit");
 var b=document.createElement('button');
 b.textContent='🔄 Заново';
-b.style.cssText='display:block;margin:15px auto;font-size:18px';
 b.onclick=function(){document.getElementById('gameContent').innerHTML='';initChickenRain();};
 document.getElementById('gameContent').appendChild(b);
 alert('Игра окончена! Счёт: '+score);
@@ -837,17 +739,15 @@ update();
 gameInterval=setInterval(function(){},1000);
 }
 
-function initSnake(){document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div>';createGameRating();var c=document.getElementById('sc'),ctx=c.getContext('2d'),sn=[{x:200,y:200}],food=rf(),dir={x:20,y:0},sc=0,ov=false;function rf(){return{x:Math.floor(Math.random()*20)*20,y:Math.floor(Math.random()*20)*20};}function cd(nd){if(ov||(nd.x===-dir.x&&nd.y===-dir.y)||(nd.x!==0&&dir.x!==0)||(nd.y!==0&&dir.y!==0))return;dir=nd;playSound("jump");}document.getElementById('su').onclick=function(){cd({x:0,y:-20});};document.getElementById('sd').onclick=function(){cd({x:0,y:20});};document.getElementById('sl').onclick=function(){cd({x:-20,y:0});};document.getElementById('sr').onclick=function(){cd({x:20,y:0});};document.onkeydown=function(e){if(e.key==='ArrowLeft')cd({x:-20,y:0});if(e.key==='ArrowRight')cd({x:20,y:0});if(e.key==='ArrowUp')cd({x:0,y:-20});if(e.key==='ArrowDown')cd({x:0,y:20});e.preventDefault();};function loop(){if(ov)return;var h={x:sn[0].x+dir.x,y:sn[0].y+dir.y};if(h.x<0||h.x>=400||h.y<0||h.y>=400||sn.some(function(s){return s.x===h.x&&s.y===h.y;})){end(sc);return;}sn.unshift(h);if(h.x===food.x&&h.y===food.y){sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;food=rf();}else sn.pop();ctx.clearRect(0,0,400,400);ctx.fillStyle='#ffd700';ctx.fillRect(food.x,food.y,18,18);ctx.fillStyle='#4CAF50';sn.forEach(function(s){ctx.fillRect(s.x,s.y,18,18);});}function end(s){ov=true;clearInterval(gameInterval);playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:15px auto;font-size:18px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initSnake();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+s);}gameInterval=setInterval(loop,100);}
-
+function initSnake(){document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div>';createGameRating();var c=document.getElementById('sc'),ctx=c.getContext('2d'),sn=[{x:200,y:200}],food=rf(),dir={x:20,y:0},sc=0,ov=false;function rf(){return{x:Math.floor(Math.random()*20)*20,y:Math.floor(Math.random()*20)*20};}function cd(nd){if(ov||(nd.x===-dir.x&&nd.y===-dir.y)||(nd.x!==0&&dir.x!==0)||(nd.y!==0&&dir.y!==0))return;dir=nd;playSound("jump");}document.getElementById('su').onclick=function(){cd({x:0,y:-20});};document.getElementById('sd').onclick=function(){cd({x:0,y:20});};document.getElementById('sl').onclick=function(){cd({x:-20,y:0});};document.getElementById('sr').onclick=function(){cd({x:20,y:0});};document.onkeydown=function(e){if(e.key==='ArrowLeft')cd({x:-20,y:0});if(e.key==='ArrowRight')cd({x:20,y:0});if(e.key==='ArrowUp')cd({x:0,y:-20});if(e.key==='ArrowDown')cd({x:0,y:20});e.preventDefault();};function loop(){if(ov)return;var h={x:sn[0].x+dir.x,y:sn[0].y+dir.y};if(h.x<0||h.x>=400||h.y<0||h.y>=400||sn.some(function(s){return s.x===h.x&&s.y===h.y;})){end(sc);return;}sn.unshift(h);if(h.x===food.x&&h.y===food.y){sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;food=rf();}else sn.pop();ctx.clearRect(0,0,400,400);ctx.fillStyle='#ffd700';ctx.fillRect(food.x,food.y,18,18);ctx.fillStyle='#4CAF50';sn.forEach(function(s){ctx.fillRect(s.x,s.y,18,18);});}function end(s){ov=true;clearInterval(gameInterval);playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initSnake();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+s);}gameInterval=setInterval(loop,100);}
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
 document.getElementById('tl').onclick=function(){if(!ov)ml();};document.getElementById('tr').onclick=function(){if(!ov)mr();};
 document.getElementById('tu').onclick=function(){if(!ov)rotate();};document.getElementById('td').onclick=function(){if(!ov)drop();};
 document.onkeydown=function(e){if(ov)return;if(e.key==='ArrowLeft')ml();if(e.key==='ArrowRight')mr();if(e.key==='ArrowDown')drop();if(e.key==='ArrowUp')rotate();e.preventDefault();};
 function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,300,480);for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++)if(board[y][x]){ctx.fillStyle='#ffd700';ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK-1,BLOCK-1);}for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){ctx.fillStyle='#f60';ctx.fillRect((piece.x+x)*BLOCK,(piece.y+y)*BLOCK,BLOCK-1,BLOCK-1);}}
 function loop(){if(ov)return;if(Date.now()-last>500)drop();draw();requestAnimationFrame(loop);}
-function end(){ov=true;playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.style.cssText='display:block;margin:15px auto;font-size:18px';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initTetris();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+sc);}
+function end(){ov=true;playSound("hit");var b=document.createElement('button');b.textContent='🔄 Заново';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initTetris();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+sc);}
 requestAnimationFrame(loop);}
-
 function initGuess(){createGameRating();var n=Math.floor(Math.random()*100)+1,a=0;document.getElementById('gameContent').innerHTML='<p>Угадай число 1-100!</p><input id="gi" type="number"><br><button onclick="guessClick()">Угадать</button><p id="gh"></p>';window.guessClick=function(){var g=parseInt(document.getElementById('gi').value);if(!g)return;a++;playSound("jump");if(g===n){alert('Победа! '+a+' попыток!');addEggs(5,'Победа!');}else document.getElementById('gh').textContent=g<n?'🔺 Больше!':'🔻 Меньше!';document.getElementById('gameScoreDisplay').textContent='Попыток: '+a;};}
 function initRPS(){createGameRating();var sc={p:0,b:0};document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center"><button onclick="rpsClick(0)" style="font-size:22px;padding:18px">🪨</button><button onclick="rpsClick(1)" style="font-size:22px;padding:18px">📄</button><button onclick="rpsClick(2)" style="font-size:22px;padding:18px">✂️</button></div><p id="rr"></p>';window.rpsClick=function(p){var bot=Math.floor(Math.random()*3);playSound("jump");if(p===bot)document.getElementById('rr').textContent='Ничья!';else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){sc.p++;document.getElementById('rr').textContent='Ты победил!';addEggs(2,'Победа!');}else{sc.b++;document.getElementById('rr').textContent='Бот победил!';}document.getElementById('gameScoreDisplay').textContent='Ты: '+sc.p+' | Бот: '+sc.b;};}
 
