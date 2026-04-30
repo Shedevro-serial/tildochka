@@ -182,6 +182,7 @@
 <a onclick="showScreen('quests');closeMenu()">📋 Задания</a>
 <a onclick="showScreen('eggsLB');closeMenu()">🏆 Лидеры</a>
 <a onclick="openShop()">🛒 Магазин</a>
+<a onclick="showScreen('friends');closeMenu()">👥 Друзья</a>
 </div>
 <div id="content">
 
@@ -221,6 +222,20 @@
 
 <div id="quests-screen" class="screen"><div class="chat-container"><h2>📋 Задания</h2><button onclick="generateDailyQuests(true)" style="margin-bottom:12px;background:#ffd700;color:#000;border:none;font-weight:700">🔄 Новые (5🥚)</button><div id="questsList"></div></div></div>
 <div id="eggsLB-screen" class="screen"><div class="chat-container"><h2>🏆 Лидеры по яйцам</h2><div id="eggsLeaderboard"></div></div></div>
+<div id="friends-screen" class="screen">
+    <div class="chat-container">
+        <h2>👥 Друзья</h2>
+        <div style="display:flex;gap:10px;margin-bottom:15px">
+            <input type="text" id="friendNameInput" placeholder="Имя друга" style="flex:1">
+            <button onclick="addFriend()" style="background:#ffd700;color:#000">➕ Добавить</button>
+        </div>
+        <div id="friendsList"></div>
+        <div style="margin-top:20px">
+            <h3>📨 Заявки в друзья</h3>
+            <div id="friendRequests"></div>
+        </div>
+    </div>
+</div>
 </div></div>
 
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
@@ -307,6 +322,7 @@ showScreen('home');showDailyQuote();loadChatMessages();loadMemes();loadIdeas();l
 ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(function(g){loadLeaderboard(g);});
 });
 setInterval(syncOnlineProfile,5000);
+loadGifts();
 }
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
@@ -332,7 +348,7 @@ function progressQuest(t,a){dailyQuests.forEach(function(q){if(q.type===t&&!q.co
 function claimQuest(id){var q=dailyQuests[id];if(!q||!q.completed)return;dailyQuests.splice(id,1);addEggs(q.reward,'Задание!');localStorage.setItem('tildochka_quests_'+new Date().toDateString(),JSON.stringify(dailyQuests));renderQuests();}
 function loadEggsLeaderboard(){db.ref('users').orderByChild('eggs').limitToLast(20).on('value',function(s){var u=[];s.forEach(function(c){u.push({name:c.val().name,eggs:c.val().eggs||0});});u.sort(function(a,b){return b.eggs-a.eggs;});var h='';u.forEach(function(u,i){h+='<div class="eggs-leaderboard-item"><span>'+(i+1)+'</span><span>'+u.name+'</span><span>🥚'+u.eggs+'</span></div>';});document.getElementById('eggsLeaderboard').innerHTML=h||'<p>Нет данных</p>';});}
 
-function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var t=document.getElementById(id+'-screen');if(t)t.classList.add('active');closeMenu();window.scrollTo(0,0);if(id==='quests')loadQuests();if(id==='eggsLB')loadEggsLeaderboard();if(id==='chickentube')loadShorts();}
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var t=document.getElementById(id+'-screen');if(t)t.classList.add('active');closeMenu();window.scrollTo(0,0);if(id==='quests')loadQuests();if(id==='eggsLB')loadEggsLeaderboard();if(id==='chickentube')loadShorts();if(id==='friends') loadFriends();}
 function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
 document.addEventListener('click',function(e){if(!e.target.closest('.burger')&&!e.target.closest('.menu')&&!e.target.closest('.modal-box'))closeMenu();});
 
@@ -1111,6 +1127,188 @@ if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamago
 var pass=prompt("🔐 Введите кодовое слово:");
 if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){loadAllData();}
 else{document.getElementById("blocked").style.display="flex";document.getElementById("loading").style.display="none";}
+// ==================== ДРУЗЬЯ ====================
+var myFriends = [];
+var friendRequests = [];
+
+// Загружаем друзей из Firebase
+function loadFriends() {
+    db.ref('users/' + myUid + '/friends').on('value', function(snap) {
+        myFriends = snap.val() || [];
+        renderFriendsList();
+    });
+    db.ref('users/' + myUid + '/friendRequests').on('value', function(snap) {
+        friendRequests = snap.val() || [];
+        renderFriendRequests();
+    });
+}
+
+// Отображаем список друзей
+function renderFriendsList() {
+    var container = document.getElementById('friendsList');
+    if(!container) return;
+    
+    if(myFriends.length === 0) {
+        container.innerHTML = '<p style="color:#888">У тебя пока нет друзей. Добавь кого-нибудь!</p>';
+        return;
+    }
+    
+    var html = '';
+    for(var i = 0; i < myFriends.length; i++) {
+        var friend = myFriends[i];
+        var onlineStatus = onlineUsers[friend.uid] ? '🟢 онлайн' : '⚫ офлайн';
+        html += '<div class="online-user" style="justify-content:space-between">';
+        html += '<div><span>' + (friend.avatar || '🐔') + '</span> <strong>' + friend.name + '</strong><br><small>' + onlineStatus + '</small></div>';
+        html += '<div><button onclick="sendGift(\'' + friend.uid + '\', \'' + friend.name + '\')" style="background:#ffd700;color:#000;padding:5px 10px;font-size:12px">🎁 Подарок</button></div>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// Отображаем заявки в друзья
+function renderFriendRequests() {
+    var container = document.getElementById('friendRequests');
+    if(!container) return;
+    
+    if(friendRequests.length === 0) {
+        container.innerHTML = '<p style="color:#888">Нет заявок</p>';
+        return;
+    }
+    
+    var html = '';
+    for(var i = 0; i < friendRequests.length; i++) {
+        var req = friendRequests[i];
+        html += '<div class="online-user" style="justify-content:space-between">';
+        html += '<div><span>' + (req.avatar || '🐔') + '</span> <strong>' + req.name + '</strong></div>';
+        html += '<div><button onclick="acceptFriend(\'' + req.uid + '\')" style="background:#4f4;color:#000;padding:5px 10px;font-size:12px">✅ Принять</button>';
+        html += '<button onclick="declineFriend(\'' + req.uid + '\')" style="background:#f44;color:#fff;padding:5px 10px;font-size:12px;margin-left:5px">❌ Отклонить</button></div>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+// Добавить друга по имени
+function addFriend() {
+    var friendName = document.getElementById('friendNameInput').value.trim();
+    if(!friendName) {
+        alert('Введи имя друга');
+        return;
+    }
+    if(friendName === myName) {
+        alert('Нельзя добавить самого себя');
+        return;
+    }
+    
+    db.ref('users').orderByChild('name').equalTo(friendName).once('value', function(snap) {
+        var found = false;
+        snap.forEach(function(child) {
+            found = true;
+            var friendUid = child.key;
+            var friendData = child.val();
+            
+            if(myFriends.some(f => f.uid === friendUid)) {
+                alert('Этот пользователь уже в друзьях');
+                return;
+            }
+            
+            db.ref('users/' + friendUid + '/friendRequests').push({
+                uid: myUid,
+                name: myName,
+                avatar: selectedAvatar.value || '🐔',
+                ts: Date.now()
+            });
+            alert('Заявка отправлена пользователю ' + friendName);
+            document.getElementById('friendNameInput').value = '';
+        });
+        if(!found) {
+            alert('Пользователь с именем "' + friendName + '" не найден');
+        }
+    });
+}
+
+// Принять заявку
+function acceptFriend(uid) {
+    db.ref('users/' + uid).once('value', function(snap) {
+        var userData = snap.val();
+        if(!userData) return;
+        
+        var newFriend = { uid: uid, name: userData.name, avatar: userData.avatarValue || '🐔' };
+        var updatedFriends = myFriends.concat([newFriend]);
+        db.ref('users/' + myUid + '/friends').set(updatedFriends);
+        
+        var reqRef = db.ref('users/' + myUid + '/friendRequests');
+        reqRef.once('value', function(snap) {
+            snap.forEach(function(child) {
+                if(child.val().uid === uid) {
+                    child.ref.remove();
+                }
+            });
+        });
+        
+        alert('Ты и ' + userData.name + ' теперь друзья!');
+    });
+}
+
+// Отклонить заявку
+function declineFriend(uid) {
+    var reqRef = db.ref('users/' + myUid + '/friendRequests');
+    reqRef.once('value', function(snap) {
+        snap.forEach(function(child) {
+            if(child.val().uid === uid) {
+                child.ref.remove();
+                alert('Заявка отклонена');
+            }
+        });
+    });
+}
+
+// Отправить подарок другу
+function sendGift(friendUid, friendName) {
+    var amount = parseInt(prompt('Сколько яиц отправить? (от 1 до ' + myEggs + ')', '5'));
+    if(isNaN(amount) || amount < 1 || amount > myEggs) {
+        alert('Некорректное количество');
+        return;
+    }
+    
+    if(confirm('Отправить ' + amount + ' яиц пользователю ' + friendName + '?')) {
+        myEggs -= amount;
+        localStorage.setItem('tildochka_eggs', myEggs);
+        document.getElementById('headerEggs').textContent = myEggs;
+        db.ref('users/' + myUid).update({ eggs: myEggs });
+        
+        db.ref('users/' + friendUid + '/gifts').push({
+            from: myName,
+            amount: amount,
+            ts: Date.now()
+        });
+        
+        alert('🎁 Подарок отправлен!');
+    }
+}
+
+// Загрузка подарков
+function loadGifts() {
+    db.ref('users/' + myUid + '/gifts').on('child_added', function(snap) {
+        var gift = snap.val();
+        if(gift && confirm('🎁 ' + gift.from + ' отправил(а) тебе ' + gift.amount + ' яиц! Принять?')) {
+            myEggs += gift.amount;
+            localStorage.setItem('tildochka_eggs', myEggs);
+            document.getElementById('headerEggs').textContent = myEggs;
+            db.ref('users/' + myUid).update({ eggs: myEggs });
+            snap.ref.remove();
+            alert('+' + gift.amount + ' яиц получено!');
+        }
+    });
+}
+
+// Показываем экран друзей
+function showFriendsScreen() {
+    showScreen('friends');
+    loadFriends();
+}
+
+// Добавляем в функцию showScreen обработку friends
+// (найди функцию showScreen и добавь в неё строчку)
       </script>
 
 </body>
