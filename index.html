@@ -183,6 +183,7 @@
 <a onclick="showScreen('eggsLB');closeMenu()">🏆 Лидеры</a>
 <a onclick="openShop()">🛒 Магазин</a>
 <a onclick="showScreen('friends');closeMenu()">👥 Друзья</a>
+<a onclick="showScreen('gamesLB');closeMenu()">🎮 Лидеры по играм</a>
 </div>
 <div id="content">
 
@@ -234,6 +235,23 @@
             <h3>📨 Заявки в друзья</h3>
             <div id="friendRequests"></div>
         </div>
+    </div>
+</div>
+<div id="gamesLB-screen" class="screen">
+    <div class="chat-container">
+        <h2>🎮 Лидеры по играм</h2>
+        <div style="margin-bottom:10px">
+            <select id="gameSelect" onchange="loadGameLeaders()" style="background:#333;color:#fff;padding:8px;border-radius:8px">
+                <option value="snake">🐍 Змейка</option>
+                <option value="tetris">🧱 Тетрис</option>
+                <option value="runner">🏃 Раннер</option>
+                <option value="chickenrain">🌧️ Куриный дождь</option>
+                <option value="flappy">🐔 Flappy курица</option>
+                <option value="memory">🧠 Memory</option>
+                <option value="guess">🔢 Угадай число</option>
+            </select>
+        </div>
+        <div id="gameLeadersList"></div>
     </div>
 </div>
 </div></div>
@@ -1342,6 +1360,59 @@ function showFriendsScreen() {
     showScreen('friends');
     loadFriends();
                  }
+// ==================== ЛИДЕРЫ ПО ИГРАМ ====================
+function loadGameLeaders() {
+    var game = document.getElementById('gameSelect').value;
+    var container = document.getElementById('gameLeadersList');
+    if(!container) return;
+    
+    container.innerHTML = '<p style="text-align:center">⏳ Загрузка...</p>';
+    
+    db.ref('gameRatings/' + game).orderByChild('score').limitToLast(10).once('value', function(snap) {
+        var leaders = [];
+        snap.forEach(function(child) {
+            leaders.push({
+                name: child.val().name,
+                score: child.val().score || 0,
+                rating: child.val().rating || 0
+            });
+        });
+        
+        // Сортируем по убыванию счета
+        leaders.sort(function(a, b) { return b.score - a.score; });
+        
+        if(leaders.length === 0) {
+            container.innerHTML = '<p style="color:#888;text-align:center">Нет результатов</p>';
+            return;
+        }
+        
+        var html = '<div style="background:rgba(0,0,0,.3);border-radius:12px;overflow:hidden">';
+        html += '<div style="display:grid;grid-template-columns:50px 1fr 80px 80px;background:#ffd700;color:#000;padding:10px;font-weight:bold">';
+        html += '<div>#</div><div>Игрок</div><div>Счёт</div><div>⭐ Рейтинг</div></div>';
+        
+        for(var i = 0; i < leaders.length; i++) {
+            var l = leaders[i];
+            var medal = '';
+            if(i === 0) medal = '🥇 ';
+            else if(i === 1) medal = '🥈 ';
+            else if(i === 2) medal = '🥉 ';
+            html += '<div style="display:grid;grid-template-columns:50px 1fr 80px 80px;padding:10px;border-bottom:1px solid rgba(255,255,255,.1)">';
+            html += '<div>' + medal + (i+1) + '</div>';
+            html += '<div>' + (l.name || 'Аноним') + '</div>';
+            html += '<div>' + l.score + '</div>';
+            html += '<div>⭐ ' + (l.rating).toFixed(1) + '/10</div>';
+            html += '</div>';
+        }
+        html += '</div>';
+        container.innerHTML = html;
+    });
+}
+
+// Функция для показа экрана лидеров по играм
+function showGamesLBScreen() {
+    showScreen('gamesLB');
+    loadGameLeaders();
+}
       </script>
 
 </body>
