@@ -717,33 +717,41 @@ function update(){
 if(ov) return;
 
 bgX=(bgX-2)%600;
+
+// НЕБО (голубое)
 ctx.fillStyle='#87CEEB';
 ctx.fillRect(0,0,600,200);
+
+// ЗЕМЛЯ (коричневая)
 ctx.fillStyle='#8B4513';
 ctx.fillRect(0,groundY,600,40);
+
+// ТРАВА
 ctx.fillStyle='#228B22';
 for(var i=0;i<5;i++) ctx.fillRect((bgX+i*150)%600,groundY-5,30,8);
 
+// ПЕТУХ (эмодзи)
 ctx.font='40px Arial';
 ctx.fillStyle='#ffd700';
 ctx.fillText('🐓',50,y);
 
+// ПРЕГРАДЫ (КАМНИ 🪨)
 if(Math.random()<0.025 && obstacles.length<2){
-obstacles.push({x:600,y:groundY-15,width:25,height:25});
+obstacles.push({x:600,y:groundY-18,width:28,height:28});
 }
 
 for(var i=0;i<obstacles.length;i++){
-ctx.fillStyle='#555';
-ctx.fillRect(obstacles[i].x,obstacles[i].y,obstacles[i].width,obstacles[i].height);
-ctx.fillStyle='#333';
-ctx.fillRect(obstacles[i].x+5,obstacles[i].y-5,15,8);
+// Рисуем камень эмодзи
+ctx.font='32px Arial';
+ctx.fillStyle='#888';
+ctx.fillText('🪨', obstacles[i].x, obstacles[i].y+25);
 obstacles[i].x-=8;
 
-if(obstacles[i].x < 70 && obstacles[i].x+obstacles[i].width > 30 && y+30 > obstacles[i].y){
+if(obstacles[i].x < 70 && obstacles[i].x+28 > 30 && y+30 > obstacles[i].y){
 end();
 }
 
-if(obstacles[i].x+obstacles[i].width<0){
+if(obstacles[i].x+28<0){
 obstacles.splice(i,1);
 score++;
 playSound("coin");
@@ -763,8 +771,8 @@ y=0;
 vy=0;
 }
 
-ctx.fillStyle='#ffd700';
-ctx.font='16px Arial';
+ctx.fillStyle='#000';
+ctx.font='bold 16px Arial';
 ctx.fillText('Счёт: '+score,500,30);
 requestAnimationFrame(update);
 }
