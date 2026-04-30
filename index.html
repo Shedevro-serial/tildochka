@@ -307,6 +307,7 @@ showScreen('home');showDailyQuote();loadChatMessages();loadMemes();loadIdeas();l
 ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(function(g){loadLeaderboard(g);});
 });
 setInterval(syncOnlineProfile,5000);
+checkDailyBonus();
 }
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
@@ -370,11 +371,14 @@ function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(s){var
 function updateMovieRating(mid,revs){if(!revs.length){var el=document.getElementById('rating-'+mid);if(el)el.textContent='—';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';}
 function loadAllRatings(){Object.keys(moviesData).forEach(function(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push(c.val());});var el=document.getElementById('rating-'+mid);if(el&&revs.length>0){var sum=0;revs.forEach(function(r){sum+=r.rating;});el.textContent='⭐ '+(sum/revs.length).toFixed(1)+'/10';}});});}
 
-function showGame(type){stopGame();currentGame=type;showScreen('game');var titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy курица',memory:'🧠 Memory',tamagotchi:'🐣 Тамагочи',guess:'🔢 Угадай число',rps:'✂️ Камень-ножницы'};document.getElementById('gameTitle').textContent=titles[type]||type;document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';document.getElementById('gameScoreDisplay').textContent='Счёт: 0';if(type==='snake'){initSnake();progressQuest('playSnake',1);}if(type==='tetris'){initTetris();progressQuest('playTetris',1);}if(type==='runner'){initRunner();progressQuest('playRunner',1);}if(type==='chickenrain')initChickenRain();if(type==='flappy')initFlappy();if(type==='memory')initMemory();if(type==='tamagotchi')initTamagotchi();if(type==='guess')initGuess();if(type==='rps')initRPS();progressQuest('play',1);loadLeaderboard(type);}
+function showGame(type){stopGame();currentGame=type;showScreen('game');var titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy курица',memory:'🧠 Memory',tamagotchi:'🐣 Тамагочи',guess:'🔢 Угадай число',rps:'✂️ Камень-ножницы'};document.getElementById('gameTitle').textContent=titles[type]||type;document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';document.getElementById('gameScoreDisplay').textContent='Счёт: 0';var record = getHighScore(type);
+if(record > 0) {
+    document.getElementById('gameScoreDisplay').innerHTML = 'Счёт: 0 | 🏆 Рекорд: ' + record;
+}if(type==='snake'){initSnake();progressQuest('playSnake',1);}if(type==='tetris'){initTetris();progressQuest('playTetris',1);}if(type==='runner'){initRunner();progressQuest('playRunner',1);}if(type==='chickenrain')initChickenRain();if(type==='flappy')initFlappy();if(type==='memory')initMemory();if(type==='tamagotchi')initTamagotchi();if(type==='guess')initGuess();if(type==='rps')initRPS();progressQuest('play',1);loadLeaderboard(type);}
 function stopGame(){if(gameInterval){clearInterval(gameInterval);gameInterval=null;}if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}currentGame=null;document.onkeydown=null;}
 function loadLeaderboard(type){db.ref('gameRatings/'+type).on('value',function(s){var rats=[];s.forEach(function(c){rats.push(c.val());});rats.sort(function(a,b){return(b.score||0)-(a.score||0);});var h='<h3>🏆 Лидеры</h3>';if(!rats.length)h+='<p>Нет игроков</p>';else{for(var i=0;i<Math.min(rats.length,10);i++)h+='<div class="leaderboard-item"><span>'+(i+1)+'. '+(rats[i].name||'—')+'</span><span>'+rats[i].score+' | ⭐'+rats[i].rating+'/10</span></div>';var sum=0;rats.forEach(function(r){sum+=r.rating||0;});var el=document.getElementById('rating-'+type);if(el)el.textContent='⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';}document.getElementById('leaderboard').innerHTML=h;});}
 function createGameRating(){document.getElementById('gameRatingArea').innerHTML='<div class="stars-container"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';var stars=document.querySelectorAll('#gameRatingArea .star');stars.forEach(function(s){s.onclick=function(){gameRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,gameRating);};});updateStars(stars,10);}
-function submitGameRating(){var sc=parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0;db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:sc,ts:Date.now()});addEggs(Math.floor(sc/10),'Игра!');}
+function submitGameRating(){var sc=parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0;db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:sc,ts:Date.now()});addEggs(Math.floor(sc/10),'Игра!')saveHighScore(currentGame, sc);}
 
 // ==================== ТАМАГОЧИ ====================
 var tamagotchiData=null;
@@ -451,6 +455,30 @@ tamagotchiData={emoji:e,name:p.name,hunger:80,happy:80,energy:80,age:0,isAlive:t
 localStorage.setItem('tildochka_tamagotchi',JSON.stringify(tamagotchiData));
 renderTamagotchi();startTamagotchiLoop();
 };
+// ========== ФРАЗЫ ТАМАГОЧИ ==========
+function getTamagotchiPhrase() {
+    var t = tamagotchiData;
+    if(!t || !t.isAlive) return '💀 ...';
+    
+    if(t.hunger < 20) return '🍗 Покорми меня! Я голоден!';
+    if(t.hunger < 40) return '🍽️ Не пора ли перекусить?';
+    if(t.energy < 20) return '😴 Я очень хочу спать...';
+    if(t.energy < 40) return '⚡ Немного устал...';
+    if(t.happy < 30) return '😢 Поиграй со мной, пожалуйста!';
+    if(t.happy < 60) return '🎾 Давай поиграем!';
+    if(t.happy > 85) return '❤️ Я тебя очень люблю!';
+    if(t.hunger > 80 && t.happy > 80) return '😊 Мне так хорошо с тобой!';
+    if(t.age > 40) return '👴 Я уже старый, но счастливый!';
+    
+    var phrases = [
+        '🐔 Куд-куда?',
+        '🥚 Дай яичко!',
+        '🐓 Кукареку!',
+        '🌟 Ты мой лучший друг!',
+        '💕 Спасибо, что заботишься!'
+    ];
+    return phrases[Math.floor(Math.random() * phrases.length)];
+}
 
 function renderTamagotchi(){
 var t=tamagotchiData;
@@ -459,7 +487,26 @@ var deadName=t?t.name:'Питомец';
 document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+(t?t.age:0)+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div>';
 if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
 return;
+// ДОБАВЛЯЕМ ФРАЗУ ПОД ИМЕНЕМ ПИТОМЦА
+var nameElement = document.querySelector('#gameContent h3');
+if(nameElement && !nameElement.nextSibling || (nameElement.nextSibling && nameElement.nextSibling.className !== 'tamagotchi-phrase')) {
+    var oldPhrase = nameElement.parentNode.querySelector('.tamagotchi-phrase');
+    if(oldPhrase) oldPhrase.remove();
+    var phraseDiv = document.createElement('div');
+    phraseDiv.className = 'tamagotchi-phrase';
+    phraseDiv.style.fontSize = '12px';
+    phraseDiv.style.color = '#ffd700';
+    phraseDiv.style.marginTop = '5px';
+    phraseDiv.style.fontStyle = 'italic';
+    phraseDiv.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    phraseDiv.style.padding = '4px 8px';
+    phraseDiv.style.borderRadius = '15px';
+    phraseDiv.style.display = 'inline-block';
+    phraseDiv.style.maxWidth = '200px';
+    phraseDiv.innerHTML = '💬 "' + getTamagotchiPhrase() + '"';
+    nameElement.parentNode.insertBefore(phraseDiv, nameElement.nextSibling);
 }
+
 
 var petClass='tamagotchi-pet';
 if(t.isFat)petClass+=' fat';
@@ -1074,6 +1121,68 @@ if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamago
 var pass=prompt("🔐 Введите кодовое слово:");
 if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){loadAllData();}
 else{document.getElementById("blocked").style.display="flex";document.getElementById("loading").style.display="none";}
+// ==================== ЕЖЕДНЕВНЫЙ БОНУС ====================
+function checkDailyBonus() {
+    var lastBonus = localStorage.getItem('tildochka_last_bonus');
+    var today = new Date().toDateString();
+    
+    if(lastBonus !== today) {
+        var bonus = 10;
+        var streak = parseInt(localStorage.getItem('tildochka_bonus_streak') || '0');
+        
+        // Проверяем, был ли вчера бонус
+        var yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        var lastDate = lastBonus ? new Date(lastBonus).toDateString() : null;
+        
+        if(lastDate === yesterday.toDateString()) {
+            streak = Math.min(streak + 1, 7); // максимум 7 дней подряд
+        } else {
+            streak = 1;
+        }
+        
+        // Бонус за streak
+        if(streak >= 7) bonus = 50;
+        else if(streak >= 3) bonus = 20;
+        else bonus = 10;
+        
+        addEggs(bonus, 'Ежедневный бонус! День ' + streak);
+        localStorage.setItem('tildochka_last_bonus', today);
+        localStorage.setItem('tildochka_bonus_streak', streak);
+        
+        // Показываем уведомление
+        setTimeout(function() {
+            alert('🎁 Ежедневный бонус! +' + bonus + ' яиц (День ' + streak + ')');
+        }, 1000);
+    }
+}
+
+// Вызываем при загрузке (в loadAllData, после загрузки профиля)
+// Добавь в функцию loadAllData, в самый конец, перед закрывающей скобкой:
+// checkDailyBonus();
+// ==================== ТАБЛИЦА РЕКОРДОВ ====================
+function saveHighScore(game, score) {
+    var highscores = JSON.parse(localStorage.getItem('tildochka_highscores') || '{}');
+    var currentBest = highscores[game] || 0;
+    if(score > currentBest) {
+        highscores[game] = score;
+        localStorage.setItem('tildochka_highscores', JSON.stringify(highscores));
+        // Показываем уведомление о рекорде
+        setTimeout(function() {
+            alert('🏆 НОВЫЙ РЕКОРД в ' + game + '! ' + score + ' очков!');
+        }, 100);
+        return true;
+    }
+    return false;
+}
+
+function getHighScore(game) {
+    var highscores = JSON.parse(localStorage.getItem('tildochka_highscores') || '{}');
+    return highscores[game] || 0;
+}
+
+// Добавь в конец функции submitGameRating (перед закрывающей скобкой):
+// saveHighScore(currentGame, sc);
       </script>
 
 </body>
