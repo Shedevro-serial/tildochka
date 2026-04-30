@@ -395,15 +395,15 @@ function getTamagotchiPhrase() {
     var t = tamagotchiData;
     if(!t || !t.isAlive) return '💀 ...';
     
-    if(t.hunger < 20) return '🍗 Покорми меня! Я голоден!';
-    if(t.hunger < 45) return '🍽️ Не пора ли перекусить?';
+    if(t.hunger < 20) return '🍗 Покорми меня тварь! Я голоден!';
+    if(t.hunger < 45) return '🍽️ Не соизволите ли меня покормить?';
     if(t.energy < 20) return '😴 Я очень хочу спать...';
-    if(t.energy < 45) return '⚡ Немного устал...';
-    if(t.happy < 30) return '😢 Поиграй со мной, пожалуйста!';
-    if(t.happy < 60) return '🎾 Давай поиграем!';
-    if(t.happy > 85) return '❤️ Я тебя очень люблю!';
-    if(t.hunger > 80 && t.happy > 80) return '😊 Мне так хорошо с тобой!';
-    if(t.age > 40) return '👴 Я уже старый, но счастливый!';
+    if(t.energy < 45) return '⚡ Немного устал от тебя...';
+    if(t.happy < 30) return '😢 Поиграй со мной дура, пожалуйста!';
+    if(t.happy < 60) return '🎾 Давай поиграем в игру убери мое гавно!';
+    if(t.happy > 85) return '❤️ Я тебя очень убью!';
+    if(t.hunger > 80 && t.happy > 80) return '😊 Мне так хорошо без тебя!';
+    if(t.age > 40) return '👴 Я уже старый, но все ещё не счастливый,потому что ты меня не выпускаешь на волю!';
     
     var phrases = [
         '🐔 Куд-куда?',
