@@ -323,6 +323,33 @@ showScreen('home');showDailyQuote();loadChatMessages();loadMemes();loadIdeas();l
 });
 setInterval(syncOnlineProfile,5000);
 loadGifts();
+// Слушаем входящие заявки в друзья
+db.ref('users/' + myUid + '/friendRequests').on('child_added', function(snap) {
+    var req = snap.val();
+    if(req && req.name) {
+        // Обновляем список заявок на экране друзей, если он открыт
+        if(document.getElementById('friends-screen') && document.getElementById('friends-screen').classList.contains('active')) {
+            loadFriends();
+        }
+        // Показываем уведомление
+        setTimeout(function() {
+            alert('📨 Новая заявка в друзья от ' + req.name + '! Зайди в раздел 👥 Друзья');
+        }, 1000);
+    }
+});
+// Уведомление о новых заявках (даже если не в разделе друзей)
+db.ref('users/' + myUid + '/friendRequests').on('child_added', function(snap) {
+    var req = snap.val();
+    if(req && req.name && !req.notified) {
+        // Помечаем как уведомлённое, чтобы не спамить
+        snap.ref.update({ notified: true });
+        alert('📨 Новая заявка в друзья от ' + req.name + '!');
+        // Если экран друзей открыт, обновляем его
+        if(document.getElementById('friends-screen').classList.contains('active')) {
+            loadFriends();
+        }
+    }
+});
 }
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
