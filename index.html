@@ -390,6 +390,31 @@ var pets={
 '🐶':{name:'Щенок',hr:4,pr:3,er:3,type:'active',desc:'Очень активный! Нужно много гулять и играть.',hint:'Энергичный',growthAge:25,images:{baby:'🐶',adult:'🐕',elder:'🐕‍🦺'}}
 };
 
+// ========== ФРАЗЫ ДЛЯ ЧАТА С ТАМАГОЧИ ==========
+function getTamagotchiPhrase() {
+    var t = tamagotchiData;
+    if(!t || !t.isAlive) return '💀 ...';
+    
+    if(t.hunger < 20) return '🍗 Покорми меня! Я голоден!';
+    if(t.hunger < 45) return '🍽️ Не пора ли перекусить?';
+    if(t.energy < 20) return '😴 Я очень хочу спать...';
+    if(t.energy < 45) return '⚡ Немного устал...';
+    if(t.happy < 30) return '😢 Поиграй со мной, пожалуйста!';
+    if(t.happy < 60) return '🎾 Давай поиграем!';
+    if(t.happy > 85) return '❤️ Я тебя очень люблю!';
+    if(t.hunger > 80 && t.happy > 80) return '😊 Мне так хорошо с тобой!';
+    if(t.age > 40) return '👴 Я уже старый, но счастливый!';
+    
+    var phrases = [
+        '🐔 Куд-куда?',
+        '🥚 Дай яичко!',
+        '🐓 Кукареку!',
+        '🌟 Ты мой лучший друг!',
+        '💕 Спасибо, что заботишься!'
+    ];
+    return phrases[Math.floor(Math.random() * phrases.length)];
+}
+
 // ========== ЭМОЦИИ (ЛЕТЯТ ВВЕРХ ПО ВОЛНЕ) ==========
 function showEmotion(emotion, x, y) {
     var id = Date.now() + Math.random();
@@ -588,6 +613,18 @@ if(roomEl) {
             showEmotion('😢', centerX, centerY);
         }
     }, 4000);
+    
+    // ========== ДОБАВЛЯЕМ ФРАЗУ ПОД ИМЕНЕМ ПИТОМЦА ==========
+    setTimeout(function() {
+        var nameH3 = document.querySelector('#gameContent h3');
+        if(nameH3 && !document.querySelector('.tamagotchi-phrase')) {
+            var phraseDiv = document.createElement('div');
+            phraseDiv.className = 'tamagotchi-phrase';
+            phraseDiv.style.cssText = 'font-size:12px;color:#ffd700;margin-top:6px;font-style:italic;background:rgba(0,0,0,0.4);padding:4px 12px;border-radius:20px;display:inline-block;max-width:220px';
+            phraseDiv.innerHTML = '💬 "' + getTamagotchiPhrase() + '"';
+            nameH3.parentNode.insertBefore(phraseDiv, nameH3.nextSibling);
+        }
+    }, 50);
 }
 }
 
@@ -739,7 +776,7 @@ if(t.energy<18)t.isTired=true;
 else if(t.energy>55)t.isTired=false;
 renderTamagotchi();
 },3000);
-                               }
+     }
 
 // ==================== ОНЛАЙН-ИГРЫ ====================
 function showOnlineGame(type){var users=Object.keys(onlineUsers);if(users.length===0){alert('Нет никого онлайн!');return;}var h='<p>Выбери соперника:</p>';users.forEach(function(u){h+='<button onclick="sendInvite(\''+u+'\',\''+type+'\')" style="display:block;width:100%;margin:4px 0;background:#444">'+onlineUsers[u].name+'</button>';});document.getElementById('inviteContent').innerHTML=h;document.getElementById('inviteTitle').textContent='🎮 Пригласить';document.getElementById('inviteModal').classList.add('show');}
