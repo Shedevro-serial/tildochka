@@ -323,33 +323,7 @@ showScreen('home');showDailyQuote();loadChatMessages();loadMemes();loadIdeas();l
 });
 setInterval(syncOnlineProfile,5000);
 loadGifts();
-// Слушаем входящие заявки в друзья
-db.ref('users/' + myUid + '/friendRequests').on('child_added', function(snap) {
-    var req = snap.val();
-    if(req && req.name) {
-        // Обновляем список заявок на экране друзей, если он открыт
-        if(document.getElementById('friends-screen') && document.getElementById('friends-screen').classList.contains('active')) {
-            loadFriends();
-        }
-        // Показываем уведомление
-        setTimeout(function() {
-            alert('📨 Новая заявка в друзья от ' + req.name + '! Зайди в раздел 👥 Друзья');
-        }, 1000);
-    }
-});
-// Уведомление о новых заявках (даже если не в разделе друзей)
-db.ref('users/' + myUid + '/friendRequests').on('child_added', function(snap) {
-    var req = snap.val();
-    if(req && req.name && !req.notified) {
-        // Помечаем как уведомлённое, чтобы не спамить
-        snap.ref.update({ notified: true });
-        alert('📨 Новая заявка в друзья от ' + req.name + '!');
-        // Если экран друзей открыт, обновляем его
-        if(document.getElementById('friends-screen').classList.contains('active')) {
-            loadFriends();
-        }
-    }
-});
+setupFriendNotifications();
 }
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
@@ -1158,63 +1132,68 @@ else{document.getElementById("blocked").style.display="flex";document.getElement
 var myFriends = [];
 var friendRequests = [];
 
-// Загружаем друзей из Firebase
 function loadFriends() {
+    // Загружаем список друзей
     db.ref('users/' + myUid + '/friends').on('value', function(snap) {
         myFriends = snap.val() || [];
-        renderFriendsList();
+        var container = document.getElementById('friendsList');
+        if(!container) return;
+        
+        if(myFriends.length === 0) {
+            container.innerHTML = '<p style="color:#888">У тебя пока нет друзей. Добавь кого-нибудь!</p>';
+            return;
+        }
+        
+        var html = '';
+        for(var i = 0; i < myFriends.length; i++) {
+            var friend = myFriends[i];
+            var onlineStatus = onlineUsers[friend.uid] ? '🟢 онлайн' : '⚫ офлайн';
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #333">';
+            html += '<div><strong>' + friend.name + '</strong><br><small>' + onlineStatus + '</small></div>';
+            html += '<div><button onclick="sendGift(\'' + friend.uid + '\', \'' + friend.name.replace(/'/g, "\\'") + '\')" style="background:#ffd700;color:#000;padding:5px 12px;border-radius:8px;cursor:pointer">🎁 Подарок</button></div>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
     });
+    
+    // Загружаем заявки в друзья (ТОЛЬКО ОДИН РАЗ)
+    db.ref('users/' + myUid + '/friendRequests').off(); // Отключаем старые
     db.ref('users/' + myUid + '/friendRequests').on('value', function(snap) {
-        friendRequests = snap.val() || [];
-        renderFriendRequests();
+        var requests = [];
+        snap.forEach(function(child) {
+            requests.push({
+                id: child.key,
+                uid: child.val().uid,
+                name: child.val().name,
+                ts: child.val().ts
+            });
+        });
+        friendRequests = requests;
+        
+        var container = document.getElementById('friendRequests');
+        if(!container) return;
+        
+        if(requests.length === 0) {
+            container.innerHTML = '<p style="color:#888">Нет заявок</p>';
+            return;
+        }
+        
+        var html = '';
+        for(var i = 0; i < requests.length; i++) {
+            var req = requests[i];
+            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #333">';
+            html += '<div><strong>' + req.name + '</strong><br><small>хочет добавить в друзья</small></div>';
+            html += '<div>';
+            html += '<button onclick="acceptFriend(\'' + req.uid + '\', \'' + req.id + '\')" style="background:#4f4;color:#000;padding:5px 12px;border-radius:8px;cursor:pointer;margin-right:5px">✅ Принять</button>';
+            html += '<button onclick="declineFriend(\'' + req.id + '\')" style="background:#f44;color:#fff;padding:5px 12px;border-radius:8px;cursor:pointer">❌ Отклонить</button>';
+            html += '</div>';
+            html += '</div>';
+        }
+        container.innerHTML = html;
     });
 }
 
-// Отображаем список друзей
-function renderFriendsList() {
-    var container = document.getElementById('friendsList');
-    if(!container) return;
-    
-    if(myFriends.length === 0) {
-        container.innerHTML = '<p style="color:#888">У тебя пока нет друзей. Добавь кого-нибудь!</p>';
-        return;
-    }
-    
-    var html = '';
-    for(var i = 0; i < myFriends.length; i++) {
-        var friend = myFriends[i];
-        var onlineStatus = onlineUsers[friend.uid] ? '🟢 онлайн' : '⚫ офлайн';
-        html += '<div class="online-user" style="justify-content:space-between">';
-        html += '<div><span>' + (friend.avatar || '🐔') + '</span> <strong>' + friend.name + '</strong><br><small>' + onlineStatus + '</small></div>';
-        html += '<div><button onclick="sendGift(\'' + friend.uid + '\', \'' + friend.name + '\')" style="background:#ffd700;color:#000;padding:5px 10px;font-size:12px">🎁 Подарок</button></div>';
-        html += '</div>';
-    }
-    container.innerHTML = html;
-}
-
-// Отображаем заявки в друзья
-function renderFriendRequests() {
-    var container = document.getElementById('friendRequests');
-    if(!container) return;
-    
-    if(friendRequests.length === 0) {
-        container.innerHTML = '<p style="color:#888">Нет заявок</p>';
-        return;
-    }
-    
-    var html = '';
-    for(var i = 0; i < friendRequests.length; i++) {
-        var req = friendRequests[i];
-        html += '<div class="online-user" style="justify-content:space-between">';
-        html += '<div><span>' + (req.avatar || '🐔') + '</span> <strong>' + req.name + '</strong></div>';
-        html += '<div><button onclick="acceptFriend(\'' + req.uid + '\')" style="background:#4f4;color:#000;padding:5px 10px;font-size:12px">✅ Принять</button>';
-        html += '<button onclick="declineFriend(\'' + req.uid + '\')" style="background:#f44;color:#fff;padding:5px 10px;font-size:12px;margin-left:5px">❌ Отклонить</button></div>';
-        html += '</div>';
-    }
-    container.innerHTML = html;
-}
-
-// Добавить друга по имени
+// Добавить друга
 function addFriend() {
     var friendName = document.getElementById('friendNameInput').value.trim();
     if(!friendName) {
@@ -1233,19 +1212,28 @@ function addFriend() {
             var friendUid = child.key;
             var friendData = child.val();
             
-            if(myFriends.some(f => f.uid === friendUid)) {
-                alert('Этот пользователь уже в друзьях');
-                return;
-            }
-            
-            db.ref('users/' + friendUid + '/friendRequests').push({
-                uid: myUid,
-                name: myName,
-                avatar: selectedAvatar.value || '🐔',
-                ts: Date.now()
+            // Проверяем, не отправляли ли уже заявку
+            var alreadySent = false;
+            db.ref('users/' + friendUid + '/friendRequests').once('value', function(reqSnap) {
+                reqSnap.forEach(function(reqChild) {
+                    if(reqChild.val().uid === myUid) {
+                        alreadySent = true;
+                    }
+                });
+                if(alreadySent) {
+                    alert('Заявка этому пользователю уже отправлена');
+                    return;
+                }
+                
+                // Отправляем заявку
+                db.ref('users/' + friendUid + '/friendRequests').push({
+                    uid: myUid,
+                    name: myName,
+                    ts: Date.now()
+                });
+                alert('✅ Заявка отправлена пользователю ' + friendName);
+                document.getElementById('friendNameInput').value = '';
             });
-            alert('Заявка отправлена пользователю ' + friendName);
-            document.getElementById('friendNameInput').value = '';
         });
         if(!found) {
             alert('Пользователь с именем "' + friendName + '" не найден');
@@ -1254,42 +1242,43 @@ function addFriend() {
 }
 
 // Принять заявку
-function acceptFriend(uid) {
+function acceptFriend(uid, requestId) {
+    // Получаем данные пользователя
     db.ref('users/' + uid).once('value', function(snap) {
         var userData = snap.val();
         if(!userData) return;
         
-        var newFriend = { uid: uid, name: userData.name, avatar: userData.avatarValue || '🐔' };
+        // Добавляем друга в свой список
+        var newFriend = { uid: uid, name: userData.name };
         var updatedFriends = myFriends.concat([newFriend]);
         db.ref('users/' + myUid + '/friends').set(updatedFriends);
         
-        var reqRef = db.ref('users/' + myUid + '/friendRequests');
-        reqRef.once('value', function(snap) {
-            snap.forEach(function(child) {
-                if(child.val().uid === uid) {
-                    child.ref.remove();
-                }
-            });
+        // Добавляем себя в список друзей того пользователя
+        db.ref('users/' + uid + '/friends').once('value', function(friendSnap) {
+            var theirFriends = friendSnap.val() || [];
+            var alreadyFriend = theirFriends.some(f => f.uid === myUid);
+            if(!alreadyFriend) {
+                theirFriends.push({ uid: myUid, name: myName });
+                db.ref('users/' + uid + '/friends').set(theirFriends);
+            }
         });
         
-        alert('Ты и ' + userData.name + ' теперь друзья!');
+        // Удаляем заявку
+        db.ref('users/' + myUid + '/friendRequests/' + requestId).remove();
+        
+        alert('🎉 Ты и ' + userData.name + ' теперь друзья!');
+        loadFriends(); // Обновляем список
     });
 }
 
 // Отклонить заявку
-function declineFriend(uid) {
-    var reqRef = db.ref('users/' + myUid + '/friendRequests');
-    reqRef.once('value', function(snap) {
-        snap.forEach(function(child) {
-            if(child.val().uid === uid) {
-                child.ref.remove();
-                alert('Заявка отклонена');
-            }
-        });
-    });
+function declineFriend(requestId) {
+    db.ref('users/' + myUid + '/friendRequests/' + requestId).remove();
+    alert('❌ Заявка отклонена');
+    loadFriends();
 }
 
-// Отправить подарок другу
+// Отправить подарок
 function sendGift(friendUid, friendName) {
     var amount = parseInt(prompt('Сколько яиц отправить? (от 1 до ' + myEggs + ')', '5'));
     if(isNaN(amount) || amount < 1 || amount > myEggs) {
@@ -1313,29 +1302,46 @@ function sendGift(friendUid, friendName) {
     }
 }
 
-// Загрузка подарков
+// Получить подарки
 function loadGifts() {
     db.ref('users/' + myUid + '/gifts').on('child_added', function(snap) {
         var gift = snap.val();
-        if(gift && confirm('🎁 ' + gift.from + ' отправил(а) тебе ' + gift.amount + ' яиц! Принять?')) {
-            myEggs += gift.amount;
-            localStorage.setItem('tildochka_eggs', myEggs);
-            document.getElementById('headerEggs').textContent = myEggs;
-            db.ref('users/' + myUid).update({ eggs: myEggs });
-            snap.ref.remove();
-            alert('+' + gift.amount + ' яиц получено!');
+        if(gift) {
+            var message = '🎁 ' + gift.from + ' отправил(а) тебе ' + gift.amount + ' яиц!';
+            if(confirm(message + ' Принять?')) {
+                myEggs += gift.amount;
+                localStorage.setItem('tildochka_eggs', myEggs);
+                document.getElementById('headerEggs').textContent = myEggs;
+                db.ref('users/' + myUid).update({ eggs: myEggs });
+                snap.ref.remove();
+                alert('+' + gift.amount + ' яиц получено!');
+            }
         }
     });
 }
 
-// Показываем экран друзей
+// Уведомление о новых заявках
+function setupFriendNotifications() {
+    db.ref('users/' + myUid + '/friendRequests').on('child_added', function(snap) {
+        var req = snap.val();
+        if(req && req.name && req.uid !== myUid) {
+            // Показываем уведомление
+            setTimeout(function() {
+                alert('📨 Новая заявка в друзья от ' + req.name + '!');
+                // Если экран друзей открыт, обновляем
+                if(document.getElementById('friends-screen') && document.getElementById('friends-screen').classList.contains('active')) {
+                    loadFriends();
+                }
+            }, 500);
+        }
+    });
+}
+
+// Функция для показа экрана друзей
 function showFriendsScreen() {
     showScreen('friends');
     loadFriends();
-}
-
-// Добавляем в функцию showScreen обработку friends
-// (найди функцию showScreen и добавь в неё строчку)
+                 }
       </script>
 
 </body>
