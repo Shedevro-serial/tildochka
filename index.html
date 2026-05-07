@@ -254,6 +254,8 @@
 <a onclick="showScreen('gamesLB');closeMenu()">🎮 Лидеры по играм</a>
 <a onclick="suggestQuote();closeMenu()">💬 Предложить цитату</a>
 <a onclick="showQuoteAdmin();closeMenu()">👑 Управление цитатами</a>
+<a onclick="suggestJoke();closeMenu()">😂 Предложить шутку</a>
+<a onclick="showJokeAdmin();closeMenu()">👑 Управление шутками</a>
 </div>
 <div id="content">
 
@@ -443,6 +445,134 @@ tags:['комедия','фантастика','семейный'],type:'movie'}
 var shopItems={'👑':50,'🌟':30,'💎':100,'🔥':40,'💀':60,'🤖':70,'👻':50,'🎭':30,'🦄':150,'🐉':200,'🦋':80,'🌈':90};
 var questTemplates=[{text:'Сыграй 3 игры',type:'play',target:3,reward:10},{text:'Напиши отзыв',type:'review',target:1,reward:15},{text:'Отправь 5 сообщений',type:'chat',target:5,reward:12},{text:'Поставь лайк 3 идеям',type:'like',target:3,reward:8},{text:'Сыграй в Змейку',type:'playSnake',target:1,reward:5},{text:'Сыграй в Тетрис',type:'playTetris',target:1,reward:5},{text:'Сыграй в Раннер',type:'playRunner',target:1,reward:5}];
 
+// ==================== ШУТКИ (АНЕКДОТЫ) ====================
+var jokesList = [];
+var baseJokes = [
+    "— Доктор, я ходить буду?\n— Ну, если только под себя.\n— А плавать?\n— Если будете много ходить.",
+    "Что сказал нуль восьмёрке?\n— «Ты так стянута! Надо бы тебе развязаться!»",
+    "Как называется битва без рук и без ног?\nБитва бесконечностей...",
+    "Как называется корова которая не даёт молоко?\nЖадина говядина",
+    "Как называется бутерброд без ничего?\nНищеброд",
+    "Что сказал синоптик когда умер его коллега?\nСегодня -1",
+    "Какая любимая поговорка снайпера?\nВ одно ухо влетело из другого вылетело",
+    "Почему птицы улетают на юг?\nПотому что им пешком не дойти",
+    "Почему с бомжами весело играть в догонялки?\nОни никогда не скажут «я в домике»",
+    "Как каннибалы называют морг?\nАдвент календарь...",
+    "Почему в детдоме дети худые?\nОни не едят за маму и папу...",
+    "Что мы все про Фадееву разговариваем? Фадеева она и в Африке Фадеева"
+];
+
+function loadJokesFromFirebase() {
+    db.ref('jokes').once('value', function(snap) {
+        var userJokes = [];
+        snap.forEach(function(child) {
+            userJokes.push({
+                id: child.key,
+                text: child.val().text,
+                approved: child.val().approved || false,
+                suggestedBy: child.val().suggestedBy,
+                ts: child.val().ts
+            });
+        });
+        var approvedJokes = userJokes.filter(j => j.approved === true);
+        window.jokesList = [...baseJokes, ...approvedJokes.map(j => j.text)];
+    });
+}
+
+function suggestJoke() {
+    var text = prompt('😂 Введите текст шутки/анекдота:');
+    if(!text || text.length < 10) {
+        alert('Шутка слишком короткая (минимум 10 символов)');
+        return;
+    }
+    
+    db.ref('jokes').push({
+        text: text,
+        suggestedBy: myName,
+        approved: false,
+        ts: Date.now()
+    });
+    
+    alert('✅ Спасибо! Шутка отправлена на модерацию. Она появится после одобрения.');
+}
+
+function showJokeAdmin() {
+    if(myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
+        alert('⛔ Доступ только для администратора');
+        return;
+    }
+    
+    db.ref('jokes').once('value', function(snap) {
+        var all = [];
+        snap.forEach(function(child) {
+            all.push({
+                id: child.key,
+                text: child.val().text,
+                approved: child.val().approved || false,
+                suggestedBy: child.val().suggestedBy
+            });
+        });
+        
+        var win = window.open('', '_blank');
+        win.document.write(`
+            <html><head><title>Управление шутками</title></head>
+            <body style="background:#1a1a1a;color:#fff;font-family:Arial;padding:20px">
+            <h2>😂 Управление шутками</h2>
+            <div style="margin-bottom:20px">
+                <strong>Базовых шуток: ${baseJokes.length}</strong><br>
+                <strong>Предложенных: ${all.filter(j => !j.approved).length} на модерации</strong><br>
+                <strong>Одобренных: ${all.filter(j => j.approved).length}</strong>
+            </div>
+            <h3>⏳ Ожидают одобрения:</h3>
+            ${all.filter(j => !j.approved).map(j => `
+                <div style="border:1px solid #444;padding:10px;margin:10px 0;border-radius:8px">
+                    <div>${j.text.replace(/\n/g, '<br>')}</div>
+                    <div style="font-size:11px;color:#aaa">Предложил: ${j.suggestedBy}</div>
+                    <button onclick="approveJoke('${j.id}')" style="background:#4f4;color:#000;padding:5px 10px;margin-top:5px">✅ Одобрить</button>
+                    <button onclick="deleteJoke('${j.id}')" style="background:#f44;color:#fff;padding:5px 10px;margin-top:5px">🗑️ Удалить</button>
+                </div>
+            `).join('') || '<p>Нет новых предложений</p>'}
+            <h3>✅ Одобренные пользовательские шутки:</h3>
+            ${all.filter(j => j.approved).map(j => `
+                <div style="border:1px solid #444;padding:10px;margin:10px 0;border-radius:8px">
+                    <div>${j.text.replace(/\n/g, '<br>')}</div>
+                    <div style="font-size:11px;color:#aaa">Предложил: ${j.suggestedBy}</div>
+                    <button onclick="deleteJoke('${j.id}')" style="background:#f44;color:#fff;padding:5px 10px;margin-top:5px">🗑️ Удалить</button>
+                </div>
+            `).join('') || '<p>Нет одобренных пользовательских шуток</p>'}
+            <hr>
+            <h3>📜 Базовые шутки (${baseJokes.length} шт.):</h3>
+            ${baseJokes.map(j => `
+                <div style="border:1px solid #333;padding:8px;margin:5px 0;border-radius:5px;background:#222">
+                    <div>${j.replace(/\n/g, '<br>')}</div>
+                </div>
+            `).join('')}
+            <script>
+                function approveJoke(id) {
+                    fetch(window.location.href).then(() => {
+                        fetch('/?approveJoke=' + id);
+                    });
+                    alert('Одобрено! Обновите страницу');
+                }
+                function deleteJoke(id) {
+                    fetch('/?deleteJoke=' + id);
+                    alert('Удалено! Обновите страницу');
+                }
+        `);
+    });
+}
+
+function approveJoke(id) {
+    db.ref('jokes/' + id).update({ approved: true });
+    alert('✅ Шутка одобрена');
+}
+
+function deleteJoke(id) {
+    if(confirm('Удалить шутку?')) {
+        db.ref('jokes/' + id).remove();
+        alert('🗑️ Шутка удалена');
+    }
+}
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 function loadAllData() {
     // Показываем кастомную загрузку
@@ -456,14 +586,30 @@ function loadAllData() {
     // РАВНОМЕРНОЕ РАСПРЕДЕЛЕНИЕ: считаем количество задач
     var totalTasks = 0;
     
-    // Анекдот меняется каждые 5 секунд
-    var jokeInterval = setInterval(function() {
-        var jokeIndex = Math.floor(Math.random() * loadingJokes.length);
-        var jokeText = loadingJokes[jokeIndex];
+// Загружаем одобренные шутки из Firebase
+var currentJokes = [...baseJokes]; // начинаем с базовых
+
+db.ref('jokes').once('value', function(snap) {
+    var approvedJokes = [];
+    snap.forEach(function(child) {
+        if(child.val().approved === true) {
+            approvedJokes.push(child.val().text);
+        }
+    });
+    // Добавляем одобренные пользовательские шутки
+    currentJokes = [...baseJokes, ...approvedJokes];
+});
+
+// Анекдот меняется каждые 5 секунд (теперь из currentJokes)
+var jokeInterval = setInterval(function() {
+    if(currentJokes.length > 0) {
+        var jokeIndex = Math.floor(Math.random() * currentJokes.length);
+        var jokeText = currentJokes[jokeIndex];
         jokeText = jokeText.replace(/\n/g, '<br>');
         var jokeDiv = document.getElementById('loadingJoke');
         if(jokeDiv) jokeDiv.innerHTML = '💬 ' + jokeText;
-    }, 5000);
+    }
+}, 5000);
     
     function updateProgress(stepName) {
         completedSteps++;
