@@ -227,6 +227,14 @@
 
 <div id="quests-screen" class="screen"><div class="chat-container"><h2>📋 Задания</h2><button onclick="generateDailyQuests(true)" style="margin-bottom:12px;background:#ffd700;color:#000;border:none;font-weight:700">🔄 Новые (5🥚)</button><div id="questsList"></div></div></div>
 <div id="eggsLB-screen" class="screen"><div class="chat-container"><h2>🏆 Лидеры по яйцам</h2><div id="eggsLeaderboard"></div></div></div>
+<div id="dailyQuote" style="max-width:600px;margin:25px auto 0">
+    <h3 style="color:#ffd700">💬 Цитата дня</h3>
+    <div class="quote-box">
+        <div class="quote-text">«Загрузка...»</div>
+        <div class="quote-author">— Tildochka</div>
+        <div class="quote-movie">🎬 Tildochka</div>
+    </div>
+</div>
 <div id="friends-screen" class="screen">
     <div class="chat-container">
         <h2>👥 Друзья</h2>
@@ -2177,7 +2185,15 @@ function loadQuotesFromFirebase() {
 
 // Устанавливаем текущую цитату
 function setCurrentQuote() {
-    if(!window.quotesList || window.quotesList.length === 0) return;
+    // Если нет цитат из Firebase, используем базовые
+    if(!window.quotesList || window.quotesList.length === 0) {
+        window.quotesList = allBaseQuotes.map((q, i) => ({
+            id: 'q_' + i,
+            text: q.text,
+            author: q.author,
+            movie: q.movie
+        }));
+    }
     
     var now = Date.now();
     var halfHour = 30 * 60 * 1000;
@@ -2203,9 +2219,33 @@ function suggestQuote() {
         alert('Цитата слишком короткая (минимум 5 символов)');
         return;
     }
-    var author = prompt('✍️ Автор цитаты:');
+    
+    var author = prompt('✍️ Автор цитаты:', 'Аноним');
     if(!author) author = 'Аноним';
-    var movie = prompt('🎬 Из какого фильма/игры? (можно пропустить)');
+    
+    // Предлагаем выбрать фильм из списка
+    var movieOptions = [
+        'Приключения 4 куриц',
+        'Расческа для лысых',
+        'Пираты',
+        'Американцы зло',
+        'Приключения ПТА',
+        'Tildochka',
+        'Другое (введу сам)'
+    ];
+    
+    var movieChoice = prompt('🎬 Выбери фильм (введи номер):\n' + 
+        movieOptions.map((m, i) => (i+1) + '. ' + m).join('\n'), '6');
+    
+    var movie = '';
+    if(movieChoice && !isNaN(movieChoice)) {
+        var idx = parseInt(movieChoice) - 1;
+        if(idx >= 0 && idx < movieOptions.length - 1) {
+            movie = movieOptions[idx];
+        } else if(idx === movieOptions.length - 1) {
+            movie = prompt('Введи название фильма/игры:', 'Tildochka');
+        }
+    }
     if(!movie) movie = 'Tildochka';
     
     db.ref('quotes').push({
