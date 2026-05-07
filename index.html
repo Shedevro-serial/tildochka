@@ -184,6 +184,8 @@
 <a onclick="openShop()">🛒 Магазин</a>
 <a onclick="showScreen('friends');closeMenu()">👥 Друзья</a>
 <a onclick="showScreen('gamesLB');closeMenu()">🎮 Лидеры по играм</a>
+<a onclick="suggestQuote();closeMenu()">💬 Предложить цитату</a>
+<a onclick="showQuoteAdmin();closeMenu()">👑 Управление цитатами</a>
 </div>
 <div id="content">
 
@@ -364,9 +366,6 @@ function closeProfileModal(){document.getElementById('profileModal').classList.r
 function openShop(){document.getElementById('shopEggs').textContent=myEggs;var g=document.getElementById('shopGrid');g.innerHTML='';Object.keys(shopItems).forEach(function(e){var p=shopItems[e];var o=boughtAvatars.includes(e);var d=document.createElement('div');d.className='shop-item'+(o||myEggs<p?' locked':'');d.innerHTML=e+'<span class="price">'+p+'</span>';if(!o&&myEggs>=p)d.onclick=function(){buyAvatar(e,p);};else if(o)d.style.border='2px solid #4f4';g.appendChild(d);});document.getElementById('shopModal').classList.add('show');}
 function buyAvatar(e,p){if(myEggs<p)return;if(boughtAvatars.includes(e))return;myEggs-=p;boughtAvatars.push(e);localStorage.setItem('tildochka_eggs',myEggs);document.getElementById('headerEggs').textContent=myEggs;db.ref('users/'+myUid).update({eggs:myEggs,boughtAvatars:boughtAvatars});openShop();}
 function addEggs(a,r){myEggs+=a;localStorage.setItem('tildochka_eggs',myEggs);document.getElementById('headerEggs').textContent=myEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
-var dailyQuests=[];
-function generateDailyQuests(f){if(f){if(myEggs<5)return;myEggs-=5;localStorage.setItem('tildochka_eggs',myEggs);document.getElementById('headerEggs').textContent=myEggs;db.ref('users/'+myUid).update({eggs:myEggs});localStorage.removeItem('tildochka_quests_'+new Date().toDateString());localStorage.removeItem('tildochka_qp');}var s=localStorage.getItem('tildochka_quests_'+new Date().toDateString());if(s&&!f){dailyQuests=JSON.parse(s);return;}dailyQuests=[];var sh=questTemplates.sort(function(){return Math.random()-0.5;});for(var i=0;i<3;i++)dailyQuests.push({id:i,text:sh[i].text,type:sh[i].type,target:sh[i].target,reward:sh[i].reward,progress:0,completed:false});localStorage.setItem('tildochka_quests_'+new Date().toDateString(),JSON.stringify(dailyQuests));}
-function loadQuests(){generateDailyQuests();var qp=JSON.parse(localStorage.getItem('tildochka_qp')||'{}');dailyQuests.forEach(function(q){if(qp[q.id])q.progress=qp[q.id];if(q.progress>=q.target)q.completed=true;});renderQuests();}
 function renderQuests(){var c=document.getElementById('questsList');if(!c)return;c.innerHTML=dailyQuests.map(function(q){return'<div class="daily-quest'+(q.completed?' completed':'')+'"><div><b>'+q.text+'</b><br><small>'+q.progress+'/'+q.target+'</small></div><div>'+(q.completed?'✅ <button onclick="claimQuest('+q.id+')">🥚'+q.reward+'</button>':'🥚'+q.reward)+'</div></div>';}).join('');}
 function progressQuest(t,a){dailyQuests.forEach(function(q){if(q.type===t&&!q.completed){q.progress=Math.min(q.target,q.progress+a);if(q.progress>=q.target)q.completed=true;}});var qp={};dailyQuests.forEach(function(q){qp[q.id]=q.progress;});localStorage.setItem('tildochka_qp',JSON.stringify(qp));renderQuests();}
 function claimQuest(id){var q=dailyQuests[id];if(!q||!q.completed)return;dailyQuests.splice(id,1);addEggs(q.reward,'Задание!');localStorage.setItem('tildochka_quests_'+new Date().toDateString(),JSON.stringify(dailyQuests));renderQuests();}
@@ -2010,6 +2009,214 @@ function initShooter(){
     
     gameInterval = setInterval(function(){}, 1000);
 }
+// ==================== ЦИТАТЫ ДНЯ (30+ штук) ====================
+var allBaseQuotes = [
+    // Приключения 4 куриц
+    { text: 'Курица — это не птица, это образ жизни.', author: 'Курица №1', movie: 'Приключения 4 куриц' },
+    { text: 'Я не умею летать, но я умею мечтать.', author: 'Курица №2', movie: 'Приключения 4 куриц' },
+    { text: 'Четыре курицы — это уже стая!', author: 'Петух', movie: 'Приключения 4 куриц' },
+    { text: 'Лучше быть курицей в стае, чем орлом в одиночестве.', author: 'Курица №4', movie: 'Приключения 4 куриц' },
+    { text: 'Наш девиз: не клюём, а кусаем!', author: 'Курица №1', movie: 'Приключения 4 куриц' },
+    
+    // Расческа для лысых
+    { text: 'Лысина — это не приговор, это аэродром для поцелуев.', author: 'Главный герой', movie: 'Расческа для лысых' },
+    { text: 'У меня нет волос, зато есть совесть.', author: 'Главный герой', movie: 'Расческа для лысых' },
+    { text: 'Расческа — это не инструмент, это символ надежды.', author: 'Парикмахер', movie: 'Расческа для лысых' },
+    { text: 'Я лысый, но я счастливый!', author: 'Главный герой', movie: 'Расческа для лысых' },
+    { text: 'Не имей сто волос, а имей одного друга.', author: 'Лысый мудрец', movie: 'Расческа для лысых' },
+    
+    // Пираты
+    { text: 'Пираты не грабят школы. Только сокровища.', author: 'Капитан Крюк', movie: 'Пираты' },
+    { text: 'Йо-хо-хо, и кусочек рома! А у меня компот.', author: 'Боцман', movie: 'Пираты' },
+    { text: 'Самое страшное в море — это отсутствие интернета.', author: 'Юнга', movie: 'Пираты' },
+    { text: 'Пират без ноги — ещё не пират. Пират без шляпы — никто.', author: 'Капитан', movie: 'Пираты' },
+    { text: 'Карта сокровищ оказалась списком домашних заданий.', author: 'Повар', movie: 'Пираты' },
+    
+    // Американцы зло
+    { text: 'Американец в России — как ёжик в тумане.', author: 'Друг', movie: 'Американцы зло' },
+    { text: 'У них бургеры с кетчупом, у нас душа с правдой.', author: 'Главный герой', movie: 'Американцы зло' },
+    { text: 'Я не злой, я просто не выспался.', author: 'Американец', movie: 'Американцы зло' },
+    { text: 'Ватрушка — это наша филосовская категория.', author: 'Бабушка', movie: 'Американцы зло' },
+    
+    // Приключения ПТА
+    { text: 'Татьяна Афанасьевна помнит даже динозавров.', author: 'Ученик', movie: 'Приключения ПТА' },
+    { text: 'Она работала в школе ещё до изобретения мела.', author: 'Директор', movie: 'Приключения ПТА' },
+    { text: 'Её первое родительское собрание было в пещере.', author: 'Историк', movie: 'Приключения ПТА' },
+    { text: 'У неё дневники были на камнях.', author: 'Археолог', movie: 'Приключения ПТА' },
+    { text: 'Татьяна Афанасьевна — учительница из легенды.', author: 'Голос за кадром', movie: 'Приключения ПТА' },
+    
+    // Общие смешные
+    { text: 'Самое сложное домашнее задание — найти мотивацию.', author: 'Ленивый ученик', movie: 'Школа жизни' },
+    { text: 'Мой кот умнее меня. Он хотя бы спит по ночам.', author: 'Студент', movie: 'Моя жизнь' },
+    { text: 'Завтра — идеальный день, чтобы начать новую жизнь.', author: 'Вечный прокрастинатор', movie: 'Понедельник' },
+    { text: 'Диплом — это просто бумажка. А яйца — это валюта!', author: 'Tildochka', movie: 'Tildochka' },
+    { text: 'Лучшая игра — это та, в которую можно выиграть яйца.', author: 'Игрок', movie: 'Tildochka' },
+    { text: 'Жизнь слишком коротка, чтобы не стрелять по птицам в тире.', author: 'Снайпер', movie: 'Tildochka' }
+];
+
+// Загружаем цитаты из Firebase
+function loadQuotesFromFirebase() {
+    db.ref('quotes').once('value', function(snap) {
+        var userQuotes = [];
+        snap.forEach(function(child) {
+            userQuotes.push({
+                id: child.key,
+                text: child.val().text,
+                author: child.val().author,
+                movie: child.val().movie,
+                approved: child.val().approved || false,
+                ts: child.val().ts,
+                suggestedBy: child.val().suggestedBy
+            });
+        });
+        
+        var approvedUserQuotes = userQuotes.filter(q => q.approved === true);
+        var allQuotes = [...allBaseQuotes, ...approvedUserQuotes];
+        
+        // Сохраняем в quotesList
+        window.quotesList = allQuotes.map((q, i) => ({
+            id: 'q_' + i,
+            text: q.text,
+            author: q.author,
+            movie: q.movie
+        }));
+        
+        setCurrentQuote();
+        
+        // Обновляем цитату каждые 30 минут
+        if(window.quoteInterval) clearInterval(window.quoteInterval);
+        window.quoteInterval = setInterval(function() {
+            setCurrentQuote();
+        }, 30 * 60 * 1000);
+    });
+}
+
+// Устанавливаем текущую цитату
+function setCurrentQuote() {
+    if(!window.quotesList || window.quotesList.length === 0) return;
+    
+    var now = Date.now();
+    var halfHour = 30 * 60 * 1000;
+    var index = Math.floor(now / halfHour) % window.quotesList.length;
+    var current = window.quotesList[index];
+    
+    var quoteBox = document.querySelector('#home-screen .catalog .quote-box');
+    if(quoteBox) {
+        quoteBox.innerHTML = `
+            <div class="quote-box">
+                <div class="quote-text">«${current.text}»</div>
+                <div class="quote-author">— ${current.author}</div>
+                <div class="quote-movie">🎬 ${current.movie}</div>
+            </div>
+        `;
+    }
+}
+
+// Предложить цитату
+function suggestQuote() {
+    var text = prompt('📝 Введите текст цитаты:');
+    if(!text || text.length < 5) {
+        alert('Цитата слишком короткая (минимум 5 символов)');
+        return;
+    }
+    var author = prompt('✍️ Автор цитаты:');
+    if(!author) author = 'Аноним';
+    var movie = prompt('🎬 Из какого фильма/игры? (можно пропустить)');
+    if(!movie) movie = 'Tildochka';
+    
+    db.ref('quotes').push({
+        text: text,
+        author: author,
+        movie: movie,
+        suggestedBy: myName,
+        approved: false,
+        ts: Date.now()
+    });
+    
+    alert('✅ Спасибо! Цитата отправлена на модерацию. Она появится после одобрения.');
+}
+
+// Админ-панель цитат
+function showQuoteAdmin() {
+    if(myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
+        alert('⛔ Доступ только для администратора');
+        return;
+    }
+    
+    db.ref('quotes').once('value', function(snap) {
+        var all = [];
+        snap.forEach(function(child) {
+            all.push({
+                id: child.key,
+                text: child.val().text,
+                author: child.val().author,
+                movie: child.val().movie,
+                approved: child.val().approved || false,
+                suggestedBy: child.val().suggestedBy
+            });
+        });
+        
+        var win = window.open('', '_blank');
+        win.document.write(`
+            <html><head><title>Управление цитатами</title></head>
+            <body style="background:#1a1a1a;color:#fff;font-family:Arial;padding:20px">
+            <h2>📝 Управление цитатами (${all.length} шт.)</h2>
+            <div style="margin-bottom:20px">
+                <strong>Базовых цитат: ${allBaseQuotes.length}</strong><br>
+                <strong>Предложенных: ${all.filter(q => !q.approved).length} на модерации</strong><br>
+                <strong>Одобренных: ${all.filter(q => q.approved).length}</strong>
+            </div>
+            <h3>⏳ Ожидают одобрения:</h3>
+            ${all.filter(q => !q.approved).map(q => `
+                <div style="border:1px solid #444;padding:10px;margin:10px 0;border-radius:8px">
+                    <div style="font-style:italic">«${q.text}»</div>
+                    <div>— ${q.author} (${q.movie})</div>
+                    <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
+                    <button onclick="approveQuote('${q.id}')" style="background:#4f4;color:#000;padding:5px 10px;margin-top:5px">✅ Одобрить</button>
+                    <button onclick="deleteQuote('${q.id}')" style="background:#f44;color:#fff;padding:5px 10px;margin-top:5px">🗑️ Удалить</button>
+                </div>
+            `).join('') || '<p>Нет новых предложений</p>'}
+            <h3>✅ Одобренные пользовательские цитаты:</h3>
+            ${all.filter(q => q.approved).map(q => `
+                <div style="border:1px solid #444;padding:10px;margin:10px 0;border-radius:8px">
+                    <div style="font-style:italic">«${q.text}»</div>
+                    <div>— ${q.author} (${q.movie})</div>
+                    <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
+                    <button onclick="deleteQuote('${q.id}')" style="background:#f44;color:#fff;padding:5px 10px;margin-top:5px">🗑️ Удалить</button>
+                </div>
+            `).join('') || '<p>Нет одобренных пользовательских цитат</p>'}
+            <hr>
+            <h3>📜 Базовые цитаты (${allBaseQuotes.length} шт.):</h3>
+            ${allBaseQuotes.map(q => `
+                <div style="border:1px solid #333;padding:8px;margin:5px 0;border-radius:5px;background:#222">
+                    <div style="font-style:italic">«${q.text}»</div>
+                    <div>— ${q.author} (${q.movie})</div>
+                </div>
+            `).join('')}
+            <script>
+                function approveQuote(id) {
+                    fetch(window.location.href).then(() => {
+                        fetch('/?approve=' + id);
+                    });
+                    alert('Одобрено! Обновите страницу');
+                }
+                function deleteQuote(id) {
+                    fetch('/?delete=' + id);
+                    alert('Удалено! Обновите страницу');
+                }
+            </script>
+            </body></html>
+        `);
+    });
+}
+
+// Показываем цитату при загрузке
+function initQuotes() {
+    loadQuotesFromFirebase();
+}
+
+// Запускаем
+setTimeout(initQuotes, 2000);
       </script>
 
 </body>
