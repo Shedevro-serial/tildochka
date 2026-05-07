@@ -450,13 +450,15 @@ function loadAllData() {
     if(loadingDiv) loadingDiv.style.display = 'flex';
     
     var progress = 0;
-    var totalSteps = 13;
-    var currentStep = 0;
+    var totalSteps = 0;
+    var completedSteps = 0;
     
-    function updateProgress(stepName) {
-        currentStep++;
-        progress = Math.floor((currentStep / totalSteps) * 100);
+    // Счётчик для отслеживания завершённых задач
+    function taskCompleted(stepName) {
+        completedSteps++;
+        progress = Math.floor((completedSteps / totalSteps) * 100);
         if(progress > 100) progress = 100;
+        
         var fill = document.getElementById('loadingFill');
         var percent = document.getElementById('loadingPercent');
         if(fill) fill.style.width = progress + '%';
@@ -473,69 +475,245 @@ function loadAllData() {
         }
     }
     
-    updateProgress('Загрузка профиля...');
+    // Загружаем профиль
     loadProfile();
     setupOnline();
     
-    updateProgress('Настройка онлайн...');
-    
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    updateProgress('Загрузка яиц...');
-    Promise.all([
-        new Promise(function(r){
-            db.ref('users/'+myUid+'/eggs').once('value',function(s){
-                myEggs=s.val()||savedEggs||0;
-                if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
-                document.getElementById('headerEggs').textContent=myEggs;
-                r();
-            });
-        }),
-        new Promise(function(r){
-            db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
-                boughtAvatars=s.val()||[];
-                r();
-            });
-        })
-    ]).then(function(){
-        updateProgress('Загрузка данных пользователя...');
-        
-        updateProgress('Загрузка чатов...');
-        loadChatMessages();
-        
-        updateProgress('Загрузка мемов...');
-        loadMemes();
-        
-        updateProgress('Загрузка идей...');
-        loadIdeas();
-        
-        updateProgress('Загрузка рейтингов...');
-        loadAllRatings();
-        
-        updateProgress('Загрузка шортсов...');
-        loadShorts();
-        
-        updateProgress('Загрузка игр...');
-        ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(function(g){
-            loadLeaderboard(g);
+    // СПИСОК ВСЕХ ЗАДАЧ ДЛЯ ЗАГРУЗКИ
+    var loadTasks = [];
+    
+    // 1. Яйца и аватары
+    loadTasks.push(new Promise(function(r){
+        db.ref('users/'+myUid+'/eggs').once('value',function(s){
+            myEggs=s.val()||savedEggs||0;
+            if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
+            document.getElementById('headerEggs').textContent=myEggs;
+            taskCompleted('Яйца загружены');
+            r();
         });
-        
-        updateProgress('Загрузка цитат...');
-        initQuotes();
-        
-        updateProgress('Загрузка подарков...');
-        loadGifts();
-        
-        updateProgress('Загрузка заданий...');
-        generateDailyQuests(false);
-        
-        updateProgress('Настройка уведомлений...');
-        setupFriendNotifications();
-        
-        updateProgress('Почти готово...');
+    }));
+    
+    loadTasks.push(new Promise(function(r){
+        db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
+            boughtAvatars=s.val()||[];
+            taskCompleted('Аватары загружены');
+            r();
+        });
+    }));
+    
+    // 2. ЧАТ (ждём первые 50 сообщений)
+    loadTasks.push(new Promise(function(r){
+        db.ref('chat').limitToLast(50).once('value', function(s){
+            var ms = [];
+            s.forEach(function(c){ ms.push(c.val()); });
+            ms.sort(function(a,b){ return (a.ts||0) - (b.ts||0); });
+            lastCounts.chat = ms.length;
+            var c = document.getElementById('chatMessagesLive');
+            if(c) {
+                c.innerHTML = '';
+                ms.forEach(function(m){
+                    var d = document.createElement('div');
+                    d.className = 'message';
+                    d.innerHTML = '<strong>' + m.name + ':</strong> ' + m.text;
+                    c.appendChild(d);
+                });
+                c.scrollTop = c.scrollHeight;
+            }
+            updateUnreadAll();
+            taskCompleted('Чат загружен');
+            r();
+        });
+    }));
+    
+    // 3. МЕМЫ
+    loadTasks.push(new Promise(function(r){
+        db.ref('memes').limitToLast(30).once('value', function(s){
+            var ms = [];
+            s.forEach(function(c){
+                ms.push({
+                    id: c.key, author: c.val().author, caption: c.val().caption,
+                    media: c.val().media, mediaType: c.val().mediaType,
+                    reactions: c.val().reactions || {}, ts: c.val().ts
+                });
+            });
+            ms.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+            lastCounts.memes = ms.length;
+            var container = document.getElementById('memesList');
+            if(container) {
+                if(!ms.length) container.innerHTML = '<p>Нет мемов</p>';
+                else {
+                    container.innerHTML = '';
+                    ms.forEach(function(m){
+                        var mh = '';
+                        if(m.media) mh = m.mediaType === 'photo' ? '<img src="'+m.media+'">' : '<video src="'+m.media+'" controls></video>';
+                        container.innerHTML += '<div class="meme-card"><span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mh+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂'+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥'+(m.reactions.fire||0)+'</button></div></div>';
+                    });
+                }
+            }
+            updateUnreadAll();
+            taskCompleted('Мемы загружены');
+            r();
+        });
+    }));
+    
+    // 4. ИДЕИ
+    loadTasks.push(new Promise(function(r){
+        db.ref('ideas').limitToLast(30).once('value', function(s){
+            var is = [];
+            s.forEach(function(c){
+                is.push({ id: c.key, author: c.val().author, text: c.val().text, likes: c.val().likes||0, ts: c.val().ts });
+            });
+            is.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+            lastCounts.ideas = is.length;
+            var container = document.getElementById('ideasList');
+            if(container) {
+                if(!is.length) container.innerHTML = '<p>Нет идей</p>';
+                else {
+                    container.innerHTML = '';
+                    is.forEach(function(i){
+                        container.innerHTML += '<div class="idea-card"><span class="idea-author">💡 '+i.author+':</span><p>'+i.text+'</p><div class="idea-likes"><button class="like-btn" onclick="likeIdea(\''+i.id+'\','+i.likes+')">❤️</button><span>'+i.likes+'</span></div></div>';
+                    });
+                }
+            }
+            updateUnreadAll();
+            taskCompleted('Идеи загружены');
+            r();
+        });
+    }));
+    
+    // 5. ШОРТСЫ (ChickenTube)
+    loadTasks.push(new Promise(function(r){
+        db.ref('shorts').once('value', function(s){
+            var shorts = [];
+            s.forEach(function(c){
+                shorts.push({
+                    id: c.key, channel: c.val().channel, author: c.val().author,
+                    caption: c.val().caption, media: c.val().media, likes: c.val().likes||0,
+                    comments: c.val().comments||{}, ts: c.val().ts
+                });
+            });
+            shorts.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+            lastCounts.shorts = shorts.length;
+            var container = document.getElementById('shortsList');
+            if(container) {
+                if(!shorts.length) container.innerHTML = '<p>Нет шортсов</p>';
+                else {
+                    container.innerHTML = '';
+                    shorts.forEach(function(sh){
+                        var comms = '';
+                        Object.keys(sh.comments).forEach(function(k){
+                            comms += '<div class="short-comment"><b>'+sh.comments[k].name+':</b> '+sh.comments[k].text+'</div>';
+                        });
+                        container.innerHTML += '<div class="short-card"><div style="color:#ffd700">'+sh.channel+' | '+sh.author+'</div>'+(sh.caption?'<div>'+sh.caption+'</div>':'')+(sh.media?'<video src="'+sh.media+'" class="short-video" controls></video>':'')+'<div class="short-actions"><button onclick="likeShort(\''+sh.id+'\','+sh.likes+')">❤️ '+sh.likes+'</button></div><div class="short-comments">'+comms+'</div><input id="sc_'+sh.id+'" placeholder="Коммент..." style="width:100%;padding:6px;margin:4px 0;font-size:12px"><button onclick="addShortComment(\''+sh.id+'\')" style="font-size:12px;padding:6px 10px">💬</button></div>';
+                    });
+                }
+            }
+            taskCompleted('Шортсы загружены');
+            r();
+        });
+    }));
+    
+    // 6. ОТЗЫВЫ К ФИЛЬМАМ
+    loadTasks.push(new Promise(function(r){
+        var movieIds = ['series', 'comb', 'pirates', 'americans', 'ads1', 'ads2', 'pta'];
+        var promises = movieIds.map(function(mid){
+            return new Promise(function(res){
+                db.ref('reviews/'+mid).once('value', function(snap){
+                    var revs = [];
+                    snap.forEach(function(c){
+                        revs.push({
+                            name: c.val().name, avatarType: c.val().avatarType||'emoji',
+                            avatarValue: c.val().avatarValue||'🐔', text: c.val().text,
+                            rating: c.val().rating, ts: c.val().ts
+                        });
+                    });
+                    revs.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+                    var container = document.getElementById('reviews');
+                    if(container && currentMovieId === mid) {
+                        if(!revs.length) container.innerHTML = '<p style="color:#888">Нет отзывов</p>';
+                        else {
+                            container.innerHTML = '';
+                            revs.forEach(function(r){
+                                var sd = '';
+                                for(var j=1;j<=5;j++) sd += r.rating>=j*2 ? '⭐' : (r.rating===j*2-1 ? '🌓' : '☆');
+                                var av = r.avatarType==='image' ? '<img src="'+r.avatarValue+'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:5px;vertical-align:middle">' : r.avatarValue;
+                                container.innerHTML += '<div class="review"><span class="review-avatar">'+av+'</span> <strong>'+r.name+'</strong><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div></div>';
+                            });
+                        }
+                    }
+                    if(revs.length > 0){
+                        var sum = 0;
+                        revs.forEach(function(r){ sum += r.rating; });
+                        var avg = (sum/revs.length).toFixed(1);
+                        var el = document.getElementById('rating-'+mid);
+                        if(el) el.textContent = '⭐ '+avg+'/10';
+                    }
+                    res();
+                });
+            });
+        });
+        Promise.all(promises).then(function(){
+            taskCompleted('Отзывы к фильмам загружены');
+            r();
+        });
+    }));
+    
+    // 7. РЕЙТИНГИ ИГР
+    var gamesList = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+    gamesList.forEach(function(game){
+        loadTasks.push(new Promise(function(r){
+            db.ref('gameRatings/'+game).once('value', function(s){
+                var rats = [];
+                s.forEach(function(c){ rats.push(c.val()); });
+                rats.sort(function(a,b){ return (b.score||0) - (a.score||0); });
+                var el = document.getElementById('rating-'+game);
+                if(el && rats.length > 0){
+                    var sum = 0;
+                    rats.forEach(function(rating){ sum += rating.rating||0; });
+                    el.textContent = '⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';
+                }
+                r();
+            });
+        }));
+    });
+    
+    // 8. ЦИТАТЫ
+    loadTasks.push(new Promise(function(r){
+        if(typeof initQuotes === 'function') {
+            initQuotes();
+            setTimeout(r, 1000);
+        } else {
+            r();
+        }
+    }));
+    
+    // 9. ДРУЗЬЯ (если есть)
+    loadTasks.push(new Promise(function(r){
+        if(typeof loadFriends === 'function') {
+            setTimeout(r, 500);
+        } else {
+            r();
+        }
+    }));
+    
+    // 10. ЛИДЕРЫ ПО ИГРАМ (если экран открыт)
+    loadTasks.push(new Promise(function(r){
+        if(typeof loadGameLeaders === 'function' && document.getElementById('gamesLB-screen') && document.getElementById('gamesLB-screen').classList.contains('active')) {
+            loadGameLeaders();
+        }
+        setTimeout(r, 500);
+    }));
+    
+    totalSteps = loadTasks.length;
+    
+    // Запускаем все задачи параллельно
+    Promise.all(loadTasks).then(function(){
+        taskCompleted('Все данные загружены!');
         
         setTimeout(function(){
-            updateProgress('Добро пожаловать в Tildochka! 🎉');
+            taskCompleted('Добро пожаловать в Tildochka! 🎉');
             var oldLoading = document.getElementById('loading');
             if(oldLoading) oldLoading.style.display = 'none';
             document.getElementById('app').style.display = 'block';
@@ -553,7 +731,7 @@ function loadAllData() {
     });
     
     setInterval(syncOnlineProfile,5000);
-}
+            }
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
