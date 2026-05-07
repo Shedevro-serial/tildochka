@@ -922,7 +922,7 @@ var jokeInterval = setInterval(function() {
             }, 1000);
         }, 500);
     });
-    
+    setTimeout(loadTestDataIfNeeded, 2000);
     setInterval(syncOnlineProfile,5000);
                   }
 
@@ -2987,6 +2987,80 @@ function showAllGames() {
         loadLeaderboard(game.id);
     });
 }
+// ==================== ТЕСТОВЫЕ ДАННЫЕ (ЕСЛИ FIREBASE НЕ РАБОТАЕТ) ====================
+function loadTestDataIfNeeded() {
+    // Проверяем чат
+    var chatContainer = document.getElementById('chatMessagesLive');
+    if(chatContainer && chatContainer.children.length === 0) {
+        var testMessages = [
+            { name: '🐔 Tildochka', text: 'Добро пожаловать в чат!', ts: Date.now() },
+            { name: '🥚 Система', text: 'Чат работает в тестовом режиме', ts: Date.now() },
+            { name: '🎮 Игрок', text: 'Кто хочет сыграть в тир?', ts: Date.now() }
+        ];
+        testMessages.forEach(function(m) {
+            var d = document.createElement('div');
+            d.className = 'message';
+            d.innerHTML = '<strong>' + m.name + ':</strong> ' + m.text;
+            chatContainer.appendChild(d);
+        });
+    }
+    
+    // Проверяем мемы
+    var memesContainer = document.getElementById('memesList');
+    if(memesContainer && memesContainer.children.length === 0) {
+        memesContainer.innerHTML = `
+            <div class="meme-card">
+                <span class="meme-author">🐔 Tildochka</span>
+                <div>Первый мем!</div>
+                <div class="meme-reactions">
+                    <button class="meme-reaction">😂 0</button>
+                    <button class="meme-reaction">🔥 0</button>
+                </div>
+            </div>
+            <div class="meme-card">
+                <span class="meme-author">🎮 Игрок</span>
+                <div>Лучшая игра - Птичий тир!</div>
+                <div class="meme-reactions">
+                    <button class="meme-reaction">😂 0</button>
+                    <button class="meme-reaction">🔥 0</button>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Проверяем идеи
+    var ideasContainer = document.getElementById('ideasList');
+    if(ideasContainer && ideasContainer.children.length === 0) {
+        ideasContainer.innerHTML = `
+            <div class="idea-card">
+                <span class="idea-author">💡 Tildochka</span>
+                <p>Добавить больше игр!</p>
+                <div class="idea-likes"><button class="like-btn">❤️</button><span>5</span></div>
+            </div>
+            <div class="idea-card">
+                <span class="idea-author">💡 Игрок</span>
+                <p>Сделать турнир по тиру</p>
+                <div class="idea-likes"><button class="like-btn">❤️</button><span>3</span></div>
+            </div>
+        `;
+    }
+    
+    // Проверяем шортсы (ChickenTube)
+    var shortsContainer = document.getElementById('shortsList');
+    if(shortsContainer && shortsContainer.children.length === 0) {
+        shortsContainer.innerHTML = `
+            <div class="short-card">
+                <div style="color:#ffd700">Tildochka | Админ</div>
+                <div>Первый шортс! 🎬</div>
+                <div class="short-actions"><button>❤️ 0</button></div>
+                <div class="short-comments"></div>
+            </div>
+        `;
+    }
+}
+
+// Запускаем тестовые данные через 2 секунды после загрузки
+setTimeout(loadTestDataIfNeeded, 2000);
       </script>
 
 </body>
