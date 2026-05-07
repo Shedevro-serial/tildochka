@@ -343,7 +343,7 @@ new Promise(function(r){db.ref('users/'+myUid+'/eggs').once('value',function(s){
 new Promise(function(r){db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){boughtAvatars=s.val()||[];r();});})
 ]).then(function(){
 document.getElementById('loading').style.display='none';document.getElementById('app').style.display='block';
-showScreen('home');showDailyQuote();loadChatMessages();loadMemes();loadIdeas();loadAllRatings();loadShorts();
+showScreen('home');initQuotes();loadChatMessages();loadMemes();loadIdeas();loadAllRatings();loadShorts();
 ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(function(g){loadLeaderboard(g);});
 });
 setInterval(syncOnlineProfile,5000);
@@ -1139,10 +1139,6 @@ requestAnimationFrame(loop);}
 function initGuess(){createGameRating();var n=Math.floor(Math.random()*100)+1,a=0;document.getElementById('gameContent').innerHTML='<p>Угадай число 1-100!</p><input id="gi" type="number"><br><button onclick="guessClick()">Угадать</button><p id="gh"></p>';window.guessClick=function(){var g=parseInt(document.getElementById('gi').value);if(!g)return;a++;playSound("jump");if(g===n){alert('Победа! '+a+' попыток!');addEggs(5,'Победа!');}else document.getElementById('gh').textContent=g<n?'🔺 Больше!':'🔻 Меньше!';document.getElementById('gameScoreDisplay').textContent='Попыток: '+a;};}
 function initRPS(){createGameRating();var sc={p:0,b:0};document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center"><button onclick="rpsClick(0)" style="font-size:22px;padding:18px">🪨</button><button onclick="rpsClick(1)" style="font-size:22px;padding:18px">📄</button><button onclick="rpsClick(2)" style="font-size:22px;padding:18px">✂️</button></div><p id="rr"></p>';window.rpsClick=function(p){var bot=Math.floor(Math.random()*3);playSound("jump");if(p===bot)document.getElementById('rr').textContent='Ничья!';else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){sc.p++;document.getElementById('rr').textContent='Ты победил!';addEggs(2,'Победа!');}else{sc.b++;document.getElementById('rr').textContent='Бот победил!';}document.getElementById('gameScoreDisplay').textContent='Ты: '+sc.p+' | Бот: '+sc.b;};}
 
-// ==================== ЦИТАТЫ ====================
-var quotes=[{text:'Расческа нужна каждому. Даже если кажется, что не нужна.',author:'Главный герой',movie:'Расческа для лысых'},{text:'Куры не летают. Но мечтают об этом каждую ночь.',author:'Курица №3',movie:'Приключения 4 куриц'},{text:'Лысина — это не приговор. Это простор для фантазии.',author:'Парикмахер',movie:'Расческа для лысых'}];
-function getDailyQuote(){var t=new Date();return quotes[t.getDate()%quotes.length];}
-function showDailyQuote(){var q=getDailyQuote();var h='<div class="quote-box"><div class="quote-text">«'+q.text+'»</div><div class="quote-author">— '+q.author+'</div><div class="quote-movie">🎬 '+q.movie+'</div></div>';var cat=document.querySelector('#home-screen .catalog');if(cat){var ex=document.getElementById('dailyQuote');if(ex)ex.innerHTML=h;else{var d=document.createElement('div');d.id='dailyQuote';d.style.cssText='max-width:600px;margin:25px auto 0';d.innerHTML='<h3 style="color:#ffd700">💬 Цитата дня</h3>'+h;cat.appendChild(d);}}}
 
 var savedTama=localStorage.getItem('tildochka_tamagotchi');
 if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamagotchiData.isAlive)startTamagotchiLoop();}catch(e){}}
