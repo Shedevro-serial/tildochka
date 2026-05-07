@@ -367,13 +367,9 @@ function closeProfileModal(){document.getElementById('profileModal').classList.r
 function openShop(){document.getElementById('shopEggs').textContent=myEggs;var g=document.getElementById('shopGrid');g.innerHTML='';Object.keys(shopItems).forEach(function(e){var p=shopItems[e];var o=boughtAvatars.includes(e);var d=document.createElement('div');d.className='shop-item'+(o||myEggs<p?' locked':'');d.innerHTML=e+'<span class="price">'+p+'</span>';if(!o&&myEggs>=p)d.onclick=function(){buyAvatar(e,p);};else if(o)d.style.border='2px solid #4f4';g.appendChild(d);});document.getElementById('shopModal').classList.add('show');}
 function buyAvatar(e,p){if(myEggs<p)return;if(boughtAvatars.includes(e))return;myEggs-=p;boughtAvatars.push(e);localStorage.setItem('tildochka_eggs',myEggs);document.getElementById('headerEggs').textContent=myEggs;db.ref('users/'+myUid).update({eggs:myEggs,boughtAvatars:boughtAvatars});openShop();}
 function addEggs(a,r){myEggs+=a;localStorage.setItem('tildochka_eggs',myEggs);document.getElementById('headerEggs').textContent=myEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
-function renderQuests(){var c=document.getElementById('questsList');if(!c)return;c.innerHTML=dailyQuests.map(function(q){return'<div class="daily-quest'+(q.completed?' completed':'')+'"><div><b>'+q.text+'</b><br><small>'+q.progress+'/'+q.target+'</small></div><div>'+(q.completed?'✅ <button onclick="claimQuest('+q.id+')">🥚'+q.reward+'</button>':'🥚'+q.reward)+'</div></div>';}).join('');}
-function progressQuest(t,a){dailyQuests.forEach(function(q){if(q.type===t&&!q.completed){q.progress=Math.min(q.target,q.progress+a);if(q.progress>=q.target)q.completed=true;}});var qp={};dailyQuests.forEach(function(q){qp[q.id]=q.progress;});localStorage.setItem('tildochka_qp',JSON.stringify(qp));renderQuests();}
-function claimQuest(id){var q=dailyQuests[id];if(!q||!q.completed)return;dailyQuests.splice(id,1);addEggs(q.reward,'Задание!');localStorage.setItem('tildochka_quests_'+new Date().toDateString(),JSON.stringify(dailyQuests));renderQuests();}
 function loadEggsLeaderboard(){db.ref('users').orderByChild('eggs').limitToLast(20).on('value',function(s){var u=[];s.forEach(function(c){u.push({name:c.val().name,eggs:c.val().eggs||0});});u.sort(function(a,b){return b.eggs-a.eggs;});var h='';u.forEach(function(u,i){h+='<div class="eggs-leaderboard-item"><span>'+(i+1)+'</span><span>'+u.name+'</span><span>🥚'+u.eggs+'</span></div>';});document.getElementById('eggsLeaderboard').innerHTML=h||'<p>Нет данных</p>';});}
 // ==================== ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ====================
 var dailyQuests = [];
-
 
 function generateDailyQuests(force) {
     if(force && myEggs >= 5) {
@@ -418,6 +414,47 @@ function generateDailyQuests(force) {
 
 function loadQuests() {
     generateDailyQuests(false);
+}
+// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЗАДАНИЙ ====================
+var dailyQuests = [];
+
+function renderQuests() {
+    var c = document.getElementById('questsList');
+    if(!c) return;
+    if(!dailyQuests || dailyQuests.length === 0) {
+        c.innerHTML = '<p style="color:#888">Нет заданий. Нажми "Новые"</p>';
+        return;
+    }
+    c.innerHTML = dailyQuests.map(function(q) {
+        return '<div class="daily-quest' + (q.completed ? ' completed' : '') + '">' +
+               '<div><b>' + q.text + '</b><br><small>' + q.progress + '/' + q.target + '</small></div>' +
+               '<div>' + (q.completed ? '✅ <button onclick="claimQuest(' + q.id + ')">🥚' + q.reward + '</button>' : '🥚' + q.reward) + '</div>' +
+               '</div>';
+    }).join('');
+}
+
+function progressQuest(type, amount) {
+    if(!dailyQuests) return;
+    dailyQuests.forEach(function(q) {
+        if(q.type === type && !q.completed) {
+            q.progress = Math.min(q.target, q.progress + amount);
+            if(q.progress >= q.target) q.completed = true;
+        }
+    });
+    var qp = {};
+    dailyQuests.forEach(function(q) { qp[q.id] = q.progress; });
+    localStorage.setItem('tildochka_qp', JSON.stringify(qp));
+    renderQuests();
+}
+
+function claimQuest(id) {
+    if(!dailyQuests || !dailyQuests[id]) return;
+    var q = dailyQuests[id];
+    if(!q || !q.completed) return;
+    addEggs(q.reward, 'Задание выполнено!');
+    dailyQuests.splice(id, 1);
+    localStorage.setItem('tildochka_quests_' + new Date().toDateString(), JSON.stringify(dailyQuests));
+    renderQuests();
 }
 
 
@@ -2251,8 +2288,6 @@ function showQuoteAdmin() {
                     fetch('/?delete=' + id);
                     alert('Удалено! Обновите страницу');
                 }
-            </script>
-            </body></html>
         `);
     });
 }
