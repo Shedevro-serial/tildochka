@@ -1044,9 +1044,27 @@ function updateUnreadAll(){['chat','memes','ideas'].forEach(function(k){var s=pa
 function markRead(k){localStorage.setItem('tildochka_read_'+k,lastCounts[k]||0);updateUnreadAll();}
 function safeSend(key,fn){if(isSending[key])return;isSending[key]=true;var btn=document.getElementById(key+'SendBtn');if(btn){btn.disabled=true;btn.textContent='⏳...';}fn().then(function(){if(btn)btn.textContent='✅';setTimeout(function(){if(btn){btn.disabled=false;btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';}isSending[key]=false;},1500);}).catch(function(e){if(btn){btn.disabled=false;}isSending[key]=false;});}
 
-function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;safeSend('chat',function(){progressQuest('chat',1);return db.ref('chat').push({name:myName,text:m,ts:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});});}
-function loadChatMessages(){db.ref('chat').limitToLast(50).on('value',function(s){var ms=[];s.forEach(function(c){ms.push(c.val());});ms.sort(function(a,b){return(a.ts||0)-(b.ts||0);});lastCounts.chat=ms.length;var c=document.getElementById('chatMessagesLive');c.innerHTML='';ms.forEach(function(m){var d=document.createElement('div');d.className='message';d.innerHTML='<strong>'+m.name+':</strong> '+m.text;c.appendChild(d);});c.scrollTop=c.scrollHeight;updateUnreadAll();});}
-function previewMemeMedia(t){var i=t==='photo'?document.getElementById('memePhoto'):document.getElementById('memeVideo');if(!i.files||!i.files[0])return;var r=new FileReader();r.onload=function(e){memeMedia=e.target.result;memeMediaType=t;document.getElementById('memePreview').innerHTML=t==='photo'?'<img src="'+e.target.result+'" style="max-width:300px;border-radius:8px">':'<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};r.readAsDataURL(i.files[0]);}
+function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;safeSend('chat',function(){progressQuest('chat',1);return db.ref('chat').push({name:myName,text:m,ts:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});});}{return(a.ts||0)-(b.ts||0);});lastCounts.chat=ms.length;var c=document.getElementById('chatMessagesLive');c.innerHTML='';ms.forEach(function(m){var d=document.createElement('div');d.className='message';d.innerHTML='<strong>'+m.name+':</strong> '+m.text;c.appendChild(d);});c.scrollTop=c.scrollHeight;updateUnreadAll();}
+function loadChatMessages(){
+    db.ref('chat').limitToLast(50).on('value', function(s){
+        var ms = [];
+        s.forEach(function(c){ ms.push(c.val()); });
+        ms.sort(function(a,b){ return (a.ts||0) - (b.ts||0); });
+        lastCounts.chat = ms.length;
+        var c = document.getElementById('chatMessagesLive');
+        if(c) {
+            c.innerHTML = '';
+            ms.forEach(function(m){
+                var d = document.createElement('div');
+                d.className = 'message';
+                d.innerHTML = '<strong>' + (m.name || 'Аноним') + ':</strong> ' + (m.text || '');
+                c.appendChild(d);
+            });
+            c.scrollTop = c.scrollHeight;
+        }
+        updateUnreadAll();
+    });
+}
 function postMeme(){var c=document.getElementById('memeCaption').value.trim();if(!c&&!memeMedia)return;safeSend('meme',function(){return db.ref('memes').push({author:myName,caption:c,media:memeMedia||null,mediaType:memeMediaType||null,reactions:{laugh:0,fire:0},ts:Date.now()}).then(function(){document.getElementById('memeCaption').value='';document.getElementById('memePhoto').value='';document.getElementById('memeVideo').value='';document.getElementById('memePreview').innerHTML='';memeMedia=null;memeMediaType=null;});});}
 function loadMemes(){db.ref('memes').limitToLast(30).on('value',function(s){var ms=[];s.forEach(function(c){ms.push({id:c.key,author:c.val().author,caption:c.val().caption,media:c.val().media,mediaType:c.val().mediaType,reactions:c.val().reactions||{},ts:c.val().ts});});ms.sort(function(a,b){return(b.ts||0)-(a.ts||0);});lastCounts.memes=ms.length;var c=document.getElementById('memesList');if(!ms.length)c.innerHTML='<p>Нет мемов</p>';else{c.innerHTML='';ms.forEach(function(m){var mh='';if(m.media)mh=m.mediaType==='photo'?'<img src="'+m.media+'">':'<video src="'+m.media+'" controls></video>';c.innerHTML+='<div class="meme-card"><span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mh+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂'+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥'+(m.reactions.fire||0)+'</button></div></div>';});}updateUnreadAll();});}
 function reactMeme(id,t,c){var u={};u['reactions/'+t]=(c||0)+1;db.ref('memes/'+id).update(u);}
