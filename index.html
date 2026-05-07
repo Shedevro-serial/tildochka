@@ -1456,7 +1456,6 @@ function initShooter(){
     var timeBonusGiven = false;
     var timerInterval = null;
     
-    // Облака
     var clouds = [
         { x: 50, y: 60, speed: 0.3, size: 45 },
         { x: 250, y: 90, speed: 0.5, size: 55 },
@@ -1480,42 +1479,42 @@ function initShooter(){
         { x: 420, y: 400, shelfY: 420, target: { points: 20, x: 435, y: 385, hit: false, size: 48 } }
     ];
     
-    // ЛЕТАЮЩИЕ ЖИВОТНЫЕ (увеличенные скорости)
+    // ЛЕТАЮЩИЕ ЖИВОТНЫЕ
     var flyingAnimals = [];
     var flyingAnimalTypes = [
-        { emoji: '🦟', points: 5, speed: 3.2, size: 25, health: 1, chance: 0.1, desc: 'комар' },
-        { emoji: '🦋', points: 6, speed: 2.8, size: 28, health: 1, chance: 0.1, desc: 'бабочка' },
-        { emoji: '🐝', points: 7, speed: 2.6, size: 28, health: 1, chance: 0.1, desc: 'пчела' },
-        { emoji: '🕊️', points: 8, speed: 2.4, size: 30, health: 1, chance: 0.08, desc: 'голубь' },
-        { emoji: '🐦‍⬛', points: 10, speed: 2.2, size: 32, health: 1, chance: 0.08, desc: 'ворона' },
-        { emoji: '🦆', points: 12, speed: 2.0, size: 32, health: 1, chance: 0.08, desc: 'утка' },
-        { emoji: '🦜', points: 15, speed: 1.9, size: 33, health: 1, chance: 0.07, desc: 'попугай' },
-        { emoji: '🐧', points: 18, speed: 1.7, size: 35, health: 1, chance: 0.07, desc: 'пингвин' },
-        { emoji: '🦉', points: 22, speed: 1.6, size: 38, health: 2, chance: 0.06, desc: 'сова' },
-        { emoji: '🐓', points: 25, speed: 1.5, size: 38, health: 2, chance: 0.06, desc: 'петух' },
-        { emoji: '🦅', points: 30, speed: 1.8, size: 38, health: 1, chance: 0.05, desc: 'орёл' },
-        { emoji: '🦃', points: 28, speed: 1.4, size: 42, health: 2, chance: 0.05, desc: 'индюк' },
-        { emoji: '🦤', points: 35, speed: 1.3, size: 40, health: 3, chance: 0.04, desc: 'дронт' },
-        { emoji: '🐉', points: 50, speed: 2.0, size: 45, health: 4, chance: 0.02, desc: 'дракон' }
+        { emoji: '🦟', points: 5, speed: 3.2, size: 25, health: 1, chance: 0.1 },
+        { emoji: '🦋', points: 6, speed: 2.8, size: 28, health: 1, chance: 0.1 },
+        { emoji: '🐝', points: 7, speed: 2.6, size: 28, health: 1, chance: 0.1 },
+        { emoji: '🕊️', points: 8, speed: 2.4, size: 30, health: 1, chance: 0.08 },
+        { emoji: '🐦‍⬛', points: 10, speed: 2.2, size: 32, health: 1, chance: 0.08 },
+        { emoji: '🦆', points: 12, speed: 2.0, size: 32, health: 1, chance: 0.08 },
+        { emoji: '🦜', points: 15, speed: 1.9, size: 33, health: 1, chance: 0.07 },
+        { emoji: '🐧', points: 18, speed: 1.7, size: 35, health: 1, chance: 0.07 },
+        { emoji: '🦉', points: 22, speed: 1.6, size: 38, health: 2, chance: 0.06 },
+        { emoji: '🐓', points: 25, speed: 1.5, size: 38, health: 2, chance: 0.06 },
+        { emoji: '🦅', points: 30, speed: 1.8, size: 38, health: 1, chance: 0.05 },
+        { emoji: '🦃', points: 28, speed: 1.4, size: 42, health: 2, chance: 0.05 },
+        { emoji: '🦤', points: 35, speed: 1.3, size: 40, health: 3, chance: 0.04 },
+        { emoji: '🐉', points: 50, speed: 2.0, size: 45, health: 4, chance: 0.02 }
     ];
     
-    // НАЗЕМНЫЕ ЖИВОТНЫЕ (НОВЫЕ ЭМОДЗИ, увеличенные скорости)
+    // НАЗЕМНЫЕ ЖИВОТНЫЕ
     var groundAnimals = [];
     var groundAnimalTypes = [
-        { emoji: '🐁', points: 8, speed: 2.0, size: 30, health: 1, chance: 0.1, desc: 'мышь' },
-        { emoji: '🐇', points: 10, speed: 2.2, size: 32, health: 1, chance: 0.1, desc: 'кролик' },
-        { emoji: '🐈', points: 12, speed: 2.0, size: 35, health: 1, chance: 0.09, desc: 'кот' },
-        { emoji: '🐕', points: 12, speed: 2.1, size: 35, health: 1, chance: 0.09, desc: 'собака' },
-        { emoji: '🐐', points: 15, speed: 2.3, size: 35, health: 1, chance: 0.08, desc: 'козёл' },
-        { emoji: '🐆', points: 18, speed: 2.5, size: 38, health: 2, chance: 0.08, desc: 'леопард' },
-        { emoji: '🐘', points: 20, speed: 1.6, size: 42, health: 2, chance: 0.07, desc: 'слон' },
-        { emoji: '🦒', points: 25, speed: 1.4, size: 45, health: 3, chance: 0.06, desc: 'жираф' },
-        { emoji: '🦌', points: 22, speed: 1.8, size: 40, health: 2, chance: 0.07, desc: 'олень' },
-        { emoji: '🐎', points: 15, speed: 2.4, size: 38, health: 1, chance: 0.08, desc: 'лошадь' },
-        { emoji: '🐄', points: 14, speed: 1.5, size: 42, health: 2, chance: 0.08, desc: 'корова' },
-        { emoji: '🦁', points: 30, speed: 1.8, size: 42, health: 3, chance: 0.05, desc: 'лев' },
-        { emoji: '🐅', points: 28, speed: 1.9, size: 40, health: 3, chance: 0.05, desc: 'тигр' },
-        { emoji: '🦍', points: 25, speed: 1.6, size: 42, health: 3, chance: 0.06, desc: 'горилла' }
+        { emoji: '🐁', points: 8, speed: 2.0, size: 30, health: 1, chance: 0.1 },
+        { emoji: '🐇', points: 10, speed: 2.2, size: 32, health: 1, chance: 0.1 },
+        { emoji: '🐈', points: 12, speed: 2.0, size: 35, health: 1, chance: 0.09 },
+        { emoji: '🐕', points: 12, speed: 2.1, size: 35, health: 1, chance: 0.09 },
+        { emoji: '🐐', points: 15, speed: 2.3, size: 35, health: 1, chance: 0.08 },
+        { emoji: '🐆', points: 18, speed: 2.5, size: 38, health: 2, chance: 0.08 },
+        { emoji: '🐘', points: 20, speed: 1.6, size: 42, health: 2, chance: 0.07 },
+        { emoji: '🦒', points: 25, speed: 1.4, size: 45, health: 3, chance: 0.06 },
+        { emoji: '🦌', points: 22, speed: 1.8, size: 40, health: 2, chance: 0.07 },
+        { emoji: '🐎', points: 15, speed: 2.4, size: 38, health: 1, chance: 0.08 },
+        { emoji: '🐄', points: 14, speed: 1.5, size: 42, health: 2, chance: 0.08 },
+        { emoji: '🦁', points: 30, speed: 1.8, size: 42, health: 3, chance: 0.05 },
+        { emoji: '🐅', points: 28, speed: 1.9, size: 40, health: 3, chance: 0.05 },
+        { emoji: '🦍', points: 25, speed: 1.6, size: 42, health: 3, chance: 0.06 }
     ];
     
     var explosions = [];
@@ -1573,7 +1572,7 @@ function initShooter(){
     
     function spawnFlyingAnimal() {
         if(!gameActive) return;
-        if(flyingAnimals.length >= 3) return;  // МАКСИМУМ 3
+        if(flyingAnimals.length >= 3) return;
         var rand = Math.random();
         var cumProb = 0;
         var selected = flyingAnimalTypes[0];
@@ -1595,14 +1594,13 @@ function initShooter(){
             height: selected.size,
             speed: selected.speed + Math.random() * 0.5,
             vy: (Math.random() - 0.5) * 1.2,
-            direction: Math.random() > 0.5 ? 1 : -1,
-            desc: selected.desc
+            direction: Math.random() > 0.5 ? 1 : -1
         });
     }
     
     function spawnGroundAnimal() {
         if(!gameActive) return;
-        if(groundAnimals.length >= 3) return;  // МАКСИМУМ 3
+        if(groundAnimals.length >= 3) return;
         var rand = Math.random();
         var cumProb = 0;
         var selected = groundAnimalTypes[0];
@@ -1623,8 +1621,7 @@ function initShooter(){
             width: selected.size,
             height: selected.size,
             speed: selected.speed + Math.random() * 0.5,
-            direction: Math.random() > 0.5 ? 1 : -1,
-            desc: selected.desc
+            direction: Math.random() > 0.5 ? 1 : -1
         });
     }
     
@@ -1633,7 +1630,7 @@ function initShooter(){
         shots++;
         var hitSomething = false;
         
-        // Проверка мишеней
+        // Мишени
         for(var i = 0; i < targets.length; i++) {
             var t = targets[i];
             if(t.hit) continue;
@@ -1651,7 +1648,7 @@ function initShooter(){
             }
         }
         
-        // Проверка летающих животных
+        // Летающие животные
         if(!hitSomething) {
             for(var i = 0; i < flyingAnimals.length; i++) {
                 var a = flyingAnimals[i];
@@ -1676,7 +1673,7 @@ function initShooter(){
             }
         }
         
-        // Проверка наземных животных
+        // Наземные животные
         if(!hitSomething) {
             for(var i = 0; i < groundAnimals.length; i++) {
                 var a = groundAnimals[i];
@@ -1804,7 +1801,6 @@ function initShooter(){
         shootAt(touchX, touchY);
     };
     
-    // Интервалы спавна (реже, чтобы не было толкучки)
     setInterval(function() {
         if(gameActive && flyingAnimals.length < 3 && Math.random() < 0.35) {
             spawnFlyingAnimal();
@@ -1817,7 +1813,6 @@ function initShooter(){
         }
     }, 2000);
     
-    // Движение животных (быстрее обновление)
     setInterval(function() {
         if(!gameActive) return;
         for(var i = 0; i < flyingAnimals.length; i++) {
@@ -1839,7 +1834,7 @@ function initShooter(){
                 i--;
             }
         }
-    }, 35);  // Быстрее обновление = более плавное движение
+    }, 35);
     
     initTargets();
     startTimer();
@@ -1872,7 +1867,6 @@ function initShooter(){
             ctx.fillRect(i * 40, canvas.height - 83, 35, 6);
         }
         
-        // Полочки и мишени
         for (var i = 0; i < shelvesData.length; i++) {
             var s = shelvesData[i];
             var target = targets[i];
@@ -1908,7 +1902,6 @@ function initShooter(){
             }
         }
         
-        // Летающие животные
         for (var i = 0; i < flyingAnimals.length; i++) {
             var a = flyingAnimals[i];
             ctx.font = a.width + 'px Arial';
@@ -1927,7 +1920,6 @@ function initShooter(){
             ctx.fillText('+' + a.points, a.x + 5, a.y - 10);
         }
         
-        // Наземные животные
         for (var i = 0; i < groundAnimals.length; i++) {
             var a = groundAnimals[i];
             ctx.font = a.width + 'px Arial';
@@ -1944,7 +1936,6 @@ function initShooter(){
             ctx.fillText('+' + a.points, a.x + 5, a.y - 10);
         }
         
-        // Эффекты
         for (var i = 0; i < explosions.length; i++) {
             var e = explosions[i];
             var alpha = e.life;
@@ -1976,7 +1967,6 @@ function initShooter(){
             }
         }
         
-        // Прицел
         ctx.beginPath();
         ctx.arc(aimX, aimY, 16, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255,0,0,0.9)';
@@ -2012,7 +2002,7 @@ function initShooter(){
     };
     
     gameInterval = setInterval(function(){}, 1000);
-  }
+          }
       </script>
 
 </body>
