@@ -1423,7 +1423,7 @@ function initShooter(){
     document.getElementById('gameContent').innerHTML = `
         <div style="display:flex;gap:20px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">
             <div>🎯 Мишени: <span id="targetsLeft">0</span></div>
-            <div>🦊 Животные: <span id="animalsLeft">0</span></div>
+            <div>🦤 Животные: <span id="animalsLeft">0</span></div>
             <div>🏆 Счёт: <span id="shooterScore">0</span></div>
             <div>🔫 Выстрелов: <span id="shotsCount">0</span></div>
             <div>💨 Промахи: <span id="missesCount">0</span>/10</div>
@@ -1459,6 +1459,17 @@ function initShooter(){
     var timeBonusGiven = false;
     var timerInterval = null;
     
+    // Облака
+    var clouds = [
+        { x: 50, y: 60, speed: 0.3, size: 45 },
+        { x: 250, y: 90, speed: 0.5, size: 55 },
+        { x: 450, y: 40, speed: 0.2, size: 50 },
+        { x: 650, y: 100, speed: 0.4, size: 60 },
+        { x: 800, y: 70, speed: 0.3, size: 45 },
+        { x: 150, y: 130, speed: 0.6, size: 40 },
+        { x: 550, y: 120, speed: 0.35, size: 48 }
+    ];
+    
     // Прицел
     var aimX = canvas.width/2;
     var aimY = canvas.height/2;
@@ -1474,19 +1485,19 @@ function initShooter(){
         { x: 420, y: 400, shelfY: 420, target: { emoji: '🎯', points: 20, x: 435, y: 385, hit: false, size: 48 } }
     ];
     
-    // Животные (разные, появляются по очереди)
+    // Животные (с дронтом 🦤 вместо курицы)
     var animals = [];
     var animalTypes = [
-        { emoji: '🦤', points: 10, speed: 1.2, size: 35, health: 1, chance: 0.15 },
+        { emoji: '🦤', points: 25, speed: 0.9, size: 40, health: 2, chance: 0.08 },  // Дронт (редкий)
         { emoji: '🦆', points: 12, speed: 1.5, size: 32, health: 1, chance: 0.15 },
-        { emoji: '🕊️', points: 8, speed: 1.8, size: 30, health: 1, chance: 0.1 },
+        { emoji: '🕊️', points: 8, speed: 1.8, size: 30, health: 1, chance: 0.12 },
         { emoji: '🐓', points: 20, speed: 1.0, size: 38, health: 2, chance: 0.1 },
         { emoji: '🦉', points: 25, speed: 0.9, size: 40, health: 2, chance: 0.08 },
         { emoji: '🦅', points: 30, speed: 1.6, size: 38, health: 1, chance: 0.08 },
-        { emoji: '🐧', points: 15, speed: 0.8, size: 35, health: 1, chance: 0.1 },
+        { emoji: '🐧', points: 15, speed: 0.8, size: 35, health: 1, chance: 0.12 },
         { emoji: '🦜', points: 18, speed: 1.4, size: 33, health: 1, chance: 0.1 },
         { emoji: '🐦‍⬛', points: 12, speed: 1.3, size: 32, health: 1, chance: 0.1 },
-        { emoji: '🦃', points: 22, speed: 0.7, size: 42, health: 2, chance: 0.04 }
+        { emoji: '🦃', points: 22, speed: 0.7, size: 42, health: 2, chance: 0.07 }
     ];
     
     // Эффекты
@@ -1508,7 +1519,6 @@ function initShooter(){
         }, 1000);
     }
     
-    // Проверка бонуса за 50 очков
     function checkTimeBonus() {
         if(!timeBonusGiven && score >= 50) {
             timeBonusGiven = true;
@@ -1608,12 +1618,12 @@ function initShooter(){
             }
         }
         
-        // Проверка животных
+        // Проверка животных (увеличена зона попадания)
         if(!hitSomething) {
             for(var i = 0; i < animals.length; i++) {
                 var a = animals[i];
-                // Увеличил зону попадания для удобства
-                if(x > a.x - 10 && x < a.x + a.width + 10 && y > a.y - 10 && y < a.y + a.height + 10) {
+                // Попадание по всему телу животного (увеличил зону)
+                if(x > a.x - 15 && x < a.x + a.width + 15 && y > a.y - 15 && y < a.y + a.height + 15) {
                     a.health--;
                     if(a.health <= 0) {
                         score += a.points;
@@ -1754,24 +1764,31 @@ function initShooter(){
     for(var i = 0; i < 3; i++) setTimeout(function() { if(gameActive) spawnAnimal(); }, i * 1000);
     startTimer();
     
+    // Анимация
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
+        // Небо
         var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         grad.addColorStop(0, '#2a6a8a');
         grad.addColorStop(1, '#6a9aaa');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        ctx.fillStyle = 'rgba(255,255,255,0.3)';
-        ctx.beginPath();
-        ctx.ellipse(100 + frame % 500, 70, 50, 30, 0, 0, Math.PI * 2);
-        ctx.ellipse(140 + frame % 500, 65, 40, 25, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.ellipse(650 - frame % 400, 90, 60, 35, 0, 0, Math.PI * 2);
-        ctx.fill();
+        // Облака (исправлено — плавно двигаются)
+        for(var i = 0; i < clouds.length; i++) {
+            var c = clouds[i];
+            c.x += c.speed;
+            if(c.x > canvas.width + 100) c.x = -100;
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(c.x, c.y, c.size, c.size * 0.6, 0, 0, Math.PI * 2);
+            ctx.ellipse(c.x + c.size * 0.6, c.y - 5, c.size * 0.7, c.size * 0.5, 0, 0, Math.PI * 2);
+            ctx.ellipse(c.x - c.size * 0.5, c.y + 5, c.size * 0.6, c.size * 0.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
         
+        // Земля
         ctx.fillStyle = '#3a6a2a';
         ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
         ctx.fillStyle = '#5a9a4a';
@@ -1846,7 +1863,7 @@ function initShooter(){
             } else if (e.type === 'bonus') {
                 ctx.font = (24 * (1 - e.life)) + 'px Arial';
                 ctx.fillStyle = 'rgba(255,215,0,' + alpha + ')';
-                ctx.fillText(e.text, e.x - 40, e.y - 20 - (1 - e.life) * 30);
+                ctx.fillText(e.text, e.x - 50, e.y - 20 - (1 - e.life) * 30);
             } else if (e.type === 'spark') {
                 ctx.font = (20 * (1 - e.life)) + 'px Arial';
                 ctx.fillStyle = 'rgba(255,255,0,' + alpha + ')';
@@ -1899,7 +1916,7 @@ function initShooter(){
     };
     
     gameInterval = setInterval(function(){}, 1000);
-      }
+                                            }
       </script>
 
 </body>
