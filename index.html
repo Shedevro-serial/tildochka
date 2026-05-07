@@ -1421,23 +1421,24 @@ function showGamesLBScreen() {
 // ==================== ИГРА "ТИР" ====================
 function initShooter(){
     document.getElementById('gameContent').innerHTML = `
-        <div style="display:flex;gap:20px;justify-content:center;margin-bottom:10px">
-            <div>🎯 Осталось мишеней: <span id="targetsLeft">0</span></div>
+        <div style="display:flex;gap:20px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">
+            <div>🎯 Мишени: <span id="targetsLeft">0</span></div>
+            <div>🕊️ Птицы: <span id="birdsLeft">0</span></div>
             <div>🏆 Счёт: <span id="shooterScore">0</span></div>
             <div>🔫 Выстрелов: <span id="shotsCount">0</span></div>
         </div>
         <canvas id="shooterCanvas" width="900" height="550" class="game-canvas" style="background:linear-gradient(180deg,#2a6a8a,#6a9aaa);cursor:crosshair"></canvas>
         <div style="display:flex;justify-content:center;gap:15px;margin-top:10px">
             <div class="mobile-controls" style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center">
-                <button class="mobile-btn" onclick="moveAimTir('left')">◀</button>
-                <button class="mobile-btn" onclick="moveAimTir('up')">▲</button>
-                <button class="mobile-btn" onclick="moveAimTir('down')">▼</button>
-                <button class="mobile-btn" onclick="moveAimTir('right')">▶</button>
-                <button class="mobile-btn" onclick="shootNowTir()" style="background:#f44">🔫 СТРЕЛЯТЬ</button>
-                <button class="mobile-btn" onclick="resetGameTir()" style="background:#444">🔄 Новая игра</button>
+                <button class="ds4-btn" onclick="moveAimTir('left')">←</button>
+                <button class="ds4-btn" onclick="moveAimTir('up')">↑</button>
+                <button class="ds4-btn" onclick="moveAimTir('down')">↓</button>
+                <button class="ds4-btn" onclick="moveAimTir('right')">→</button>
+                <button class="ds4-btn" onclick="shootNowTir()" style="background:#f44">🔫</button>
+                <button class="ds4-btn" onclick="resetGameTir()" style="background:#444">🔄</button>
             </div>
         </div>
-        <p style="text-align:center;color:#ffd700;margin-top:8px">🎮 Управление: стрелки клавиатуры | Клик по мишени = выстрел | Сбей все мишени!</p>
+        <p style="text-align:center;color:#ffd700;margin-top:8px">🎮 Стрелки на клавиатуре | Клик по цели = выстрел | Сбей всё!</p>
     `;
     createGameRating();
     
@@ -1456,22 +1457,31 @@ function initShooter(){
     var aimX = canvas.width/2;
     var aimY = canvas.height/2;
     
-    // Мишени на полочках
+    // Мишени на полочках (5 полочек)
     var targets = [];
     
-    // Данные полочек с мишенями (как в настоящем тире)
     var shelvesData = [
-        { x: 100, y: 250, shelfY: 270, target: { emoji: '🎯', points: 10, x: 115, y: 235, hit: false, size: 40 } },
-        { x: 300, y: 200, shelfY: 220, target: { emoji: '🎯', points: 10, x: 315, y: 185, hit: false, size: 40 } },
-        { x: 500, y: 150, shelfY: 170, target: { emoji: '🎯', points: 10, x: 515, y: 135, hit: false, size: 38 } },
-        { x: 700, y: 280, shelfY: 300, target: { emoji: '🎯', points: 10, x: 715, y: 265, hit: false, size: 42 } },
-        { x: 200, y: 380, shelfY: 400, target: { emoji: '🎯', points: 15, x: 215, y: 365, hit: false, size: 45 } },
-        { x: 600, y: 350, shelfY: 370, target: { emoji: '🎯', points: 15, x: 615, y: 335, hit: false, size: 45 } },
-        { x: 400, y: 430, shelfY: 450, target: { emoji: '🎯', points: 20, x: 415, y: 415, hit: false, size: 48 } },
-        { x: 780, y: 180, shelfY: 200, target: { emoji: '🎯', points: 20, x: 795, y: 165, hit: false, size: 44 } }
+        { x: 120, y: 250, shelfY: 270, target: { emoji: '🎯', points: 15, x: 135, y: 235, hit: false, size: 45 } },
+        { x: 320, y: 200, shelfY: 220, target: { emoji: '🎯', points: 15, x: 335, y: 185, hit: false, size: 45 } },
+        { x: 520, y: 300, shelfY: 320, target: { emoji: '🎯', points: 15, x: 535, y: 285, hit: false, size: 45 } },
+        { x: 720, y: 180, shelfY: 200, target: { emoji: '🎯', points: 15, x: 735, y: 165, hit: false, size: 45 } },
+        { x: 420, y: 400, shelfY: 420, target: { emoji: '🎯', points: 20, x: 435, y: 385, hit: false, size: 48 } }
     ];
     
-    // Инициализация мишеней
+    // Летающие птицы
+    var birds = [];
+    var birdTypes = [
+        { emoji: '🐦', points: 10, speed: 1.2, size: 35, health: 1, chance: 0.3 },
+        { emoji: '🕊️', points: 15, speed: 1.5, size: 32, health: 1, chance: 0.25 },
+        { emoji: '🐧', points: 20, speed: 0.8, size: 38, health: 1, chance: 0.15 },
+        { emoji: '🦜', points: 25, speed: 1.8, size: 35, health: 1, chance: 0.15 },
+        { emoji: '🦉', points: 30, speed: 1.0, size: 40, health: 2, chance: 0.1 },
+        { emoji: '🐓', points: 35, speed: 0.7, size: 42, health: 2, chance: 0.05 }
+    ];
+    
+    // Эффекты
+    var explosions = [];
+    
     function initTargets() {
         targets = [];
         for(var i = 0; i < shelvesData.length; i++) {
@@ -1490,40 +1500,91 @@ function initShooter(){
         updateUI();
     }
     
+    function spawnBird() {
+        if(!gameActive) return;
+        if(birds.length > 8) return;
+        var rand = Math.random();
+        var cumProb = 0;
+        var selected = birdTypes[0];
+        for(var i = 0; i < birdTypes.length; i++) {
+            cumProb += birdTypes[i].chance;
+            if(rand < cumProb) {
+                selected = birdTypes[i];
+                break;
+            }
+        }
+        birds.push({
+            x: Math.random() > 0.5 ? -50 : canvas.width + 50,
+            y: 50 + Math.random() * 250,
+            emoji: selected.emoji,
+            health: selected.health,
+            maxHealth: selected.health,
+            points: selected.points,
+            width: selected.size,
+            height: selected.size,
+            speed: selected.speed + Math.random() * 0.8,
+            vy: (Math.random() - 0.5) * 1.5,
+            direction: Math.random() > 0.5 ? 1 : -1
+        });
+    }
+    
     function updateUI() {
-        var left = targets.filter(t => !t.hit).length;
-        document.getElementById('targetsLeft').textContent = left;
+        var targetsLeft = targets.filter(t => !t.hit).length;
+        document.getElementById('targetsLeft').textContent = targetsLeft;
+        document.getElementById('birdsLeft').textContent = birds.length;
         document.getElementById('shooterScore').textContent = score;
         document.getElementById('shotsCount').textContent = shots;
         
-        if(left === 0 && gameActive) {
+        if(targetsLeft === 0 && birds.length === 0 && gameActive) {
             gameActive = false;
             setTimeout(function() {
-                alert('🏆 ПОБЕДА! Ты сбил все мишени! +' + (score + 20) + ' яиц!');
-                addEggs(score + 20, 'Победа в тире!');
+                alert('🏆 ПОБЕДА! Ты сбил все мишени и всех птиц! +' + (score + 30) + ' яиц!');
+                addEggs(score + 30, 'Победа в тире!');
             }, 100);
         }
     }
     
-    // Выстрел по координатам
     function shootAt(x, y) {
         if(!gameActive) return;
         shots++;
-        
         var hitSomething = false;
+        
+        // Проверка мишеней на полочках
         for(var i = 0; i < targets.length; i++) {
             var t = targets[i];
             if(t.hit) continue;
-            
             var size = t.size;
             if(x > t.x - size/2 && x < t.x + size/2 && y > t.y - size/2 && y < t.y + size/2) {
                 t.hit = true;
                 score += t.points;
                 hitSomething = true;
                 playSound("coin");
-                createHitEffect(t.x, t.y);
+                createExplosion(t.x, t.y, 'target');
                 updateUI();
                 break;
+            }
+        }
+        
+        // Проверка птиц
+        if(!hitSomething) {
+            for(var i = 0; i < birds.length; i++) {
+                var b = birds[i];
+                if(x > b.x && x < b.x + b.width && y > b.y && y < b.y + b.height) {
+                    b.health--;
+                    if(b.health <= 0) {
+                        score += b.points;
+                        birds.splice(i,1);
+                        playSound("hit");
+                        createExplosion(b.x + b.width/2, b.y + b.height/2, 'bird');
+                        hitSomething = true;
+                        updateUI();
+                    } else {
+                        playSound("jump");
+                        createSpark(b.x + b.width/2, b.y + b.height/2);
+                        hitSomething = true;
+                    }
+                    break;
+                }
             }
         }
         
@@ -1535,16 +1596,17 @@ function initShooter(){
         updateUI();
     }
     
-    // Эффекты
-    var effects = [];
-    function createHitEffect(x, y) {
-        effects.push({ x: x, y: y, type: 'hit', life: 0.5 });
+    function createExplosion(x, y, type) {
+        explosions.push({ x: x, y: y, type: type, life: 1.0 });
+    }
+    function createSpark(x, y) {
+        explosions.push({ x: x, y: y, type: 'spark', life: 0.4 });
     }
     function createMissEffect(x, y) {
-        effects.push({ x: x, y: y, type: 'miss', life: 0.3 });
+        explosions.push({ x: x, y: y, type: 'miss', life: 0.3 });
     }
     
-    // Движение прицела
+    // Движение прицела (как в змейке — плюсик)
     window.moveAimTir = function(dir) {
         if(!gameActive) return;
         var step = 20;
@@ -1563,9 +1625,11 @@ function initShooter(){
         score = 0;
         shots = 0;
         gameActive = true;
+        birds = [];
+        explosions = [];
         initTargets();
+        for(var i = 0; i < 3; i++) setTimeout(function() { if(gameActive) spawnBird(); }, i * 1000);
         updateUI();
-        effects = [];
         playSound("jump");
     };
     
@@ -1602,14 +1666,40 @@ function initShooter(){
         shootAt(touchX, touchY);
     };
     
+    // Спавн птиц
+    setInterval(function() {
+        if(gameActive && birds.length < 6 && Math.random() < 0.3) {
+            spawnBird();
+            updateUI();
+        }
+    }, 2000);
+    
+    // Движение птиц
+    setInterval(function() {
+        if(!gameActive) return;
+        for(var i = 0; i < birds.length; i++) {
+            var b = birds[i];
+            b.x += b.speed * b.direction;
+            b.y += b.vy;
+            if(b.y < 30) b.y = 30;
+            if(b.y > 350) b.y = 350;
+            if(b.x + b.width < -50 || b.x > canvas.width + 50) {
+                birds.splice(i,1);
+                i--;
+                updateUI();
+            }
+        }
+    }, 50);
+    
     // Инициализация
     initTargets();
+    for(var i = 0; i < 3; i++) setTimeout(function() { if(gameActive) spawnBird(); }, i * 1000);
     
     // Анимация
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Небо с градиентом
+        // Небо
         var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         grad.addColorStop(0, '#2a6a8a');
         grad.addColorStop(1, '#6a9aaa');
@@ -1626,7 +1716,7 @@ function initShooter(){
         ctx.ellipse(650 - frame % 400, 90, 60, 35, 0, 0, Math.PI * 2);
         ctx.fill();
         
-        // Пол (зелёный)
+        // Пол
         ctx.fillStyle = '#3a6a2a';
         ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
         ctx.fillStyle = '#5a9a4a';
@@ -1634,25 +1724,19 @@ function initShooter(){
             ctx.fillRect(i * 40, canvas.height - 83, 35, 6);
         }
         
-        // Рисуем полочки и мишени
+        // Полочки и мишени
         for (var i = 0; i < shelvesData.length; i++) {
             var s = shelvesData[i];
             var target = targets[i];
             
-            // Стойка полочки
             ctx.fillStyle = '#8B4513';
-            ctx.fillRect(s.x - 10, s.shelfY, 20, canvas.height - s.shelfY);
-            
-            // Полочка
+            ctx.fillRect(s.x - 8, s.shelfY, 16, canvas.height - s.shelfY);
             ctx.fillStyle = '#A0522D';
-            ctx.fillRect(s.x - 40, s.shelfY - 8, 80, 12);
+            ctx.fillRect(s.x - 35, s.shelfY - 8, 70, 12);
             ctx.fillStyle = '#CD853F';
-            ctx.fillRect(s.x - 38, s.shelfY - 8, 76, 6);
+            ctx.fillRect(s.x - 33, s.shelfY - 8, 66, 6);
             
-            // Мишень
             if (!target.hit) {
-                // Круг мишени
-                ctx.shadowBlur = 0;
                 for (var ring = 0; ring < 4; ring++) {
                     ctx.beginPath();
                     ctx.arc(target.x, target.y, target.size / 2 - ring * 5, 0, Math.PI * 2);
@@ -1666,64 +1750,80 @@ function initShooter(){
                 ctx.arc(target.x, target.y, 6, 0, Math.PI * 2);
                 ctx.fillStyle = '#000';
                 ctx.fill();
-                
-                // Очки на мишени
                 ctx.fillStyle = '#fff';
-                ctx.font = 'bold 18px Arial';
+                ctx.font = 'bold 16px Arial';
                 ctx.fillText('+' + target.points, target.x - 15, target.y - target.size / 2 - 5);
             } else {
-                // Разбитая мишень
-                ctx.font = '40px Arial';
+                ctx.font = '35px Arial';
                 ctx.fillStyle = '#888';
-                ctx.fillText('💥', target.x - 20, target.y + 10);
+                ctx.fillText('💥', target.x - 18, target.y + 10);
             }
         }
         
-        // Эффекты выстрелов
-        for (var i = 0; i < effects.length; i++) {
-            var e = effects[i];
-            var alpha = e.life * 0.8;
-            if (e.type === 'hit') {
+        // Птицы
+        for (var i = 0; i < birds.length; i++) {
+            var b = birds[i];
+            ctx.font = b.width + 'px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.shadowBlur = 3;
+            ctx.fillText(b.emoji, b.x, b.y);
+            ctx.shadowBlur = 0;
+            if(b.maxHealth > 1) {
+                ctx.fillStyle = '#f44';
+                ctx.fillRect(b.x, b.y - 12, b.width, 5);
+                ctx.fillStyle = '#4f4';
+                ctx.fillRect(b.x, b.y - 12, b.width * (b.health / b.maxHealth), 5);
+            }
+        }
+        
+        // Эффекты взрывов
+        for (var i = 0; i < explosions.length; i++) {
+            var e = explosions[i];
+            var alpha = e.life;
+            if (e.type === 'target' || e.type === 'bird') {
                 ctx.beginPath();
-                ctx.arc(e.x, e.y, 15 * (1 - e.life), 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255,200,0,' + alpha + ')';
+                ctx.arc(e.x, e.y, 20 * (1 - e.life), 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,100,0,' + alpha + ')';
                 ctx.fill();
-                ctx.font = (25 * (1 - e.life)) + 'px Arial';
+                ctx.font = (30 * (1 - e.life)) + 'px Arial';
                 ctx.fillStyle = 'rgba(255,255,0,' + alpha + ')';
-                ctx.fillText('💥', e.x - 15, e.y - 15);
-            } else {
+                ctx.fillText('💥', e.x - 20, e.y - 20);
+            } else if (e.type === 'spark') {
                 ctx.font = (20 * (1 - e.life)) + 'px Arial';
+                ctx.fillStyle = 'rgba(255,255,0,' + alpha + ')';
+                ctx.fillText('✨', e.x - 10, e.y - 10);
+            } else {
+                ctx.font = (18 * (1 - e.life)) + 'px Arial';
                 ctx.fillStyle = 'rgba(255,255,255,' + alpha + ')';
                 ctx.fillText('💨', e.x - 10, e.y - 10);
             }
-            e.life -= 0.03;
+            e.life -= 0.02;
             if (e.life <= 0) {
-                effects.splice(i, 1);
+                explosions.splice(i, 1);
                 i--;
             }
         }
         
-        // Прицел (красный крестик)
+        // Прицел (плюсик как в змейке)
         ctx.beginPath();
-        ctx.arc(aimX, aimY, 18, 0, Math.PI * 2);
+        ctx.arc(aimX, aimY, 16, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255,0,0,0.9)';
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(aimX - 30, aimY);
-        ctx.lineTo(aimX - 12, aimY);
-        ctx.moveTo(aimX + 30, aimY);
-        ctx.lineTo(aimX + 12, aimY);
-        ctx.moveTo(aimX, aimY - 30);
-        ctx.lineTo(aimX, aimY - 12);
-        ctx.moveTo(aimX, aimY + 30);
-        ctx.lineTo(aimX, aimY + 12);
+        ctx.moveTo(aimX - 28, aimY);
+        ctx.lineTo(aimX - 10, aimY);
+        ctx.moveTo(aimX + 28, aimY);
+        ctx.lineTo(aimX + 10, aimY);
+        ctx.moveTo(aimX, aimY - 28);
+        ctx.lineTo(aimX, aimY - 10);
+        ctx.moveTo(aimX, aimY + 28);
+        ctx.lineTo(aimX, aimY + 10);
         ctx.stroke();
         
-        // Красная точка в центре прицела
         ctx.beginPath();
-        ctx.arc(aimX, aimY, 4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,0,0,0.8)';
+        ctx.arc(aimX, aimY, 5, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255,0,0,0.6)';
         ctx.fill();
         
         frame++;
@@ -1732,7 +1832,6 @@ function initShooter(){
     
     animate();
     
-    // Очистка обработчика при выходе
     var oldStop = stopGame;
     window.stopGame = function() {
         document.removeEventListener('keydown', keyHandler);
@@ -1740,7 +1839,7 @@ function initShooter(){
     };
     
     gameInterval = setInterval(function(){}, 1000);
-                              }
+           }
       </script>
 
 </body>
