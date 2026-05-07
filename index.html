@@ -207,6 +207,16 @@
     color: #666;
     margin-top: 20px;
 }
+.quick-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.quick-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.quick-card:active {
+    transform: translateY(2px);
+}
     }
   </style>
 </head>
@@ -243,14 +253,9 @@
 </div>
 <div class="menu" id="menuDropdown">
 <a onclick="showScreen('home');closeMenu()">🏠 Главная</a>
-<a onclick="showScreen('chat');closeMenu();markRead('chat')">💬 Чат</a>
-<a onclick="showScreen('memes');closeMenu();markRead('memes')">😂 Мемы</a>
-<a onclick="showScreen('ideas');closeMenu();markRead('ideas')">💡 Идеи</a>
-<a onclick="showScreen('chickentube');closeMenu()">🐔 ChickenTube</a>
 <a onclick="showScreen('quests');closeMenu()">📋 Задания</a>
 <a onclick="showScreen('eggsLB');closeMenu()">🏆 Лидеры</a>
 <a onclick="openShop()">🛒 Магазин</a>
-<a onclick="showScreen('friends');closeMenu()">👥 Друзья</a>
 <a onclick="showScreen('gamesLB');closeMenu()">🎮 Лидеры по играм</a>
 <a onclick="suggestQuote();closeMenu()">💬 Предложить цитату</a>
 <a onclick="suggestJoke();closeMenu()">😂 Предложить шутку</a>
@@ -259,6 +264,33 @@
 <div id="content">
 
 <div id="home-screen" class="screen active"><div class="catalog">
+<!-- 6 БЫСТРЫХ КВАДРАТИКОВ -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:30px">
+    <div class="quick-card" onclick="showScreen('games-all');closeMenu()" style="background:linear-gradient(135deg,#4a90d9,#357abd);text-align:center;padding:20px;border-radius:15px;cursor:pointer">
+        <div style="font-size:40px">🎮</div>
+        <div style="font-weight:bold">Игры</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('chat');closeMenu()" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);text-align:center;padding:20px;border-radius:15px;cursor:pointer">
+        <div style="font-size:40px">💬</div>
+        <div style="font-weight:bold">Чат</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('memes');closeMenu()" style="background:linear-gradient(135deg,#e67e22,#d35400);text-align:center;padding:20px;border-radius:15px;cursor:pointer">
+        <div style="font-size:40px">😂</div>
+        <div style="font-weight:bold">Мемы</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('ideas');closeMenu()" style="background:linear-gradient(135deg,#1abc9c,#16a085);text-align:center;padding:20px;border-radius:15px;cursor:pointer">
+        <div style="font-size:40px">💡</div>
+        <div style="font-weight:bold">Идеи</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('chickentube');closeMenu()" style="background:linear-gradient(135deg,#e74c3c,#c0392b);text-align:center;padding:20px;border-radius:15px;cursor:pointer">
+        <div style="font-size:40px">🐔</div>
+        <div style="font-weight:bold">ChickenTube</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('friends');closeMenu()" style="background:linear-gradient(135deg,#2ecc71,#27ae60);text-align:center;padding:20px;border-radius:15px;cursor:pointer">
+        <div style="font-size:40px">👥</div>
+        <div style="font-weight:bold">Друзья</div>
+    </div>
+</div>
 <h2>🎬 Сериалы</h2><div class="movie-grid"><div class="movie-card" onclick="openMovie('series')"><img src="cover.jpg"><h3>Приключения 4 куриц</h3><div class="rating" id="rating-series">⭐ 9.5/10</div></div></div>
 <h2 style="margin-top:35px">🎥 Фильмы</h2><div class="movie-grid">
 <div class="movie-card" onclick="openMovie('comb')"><img src="cover-comb.jpg"><h3>Расческа для лысых</h3><div class="rating" id="rating-comb">—</div></div>
@@ -333,6 +365,12 @@
             </select>
         </div>
         <div id="gameLeadersList"></div>
+    </div>
+</div>
+<div id="games-all-screen" class="screen">
+    <div class="catalog">
+        <h2>🎮 Все игры</h2>
+        <div class="games-grid" id="allGamesGrid"></div>
     </div>
 </div>
 </div></div>
@@ -973,7 +1011,7 @@ function claimQuest(id) {
 
 
   
-function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var t=document.getElementById(id+'-screen');if(t)t.classList.add('active');closeMenu();window.scrollTo(0,0);if(id==='quests')loadQuests();if(id==='eggsLB')loadEggsLeaderboard();if(id==='chickentube')loadShorts();if(id==='friends') loadFriends();}
+function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var t=document.getElementById(id+'-screen');if(t)t.classList.add('active');closeMenu();window.scrollTo(0,0);if(id==='quests')loadQuests();if(id==='eggsLB')loadEggsLeaderboard();if(id==='chickentube')loadShorts();if(id==='friends') loadFriends();if(id === 'games-all') showAllGames();}
 function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
 document.addEventListener('click',function(e){if(!e.target.closest('.burger')&&!e.target.closest('.menu')&&!e.target.closest('.modal-box'))closeMenu();});
 
@@ -2888,6 +2926,44 @@ function addAdminButtonsToMenu() {
 // При загрузке страницы проверяем админа и добавляем кнопки
 if(isAdmin) {
     setTimeout(addAdminButtonsToMenu, 1000);
+}
+function showAllGames() {
+    showScreen('games-all');
+    var container = document.getElementById('allGamesGrid');
+    if(!container) return;
+    
+    var allGames = [
+        { name: 'Змейка', icon: '🐍', id: 'snake' },
+        { name: 'Тетрис', icon: '🧱', id: 'tetris' },
+        { name: 'Раннер', icon: '🏃', id: 'runner' },
+        { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain' },
+        { name: 'Flappy курица', icon: '🐔', id: 'flappy' },
+        { name: 'Memory', icon: '🧠', id: 'memory' },
+        { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi' },
+        { name: 'Угадай число', icon: '🔢', id: 'guess' },
+        { name: 'Камень-ножницы', icon: '✂️', id: 'rps' },
+        { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
+        { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
+        { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
+        { name: 'Птичий тир', icon: '🎯', id: 'shooter' }
+    ];
+    
+    container.innerHTML = '';
+    allGames.forEach(function(game) {
+        var playFunc = game.online ? 'showOnlineGame' : 'showGame';
+        container.innerHTML += `
+            <div class="game-card" onclick="${playFunc}('${game.id}')">
+                <span class="game-icon">${game.icon}</span>
+                <h3>${game.name}</h3>
+                <div class="game-rating" id="rating-${game.id}">⭐ 0/10</div>
+            </div>
+        `;
+    });
+    
+    // Загружаем рейтинги для всех игр
+    allGames.forEach(function(game) {
+        loadLeaderboard(game.id);
+    });
 }
       </script>
 
