@@ -1421,12 +1421,6 @@ function showGamesLBScreen() {
 // ==================== ИГРА "ТИР" ====================
 function initShooter(){
     document.getElementById('gameContent').innerHTML = `
-        <div style="display:flex;gap:20px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">
-            <div>🔫 Выстрелы: <span id="shotsCount">0</span></div>
-            <div>⏱️ Время: <span id="timerCount">60</span> сек</div>
-            <div>💨 Промахи: <span id="missesCount">0</span>/10</div>
-            <div>🏆 Счёт: <span id="shooterScore">0</span></div>
-        </div>
         <canvas id="shooterCanvas" width="900" height="550" class="game-canvas" style="background:linear-gradient(180deg,#2a6a8a,#6a9aaa);cursor:crosshair"></canvas>
         <div style="display:flex;justify-content:center;gap:15px;margin-top:10px;flex-wrap:wrap">
             <div class="ds4">
@@ -1446,7 +1440,7 @@ function initShooter(){
     canvas.width = 900;
     canvas.height = 550;
     
-    var score = 0;
+    var gameScore = 0;  // Очки в игре (отображаются в gameScoreDisplay)
     var shots = 0;
     var misses = 0;
     var maxMisses = 10;
@@ -1456,6 +1450,19 @@ function initShooter(){
     var timeBonusGiven = false;
     var timerInterval = null;
     
+    // Обновляем отображение счёта в стандартном месте
+    function updateGameScoreDisplay() {
+        document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + gameScore;
+    }
+    
+    // Обновляем остальные показатели (внутри игры)
+    function updateUI() {
+        document.getElementById('shotsCount').textContent = shots;
+        document.getElementById('missesCount').textContent = misses + '/' + maxMisses;
+        document.getElementById('timerCount').textContent = timeLeft;
+    }
+    
+    // Облака
     var clouds = [
         { x: 50, y: 60, speed: 0.3, size: 45 },
         { x: 250, y: 90, speed: 0.5, size: 55 },
@@ -1526,31 +1533,25 @@ function initShooter(){
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
                 gameActive = false;
-                alert('⏰ Время вышло! Игра окончена! Счёт: ' + score);
+                alert('⏰ Время вышло! Игра окончена! Очки: ' + gameScore);
             } else {
                 timeLeft--;
-                document.getElementById('timerCount').textContent = timeLeft;
+                updateUI();
             }
         }, 1000);
     }
     
     function checkTimeBonus() {
-        if(!timeBonusGiven && score >= 80) {
+        if(!timeBonusGiven && gameScore >= 80) {
             timeBonusGiven = true;
             timeLeft += 30;
-            document.getElementById('timerCount').textContent = timeLeft;
+            updateUI();
             createBonusEffect('+30 сек!', canvas.width/2, 100);
             playSound("coin");
             setTimeout(function() {
                 alert('🎁 Бонус! +30 секунд за 80 очков!');
             }, 100);
         }
-    }
-    
-    function updateUI() {
-        document.getElementById('shotsCount').textContent = shots;
-        document.getElementById('missesCount').textContent = misses + '/' + maxMisses;
-        document.getElementById('shooterScore').textContent = score;
     }
     
     function initTargets() {
@@ -1567,7 +1568,6 @@ function initShooter(){
                 shelfY: s.shelfY
             });
         }
-        updateUI();
     }
     
     function spawnFlyingAnimal() {
@@ -1637,12 +1637,12 @@ function initShooter(){
             var size = t.size;
             if(x > t.x - size/2 && x < t.x + size/2 && y > t.y - size/2 && y < t.y + size/2) {
                 t.hit = true;
-                score += t.points;
+                gameScore += t.points;
                 hitSomething = true;
                 playSound("coin");
                 createExplosion(t.x, t.y, 'target');
+                updateGameScoreDisplay();
                 checkTimeBonus();
-                updateUI();
                 checkWin();
                 break;
             }
@@ -1655,13 +1655,13 @@ function initShooter(){
                 if(x > a.x - 12 && x < a.x + a.width + 12 && y > a.y - 12 && y < a.y + a.height + 12) {
                     a.health--;
                     if(a.health <= 0) {
-                        score += a.points;
+                        gameScore += a.points;
                         flyingAnimals.splice(i,1);
                         playSound("hit");
                         createExplosion(a.x + a.width/2, a.y + a.height/2, 'animal');
                         hitSomething = true;
+                        updateGameScoreDisplay();
                         checkTimeBonus();
-                        updateUI();
                         checkWin();
                     } else {
                         playSound("jump");
@@ -1680,13 +1680,13 @@ function initShooter(){
                 if(x > a.x - 12 && x < a.x + a.width + 12 && y > a.y - 12 && y < a.y + a.height + 12) {
                     a.health--;
                     if(a.health <= 0) {
-                        score += a.points;
+                        gameScore += a.points;
                         groundAnimals.splice(i,1);
                         playSound("hit");
                         createExplosion(a.x + a.width/2, a.y + a.height/2, 'animal');
                         hitSomething = true;
+                        updateGameScoreDisplay();
                         checkTimeBonus();
-                        updateUI();
                         checkWin();
                     } else {
                         playSound("jump");
@@ -1702,11 +1702,10 @@ function initShooter(){
             misses++;
             playSound("hit");
             createMissEffect(x, y);
-            updateUI();
             if(misses >= maxMisses) {
                 gameActive = false;
                 if(timerInterval) clearInterval(timerInterval);
-                alert('😢 Игра окончена! 10 промахов! Счёт: ' + score);
+                alert('😢 Игра окончена! 10 промахов! Очки: ' + gameScore);
             }
         }
         
@@ -1719,8 +1718,7 @@ function initShooter(){
             gameActive = false;
             if(timerInterval) clearInterval(timerInterval);
             setTimeout(function() {
-                alert('🏆 ПОБЕДА! Ты сбил всё! +' + (score + 50) + ' яиц!');
-                addEggs(score + 50, 'Победа в тире!');
+                alert('🏆 ПОБЕДА! Ты сбил всё! Очки: ' + gameScore);
             }, 100);
         }
     }
@@ -1754,7 +1752,7 @@ function initShooter(){
     
     window.resetGameTir = function() {
         if(timerInterval) clearInterval(timerInterval);
-        score = 0;
+        gameScore = 0;
         shots = 0;
         misses = 0;
         timeLeft = 60;
@@ -1764,8 +1762,8 @@ function initShooter(){
         groundAnimals = [];
         explosions = [];
         initTargets();
+        updateGameScoreDisplay();
         updateUI();
-        document.getElementById('timerCount').textContent = timeLeft;
         startTimer();
         playSound("jump");
     };
@@ -1838,6 +1836,8 @@ function initShooter(){
     
     initTargets();
     startTimer();
+    updateGameScoreDisplay();
+    updateUI();
     
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1971,7 +1971,7 @@ function initShooter(){
         ctx.arc(aimX, aimY, 16, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255,0,0,0.9)';
         ctx.lineWidth = 2;
-        ctx.stroke();
+        ctx.stroke();ю
         ctx.beginPath();
         ctx.moveTo(aimX - 28, aimY);
         ctx.lineTo(aimX - 10, aimY);
@@ -2002,7 +2002,7 @@ function initShooter(){
     };
     
     gameInterval = setInterval(function(){}, 1000);
-          }
+}
       </script>
 
 </body>
