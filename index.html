@@ -453,18 +453,22 @@ function loadAllData() {
     var completedSteps = 0;
     var loadTasks = [];
     
-    // Анекдот меняется каждые 3 секунды
+    // РАВНОМЕРНОЕ РАСПРЕДЕЛЕНИЕ: считаем количество задач
+    var totalTasks = 0;
+    
+    // Анекдот меняется каждые 5 секунд
     var jokeInterval = setInterval(function() {
         var jokeIndex = Math.floor(Math.random() * loadingJokes.length);
         var jokeText = loadingJokes[jokeIndex];
         jokeText = jokeText.replace(/\n/g, '<br>');
         var jokeDiv = document.getElementById('loadingJoke');
         if(jokeDiv) jokeDiv.innerHTML = '💬 ' + jokeText;
-    }, 3000);
+    }, 5000);
     
     function updateProgress(stepName) {
         completedSteps++;
-        progress = Math.floor((completedSteps / loadTasks.length) * 100);
+        // РАВНОМЕРНЫЙ РАСЧЁТ ПРОЦЕНТА
+        progress = Math.floor((completedSteps / totalTasks) * 100);
         if(progress > 100) progress = 100;
         
         var fill = document.getElementById('loadingFill');
@@ -479,26 +483,27 @@ function loadAllData() {
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // 1. Яйца и аватары
+    // ========== ФОРМИРУЕМ СПИСОК ВСЕХ ЗАДАЧ ==========
+    
+    // 1. Яйца
     loadTasks.push(new Promise(function(r){
         db.ref('users/'+myUid+'/eggs').once('value',function(s){
             myEggs=s.val()||savedEggs||0;
             if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
             document.getElementById('headerEggs').textContent=myEggs;
-            updateProgress('Яйца загружены');
             r();
         });
     }));
     
+    // 2. Аватары
     loadTasks.push(new Promise(function(r){
         db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
             boughtAvatars=s.val()||[];
-            updateProgress('Аватары загружены');
             r();
         });
     }));
     
-    // 2. ЧАТ
+    // 3. ЧАТ
     loadTasks.push(new Promise(function(r){
         db.ref('chat').limitToLast(50).once('value', function(s){
             var ms = [];
@@ -517,12 +522,11 @@ function loadAllData() {
                 c.scrollTop = c.scrollHeight;
             }
             updateUnreadAll();
-            updateProgress('Чат загружен');
             r();
         });
     }));
     
-    // 3. МЕМЫ
+    // 4. МЕМЫ
     loadTasks.push(new Promise(function(r){
         db.ref('memes').limitToLast(30).once('value', function(s){
             var ms = [];
@@ -548,12 +552,11 @@ function loadAllData() {
                 }
             }
             updateUnreadAll();
-            updateProgress('Мемы загружены');
             r();
         });
     }));
     
-    // 4. ИДЕИ
+    // 5. ИДЕИ
     loadTasks.push(new Promise(function(r){
         db.ref('ideas').limitToLast(30).once('value', function(s){
             var is = [];
@@ -573,12 +576,11 @@ function loadAllData() {
                 }
             }
             updateUnreadAll();
-            updateProgress('Идеи загружены');
             r();
         });
     }));
     
-    // 5. ШОРТСЫ
+    // 6. ШОРТСЫ
     loadTasks.push(new Promise(function(r){
         db.ref('shorts').once('value', function(s){
             var shorts = [];
@@ -605,44 +607,37 @@ function loadAllData() {
                     });
                 }
             }
-            updateProgress('Шортсы загружены');
             r();
         });
     }));
     
-    // 6. ОТЗЫВЫ К ФИЛЬМАМ
-    loadTasks.push(new Promise(function(r){
-        var movieIds = ['series', 'comb', 'pirates', 'americans', 'ads1', 'ads2', 'pta'];
-        var promises = movieIds.map(function(mid){
-            return new Promise(function(res){
-                db.ref('reviews/'+mid).once('value', function(snap){
-                    var revs = [];
-                    snap.forEach(function(c){
-                        revs.push({
-                            name: c.val().name, avatarType: c.val().avatarType||'emoji',
-                            avatarValue: c.val().avatarValue||'🐔', text: c.val().text,
-                            rating: c.val().rating, ts: c.val().ts
-                        });
+    // 7. ОТЗЫВЫ К ФИЛЬМАМ (7 фильмов)
+    var movieIds = ['series', 'comb', 'pirates', 'americans', 'ads1', 'ads2', 'pta'];
+    movieIds.forEach(function(mid){
+        loadTasks.push(new Promise(function(res){
+            db.ref('reviews/'+mid).once('value', function(snap){
+                var revs = [];
+                snap.forEach(function(c){
+                    revs.push({
+                        name: c.val().name, avatarType: c.val().avatarType||'emoji',
+                        avatarValue: c.val().avatarValue||'🐔', text: c.val().text,
+                        rating: c.val().rating, ts: c.val().ts
                     });
-                    revs.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
-                    if(revs.length > 0){
-                        var sum = 0;
-                        revs.forEach(function(r){ sum += r.rating; });
-                        var avg = (sum/revs.length).toFixed(1);
-                        var el = document.getElementById('rating-'+mid);
-                        if(el) el.textContent = '⭐ '+avg+'/10';
-                    }
-                    res();
                 });
+                revs.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
+                if(revs.length > 0){
+                    var sum = 0;
+                    revs.forEach(function(r){ sum += r.rating; });
+                    var avg = (sum/revs.length).toFixed(1);
+                    var el = document.getElementById('rating-'+mid);
+                    if(el) el.textContent = '⭐ '+avg+'/10';
+                }
+                res();
             });
-        });
-        Promise.all(promises).then(function(){
-            updateProgress('Отзывы к фильмам загружены');
-            r();
-        });
-    }));
+        }));
+    });
     
-    // 7. РЕЙТИНГИ ИГР
+    // 8. РЕЙТИНГИ ИГР (13 игр)
     var gamesList = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
     gamesList.forEach(function(game){
         loadTasks.push(new Promise(function(r){
@@ -661,47 +656,37 @@ function loadAllData() {
         }));
     });
     
-    // 8. ЦИТАТЫ
+    // 9. ЦИТАТЫ
     loadTasks.push(new Promise(function(r){
         if(typeof initQuotes === 'function') {
             initQuotes();
-            setTimeout(r, 1000);
+            setTimeout(r, 800);
         } else {
             r();
         }
     }));
     
-    // 9. ПОДАРКИ
-    loadTasks.push(new Promise(function(r){
-        if(typeof loadGifts === 'function') {
-            loadGifts();
-        }
-        setTimeout(r, 500);
-    }));
+    // Общее количество задач
+    totalTasks = loadTasks.length;
     
-    // 10. ЗАДАНИЯ
-    loadTasks.push(new Promise(function(r){
-        if(typeof generateDailyQuests === 'function') {
-            generateDailyQuests(false);
-        }
-        setTimeout(r, 500);
-    }));
+    // Отслеживаем выполнение каждой задачи
+    var taskIndex = 0;
+    function trackTask(promise) {
+        promise.then(function() {
+            taskIndex++;
+            updateProgress();
+        });
+        return promise;
+    }
     
-    // 11. УВЕДОМЛЕНИЯ
-    loadTasks.push(new Promise(function(r){
-        if(typeof setupFriendNotifications === 'function') {
-            setupFriendNotifications();
-        }
-        setTimeout(r, 500);
-    }));
+    // Запускаем все задачи параллельно с отслеживанием
+    var trackedTasks = loadTasks.map(trackTask);
     
-    // Запускаем все задачи параллельно
-    Promise.all(loadTasks).then(function(){
-        updateProgress('Все данные загружены!');
+    Promise.all(trackedTasks).then(function(){
+        clearInterval(jokeInterval);
+        updateProgress();
         
         setTimeout(function(){
-            clearInterval(jokeInterval); // Останавливаем смену анекдотов
-            updateProgress('Добро пожаловать в Tildochka! 🎉');
             var oldLoading = document.getElementById('loading');
             if(oldLoading) oldLoading.style.display = 'none';
             document.getElementById('app').style.display = 'block';
@@ -719,7 +704,7 @@ function loadAllData() {
     });
     
     setInterval(syncOnlineProfile,5000);
-      }
+                  }
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
