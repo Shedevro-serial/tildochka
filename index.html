@@ -1422,12 +1422,10 @@ function showGamesLBScreen() {
 function initShooter(){
     document.getElementById('gameContent').innerHTML = `
         <div style="display:flex;gap:20px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">
-            <div>🎯 Мишени: <span id="targetsLeft">0</span></div>
-            <div>🦤 Животные: <span id="animalsLeft">0</span></div>
-            <div>🏆 Счёт: <span id="shooterScore">0</span></div>
-            <div>🔫 Выстрелов: <span id="shotsCount">0</span></div>
-            <div>💨 Промахи: <span id="missesCount">0</span>/10</div>
+            <div>🔫 Выстрелы: <span id="shotsCount">0</span></div>
             <div>⏱️ Время: <span id="timerCount">60</span> сек</div>
+            <div>💨 Промахи: <span id="missesCount">0</span>/10</div>
+            <div>🏆 Счёт: <span id="shooterScore">0</span></div>
         </div>
         <canvas id="shooterCanvas" width="900" height="550" class="game-canvas" style="background:linear-gradient(180deg,#2a6a8a,#6a9aaa);cursor:crosshair"></canvas>
         <div style="display:flex;justify-content:center;gap:15px;margin-top:10px;flex-wrap:wrap">
@@ -1439,7 +1437,7 @@ function initShooter(){
             <button class="ds4-btn" onclick="shootNowTir()" style="background:#f44;width:auto;padding:0 20px">🔫 СТРЕЛЯТЬ</button>
             <button class="ds4-btn" onclick="resetGameTir()" style="background:#444;width:auto;padding:0 20px">🔄 Новая игра</button>
         </div>
-        <p style="text-align:center;color:#ffd700;margin-top:8px">🎮 Стрелки на клавиатуре | Клик по цели = выстрел | +30 сек за 50 очков! | 10 промахов = проигрыш</p>
+        <p style="text-align:center;color:#ffd700;margin-top:8px">🎮 Стрелки на клавиатуре | Клик по цели = выстрел | +30 сек за 80 очков! | 10 промахов = проигрыш</p>
     `;
     createGameRating();
     
@@ -1448,7 +1446,6 @@ function initShooter(){
     canvas.width = 900;
     canvas.height = 550;
     
-    // Переменные игры
     var score = 0;
     var shots = 0;
     var misses = 0;
@@ -1470,40 +1467,59 @@ function initShooter(){
         { x: 550, y: 120, speed: 0.35, size: 48 }
     ];
     
-    // Прицел
     var aimX = canvas.width/2;
     var aimY = canvas.height/2;
     
-    // Мишени на полочках (5 полочек)
+    // Мишени
     var targets = [];
-    
     var shelvesData = [
-        { x: 120, y: 250, shelfY: 270, target: { emoji: '🎯', points: 15, x: 135, y: 235, hit: false, size: 45 } },
-        { x: 320, y: 200, shelfY: 220, target: { emoji: '🎯', points: 15, x: 335, y: 185, hit: false, size: 45 } },
-        { x: 520, y: 300, shelfY: 320, target: { emoji: '🎯', points: 15, x: 535, y: 285, hit: false, size: 45 } },
-        { x: 720, y: 180, shelfY: 200, target: { emoji: '🎯', points: 15, x: 735, y: 165, hit: false, size: 45 } },
-        { x: 420, y: 400, shelfY: 420, target: { emoji: '🎯', points: 20, x: 435, y: 385, hit: false, size: 48 } }
+        { x: 120, y: 250, shelfY: 270, target: { points: 15, x: 135, y: 235, hit: false, size: 45 } },
+        { x: 320, y: 200, shelfY: 220, target: { points: 15, x: 335, y: 185, hit: false, size: 45 } },
+        { x: 520, y: 300, shelfY: 320, target: { points: 15, x: 535, y: 285, hit: false, size: 45 } },
+        { x: 720, y: 180, shelfY: 200, target: { points: 15, x: 735, y: 165, hit: false, size: 45 } },
+        { x: 420, y: 400, shelfY: 420, target: { points: 20, x: 435, y: 385, hit: false, size: 48 } }
     ];
     
-    // Животные (с дронтом 🦤 вместо курицы)
-    var animals = [];
-    var animalTypes = [
-        { emoji: '🦤', points: 25, speed: 0.9, size: 40, health: 2, chance: 0.08 },  // Дронт (редкий)
-        { emoji: '🦆', points: 12, speed: 1.5, size: 32, health: 1, chance: 0.15 },
-        { emoji: '🕊️', points: 8, speed: 1.8, size: 30, health: 1, chance: 0.12 },
-        { emoji: '🐓', points: 20, speed: 1.0, size: 38, health: 2, chance: 0.1 },
-        { emoji: '🦉', points: 25, speed: 0.9, size: 40, health: 2, chance: 0.08 },
-        { emoji: '🦅', points: 30, speed: 1.6, size: 38, health: 1, chance: 0.08 },
-        { emoji: '🐧', points: 15, speed: 0.8, size: 35, health: 1, chance: 0.12 },
-        { emoji: '🦜', points: 18, speed: 1.4, size: 33, health: 1, chance: 0.1 },
-        { emoji: '🐦‍⬛', points: 12, speed: 1.3, size: 32, health: 1, chance: 0.1 },
-        { emoji: '🦃', points: 22, speed: 0.7, size: 42, health: 2, chance: 0.07 }
+    // ЛЕТАЮЩИЕ ЖИВОТНЫЕ (скорость зависит от очков)
+    var flyingAnimals = [];
+    var flyingAnimalTypes = [
+        { emoji: '🦟', points: 5, speed: 2.5, size: 25, health: 1, chance: 0.1, desc: 'комар' },
+        { emoji: '🦋', points: 6, speed: 2.2, size: 28, health: 1, chance: 0.1, desc: 'бабочка' },
+        { emoji: '🐝', points: 7, speed: 2.0, size: 28, health: 1, chance: 0.1, desc: 'пчела' },
+        { emoji: '🕊️', points: 8, speed: 1.8, size: 30, health: 1, chance: 0.08, desc: 'голубь' },
+        { emoji: '🐦‍⬛', points: 10, speed: 1.6, size: 32, health: 1, chance: 0.08, desc: 'ворона' },
+        { emoji: '🦆', points: 12, speed: 1.5, size: 32, health: 1, chance: 0.08, desc: 'утка' },
+        { emoji: '🦜', points: 15, speed: 1.4, size: 33, health: 1, chance: 0.07, desc: 'попугай' },
+        { emoji: '🐧', points: 18, speed: 1.2, size: 35, health: 1, chance: 0.07, desc: 'пингвин' },
+        { emoji: '🦉', points: 22, speed: 1.1, size: 38, health: 2, chance: 0.06, desc: 'сова' },
+        { emoji: '🐓', points: 25, speed: 1.0, size: 38, health: 2, chance: 0.06, desc: 'петух' },
+        { emoji: '🦅', points: 30, speed: 1.3, size: 38, health: 1, chance: 0.05, desc: 'орёл' },
+        { emoji: '🦃', points: 28, speed: 0.9, size: 42, health: 2, chance: 0.05, desc: 'индюк' },
+        { emoji: '🦤', points: 35, speed: 0.8, size: 40, health: 3, chance: 0.04, desc: 'дронт' },
+        { emoji: '🐉', points: 50, speed: 1.5, size: 45, health: 4, chance: 0.02, desc: 'дракон' }
     ];
     
-    // Эффекты
+    // НАЗЕМНЫЕ ЖИВОТНЫЕ (ходят по земле)
+    var groundAnimals = [];
+    var groundAnimalTypes = [
+        { emoji: '🐭', points: 8, speed: 1.2, size: 30, health: 1, chance: 0.1, desc: 'мышь' },
+        { emoji: '🐰', points: 10, speed: 1.5, size: 32, health: 1, chance: 0.1, desc: 'кролик' },
+        { emoji: '🐱', points: 12, speed: 1.3, size: 35, health: 1, chance: 0.09, desc: 'кот' },
+        { emoji: '🐶', points: 12, speed: 1.4, size: 35, health: 1, chance: 0.09, desc: 'собака' },
+        { emoji: '🦊', points: 15, speed: 1.6, size: 35, health: 1, chance: 0.08, desc: 'лиса' },
+        { emoji: '🐗', points: 18, speed: 1.1, size: 38, health: 2, chance: 0.08, desc: 'кабан' },
+        { emoji: '🐺', points: 20, speed: 1.3, size: 38, health: 2, chance: 0.07, desc: 'волк' },
+        { emoji: '🐻', points: 25, speed: 0.8, size: 45, health: 3, chance: 0.06, desc: 'медведь' },
+        { emoji: '🦌', points: 22, speed: 1.2, size: 40, health: 2, chance: 0.07, desc: 'олень' },
+        { emoji: '🐴', points: 15, speed: 1.7, size: 38, health: 1, chance: 0.08, desc: 'лошадь' },
+        { emoji: '🐮', points: 14, speed: 0.9, size: 42, health: 2, chance: 0.08, desc: 'корова' },
+        { emoji: '🦁', points: 30, speed: 1.0, size: 42, health: 3, chance: 0.05, desc: 'лев' },
+        { emoji: '🐯', points: 28, speed: 1.1, size: 40, health: 3, chance: 0.05, desc: 'тигр' },
+        { emoji: '🦍', points: 25, speed: 0.9, size: 42, health: 3, chance: 0.06, desc: 'горилла' }
+    ];
+    
     var explosions = [];
     
-    // Таймер
     function startTimer() {
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(function() {
@@ -1520,16 +1536,22 @@ function initShooter(){
     }
     
     function checkTimeBonus() {
-        if(!timeBonusGiven && score >= 50) {
+        if(!timeBonusGiven && score >= 80) {
             timeBonusGiven = true;
             timeLeft += 30;
             document.getElementById('timerCount').textContent = timeLeft;
             createBonusEffect('+30 сек!', canvas.width/2, 100);
             playSound("coin");
             setTimeout(function() {
-                alert('🎁 Бонус! +30 секунд за 50 очков!');
+                alert('🎁 Бонус! +30 секунд за 80 очков!');
             }, 100);
         }
+    }
+    
+    function updateUI() {
+        document.getElementById('shotsCount').textContent = shots;
+        document.getElementById('missesCount').textContent = misses + '/' + maxMisses;
+        document.getElementById('shooterScore').textContent = score;
     }
     
     function initTargets() {
@@ -1539,7 +1561,6 @@ function initShooter(){
             targets.push({
                 x: s.target.x,
                 y: s.target.y,
-                emoji: s.target.emoji,
                 points: s.target.points,
                 hit: false,
                 size: s.target.size,
@@ -1550,50 +1571,61 @@ function initShooter(){
         updateUI();
     }
     
-    function spawnAnimal() {
+    function spawnFlyingAnimal() {
         if(!gameActive) return;
-        if(animals.length >= 5) return;
+        if(flyingAnimals.length >= 6) return;
         var rand = Math.random();
         var cumProb = 0;
-        var selected = animalTypes[0];
-        for(var i = 0; i < animalTypes.length; i++) {
-            cumProb += animalTypes[i].chance;
+        var selected = flyingAnimalTypes[0];
+        for(var i = 0; i < flyingAnimalTypes.length; i++) {
+            cumProb += flyingAnimalTypes[i].chance;
             if(rand < cumProb) {
-                selected = animalTypes[i];
+                selected = flyingAnimalTypes[i];
                 break;
             }
         }
-        animals.push({
+        flyingAnimals.push({
             x: Math.random() > 0.5 ? -50 : canvas.width + 50,
-            y: 50 + Math.random() * 300,
+            y: 50 + Math.random() * 280,
             emoji: selected.emoji,
             health: selected.health,
             maxHealth: selected.health,
             points: selected.points,
             width: selected.size,
             height: selected.size,
-            speed: selected.speed + Math.random() * 0.8,
-            vy: (Math.random() - 0.5) * 1.2,
-            direction: Math.random() > 0.5 ? 1 : -1
+            speed: selected.speed + Math.random() * 0.5,
+            vy: (Math.random() - 0.5) * 1.0,
+            direction: Math.random() > 0.5 ? 1 : -1,
+            desc: selected.desc
         });
     }
     
-    function updateUI() {
-        var targetsLeft = targets.filter(t => !t.hit).length;
-        document.getElementById('targetsLeft').textContent = targetsLeft;
-        document.getElementById('animalsLeft').textContent = animals.length;
-        document.getElementById('shooterScore').textContent = score;
-        document.getElementById('shotsCount').textContent = shots;
-        document.getElementById('missesCount').textContent = misses + '/' + maxMisses;
-        
-        if(targetsLeft === 0 && animals.length === 0 && gameActive && timeLeft > 0) {
-            gameActive = false;
-            if(timerInterval) clearInterval(timerInterval);
-            setTimeout(function() {
-                alert('🏆 ПОБЕДА! Ты сбил все мишени и всех животных! +' + (score + 30) + ' яиц!');
-                addEggs(score + 30, 'Победа в тире!');
-            }, 100);
+    function spawnGroundAnimal() {
+        if(!gameActive) return;
+        if(groundAnimals.length >= 4) return;
+        var rand = Math.random();
+        var cumProb = 0;
+        var selected = groundAnimalTypes[0];
+        for(var i = 0; i < groundAnimalTypes.length; i++) {
+            cumProb += groundAnimalTypes[i].chance;
+            if(rand < cumProb) {
+                selected = groundAnimalTypes[i];
+                break;
+            }
         }
+        groundAnimals.push({
+            x: Math.random() > 0.5 ? -50 : canvas.width + 50,
+            y: canvas.height - 65,
+            emoji: selected.emoji,
+            health: selected.health,
+            maxHealth: selected.health,
+            points: selected.points,
+            width: selected.size,
+            height: selected.size,
+            speed: selected.speed + Math.random() * 0.5,
+            direction: Math.random() > 0.5 ? 1 : -1,
+            desc: selected.desc
+        });
     }
     
     function shootAt(x, y) {
@@ -1614,25 +1646,51 @@ function initShooter(){
                 createExplosion(t.x, t.y, 'target');
                 checkTimeBonus();
                 updateUI();
+                checkWin();
                 break;
             }
         }
         
-        // Проверка животных (увеличена зона попадания)
+        // Проверка летающих животных
         if(!hitSomething) {
-            for(var i = 0; i < animals.length; i++) {
-                var a = animals[i];
-                // Попадание по всему телу животного (увеличил зону)
+            for(var i = 0; i < flyingAnimals.length; i++) {
+                var a = flyingAnimals[i];
                 if(x > a.x - 15 && x < a.x + a.width + 15 && y > a.y - 15 && y < a.y + a.height + 15) {
                     a.health--;
                     if(a.health <= 0) {
                         score += a.points;
-                        animals.splice(i,1);
+                        flyingAnimals.splice(i,1);
                         playSound("hit");
                         createExplosion(a.x + a.width/2, a.y + a.height/2, 'animal');
                         hitSomething = true;
                         checkTimeBonus();
                         updateUI();
+                        checkWin();
+                    } else {
+                        playSound("jump");
+                        createSpark(a.x + a.width/2, a.y + a.height/2);
+                        hitSomething = true;
+                    }
+                    break;
+                }
+            }
+        }
+        
+        // Проверка наземных животных
+        if(!hitSomething) {
+            for(var i = 0; i < groundAnimals.length; i++) {
+                var a = groundAnimals[i];
+                if(x > a.x - 15 && x < a.x + a.width + 15 && y > a.y - 15 && y < a.y + a.height + 15) {
+                    a.health--;
+                    if(a.health <= 0) {
+                        score += a.points;
+                        groundAnimals.splice(i,1);
+                        playSound("hit");
+                        createExplosion(a.x + a.width/2, a.y + a.height/2, 'animal');
+                        hitSomething = true;
+                        checkTimeBonus();
+                        updateUI();
+                        checkWin();
                     } else {
                         playSound("jump");
                         createSpark(a.x + a.width/2, a.y + a.height/2);
@@ -1658,10 +1716,21 @@ function initShooter(){
         updateUI();
     }
     
+    function checkWin() {
+        var allTargetsHit = targets.every(t => t.hit);
+        if(allTargetsHit && flyingAnimals.length === 0 && groundAnimals.length === 0 && gameActive && timeLeft > 0) {
+            gameActive = false;
+            if(timerInterval) clearInterval(timerInterval);
+            setTimeout(function() {
+                alert('🏆 ПОБЕДА! Ты сбил всё! +' + (score + 50) + ' яиц!');
+                addEggs(score + 50, 'Победа в тире!');
+            }, 100);
+        }
+    }
+    
     function createBonusEffect(text, x, y) {
         explosions.push({ x: x, y: y, text: text, type: 'bonus', life: 1.0 });
     }
-    
     function createExplosion(x, y, type) {
         explosions.push({ x: x, y: y, type: type, life: 1.0 });
     }
@@ -1694,10 +1763,10 @@ function initShooter(){
         timeLeft = 60;
         timeBonusGiven = false;
         gameActive = true;
-        animals = [];
+        flyingAnimals = [];
+        groundAnimals = [];
         explosions = [];
         initTargets();
-        for(var i = 0; i < 3; i++) setTimeout(function() { if(gameActive) spawnAnimal(); }, i * 1000);
         updateUI();
         document.getElementById('timerCount').textContent = timeLeft;
         startTimer();
@@ -1735,47 +1804,55 @@ function initShooter(){
         shootAt(touchX, touchY);
     };
     
-    // Спавн животных
+    // Интервалы спавна
     setInterval(function() {
-        if(gameActive && animals.length < 5 && Math.random() < 0.35) {
-            spawnAnimal();
-            updateUI();
+        if(gameActive && flyingAnimals.length < 6 && Math.random() < 0.4) {
+            spawnFlyingAnimal();
+        }
+    }, 1200);
+    
+    setInterval(function() {
+        if(gameActive && groundAnimals.length < 4 && Math.random() < 0.35) {
+            spawnGroundAnimal();
         }
     }, 1800);
     
     // Движение животных
     setInterval(function() {
         if(!gameActive) return;
-        for(var i = 0; i < animals.length; i++) {
-            var a = animals[i];
+        for(var i = 0; i < flyingAnimals.length; i++) {
+            var a = flyingAnimals[i];
             a.x += a.speed * a.direction;
             a.y += a.vy;
             if(a.y < 40) a.y = 40;
-            if(a.y > 350) a.y = 350;
+            if(a.y > 330) a.y = 330;
             if(a.x + a.width < -80 || a.x > canvas.width + 80) {
-                animals.splice(i,1);
+                flyingAnimals.splice(i,1);
                 i--;
-                updateUI();
+            }
+        }
+        for(var i = 0; i < groundAnimals.length; i++) {
+            var a = groundAnimals[i];
+            a.x += a.speed * a.direction;
+            if(a.x + a.width < -80 || a.x > canvas.width + 80) {
+                groundAnimals.splice(i,1);
+                i--;
             }
         }
     }, 50);
     
     initTargets();
-    for(var i = 0; i < 3; i++) setTimeout(function() { if(gameActive) spawnAnimal(); }, i * 1000);
     startTimer();
     
-    // Анимация
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Небо
         var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         grad.addColorStop(0, '#2a6a8a');
         grad.addColorStop(1, '#6a9aaa');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Облака (исправлено — плавно двигаются)
         for(var i = 0; i < clouds.length; i++) {
             var c = clouds[i];
             c.x += c.speed;
@@ -1788,7 +1865,6 @@ function initShooter(){
             ctx.fill();
         }
         
-        // Земля
         ctx.fillStyle = '#3a6a2a';
         ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
         ctx.fillStyle = '#5a9a4a';
@@ -1832,9 +1908,9 @@ function initShooter(){
             }
         }
         
-        // Животные
-        for (var i = 0; i < animals.length; i++) {
-            var a = animals[i];
+        // Летающие животные
+        for (var i = 0; i < flyingAnimals.length; i++) {
+            var a = flyingAnimals[i];
             ctx.font = a.width + 'px Arial';
             ctx.fillStyle = '#fff';
             ctx.shadowBlur = 3;
@@ -1846,6 +1922,27 @@ function initShooter(){
                 ctx.fillStyle = '#4f4';
                 ctx.fillRect(a.x, a.y - 12, a.width * (a.health / a.maxHealth), 5);
             }
+            // Очки над животным
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('+' + a.points, a.x + 5, a.y - 10);
+        }
+        
+        // Наземные животные
+        for (var i = 0; i < groundAnimals.length; i++) {
+            var a = groundAnimals[i];
+            ctx.font = a.width + 'px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.fillText(a.emoji, a.x, a.y);
+            if(a.maxHealth > 1) {
+                ctx.fillStyle = '#f44';
+                ctx.fillRect(a.x, a.y - 12, a.width, 5);
+                ctx.fillStyle = '#4f4';
+                ctx.fillRect(a.x, a.y - 12, a.width * (a.health / a.maxHealth), 5);
+            }
+            ctx.fillStyle = '#ffd700';
+            ctx.font = 'bold 14px Arial';
+            ctx.fillText('+' + a.points, a.x + 5, a.y - 10);
         }
         
         // Эффекты
@@ -1916,7 +2013,7 @@ function initShooter(){
     };
     
     gameInterval = setInterval(function(){}, 1000);
-                                            }
+  }
       </script>
 
 </body>
