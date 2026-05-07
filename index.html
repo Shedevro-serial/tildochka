@@ -151,10 +151,78 @@
       .ds4{grid-template-columns:50px 50px 50px;grid-template-rows:50px 50px 50px}
       .ds4-btn{width:50px;height:50px;font-size:22px}
       .pet-card{width:110px;padding:10px}
+      .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #1a1a1a;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    transition: opacity 0.5s;
+}
+.loading-container {
+    width: 80%;
+    max-width: 500px;
+    text-align: center;
+}
+.loading-bar {
+    width: 100%;
+    height: 20px;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+.loading-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #ffd700, #ffaa00);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+.loading-percent {
+    font-size: 24px;
+    color: #ffd700;
+    margin: 10px 0;
+}
+.loading-joke {
+    font-size: 16px;
+    color: #aaa;
+    font-style: italic;
+    margin-top: 30px;
+    padding: 15px;
+    background: rgba(255,215,0,0.1);
+    border-radius: 15px;
+    max-width: 400px;
+    text-align: center;
+}
+.loading-tip {
+    font-size: 12px;
+    color: #666;
+    margin-top: 20px;
+}
     }
   </style>
 </head>
 <body>
+<div id="customLoading" class="loading-overlay" style="display:flex">
+    <div class="loading-container">
+        <div class="loading-bar">
+            <div class="loading-fill" id="loadingFill"></div>
+        </div>
+        <div class="loading-percent" id="loadingPercent">0%</div>
+        <div class="loading-joke" id="loadingJoke">
+            🐔 Загрузка Tildochka...
+        </div>
+        <div class="loading-tip">💡 Совет: не закрывайте страницу</div>
+    </div>
+</div>
 <div id="blocked"><div>🚫 ДОСТУП ЗАПРЕЩЁН</div></div>
 <div id="loading">🥚 Загрузка Tildochka...</div>
 <div id="bg"></div>
@@ -283,6 +351,39 @@ var myChannel=localStorage.getItem('tildochka_channel')||'';
 var audioCtx=null;
 var lastSoundTime=0;
 
+// ==================== АНЕКДОТЫ ДЛЯ ЗАГРУЗКИ ====================
+var loadingJokes = [
+    "— Доктор, я ходить буду?\n— Ну, если только под себя.\n— А плавать?\n— Если будете много ходить.",
+    "Что сказал нуль восьмёрке?\n— «Ты так стянута! Надо бы тебе развязаться!»",
+    "Как называется битва без рук и без ног?\nБитва бесконечностей...",
+    "Как называется корова которая не даёт молоко?\nЖадина говядина",
+    "Как называется бутерброд без ничего?\nНищеброд",
+    "Что сказал синоптик когда умер его коллега?\nСегодня -1",
+    "Какая любимая поговорка снайпера?\nВ одно ухо влетело из другого вылетело",
+    "Почему птицы улетают на юг?\nПотому что им пешком не дойти",
+    "Почему с бомжами весело играть в догонялки?\nОни никогда не скажут «я в домике»",
+    "Как каннибалы называют морг?\nАдвент календарь...",
+    "Почему в детдоме дети худые?\nОни не едят за маму и папу...",
+    "Что мы все про Фадееву разговариваем? Фадеева она и в Африке Фадеева",
+    "— В чём разница между такси и автобусом?\n— Автобус едет по маршруту, а такси — по кошельку.",
+    "— Почему вы ушли с работы?\n— Начальник сказал: «Ты уволен!»\n— А я сказал: «Нет, я сам ушёл!»",
+    "Как называется человек, который собирает кактусы?\nУколлекционер",
+    "Почему ёжик не тонет?\nПотому что иголки у него надувные!",
+    "Что общего между чаем и космосом?\nВ обоих можно добавить звёздочки (бадасс)",
+    "— Доктор, я себя плохо чувствую\n— А вы пробовали не чувствовать?",
+    "Как называется страх перед 13-м этажом?\nНумерикальный кринж",
+    "Почему программисты любят хэллоуин?\nПотому что 31 октября — это 25 декабря в восьмеричной системе!",
+    "— Официант, почему мой кофе холодный?\n— Потому что вы заказали кофе со льдом, сэр.",
+    "Как назвать слепого оленя?\nНе вижу оленя (оксюморон)",
+    "Почему пчелы не болеют?\nПотому что они делают уколы каждый день!",
+    "— Почему вы опоздали?\n— Я шёл за вами, а вы шли быстрее меня.",
+    "Что сказал один прямоугольник другому?\n— Ты квадратный, братан!",
+    "Почему козлы не играют в карты?\nБоятся, что их обманут на козла!",
+    "— У вас есть минута?\n— Есть, но я пью её с лимоном и сахаром.",
+    "Что общего у галстука и гроба?\nИ то, и другое сначала мерят, а потом покупают.",
+    "— Почему вы так мало едите?\n— Я на диете от жадности.\n— А как она работает?\n— Вижу еду — отдаю соседу.",
+    "Как называют мёртвого блондина?\nТорс на природе"
+];
 // ==================== ЗВУК ====================
 function initAudio() {
     if (audioCtx) return;
@@ -343,21 +444,115 @@ var shopItems={'👑':50,'🌟':30,'💎':100,'🔥':40,'💀':60,'🤖':70,'�
 var questTemplates=[{text:'Сыграй 3 игры',type:'play',target:3,reward:10},{text:'Напиши отзыв',type:'review',target:1,reward:15},{text:'Отправь 5 сообщений',type:'chat',target:5,reward:12},{text:'Поставь лайк 3 идеям',type:'like',target:3,reward:8},{text:'Сыграй в Змейку',type:'playSnake',target:1,reward:5},{text:'Сыграй в Тетрис',type:'playTetris',target:1,reward:5},{text:'Сыграй в Раннер',type:'playRunner',target:1,reward:5}];
 
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
-function loadAllData(){
-loadProfile();setupOnline();
-var savedEggs=parseInt(localStorage.getItem('tildochka_eggs')||'0');
-Promise.all([
-new Promise(function(r){db.ref('users/'+myUid+'/eggs').once('value',function(s){myEggs=s.val()||savedEggs||0;if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}document.getElementById('headerEggs').textContent=myEggs;r();});}),
-new Promise(function(r){db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){boughtAvatars=s.val()||[];r();});})
-]).then(function(){
-document.getElementById('loading').style.display='none';document.getElementById('app').style.display='block';
-showScreen('home');initQuotes();loadChatMessages();loadMemes();loadIdeas();loadAllRatings();loadShorts();
-['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(function(g){loadLeaderboard(g);});
-});
-setInterval(syncOnlineProfile,5000);
-loadGifts();
-generateDailyQuests(false);
-setupFriendNotifications();
+function loadAllData() {
+    // Показываем кастомную загрузку
+    var loadingDiv = document.getElementById('customLoading');
+    if(loadingDiv) loadingDiv.style.display = 'flex';
+    
+    var progress = 0;
+    var totalSteps = 13;
+    var currentStep = 0;
+    
+    function updateProgress(stepName) {
+        currentStep++;
+        progress = Math.floor((currentStep / totalSteps) * 100);
+        if(progress > 100) progress = 100;
+        var fill = document.getElementById('loadingFill');
+        var percent = document.getElementById('loadingPercent');
+        if(fill) fill.style.width = progress + '%';
+        if(percent) percent.textContent = progress + '%';
+        
+        // Меняем анекдот каждые 10%
+        var jokeIndex = Math.floor(progress / 10) % loadingJokes.length;
+        if(progress > 0 && progress % 10 === 0 && window.lastJokeIndex !== jokeIndex) {
+            window.lastJokeIndex = jokeIndex;
+            var jokeText = loadingJokes[jokeIndex];
+            jokeText = jokeText.replace(/\n/g, '<br>');
+            var jokeDiv = document.getElementById('loadingJoke');
+            if(jokeDiv) jokeDiv.innerHTML = '💬 ' + jokeText;
+        }
+    }
+    
+    updateProgress('Загрузка профиля...');
+    loadProfile();
+    setupOnline();
+    
+    updateProgress('Настройка онлайн...');
+    
+    var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
+    
+    updateProgress('Загрузка яиц...');
+    Promise.all([
+        new Promise(function(r){
+            db.ref('users/'+myUid+'/eggs').once('value',function(s){
+                myEggs=s.val()||savedEggs||0;
+                if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
+                document.getElementById('headerEggs').textContent=myEggs;
+                r();
+            });
+        }),
+        new Promise(function(r){
+            db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
+                boughtAvatars=s.val()||[];
+                r();
+            });
+        })
+    ]).then(function(){
+        updateProgress('Загрузка данных пользователя...');
+        
+        updateProgress('Загрузка чатов...');
+        loadChatMessages();
+        
+        updateProgress('Загрузка мемов...');
+        loadMemes();
+        
+        updateProgress('Загрузка идей...');
+        loadIdeas();
+        
+        updateProgress('Загрузка рейтингов...');
+        loadAllRatings();
+        
+        updateProgress('Загрузка шортсов...');
+        loadShorts();
+        
+        updateProgress('Загрузка игр...');
+        ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship'].forEach(function(g){
+            loadLeaderboard(g);
+        });
+        
+        updateProgress('Загрузка цитат...');
+        initQuotes();
+        
+        updateProgress('Загрузка подарков...');
+        loadGifts();
+        
+        updateProgress('Загрузка заданий...');
+        generateDailyQuests(false);
+        
+        updateProgress('Настройка уведомлений...');
+        setupFriendNotifications();
+        
+        updateProgress('Почти готово...');
+        
+        setTimeout(function(){
+            updateProgress('Добро пожаловать в Tildochka! 🎉');
+            var oldLoading = document.getElementById('loading');
+            if(oldLoading) oldLoading.style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            showScreen('home');
+            
+            setTimeout(function(){
+                if(loadingDiv) {
+                    loadingDiv.style.opacity = '0';
+                    setTimeout(function(){
+                        if(loadingDiv) loadingDiv.style.display = 'none';
+                    }, 500);
+                }
+            }, 1000);
+        }, 500);
+    });
+    
+    setInterval(syncOnlineProfile,5000);
 }
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
