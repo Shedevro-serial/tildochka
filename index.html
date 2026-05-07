@@ -253,9 +253,8 @@
 <a onclick="showScreen('friends');closeMenu()">👥 Друзья</a>
 <a onclick="showScreen('gamesLB');closeMenu()">🎮 Лидеры по играм</a>
 <a onclick="suggestQuote();closeMenu()">💬 Предложить цитату</a>
-<a onclick="showQuoteAdmin();closeMenu()">👑 Управление цитатами</a>
 <a onclick="suggestJoke();closeMenu()">😂 Предложить шутку</a>
-<a onclick="showJokeAdmin();closeMenu()">👑 Управление шутками</a>
+<a onclick="showAdminLogin();closeMenu()">👑 Стать админом</a>
 </div>
 <div id="content">
 
@@ -341,6 +340,15 @@
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
 
 <script>
+var isAdmin = localStorage.getItem('tildochka_admin') === 'true';
+function updateAdminBadge() {
+    if(isAdmin) {
+        var headerName = document.getElementById('headerName');
+        if(headerName && !headerName.innerHTML.includes('👑')) {
+            headerName.innerHTML = '👑 ' + headerName.innerHTML;
+        }
+    }
+}
 // ==================== FIREBASE ====================
 firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
 var db=firebase.database();
@@ -496,9 +504,9 @@ function suggestJoke() {
     alert('✅ Спасибо! Шутка отправлена на модерацию. Она появится после одобрения.');
 }
 
-function showJokeAdmin() {
-    if(myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
-        alert('⛔ Доступ только для администратора');
+function showQuoteAdmin() {
+    if(!isAdmin && myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
+        alert('⛔ Доступ только для администратора. Введите код через "Стать админом"');
         return;
     }
     
@@ -572,6 +580,12 @@ function deleteJoke(id) {
         db.ref('jokes/' + id).remove();
         alert('🗑️ Шутка удалена');
     }
+}
+if(isAdmin) {
+    setTimeout(function() {
+        addAdminButtonsToMenu();
+        updateAdminBadge();
+    }, 1000);
 }
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 function loadAllData() {
@@ -852,7 +866,7 @@ var jokeInterval = setInterval(function() {
     setInterval(syncOnlineProfile,5000);
                   }
 
-function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;}
+function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
 function syncOnlineProfile(){if(myName==='Гость')return;db.ref('online/'+myUid).update({name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,ts:Date.now()});db.ref('users/'+myUid).update({name:myName,eggs:myEggs,channel:myChannel});}
 function openProfileModal(){document.getElementById('newNameInput').value=myName;updateAvatarPreview();document.querySelectorAll('#avatarGridFree .shop-item').forEach(function(el){el.classList.remove('selected');if(el.textContent===selectedAvatar.value&&selectedAvatarType==='emoji')el.classList.add('selected');});var bg=document.getElementById('avatarGridBought');bg.innerHTML='';boughtAvatars.forEach(function(e){var o=document.createElement('span');o.className='shop-item';o.textContent=e;o.onclick=function(){selectAvatar(e);};if(selectedAvatarType==='emoji'&&selectedAvatar.value===e)o.classList.add('selected');bg.appendChild(o);});document.getElementById('profileModal').classList.add('show');}
@@ -2754,8 +2768,8 @@ function suggestQuote() {
 
 // Админ-панель цитат
 function showQuoteAdmin() {
-    if(myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
-        alert('⛔ Доступ только для администратора');
+    if(!isAdmin && myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
+        alert('⛔ Доступ только для администратора. Введите код через "Стать админом"');
         return;
     }
     
@@ -2831,6 +2845,50 @@ function initQuotes() {
 
 // Запускаем
 setTimeout(initQuotes, 2000);
+// ==================== АДМИН ПАНЕЛЬ ====================
+var isAdmin = localStorage.getItem('tildochka_admin') === 'true';
+
+function showAdminLogin() {
+    var code = prompt('🔐 Введите код администратора:');
+    if(code === 'трактор') {
+        localStorage.setItem('tildochka_admin', 'true');
+        isAdmin = true;
+        alert('✅ Добро пожаловать, администратор! Теперь вам доступны скрытые функции.');
+        updateAdminBadge()
+        
+        // Обновляем меню — добавляем админ-кнопки, если их нет
+        addAdminButtonsToMenu();
+    } else if(code !== null) {
+        alert('❌ Неверный код!');
+    }
+}
+
+function addAdminButtonsToMenu() {
+    var menu = document.getElementById('menuDropdown');
+    if(!menu) return;
+    
+    // Проверяем, есть ли уже кнопки админа
+    if(document.getElementById('adminQuoteBtn')) return;
+    
+    // Кнопка управления цитатами
+    var quoteBtn = document.createElement('a');
+    quoteBtn.id = 'adminQuoteBtn';
+    quoteBtn.innerHTML = '📝 Управление цитатами';
+    quoteBtn.onclick = function() { showQuoteAdmin(); closeMenu(); };
+    menu.appendChild(quoteBtn);
+    
+    // Кнопка управления шутками
+    var jokeBtn = document.createElement('a');
+    jokeBtn.id = 'adminJokeBtn';
+    jokeBtn.innerHTML = '😂 Управление шутками';
+    jokeBtn.onclick = function() { showJokeAdmin(); closeMenu(); };
+    menu.appendChild(jokeBtn);
+}
+
+// При загрузке страницы проверяем админа и добавляем кнопки
+if(isAdmin) {
+    setTimeout(addAdminButtonsToMenu, 1000);
+}
       </script>
 
 </body>
