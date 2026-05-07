@@ -1421,6 +1421,11 @@ function showGamesLBScreen() {
 // ==================== ИГРА "ТИР" ====================
 function initShooter(){
     document.getElementById('gameContent').innerHTML = `
+        <div style="display:flex;gap:20px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">
+            <div>🔫 Выстрелы: <span id="shotsCount">0</span></div>
+            <div>⏱️ Время: <span id="timerCount">60</span> сек</div>
+            <div>💨 Промахи: <span id="missesCount">0</span>/10</div>
+        </div>
         <canvas id="shooterCanvas" width="900" height="550" class="game-canvas" style="background:linear-gradient(180deg,#2a6a8a,#6a9aaa);cursor:crosshair"></canvas>
         <div style="display:flex;justify-content:center;gap:15px;margin-top:10px;flex-wrap:wrap">
             <div class="ds4">
@@ -1440,7 +1445,7 @@ function initShooter(){
     canvas.width = 900;
     canvas.height = 550;
     
-    var gameScore = 0;  // Очки в игре (отображаются в gameScoreDisplay)
+    var gameScore = 0;      // ← ОСНОВНОЙ СЧЁТ (отображается в gameScoreDisplay)
     var shots = 0;
     var misses = 0;
     var maxMisses = 10;
@@ -1450,16 +1455,46 @@ function initShooter(){
     var timeBonusGiven = false;
     var timerInterval = null;
     
-    // Обновляем отображение счёта в стандартном месте
-    function updateGameScoreDisplay() {
+    // Обновляем ОСНОВНОЙ счёт (справа вверху, как в других играх)
+    function updateMainScore() {
         document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + gameScore;
     }
     
-    // Обновляем остальные показатели (внутри игры)
-    function updateUI() {
+    // Обновляем счётчики внутри игры
+    function updateGameUI() {
         document.getElementById('shotsCount').textContent = shots;
         document.getElementById('missesCount').textContent = misses + '/' + maxMisses;
         document.getElementById('timerCount').textContent = timeLeft;
+    }
+    
+    // Таймер
+    function startTimer() {
+        if(timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(function() {
+            if(!gameActive) return;
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                gameActive = false;
+                alert('⏰ Время вышло! Игра окончена! Счёт: ' + gameScore);
+            } else {
+                timeLeft--;
+                updateGameUI();
+            }
+        }, 1000);
+    }
+    
+    // Бонус за 80 очков
+    function checkTimeBonus() {
+        if(!timeBonusGiven && gameScore >= 80) {
+            timeBonusGiven = true;
+            timeLeft += 30;
+            updateGameUI();
+            createBonusEffect('+30 сек!', canvas.width/2, 100);
+            playSound("coin");
+            setTimeout(function() {
+                alert('🎁 Бонус! +30 секунд за 80 очков!');
+            }, 100);
+        }
     }
     
     // Облака
@@ -1525,34 +1560,6 @@ function initShooter(){
     ];
     
     var explosions = [];
-    
-    function startTimer() {
-        if(timerInterval) clearInterval(timerInterval);
-        timerInterval = setInterval(function() {
-            if(!gameActive) return;
-            if(timeLeft <= 0) {
-                clearInterval(timerInterval);
-                gameActive = false;
-                alert('⏰ Время вышло! Игра окончена! Очки: ' + gameScore);
-            } else {
-                timeLeft--;
-                updateUI();
-            }
-        }, 1000);
-    }
-    
-    function checkTimeBonus() {
-        if(!timeBonusGiven && gameScore >= 80) {
-            timeBonusGiven = true;
-            timeLeft += 30;
-            updateUI();
-            createBonusEffect('+30 сек!', canvas.width/2, 100);
-            playSound("coin");
-            setTimeout(function() {
-                alert('🎁 Бонус! +30 секунд за 80 очков!');
-            }, 100);
-        }
-    }
     
     function initTargets() {
         targets = [];
@@ -1641,7 +1648,7 @@ function initShooter(){
                 hitSomething = true;
                 playSound("coin");
                 createExplosion(t.x, t.y, 'target');
-                updateGameScoreDisplay();
+                updateMainScore();
                 checkTimeBonus();
                 checkWin();
                 break;
@@ -1660,7 +1667,7 @@ function initShooter(){
                         playSound("hit");
                         createExplosion(a.x + a.width/2, a.y + a.height/2, 'animal');
                         hitSomething = true;
-                        updateGameScoreDisplay();
+                        updateMainScore();
                         checkTimeBonus();
                         checkWin();
                     } else {
@@ -1685,7 +1692,7 @@ function initShooter(){
                         playSound("hit");
                         createExplosion(a.x + a.width/2, a.y + a.height/2, 'animal');
                         hitSomething = true;
-                        updateGameScoreDisplay();
+                        updateMainScore();
                         checkTimeBonus();
                         checkWin();
                     } else {
@@ -1705,20 +1712,20 @@ function initShooter(){
             if(misses >= maxMisses) {
                 gameActive = false;
                 if(timerInterval) clearInterval(timerInterval);
-                alert('😢 Игра окончена! 10 промахов! Очки: ' + gameScore);
+                alert('😢 Игра окончена! 10 промахов! Счёт: ' + gameScore);
             }
         }
         
-        updateUI();
+        updateGameUI();
     }
     
     function checkWin() {
         var allTargetsHit = targets.every(t => t.hit);
-        if(allTargetsHit && flyingAnimals.length === 0 && groundAnimals.length === 0 && gameActive && timeLeft > 0) {
+        if(allTargetsHit && flyingAnimals.length === 0 && groundAnimals.length === 0 && gameActive) {
             gameActive = false;
             if(timerInterval) clearInterval(timerInterval);
             setTimeout(function() {
-                alert('🏆 ПОБЕДА! Ты сбил всё! Очки: ' + gameScore);
+                alert('🏆 ПОБЕДА! Ты сбил всё! Счёт: ' + gameScore);
             }, 100);
         }
     }
@@ -1762,8 +1769,8 @@ function initShooter(){
         groundAnimals = [];
         explosions = [];
         initTargets();
-        updateGameScoreDisplay();
-        updateUI();
+        updateMainScore();
+        updateGameUI();
         startTimer();
         playSound("jump");
     };
@@ -1836,8 +1843,8 @@ function initShooter(){
     
     initTargets();
     startTimer();
-    updateGameScoreDisplay();
-    updateUI();
+    updateMainScore();
+    updateGameUI();
     
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1971,7 +1978,7 @@ function initShooter(){
         ctx.arc(aimX, aimY, 16, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255,0,0,0.9)';
         ctx.lineWidth = 2;
-        ctx.stroke();ю
+        ctx.stroke();
         ctx.beginPath();
         ctx.moveTo(aimX - 28, aimY);
         ctx.lineTo(aimX - 10, aimY);
