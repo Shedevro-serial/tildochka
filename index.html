@@ -1061,19 +1061,29 @@ function sendChatMessage(){
 function loadChatMessages(){
     db.ref('chat').limitToLast(50).on('value', function(s){
         var ms = [];
-        s.forEach(function(c){ ms.push(c.val()); });
+        s.forEach(function(c){ 
+            ms.push({ 
+                name: c.val().name || 'Аноним',
+                text: c.val().text || '',
+                ts: c.val().ts || Date.now()
+            }); 
+        });
         ms.sort(function(a,b){ return (a.ts||0) - (b.ts||0); });
         lastCounts.chat = ms.length;
         var c = document.getElementById('chatMessagesLive');
         if(c) {
+            var oldScroll = c.scrollHeight - c.scrollTop;
             c.innerHTML = '';
             ms.forEach(function(m){
                 var d = document.createElement('div');
                 d.className = 'message';
-                d.innerHTML = '<strong>' + (m.name || 'Аноним') + ':</strong> ' + (m.text || '');
+                d.innerHTML = '<strong>' + m.name + ':</strong> ' + m.text;
                 c.appendChild(d);
             });
-            c.scrollTop = c.scrollHeight;
+            // Прокручиваем вниз только если были у самого низа
+            if(c.scrollHeight - oldScroll < 100) {
+                c.scrollTop = c.scrollHeight;
+            }
         }
         updateUnreadAll();
     });
