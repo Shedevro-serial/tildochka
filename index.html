@@ -843,19 +843,43 @@ function markRead(k){localStorage.setItem('tildochka_read_'+k,lastCounts[k]||0);
 function safeSend(key,fn){if(isSending[key])return;isSending[key]=true;var btn=document.getElementById(key+'SendBtn');if(btn){btn.disabled=true;btn.textContent='⏳...';}fn().then(function(){if(btn)btn.textContent='✅';setTimeout(function(){if(btn){btn.disabled=false;btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';}isSending[key]=false;},1500);}).catch(function(e){if(btn){btn.disabled=false;}isSending[key]=false;});}
 
 function sendChatMessage() {
-    const input = document.getElementById('chatMessageLive');
-    const text = input.value.trim();
-    if(!text) return;
+    var input = document.getElementById('chatMessageLive');
+    var text = input.value.trim();
+    if(!text) {
+        alert('Напишите сообщение!');
+        return;
+    }
+    
+    // Блокируем кнопку на время отправки
+    var btn = document.getElementById('chatSendBtn');
+    if(btn) {
+        btn.disabled = true;
+        btn.innerHTML = '✅';
+    }
     
     db.ref('chat').push({
         name: myName,
         text: text,
         ts: Date.now()
-    }).then(() => {
+    }).then(function() {
+        // Очищаем поле ТОЛЬКО после успешной отправки
         input.value = '';
         progressQuest('chat', 1);
-    }).catch(err => {
-        alert('Ошибка: ' + err.message);
+        
+        // Возвращаем кнопку через 1 секунду
+        setTimeout(function() {
+            if(btn) {
+                btn.disabled = false;
+                btn.innerHTML = '💬 Отправить';
+            }
+        }, 1000);
+    }).catch(function(err) {
+        console.error('Ошибка:', err);
+        alert('Ошибка отправки: ' + err.message);
+        if(btn) {
+            btn.disabled = false;
+            btn.innerHTML = '💬 Отправить';
+        }
     });
 }
 function loadChatMessages() {
