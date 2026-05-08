@@ -291,6 +291,20 @@
         <div style="font-size:11px;font-weight:bold">Друзья</div>
     </div>
 </div>
+</div>  <!-- это закрывающий тег быстрых квадратиков -->
+
+<!-- 👇👇👇 СЮДА ВСТАВИТЬ 👇👇👇 -->
+<div id="dailyQuoteBlock" style="max-width:600px;margin:0 auto 25px auto">
+    <h3 style="color:#ffd700; text-align:center">💬 Цитата дня</h3>
+    <div id="quoteBox" class="quote-box">
+        <div class="quote-text">«Загрузка цитаты...»</div>
+        <div class="quote-author">— Tildochka</div>
+        <div class="quote-movie">🎬 Tildochka</div>
+    </div>
+</div>
+<!-- 👆👆👆 ДО СЮДА 👆👆👆 -->
+
+<h2>🎬 Сериалы</h2>
 <h2>🎬 Сериалы</h2><div class="movie-grid"><div class="movie-card" onclick="openMovie('series')"><img src="cover.jpg"><h3>Приключения 4 куриц</h3><div class="rating" id="rating-series">⭐ 9.5/10</div></div></div>
 <h2 style="margin-top:35px">🎥 Фильмы</h2><div class="movie-grid">
 <div class="movie-card" onclick="openMovie('comb')"><img src="cover-comb.jpg"><h3>Расческа для лысых</h3><div class="rating" id="rating-comb">—</div></div>
@@ -2782,30 +2796,32 @@ function loadQuotesFromFirebase() {
 }
 // Устанавливаем текущую цитату
 function setCurrentQuote() {
-    // Если нет цитат из Firebase, используем базовые
     if(!window.quotesList || window.quotesList.length === 0) {
-        window.quotesList = allBaseQuotes.map((q, i) => ({
-            id: 'q_' + i,
-            text: q.text,
-            author: q.author,
-            movie: q.movie
-        }));
+        window.quotesList = allBaseQuotes.map(function(q, i) {
+            return {
+                id: 'q_' + i,
+                text: q.text,
+                author: q.author,
+                movie: q.movie
+            };
+        });
     }
     
     var now = Date.now();
-    var halfHour = 30 * 60 * 1000;
+    var halfHour = 30 * 60 * 1000; // полчаса в миллисекундах
     var index = Math.floor(now / halfHour) % window.quotesList.length;
     var current = window.quotesList[index];
     
-    var quoteBox = document.querySelector('#home-screen .catalog .quote-box');
+    // Ищем контейнер для цитаты
+    var quoteBox = document.getElementById('quoteBox');
     if(quoteBox) {
         quoteBox.innerHTML = `
-            <div class="quote-box">
-                <div class="quote-text">«${current.text}»</div>
-                <div class="quote-author">— ${current.author}</div>
-                <div class="quote-movie">🎬 ${current.movie}</div>
-            </div>
+            <div class="quote-text">«${escapeHtml(current.text)}»</div>
+            <div class="quote-author">— ${escapeHtml(current.author)}</div>
+            <div class="quote-movie">🎬 ${escapeHtml(current.movie)}</div>
         `;
+    } else {
+        console.log('quoteBox не найден, проверьте HTML');
     }
 }
 
@@ -2931,7 +2947,45 @@ function showQuoteAdmin() {
 
 // Показываем цитату при загрузке
 function initQuotes() {
-    loadQuotesFromFirebase();
+    // Сначала показываем базовые цитаты (чтобы сразу было видно)
+    setCurrentQuote();
+    
+    // Потом загружаем из Firebase и обновляем
+    db.ref('quotes').on('value', function(snap) {
+        var userQuotes = [];
+        snap.forEach(function(child) {
+            userQuotes.push({
+                id: child.key,
+                text: child.val().text,
+                author: child.val().author,
+                movie: child.val().movie,
+                approved: child.val().approved || false,
+                ts: child.val().ts,
+                suggestedBy: child.val().suggestedBy
+            });
+        });
+        
+        var approvedUserQuotes = userQuotes.filter(function(q) { 
+            return q.approved === true; 
+        });
+        var allQuotes = allBaseQuotes.concat(approvedUserQuotes);
+        
+        window.quotesList = allQuotes.map(function(q, i) {
+            return {
+                id: 'q_' + i,
+                text: q.text,
+                author: q.author,
+                movie: q.movie
+            };
+        });
+        
+        setCurrentQuote();
+    });
+    
+    // ОБНОВЛЯЕМ КАЖДЫЕ ПОЛЧАСА (даже если Firebase не обновился)
+    setInterval(function() {
+        setCurrentQuote();
+    }, 30 * 60 * 1000); // 30 минут
 }
 
 // Запускаем
