@@ -342,14 +342,7 @@
 
 <div id="quests-screen" class="screen"><div class="chat-container"><h2>📋 Задания</h2><button onclick="generateDailyQuests(true)" style="margin-bottom:12px;background:#ffd700;color:#000;border:none;font-weight:700">🔄 Новые (5🥚)</button><div id="questsList"></div></div></div>
 <div id="eggsLB-screen" class="screen"><div class="chat-container"><h2>🏆 Лидеры по яйцам</h2><div id="eggsLeaderboard"></div></div></div>
-<div id="dailyQuote" style="max-width:600px;margin:25px auto 0">
-    <h3 style="color:#ffd700">💬 Цитата дня</h3>
-    <div class="quote-box">
-        <div class="quote-text">«Загрузка...»</div>
-        <div class="quote-author">— Tildochka</div>
-        <div class="quote-movie">🎬 Tildochka</div>
-    </div>
-</div>
+
 <div id="friends-screen" class="screen">
     <div class="chat-container">
         <h2>👥 Друзья</h2>
@@ -674,12 +667,22 @@ if(isAdmin) {
 function loadAllData() {
     // Показываем кастомную загрузку
     var loadingDiv = document.getElementById('customLoading');
-    if(loadingDiv) loadingDiv.style.display = 'flex';
+    if(loadingDiv) {
+        loadingDiv.style.display = 'flex';
+        loadingDiv.style.opacity = '1';
+    }
+    
+    // Скрываем простую загрузку
+    var simpleLoading = document.getElementById('loading');
+    if(simpleLoading) simpleLoading.style.display = 'none';
     
     loadProfile();
     setupOnline();
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
+    
+    // Обновляем процент загрузки
+    updateLoadingPercent(10, "Загружаем профиль...");
     
     Promise.all([
         new Promise(function(r){
@@ -687,34 +690,50 @@ function loadAllData() {
                 myEggs=s.val()||savedEggs||0;
                 if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
                 document.getElementById('headerEggs').textContent=myEggs;
+                updateLoadingPercent(30, "Загружаем яйца...");
                 r();
             });
         }),
         new Promise(function(r){
             db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
                 boughtAvatars=s.val()||[];
+                updateLoadingPercent(50, "Загружаем аватары...");
                 r();
             });
         })
     ]).then(function(){
-        document.getElementById('loading').style.display='none';
+        updateLoadingPercent(70, "Загружаем контент...");
+        
         document.getElementById('app').style.display='block';
         showScreen('home');
         
         // Загружаем все данные ПОСЛЕ отображения страницы
         setTimeout(function() {
+            updateLoadingPercent(80, "Загружаем чат...");
             loadChatMessages();
+            
+            updateLoadingPercent(85, "Загружаем мемы...");
             loadMemes();
+            
+            updateLoadingPercent(90, "Загружаем идеи...");
             loadIdeas();
+            
+            updateLoadingPercent(92, "Загружаем шортсы...");
             loadShorts();
+            
+            updateLoadingPercent(95, "Загружаем рейтинги...");
             loadAllRatings();
             
             // Загружаем игры
-            ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'].forEach(function(g){
+            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+            var gamesLoaded = 0;
+            games.forEach(function(g){
                 loadLeaderboard(g);
+                gamesLoaded++;
+                updateLoadingPercent(95 + Math.floor(gamesLoaded / games.length * 5), "Загружаем игры...");
             });
             
-            // Загружаем цитаты (без зависания)
+            // Загружаем цитаты
             try {
                 initQuotes();
             } catch(e) { console.log('Ошибка цитат:', e); }
@@ -723,21 +742,45 @@ function loadAllData() {
             generateDailyQuests(false);
             setupFriendNotifications();
             
-            // Плавно скрываем кастомную загрузку
+            updateLoadingPercent(100, "Готово!");
+            
+            // Плавно скрываем кастомную загрузку через 1 секунду
             setTimeout(function(){
                 if(loadingDiv) {
+                    loadingDiv.style.transition = 'opacity 0.5s';
                     loadingDiv.style.opacity = '0';
                     setTimeout(function(){
                         if(loadingDiv) loadingDiv.style.display = 'none';
+                        // Показываем цитату дня после загрузки
+                        setCurrentQuote();
                     }, 500);
                 }
-            }, 2000);
-        }, 100);
+            }, 1000);
+        }, 500);
     });
     
     setInterval(syncOnlineProfile,5000);
 }
 
+// Функция обновления процентов и анекдота
+function updateLoadingPercent(percent, jokeText) {
+    var fill = document.getElementById('loadingFill');
+    var percentSpan = document.getElementById('loadingPercent');
+    var jokeSpan = document.getElementById('loadingJoke');
+    
+    if(fill) fill.style.width = percent + '%';
+    if(percentSpan) percentSpan.textContent = percent + '%';
+    if(jokeSpan && jokeText) {
+        // Показываем случайный анекдот
+        var allJokes = loadingJokes || [];
+        if(allJokes.length > 0 && percent < 100) {
+            var randomJoke = allJokes[Math.floor(Math.random() * allJokes.length)];
+            jokeSpan.innerHTML = '🐔 ' + randomJoke;
+        } else {
+            jokeSpan.innerHTML = '🐔 ' + jokeText;
+        }
+    }
+}
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
 function syncOnlineProfile(){if(myName==='Гость')return;db.ref('online/'+myUid).update({name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,ts:Date.now()});db.ref('users/'+myUid).update({name:myName,eggs:myEggs,channel:myChannel});}
@@ -2808,11 +2851,11 @@ function setCurrentQuote() {
     }
     
     var now = Date.now();
-    var halfHour = 30 * 60 * 1000; // полчаса в миллисекундах
+    var halfHour = 30 * 60 * 1000;
     var index = Math.floor(now / halfHour) % window.quotesList.length;
     var current = window.quotesList[index];
     
-    // Ищем контейнер для цитаты
+    // Используем НОВЫЙ id = quoteBox
     var quoteBox = document.getElementById('quoteBox');
     if(quoteBox) {
         quoteBox.innerHTML = `
@@ -2820,8 +2863,6 @@ function setCurrentQuote() {
             <div class="quote-author">— ${escapeHtml(current.author)}</div>
             <div class="quote-movie">🎬 ${escapeHtml(current.movie)}</div>
         `;
-    } else {
-        console.log('quoteBox не найден, проверьте HTML');
     }
 }
 
