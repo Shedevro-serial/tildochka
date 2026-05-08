@@ -662,265 +662,54 @@ function loadAllData() {
     var loadingDiv = document.getElementById('customLoading');
     if(loadingDiv) loadingDiv.style.display = 'flex';
     
-    var progress = 0;
-    var completedSteps = 0;
-    var loadTasks = [];
-    
-    // РАВНОМЕРНОЕ РАСПРЕДЕЛЕНИЕ: считаем количество задач
-    var totalTasks = 0;
-    
-// Загружаем одобренные шутки из Firebase
-var currentJokes = [...baseJokes]; // начинаем с базовых
-
-db.ref('jokes').once('value', function(snap) {
-    var approvedJokes = [];
-    snap.forEach(function(child) {
-        if(child.val().approved === true) {
-            approvedJokes.push(child.val().text);
-        }
-    });
-    // Добавляем одобренные пользовательские шутки
-    currentJokes = [...baseJokes, ...approvedJokes];
-});
-
-// Анекдот меняется каждые 5 секунд (теперь из currentJokes)
-var jokeInterval = setInterval(function() {
-    if(currentJokes.length > 0) {
-        var jokeIndex = Math.floor(Math.random() * currentJokes.length);
-        var jokeText = currentJokes[jokeIndex];
-        jokeText = jokeText.replace(/\n/g, '<br>');
-        var jokeDiv = document.getElementById('loadingJoke');
-        if(jokeDiv) jokeDiv.innerHTML = '💬 ' + jokeText;
-    }
-}, 5000);
-    
-    function updateProgress(stepName) {
-        completedSteps++;
-        // РАВНОМЕРНЫЙ РАСЧЁТ ПРОЦЕНТА
-        progress = Math.floor((completedSteps / totalTasks) * 100);
-        if(progress > 100) progress = 100;
-        
-        var fill = document.getElementById('loadingFill');
-        var percent = document.getElementById('loadingPercent');
-        if(fill) fill.style.width = progress + '%';
-        if(percent) percent.textContent = progress + '%';
-    }
-    
-    // Загружаем профиль
     loadProfile();
     setupOnline();
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // ========== ФОРМИРУЕМ СПИСОК ВСЕХ ЗАДАЧ ==========
-    
-    // 1. Яйца
-    loadTasks.push(new Promise(function(r){
-        db.ref('users/'+myUid+'/eggs').once('value',function(s){
-            myEggs=s.val()||savedEggs||0;
-            if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
-            document.getElementById('headerEggs').textContent=myEggs;
-            r();
-        });
-    }));
-    
-    // 2. Аватары
-    loadTasks.push(new Promise(function(r){
-        db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
-            boughtAvatars=s.val()||[];
-            r();
-        });
-    }));
-    
-    // 3. ЧАТ
-    loadTasks.push(new Promise(function(r){
-        db.ref('chat').limitToLast(50).once('value', function(s){
-            var ms = [];
-            s.forEach(function(c){ ms.push(c.val()); });
-            ms.sort(function(a,b){ return (a.ts||0) - (b.ts||0); });
-            lastCounts.chat = ms.length;
-            var c = document.getElementById('chatMessagesLive');
-            if(c) {
-                c.innerHTML = '';
-                ms.forEach(function(m){
-                    var d = document.createElement('div');
-                    d.className = 'message';
-                    d.innerHTML = '<strong>' + m.name + ':</strong> ' + m.text;
-                    c.appendChild(d);
-                });
-                c.scrollTop = c.scrollHeight;
-            }
-            updateUnreadAll();
-            r();
-        });
-    }));
-    
-    // 4. МЕМЫ
-    loadTasks.push(new Promise(function(r){
-        db.ref('memes').limitToLast(30).once('value', function(s){
-            var ms = [];
-            s.forEach(function(c){
-                ms.push({
-                    id: c.key, author: c.val().author, caption: c.val().caption,
-                    media: c.val().media, mediaType: c.val().mediaType,
-                    reactions: c.val().reactions || {}, ts: c.val().ts
-                });
-            });
-            ms.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
-            lastCounts.memes = ms.length;
-            var container = document.getElementById('memesList');
-            if(container) {
-                if(!ms.length) container.innerHTML = '<p>Нет мемов</p>';
-                else {
-                    container.innerHTML = '';
-                    ms.forEach(function(m){
-                        var mh = '';
-                        if(m.media) mh = m.mediaType === 'photo' ? '<img src="'+m.media+'">' : '<video src="'+m.media+'" controls></video>';
-                        container.innerHTML += '<div class="meme-card"><span class="meme-author">'+m.author+'</span>'+(m.caption?'<div>'+m.caption+'</div>':'')+mh+'<div class="meme-reactions"><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'laugh\','+(m.reactions.laugh||0)+')">😂'+(m.reactions.laugh||0)+'</button><button class="meme-reaction" onclick="reactMeme(\''+m.id+'\',\'fire\','+(m.reactions.fire||0)+')">🔥'+(m.reactions.fire||0)+'</button></div></div>';
-                    });
-                }
-            }
-            updateUnreadAll();
-            r();
-        });
-    }));
-    
-    // 5. ИДЕИ
-    loadTasks.push(new Promise(function(r){
-        db.ref('ideas').limitToLast(30).once('value', function(s){
-            var is = [];
-            s.forEach(function(c){
-                is.push({ id: c.key, author: c.val().author, text: c.val().text, likes: c.val().likes||0, ts: c.val().ts });
-            });
-            is.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
-            lastCounts.ideas = is.length;
-            var container = document.getElementById('ideasList');
-            if(container) {
-                if(!is.length) container.innerHTML = '<p>Нет идей</p>';
-                else {
-                    container.innerHTML = '';
-                    is.forEach(function(i){
-                        container.innerHTML += '<div class="idea-card"><span class="idea-author">💡 '+i.author+':</span><p>'+i.text+'</p><div class="idea-likes"><button class="like-btn" onclick="likeIdea(\''+i.id+'\','+i.likes+')">❤️</button><span>'+i.likes+'</span></div></div>';
-                    });
-                }
-            }
-            updateUnreadAll();
-            r();
-        });
-    }));
-    
-    // 6. ШОРТСЫ
-    loadTasks.push(new Promise(function(r){
-        db.ref('shorts').once('value', function(s){
-            var shorts = [];
-            s.forEach(function(c){
-                shorts.push({
-                    id: c.key, channel: c.val().channel, author: c.val().author,
-                    caption: c.val().caption, media: c.val().media, likes: c.val().likes||0,
-                    comments: c.val().comments||{}, ts: c.val().ts
-                });
-            });
-            shorts.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
-            lastCounts.shorts = shorts.length;
-            var container = document.getElementById('shortsList');
-            if(container) {
-                if(!shorts.length) container.innerHTML = '<p>Нет шортсов</p>';
-                else {
-                    container.innerHTML = '';
-                    shorts.forEach(function(sh){
-                        var comms = '';
-                        Object.keys(sh.comments).forEach(function(k){
-                            comms += '<div class="short-comment"><b>'+sh.comments[k].name+':</b> '+sh.comments[k].text+'</div>';
-                        });
-                        container.innerHTML += '<div class="short-card"><div style="color:#ffd700">'+sh.channel+' | '+sh.author+'</div>'+(sh.caption?'<div>'+sh.caption+'</div>':'')+(sh.media?'<video src="'+sh.media+'" class="short-video" controls></video>':'')+'<div class="short-actions"><button onclick="likeShort(\''+sh.id+'\','+sh.likes+')">❤️ '+sh.likes+'</button></div><div class="short-comments">'+comms+'</div><input id="sc_'+sh.id+'" placeholder="Коммент..." style="width:100%;padding:6px;margin:4px 0;font-size:12px"><button onclick="addShortComment(\''+sh.id+'\')" style="font-size:12px;padding:6px 10px">💬</button></div>';
-                    });
-                }
-            }
-            r();
-        });
-    }));
-    
-    // 7. ОТЗЫВЫ К ФИЛЬМАМ (7 фильмов)
-    var movieIds = ['series', 'comb', 'pirates', 'americans', 'ads1', 'ads2', 'pta'];
-    movieIds.forEach(function(mid){
-        loadTasks.push(new Promise(function(res){
-            db.ref('reviews/'+mid).once('value', function(snap){
-                var revs = [];
-                snap.forEach(function(c){
-                    revs.push({
-                        name: c.val().name, avatarType: c.val().avatarType||'emoji',
-                        avatarValue: c.val().avatarValue||'🐔', text: c.val().text,
-                        rating: c.val().rating, ts: c.val().ts
-                    });
-                });
-                revs.sort(function(a,b){ return (b.ts||0) - (a.ts||0); });
-                if(revs.length > 0){
-                    var sum = 0;
-                    revs.forEach(function(r){ sum += r.rating; });
-                    var avg = (sum/revs.length).toFixed(1);
-                    var el = document.getElementById('rating-'+mid);
-                    if(el) el.textContent = '⭐ '+avg+'/10';
-                }
-                res();
-            });
-        }));
-    });
-    
-    // 8. РЕЙТИНГИ ИГР (13 игр)
-    var gamesList = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-    gamesList.forEach(function(game){
-        loadTasks.push(new Promise(function(r){
-            db.ref('gameRatings/'+game).once('value', function(s){
-                var rats = [];
-                s.forEach(function(c){ rats.push(c.val()); });
-                rats.sort(function(a,b){ return (b.score||0) - (a.score||0); });
-                var el = document.getElementById('rating-'+game);
-                if(el && rats.length > 0){
-                    var sum = 0;
-                    rats.forEach(function(rating){ sum += rating.rating||0; });
-                    el.textContent = '⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';
-                }
+    Promise.all([
+        new Promise(function(r){
+            db.ref('users/'+myUid+'/eggs').once('value',function(s){
+                myEggs=s.val()||savedEggs||0;
+                if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
+                document.getElementById('headerEggs').textContent=myEggs;
                 r();
             });
-        }));
-    });
-    
-    // 9. ЦИТАТЫ
-    loadTasks.push(new Promise(function(r){
-        if(typeof initQuotes === 'function') {
-            initQuotes();
-            setTimeout(r, 800);
-        } else {
-            r();
-        }
-    }));
-    
-    // Общее количество задач
-    totalTasks = loadTasks.length;
-    
-    // Отслеживаем выполнение каждой задачи
-    var taskIndex = 0;
-    function trackTask(promise) {
-        promise.then(function() {
-            taskIndex++;
-            updateProgress();
-        });
-        return promise;
-    }
-    
-    // Запускаем все задачи параллельно с отслеживанием
-    var trackedTasks = loadTasks.map(trackTask);
-    
-    Promise.all(trackedTasks).then(function(){
-        clearInterval(jokeInterval);
-        updateProgress();
+        }),
+        new Promise(function(r){
+            db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
+                boughtAvatars=s.val()||[];
+                r();
+            });
+        })
+    ]).then(function(){
+        document.getElementById('loading').style.display='none';
+        document.getElementById('app').style.display='block';
+        showScreen('home');
         
-        setTimeout(function(){
-            var oldLoading = document.getElementById('loading');
-            if(oldLoading) oldLoading.style.display = 'none';
-            document.getElementById('app').style.display = 'block';
-            showScreen('home');
+        // Загружаем все данные ПОСЛЕ отображения страницы
+        setTimeout(function() {
+            loadChatMessages();
+            loadMemes();
+            loadIdeas();
+            loadShorts();
+            loadAllRatings();
             
+            // Загружаем игры
+            ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'].forEach(function(g){
+                loadLeaderboard(g);
+            });
+            
+            // Загружаем цитаты (без зависания)
+            try {
+                initQuotes();
+            } catch(e) { console.log('Ошибка цитат:', e); }
+            
+            loadGifts();
+            generateDailyQuests(false);
+            setupFriendNotifications();
+            
+            // Плавно скрываем кастомную загрузку
             setTimeout(function(){
                 if(loadingDiv) {
                     loadingDiv.style.opacity = '0';
@@ -928,11 +717,12 @@ var jokeInterval = setInterval(function() {
                         if(loadingDiv) loadingDiv.style.display = 'none';
                     }, 500);
                 }
-            }, 1000);
-        }, 500);
+            }, 2000);
+        }, 100);
     });
+    
     setInterval(syncOnlineProfile,5000);
-                  }
+}
 
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
