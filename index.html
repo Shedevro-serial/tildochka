@@ -293,18 +293,6 @@
 </div>
 </div>  <!-- это закрывающий тег быстрых квадратиков -->
 
-<!-- 👇👇👇 СЮДА ВСТАВИТЬ 👇👇👇 -->
-<div id="dailyQuoteBlock" style="max-width:600px;margin:0 auto 25px auto">
-    <h3 style="color:#ffd700; text-align:center">💬 Цитата дня</h3>
-    <div id="quoteBox" class="quote-box">
-        <div class="quote-text">«Загрузка цитаты...»</div>
-        <div class="quote-author">— Tildochka</div>
-        <div class="quote-movie">🎬 Tildochka</div>
-    </div>
-</div>
-<!-- 👆👆👆 ДО СЮДА 👆👆👆 -->
-
-<h2>🎬 Сериалы</h2>
 <h2>🎬 Сериалы</h2><div class="movie-grid"><div class="movie-card" onclick="openMovie('series')"><img src="cover.jpg"><h3>Приключения 4 куриц</h3><div class="rating" id="rating-series">⭐ 9.5/10</div></div></div>
 <h2 style="margin-top:35px">🎥 Фильмы</h2><div class="movie-grid">
 <div class="movie-card" onclick="openMovie('comb')"><img src="cover-comb.jpg"><h3>Расческа для лысых</h3><div class="rating" id="rating-comb">—</div></div>
@@ -328,6 +316,16 @@
 <div class="game-card" onclick="showGame('guess')"><span class="game-icon">🔢</span><h3>Угадай число</h3></div>
 <div class="game-card" onclick="showGame('rps')"><span class="game-icon">✂️</span><h3>Камень-ножницы</h3></div>
 <div class="game-card" onclick="showGame('shooter')"><span class="game-icon">🎯</span><h3>Птичий тир</h3><div class="game-rating" id="rating-shooter">⭐ 0/10</div></div>
+</div>
+<!-- 👇👇👇 СЮДА ВСТАВИТЬ ЦИТАТУ 👇👇👇 -->
+<div id="dailyQuoteBlock" style="max-width:600px;margin:40px auto 0 auto">
+    <h3 style="color:#ffd700; text-align:center">💬 Цитата дня</h3>
+    <div id="quoteBox" class="quote-box">
+        <div class="quote-text">«Загрузка цитаты...»</div>
+        <div class="quote-author">— Tildochka</div>
+        <div class="quote-movie">🎬 Tildochka</div>
+    </div>
+</div>
 </div></div></div>
 
 <div id="movie-screen" class="screen"><div class="hero"><img id="moviePoster" class="poster"><h1 id="movieTitle"></h1><h2 id="movieRatingHero">⭐ ...</h2><div class="tags" id="movieTags"></div></div><div class="content"><div class="section"><h2>📖 Описание</h2><p id="movieDescription"></p><div class="rating-info"><span id="totalRatingDisplay"></span><span id="reviewsCountDisplay"></span></div></div><div class="section" id="seasonsSection" style="display:none"><h2>📺 Сезоны</h2><div id="seasonsContent"></div></div><div class="section"><h2>▶️ Смотреть</h2><video id="player" controls><source id="videosrc"></video></div><div class="section"><h2>💭 Отзывы</h2><div class="stars-container" id="revStars"><span>Оценка: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="ratingText">10/10</span></div><textarea id="reviewText" placeholder="Отзыв..."></textarea><button onclick="addReview()">📝 Отправить</button><div id="reviews"></div></div></div></div>
