@@ -1044,7 +1044,20 @@ function updateUnreadAll(){['chat','memes','ideas'].forEach(function(k){var s=pa
 function markRead(k){localStorage.setItem('tildochka_read_'+k,lastCounts[k]||0);updateUnreadAll();}
 function safeSend(key,fn){if(isSending[key])return;isSending[key]=true;var btn=document.getElementById(key+'SendBtn');if(btn){btn.disabled=true;btn.textContent='⏳...';}fn().then(function(){if(btn)btn.textContent='✅';setTimeout(function(){if(btn){btn.disabled=false;btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';}isSending[key]=false;},1500);}).catch(function(e){if(btn){btn.disabled=false;}isSending[key]=false;});}
 
-function sendChatMessage(){var m=document.getElementById('chatMessageLive').value.trim();if(!m)return;safeSend('chat',function(){progressQuest('chat',1);return db.ref('chat').push({name:myName,text:m,ts:Date.now()}).then(function(){document.getElementById('chatMessageLive').value='';});});}{return(a.ts||0)-(b.ts||0);});lastCounts.chat=ms.length;var c=document.getElementById('chatMessagesLive');c.innerHTML='';ms.forEach(function(m){var d=document.createElement('div');d.className='message';d.innerHTML='<strong>'+m.name+':</strong> '+m.text;c.appendChild(d);});c.scrollTop=c.scrollHeight;updateUnreadAll();}
+function sendChatMessage(){
+    var m = document.getElementById('chatMessageLive').value.trim();
+    if(!m) return;
+    safeSend('chat', function(){
+        progressQuest('chat',1);
+        return db.ref('chat').push({
+            name: myName,
+            text: m,
+            ts: Date.now()
+        }).then(function(){
+            document.getElementById('chatMessageLive').value = '';
+        });
+    });
+}
 function loadChatMessages(){
     db.ref('chat').limitToLast(50).on('value', function(s){
         var ms = [];
@@ -2732,7 +2745,7 @@ var allBaseQuotes = [
 
 // Загружаем цитаты из Firebase
 function loadQuotesFromFirebase() {
-    db.ref('quotes').once('value', function(snap) {
+    db.ref('quotes').on('value', function(snap) {
         var userQuotes = [];
         snap.forEach(function(child) {
             userQuotes.push({
@@ -2749,7 +2762,6 @@ function loadQuotesFromFirebase() {
         var approvedUserQuotes = userQuotes.filter(q => q.approved === true);
         var allQuotes = [...allBaseQuotes, ...approvedUserQuotes];
         
-        // Сохраняем в quotesList
         window.quotesList = allQuotes.map((q, i) => ({
             id: 'q_' + i,
             text: q.text,
@@ -2758,15 +2770,8 @@ function loadQuotesFromFirebase() {
         }));
         
         setCurrentQuote();
-        
-        // Обновляем цитату каждые 30 минут
-        if(window.quoteInterval) clearInterval(window.quoteInterval);
-        window.quoteInterval = setInterval(function() {
-            setCurrentQuote();
-        }, 30 * 60 * 1000);
     });
 }
-
 // Устанавливаем текущую цитату
 function setCurrentQuote() {
     // Если нет цитат из Firebase, используем базовые
