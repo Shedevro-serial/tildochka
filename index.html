@@ -922,7 +922,6 @@ var jokeInterval = setInterval(function() {
             }, 1000);
         }, 500);
     });
-    setTimeout(loadTestDataIfNeeded, 2000);
     setInterval(syncOnlineProfile,5000);
                   }
 
@@ -1047,15 +1046,21 @@ function safeSend(key,fn){if(isSending[key])return;isSending[key]=true;var btn=d
 function sendChatMessage(){
     var m = document.getElementById('chatMessageLive').value.trim();
     if(!m) return;
-    safeSend('chat', function(){
-        progressQuest('chat',1);
-        return db.ref('chat').push({
-            name: myName,
-            text: m,
-            ts: Date.now()
-        }).then(function(){
-            document.getElementById('chatMessageLive').value = '';
-        });
+    if(isSending.chat) return;
+    isSending.chat = true;
+    
+    db.ref('chat').push({
+        name: myName,
+        text: m,
+        ts: Date.now()
+    }).then(function(){
+        document.getElementById('chatMessageLive').value = '';
+        progressQuest('chat', 1);
+        isSending.chat = false;
+    }).catch(function(e){
+        console.log(e);
+        isSending.chat = false;
+        alert('Ошибка отправки: ' + e.message);
     });
 }
 function loadChatMessages(){
