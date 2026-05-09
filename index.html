@@ -3235,6 +3235,154 @@ function showAllGames() {
         loadLeaderboard(game.id);
     });
 }
+// ==================== ПРОСТАЯ АДМИН ПАНЕЛЬ ====================
+function showSimpleAdmin() {
+    if(!isAdmin) {
+        var code = prompt('🔐 Введите код администратора:');
+        if(code === 'трактор') {
+            localStorage.setItem('tildochka_admin', 'true');
+            isAdmin = true;
+            alert('✅ Добро пожаловать, администратор!');
+        } else {
+            alert('❌ Неверный код!');
+            return;
+        }
+    }
+    
+    // Создаём простое модальное окно
+    var html = `
+        <div id="simpleAdminModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:9999; display:flex; justify-content:center; align-items:center;">
+            <div style="background:#1a1a1a; border:2px solid #ffd700; border-radius:15px; padding:20px; max-width:600px; width:90%; max-height:80vh; overflow-y:auto;">
+                <h2 style="color:#ffd700; margin-bottom:15px">👑 Админ панель</h2>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <button id="adminQuotesBtn" style="background:#ffd700; color:#000; padding:10px 20px;">📝 Цитаты</button>
+                    <button id="adminJokesBtn" style="background:#ffd700; color:#000; padding:10px 20px;">😂 Шутки</button>
+                </div>
+                <div id="adminContent" style="max-height:400px; overflow-y:auto;">
+                    <p style="color:#aaa">Нажмите на кнопку выше</p>
+                </div>
+                <button onclick="closeSimpleAdmin()" style="background:#444; color:#fff; margin-top:15px; padding:10px 20px;">Закрыть</button>
+            </div>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+    
+    document.getElementById('adminQuotesBtn').onclick = loadPendingQuotes;
+    document.getElementById('adminJokesBtn').onclick = loadPendingJokes;
+}
+
+function closeSimpleAdmin() {
+    var modal = document.getElementById('simpleAdminModal');
+    if(modal) modal.remove();
+}
+
+function loadPendingQuotes() {
+    var container = document.getElementById('adminContent');
+    container.innerHTML = '<p>⏳ Загрузка...</p>';
+    
+    db.ref('quotes').once('value', function(snap) {
+        var pending = [];
+        snap.forEach(function(child) {
+            if(!child.val().approved) {
+                pending.push({
+                    id: child.key,
+                    text: child.val().text,
+                    author: child.val().author || 'Аноним',
+                    movie: child.val().movie || 'Tildochka',
+                    suggestedBy: child.val().suggestedBy || 'Аноним'
+                });
+            }
+        });
+        
+        if(pending.length === 0) {
+            container.innerHTML = '<p style="color:#4f4">✅ Нет цитат на модерации</p>';
+            return;
+        }
+        
+        var html = '<h3 style="color:#ffd700">📝 Цитаты на модерации (' + pending.length + ')</h3>';
+        pending.forEach(function(q) {
+            html += `
+                <div style="border:1px solid #444; padding:10px; margin:10px 0; border-radius:8px;">
+                    <div style="font-style:italic">«${q.text}»</div>
+                    <div style="font-size:12px; color:#888">— ${q.author} (${q.movie})</div>
+                    <div style="font-size:11px; color:#aaa">Предложил: ${q.suggestedBy}</div>
+                    <div style="margin-top:8px;">
+                        <button onclick="approveThisQuote('${q.id}')" style="background:#4f4; color:#000; padding:5px 15px; margin-right:8px;">✅ Одобрить</button>
+                        <button onclick="deleteThisQuote('${q.id}')" style="background:#f44; color:#fff; padding:5px 15px;">🗑️ Удалить</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    });
+}
+
+function loadPendingJokes() {
+    var container = document.getElementById('adminContent');
+    container.innerHTML = '<p>⏳ Загрузка...</p>';
+    
+    db.ref('jokes').once('value', function(snap) {
+        var pending = [];
+        snap.forEach(function(child) {
+            if(!child.val().approved) {
+                pending.push({
+                    id: child.key,
+                    text: child.val().text,
+                    suggestedBy: child.val().suggestedBy || 'Аноним'
+                });
+            }
+        });
+        
+        if(pending.length === 0) {
+            container.innerHTML = '<p style="color:#4f4">✅ Нет шуток на модерации</p>';
+            return;
+        }
+        
+        var html = '<h3 style="color:#ffd700">😂 Шутки на модерации (' + pending.length + ')</h3>';
+        pending.forEach(function(j) {
+            html += `
+                <div style="border:1px solid #444; padding:10px; margin:10px 0; border-radius:8px;">
+                    <div>${j.text.replace(/\n/g, '<br>')}</div>
+                    <div style="font-size:11px; color:#aaa">Предложил: ${j.suggestedBy}</div>
+                    <div style="margin-top:8px;">
+                        <button onclick="approveThisJoke('${j.id}')" style="background:#4f4; color:#000; padding:5px 15px; margin-right:8px;">✅ Одобрить</button>
+                        <button onclick="deleteThisJoke('${j.id}')" style="background:#f44; color:#fff; padding:5px 15px;">🗑️ Удалить</button>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    });
+}
+
+// Функции для работы с БД
+function approveThisQuote(id) {
+    db.ref('quotes/' + id).update({ approved: true });
+    alert('✅ Цитата одобрена!');
+    loadPendingQuotes(); // Обновляем список
+}
+
+function deleteThisQuote(id) {
+    if(confirm('Удалить цитату?')) {
+        db.ref('quotes/' + id).remove();
+        alert('🗑️ Цитата удалена!');
+        loadPendingQuotes();
+    }
+}
+
+function approveThisJoke(id) {
+    db.ref('jokes/' + id).update({ approved: true });
+    alert('✅ Шутка одобрена!');
+    loadPendingJokes();
+}
+
+function deleteThisJoke(id) {
+    if(confirm('Удалить шутку?')) {
+        db.ref('jokes/' + id).remove();
+        alert('🗑️ Шутка удалена!');
+        loadPendingJokes();
+    }
+}
       </script>
 
 </body>
