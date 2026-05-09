@@ -739,7 +739,7 @@ function loadAllData() {
             generateDailyQuests(false);
             setupFriendNotifications();
             
-            setProgress(70, "Почти готово...");
+            setProgress(67, "Почти готово...");
             
             // Ждём 3 секунды для полной загрузки всех данных
             setTimeout(function() {
@@ -748,14 +748,14 @@ function loadAllData() {
                 setTimeout(function() {
                     clearInterval(jokeInterval);
                     if(loadingDiv) {
-                        loadingDiv.style.transition = 'opacity 0.5s';
+                        loadingDiv.style.transition = 'opacity 1s';
                         loadingDiv.style.opacity = '0';
                         setTimeout(function(){
                             if(loadingDiv) loadingDiv.style.display = 'none';
-                        }, 10000);
+                        }, 5000);
                     }
-                }, 3000);
-            }, 15000);
+                }, 1000);
+            }, 10000);
         });
     });
     
