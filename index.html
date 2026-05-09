@@ -2895,7 +2895,7 @@ function suggestQuote() {
 
 // Админ-панель цитат
 function showQuoteAdmin() {
-    if(!isAdmin && myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
+    if(!isAdmin && myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна😏') {
         alert('⛔ Доступ только для администратора. Введите код через "Стать админом"');
         return;
     }
@@ -2941,8 +2941,8 @@ function showQuoteAdmin() {
                         <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
                         <div>— ${q.author} (${q.movie})</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
-                        <button onclick="window.opener.approveQuote('${q.id}')">✅ Одобрить</button>
-                        <button class="delete" onclick="window.opener.deleteQuote('${q.id}')">🗑️ Удалить</button>
+                        <button onclick="window.opener.postMessage('${q.id}')">✅ Одобрить</button>
+                        <button class="delete" onclick="window.opener.postMessage('${q.id}')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет новых предложений</p>'}
                 
@@ -2952,7 +2952,7 @@ function showQuoteAdmin() {
                         <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
                         <div>— ${q.author} (${q.movie})</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
-                        <button class="delete" onclick="window.opener.deleteQuote('${q.id}')">🗑️ Удалить</button>
+                        <button class="delete" onclick="window.opener.postMessage('${q.id}')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских цитат</p>'}
                 
@@ -3118,8 +3118,8 @@ function showJokeAdmin() {
                     <div class="joke-item">
                         <div>${j.text.replace(/\n/g, '<br>').replace(/'/g, "\\'")}</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${j.suggestedBy}</div>
-                        <button onclick="window.opener.approveJoke('${j.id}')">✅ Одобрить</button>
-                        <button class="delete" onclick="window.opener.deleteJoke('${j.id}')">🗑️ Удалить</button>
+                        <button onclick="window.opener.postMessage({type:'approveJoke', id:'${j.id}'}, '*')">✅ Одобрить</button>
+                        <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${j.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет новых предложений</p>'}
                 
@@ -3190,44 +3190,30 @@ function showAllGames() {
         loadLeaderboard(game.id);
     });
 }
-function approveJoke(id) {
-    if(!isAdmin) {
-        alert('Нет прав администратора');
-        return;
+// Слушаем сообщения из админ-окна
+window.addEventListener('message', function(event) {
+    if(event.data.type === 'approveJoke') {
+        if(!isAdmin) return;
+        db.ref('jokes/' + event.data.id).update({ approved: true });
+        alert('✅ Шутка одобрена!');
+    } else if(event.data.type === 'deleteJoke') {
+        if(!isAdmin) return;
+        if(confirm('Удалить шутку?')) {
+            db.ref('jokes/' + event.data.id).remove();
+            alert('🗑️ Шутка удалена!');
+        }
+    } else if(event.data.type === 'approveQuote') {
+        if(!isAdmin) return;
+        db.ref('quotes/' + event.data.id).update({ approved: true });
+        alert('✅ Цитата одобрена!');
+    } else if(event.data.type === 'deleteQuote') {
+        if(!isAdmin) return;
+        if(confirm('Удалить цитату?')) {
+            db.ref('quotes/' + event.data.id).remove();
+            alert('🗑️ Цитата удалена!');
+        }
     }
-    db.ref('jokes/' + id).update({ approved: true });
-    alert('✅ Шутка одобрена! Обновите страницу.');
-}
-
-function deleteJoke(id) {
-    if(!isAdmin) {
-        alert('Нет прав администратора');
-        return;
-    }
-    if(confirm('Удалить шутку навсегда?')) {
-        db.ref('jokes/' + id).remove();
-        alert('🗑️ Шутка удалена! Обновите страницу.');
-    }
-}
-function approveQuote(id) {
-    if(!isAdmin) {
-        alert('Нет прав администратора');
-        return;
-    }
-    db.ref('quotes/' + id).update({ approved: true });
-    alert('✅ Цитата одобрена! Обновите страницу.');
-}
-
-function deleteQuote(id) {
-    if(!isAdmin) {
-        alert('Нет прав администратора');
-        return;
-    }
-    if(confirm('Удалить цитату навсегда?')) {
-        db.ref('quotes/' + id).remove();
-        alert('🗑️ Цитата удалена! Обновите страницу.');
-    }
-}
+});
       </script>
 
 </body>
