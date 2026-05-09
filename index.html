@@ -3076,7 +3076,7 @@ function addAdminButtonsToMenu() {
     menu.appendChild(jokeBtn);
 }
 function showJokeAdmin() {
-    if(!isAdmin && myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна') {
+    if(!isAdmin && myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна😏') {
         alert('⛔ Доступ только для администратора. Введите код через "Стать админом"');
         return;
     }
@@ -3128,7 +3128,7 @@ function showJokeAdmin() {
                     <div class="joke-item">
                         <div>${j.text.replace(/\n/g, '<br>').replace(/'/g, "\\'")}</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${j.suggestedBy}</div>
-                        <button class="delete" onclick="window.opener.deleteJoke('${j.id}')">🗑️ Удалить</button>
+                        <button class="delete" onclick="window.opener.postMessage('${j.id}')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских шуток</p>'}
                 
