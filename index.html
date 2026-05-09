@@ -663,14 +663,13 @@ if(isAdmin) {
 }
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 function loadAllData() {
-    // Показываем кастомную загрузку
+    // Показываем загрузку
     var loadingDiv = document.getElementById('customLoading');
     if(loadingDiv) {
         loadingDiv.style.display = 'flex';
         loadingDiv.style.opacity = '1';
     }
     
-    // Скрываем простую загрузку
     var simpleLoading = document.getElementById('loading');
     if(simpleLoading) simpleLoading.style.display = 'none';
     
@@ -679,86 +678,101 @@ function loadAllData() {
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // Обновляем процент загрузки
-    updateLoadingPercent(10, "Загружаем профиль...");
+    // Счётчик загруженных элементов
+    var loadedItems = 0;
+    var totalItemsToLoad = 12; // СКОЛЬКО ВСЕГО ЭЛЕМЕНТОВ МЫ ЗАГРУЖАЕМ
     
-    Promise.all([
-        new Promise(function(r){
-            db.ref('users/'+myUid+'/eggs').once('value',function(s){
-                myEggs=s.val()||savedEggs||0;
-                if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
-                document.getElementById('headerEggs').textContent=myEggs;
-                updateLoadingPercent(30, "Загружаем яйца...");
-                r();
-            });
-        }),
-        new Promise(function(r){
-            db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
-                boughtAvatars=s.val()||[];
-                updateLoadingPercent(50, "Загружаем аватары...");
-                r();
-            });
-        })
-    ]).then(function(){
-        updateLoadingPercent(70, "Загружаем контент...");
+    function checkAllLoaded() {
+        loadedItems++;
+        updateLoadingPercent(Math.floor(loadedItems / totalItemsToLoad * 100), "Загрузка...");
         
-        document.getElementById('app').style.display='block';
-        showScreen('home');
-        
-        // Загружаем все данные ПОСЛЕ отображения страницы
-        setTimeout(function() {
-            updateLoadingPercent(80, "Загружаем чат...");
-            loadChatMessages();
-            
-            updateLoadingPercent(85, "Загружаем мемы...");
-            loadMemes();
-            
-            updateLoadingPercent(90, "Загружаем идеи...");
-            loadIdeas();
-            
-            updateLoadingPercent(92, "Загружаем шортсы...");
-            loadShorts();
-            
-            updateLoadingPercent(95, "Загружаем рейтинги...");
-            loadAllRatings();
-            
-            // Загружаем игры
-            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-            var gamesLoaded = 0;
-            games.forEach(function(g){
-                loadLeaderboard(g);
-                gamesLoaded++;
-                updateLoadingPercent(95 + Math.floor(gamesLoaded / games.length * 5), "Загружаем игры...");
-            });
-            
-            // Загружаем цитаты
-            try {
-                initQuotes();
-            } catch(e) { console.log('Ошибка цитат:', e); }
-            
-            loadGifts();
-            generateDailyQuests(false);
-            setupFriendNotifications();
-            
-            updateLoadingPercent(100, "Готово!");
-            
-            // Плавно скрываем кастомную загрузку через 1 секунду
-            setTimeout(function(){
+        if(loadedItems >= totalItemsToLoad) {
+            // ВСЁ ЗАГРУЖЕНО!
+            setTimeout(function() {
                 if(loadingDiv) {
                     loadingDiv.style.transition = 'opacity 0.5s';
                     loadingDiv.style.opacity = '0';
-                    setTimeout(function(){
+                    setTimeout(function() {
                         if(loadingDiv) loadingDiv.style.display = 'none';
-                        // Показываем цитату дня после загрузки
-                        setCurrentQuote();
+                        document.getElementById('app').style.display = 'block';
+                        showScreen('home');
+                        setCurrentQuote(); // Показываем цитату
                     }, 500);
                 }
-            }, 1000);
-        }, 500);
+            }, 500);
+        }
+    }
+    
+    // Загружаем яйца
+    db.ref('users/'+myUid+'/eggs').once('value', function(s) {
+        myEggs = s.val() || savedEggs || 0;
+        if(myEggs < savedEggs) {
+            myEggs = savedEggs;
+            db.ref('users/'+myUid).update({eggs: myEggs});
+        }
+        document.getElementById('headerEggs').textContent = myEggs;
+        checkAllLoaded();
     });
     
-    setInterval(syncOnlineProfile,5000);
-}
+    // Загружаем аватары
+    db.ref('users/'+myUid+'/boughtAvatars').once('value', function(s) {
+        boughtAvatars = s.val() || [];
+        checkAllLoaded();
+    });
+    
+    // Загружаем чат
+    loadChatMessages();
+    setTimeout(checkAllLoaded, 500);
+    
+    // Загружаем мемы
+    loadMemes();
+    setTimeout(checkAllLoaded, 500);
+    
+    // Загружаем идеи
+    loadIdeas();
+    setTimeout(checkAllLoaded, 500);
+    
+    // Загружаем шортсы
+    loadShorts();
+    setTimeout(checkAllLoaded, 500);
+    
+    // Загружаем рейтинги фильмов
+    loadAllRatings();
+    setTimeout(checkAllLoaded, 500);
+    
+    // Загружаем рейтинги игр
+    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+    var gamesLoaded = 0;
+    games.forEach(function(g) {
+        loadLeaderboard(g);
+        gamesLoaded++;
+        if(gamesLoaded >= games.length) {
+            setTimeout(checkAllLoaded, 500);
+        }
+    });
+    
+    // Загружаем цитаты
+    try {
+        initQuotes();
+        setTimeout(checkAllLoaded, 500);
+    } catch(e) { checkAllLoaded(); }
+    
+    // Загружаем подарки
+    loadGifts();
+    setTimeout(checkAllLoaded, 500);
+    
+    // Загружаем задания
+    generateDailyQuests(false);
+    setTimeout(checkAllLoaded, 500);
+    
+    // Загружаем друзей
+    setupFriendNotifications();
+    setTimeout(checkAllLoaded, 500);
+    
+    // Обновляем онлайн статус
+    setInterval(syncOnlineProfile, 5000);
+    checkAllLoaded();
+  }
 
 // Функция обновления процентов и анекдота
 function updateLoadingPercent(percent, jokeText) {
