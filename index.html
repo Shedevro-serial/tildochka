@@ -2941,8 +2941,8 @@ function showQuoteAdmin() {
                         <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
                         <div>— ${q.author} (${q.movie})</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
-                        <button onclick="window.opener.postMessage('${q.id}')">✅ Одобрить</button>
-                        <button class="delete" onclick="window.opener.postMessage('${q.id}')">🗑️ Удалить</button>
+                        <button onclick="window.opener.postMessage({type:'approveQuote', id:'${q.id}'}, '*')">✅ Одобрить</button>
+                        <button class="delete" onclick="window.opener.postMessage({type:'deleteQuote', id:'${q.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет новых предложений</p>'}
                 
@@ -2952,7 +2952,7 @@ function showQuoteAdmin() {
                         <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
                         <div>— ${q.author} (${q.movie})</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
-                        <button class="delete" onclick="window.opener.postMessage('${q.id}')">🗑️ Удалить</button>
+                        <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${j.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских цитат</p>'}
                 
@@ -3128,7 +3128,7 @@ function showJokeAdmin() {
                     <div class="joke-item">
                         <div>${j.text.replace(/\n/g, '<br>').replace(/'/g, "\\'")}</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${j.suggestedBy}</div>
-                        <button class="delete" onclick="window.opener.postMessage('${j.id}')">🗑️ Удалить</button>
+                        <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${j.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских шуток</p>'}
                 
