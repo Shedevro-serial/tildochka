@@ -2977,7 +2977,8 @@ function approveQuote(id) {
         return;
     }
     db.ref('quotes/' + id).update({ approved: true });
-    alert('✅ Цитата одобрена! Обновите страницу.');
+    alert('✅ Цитата одобрена! (Обновите страницу позже)');
+    // Не перезагружаем страницу
 }
 
 function deleteQuote(id) {
@@ -2985,9 +2986,30 @@ function deleteQuote(id) {
         alert('Нет прав администратора');
         return;
     }
-    if(confirm('Удалить цитату?')) {
+    if(confirm('🗑️ Удалить цитату навсегда?')) {
         db.ref('quotes/' + id).remove();
-        alert('🗑️ Цитата удалена! Обновите страницу.');
+        alert('✅ Цитата удалена!');
+        // Не перезагружаем страницу
+    }
+}
+
+function approveJoke(id) {
+    if(!isAdmin) {
+        alert('Нет прав администратора');
+        return;
+    }
+    db.ref('jokes/' + id).update({ approved: true });
+    alert('✅ Шутка одобрена!');
+}
+
+function deleteJoke(id) {
+    if(!isAdmin) {
+        alert('Нет прав администратора');
+        return;
+    }
+    if(confirm('🗑️ Удалить шутку навсегда?')) {
+        db.ref('jokes/' + id).remove();
+        alert('✅ Шутка удалена!');
     }
 }
 
@@ -3190,26 +3212,32 @@ function showAllGames() {
         loadLeaderboard(game.id);
     });
 }
-// Слушаем сообщения из админ-окна
+// Слушаем сообщения из админ-окна (МГНОВЕННО)
 window.addEventListener('message', function(event) {
-    if(event.data.type === 'approveJoke') {
+    var data = event.data;
+    
+    if(data.type === 'approveJoke') {
         if(!isAdmin) return;
-        db.ref('jokes/' + event.data.id).update({ approved: true });
+        db.ref('jokes/' + data.id).update({ approved: true });
         alert('✅ Шутка одобрена!');
-    } else if(event.data.type === 'deleteJoke') {
+        // Не обновляем страницу
+    } 
+    else if(data.type === 'deleteJoke') {
         if(!isAdmin) return;
         if(confirm('Удалить шутку?')) {
-            db.ref('jokes/' + event.data.id).remove();
+            db.ref('jokes/' + data.id).remove();
             alert('🗑️ Шутка удалена!');
         }
-    } else if(event.data.type === 'approveQuote') {
+    } 
+    else if(data.type === 'approveQuote') {
         if(!isAdmin) return;
-        db.ref('quotes/' + event.data.id).update({ approved: true });
+        db.ref('quotes/' + data.id).update({ approved: true });
         alert('✅ Цитата одобрена!');
-    } else if(event.data.type === 'deleteQuote') {
+    } 
+    else if(data.type === 'deleteQuote') {
         if(!isAdmin) return;
         if(confirm('Удалить цитату?')) {
-            db.ref('quotes/' + event.data.id).remove();
+            db.ref('quotes/' + data.id).remove();
             alert('🗑️ Цитата удалена!');
         }
     }
