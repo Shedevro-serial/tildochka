@@ -3147,13 +3147,39 @@ function showJokeAdmin() {
     });
 }
 
+// ==================== АДМИН ФУНКЦИИ ДЛЯ ЦИТАТ ====================
+function approveQuote(id) {
+    if(!isAdmin) {
+        alert('Нет прав администратора');
+        return;
+    }
+    if(confirm('Одобрить эту цитату?')) {
+        db.ref('quotes/' + id).update({ approved: true });
+        alert('✅ Цитата одобрена! Обновите страницу.');
+    }
+}
+
+function deleteQuote(id) {
+    if(!isAdmin) {
+        alert('Нет прав администратора');
+        return;
+    }
+    if(confirm('Удалить эту цитату навсегда?')) {
+        db.ref('quotes/' + id).remove();
+        alert('🗑️ Цитата удалена! Обновите страницу.');
+    }
+}
+
+// ==================== АДМИН ФУНКЦИИ ДЛЯ ШУТОК ====================
 function approveJoke(id) {
     if(!isAdmin) {
         alert('Нет прав администратора');
         return;
     }
-    db.ref('jokes/' + id).update({ approved: true });
-    alert('✅ Шутка одобрена! Обновите страницу.');
+    if(confirm('Одобрить эту шутку?')) {
+        db.ref('jokes/' + id).update({ approved: true });
+        alert('✅ Шутка одобрена! Обновите страницу.');
+    }
 }
 
 function deleteJoke(id) {
@@ -3161,7 +3187,7 @@ function deleteJoke(id) {
         alert('Нет прав администратора');
         return;
     }
-    if(confirm('Удалить шутку?')) {
+    if(confirm('Удалить эту шутку навсегда?')) {
         db.ref('jokes/' + id).remove();
         alert('🗑️ Шутка удалена! Обновите страницу.');
     }
