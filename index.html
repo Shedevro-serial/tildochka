@@ -678,120 +678,84 @@ function loadAllData() {
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // Счётчик загруженных элементов
-    var loadedItems = 0;
-    var totalItemsToLoad = 12; // СКОЛЬКО ВСЕГО ЭЛЕМЕНТОВ МЫ ЗАГРУЖАЕМ
+    // Запускаем анекдоты (меняются каждые 5 секунд)
+    var jokeInterval = setInterval(function() {
+        var jokeSpan = document.getElementById('loadingJoke');
+        if(jokeSpan && window.loadingJokes && window.loadingJokes.length > 0) {
+            var randomJoke = window.loadingJokes[Math.floor(Math.random() * window.loadingJokes.length)];
+            jokeSpan.innerHTML = '🐔 ' + randomJoke;
+        }
+    }, 5000);
     
-    function checkAllLoaded() {
-        loadedItems++;
-        updateLoadingPercent(Math.floor(loadedItems / totalItemsToLoad * 100), "Загрузка...");
+    // Загружаем основные данные
+    Promise.all([
+        new Promise(function(r){
+            db.ref('users/'+myUid+'/eggs').once('value',function(s){
+                myEggs=s.val()||savedEggs||0;
+                if(myEggs<savedEggs){myEggs=savedEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
+                document.getElementById('headerEggs').textContent=myEggs;
+                updateLoadingPercent(25);
+                r();
+            });
+        }),
+        new Promise(function(r){
+            db.ref('users/'+myUid+'/boughtAvatars').once('value',function(s){
+                boughtAvatars=s.val()||[];
+                updateLoadingPercent(50);
+                r();
+            });
+        })
+    ]).then(function(){
+        updateLoadingPercent(70);
         
-        if(loadedItems >= totalItemsToLoad) {
-            // ВСЁ ЗАГРУЖЕНО!
-            setTimeout(function() {
+        document.getElementById('app').style.display='block';
+        showScreen('home');
+        
+        // Загружаем остальной контент (асинхронно, не блокируя загрузчик)
+        setTimeout(function() {
+            loadChatMessages();
+            loadMemes();
+            loadIdeas();
+            loadShorts();
+            loadAllRatings();
+            
+            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+            games.forEach(function(g){
+                loadLeaderboard(g);
+            });
+            
+            try {
+                initQuotes();
+            } catch(e) { console.log('Ошибка цитат:', e); }
+            
+            loadGifts();
+            generateDailyQuests(false);
+            setupFriendNotifications();
+            
+            updateLoadingPercent(100);
+            
+            // Ждём еще немного для полной загрузки, потом скрываем
+            setTimeout(function(){
+                clearInterval(jokeInterval); // Останавливаем анекдоты
                 if(loadingDiv) {
                     loadingDiv.style.transition = 'opacity 0.5s';
                     loadingDiv.style.opacity = '0';
-                    setTimeout(function() {
+                    setTimeout(function(){
                         if(loadingDiv) loadingDiv.style.display = 'none';
-                        document.getElementById('app').style.display = 'block';
-                        showScreen('home');
-                        setCurrentQuote(); // Показываем цитату
                     }, 500);
                 }
-            }, 500);
-        }
-    }
-    
-    // Загружаем яйца
-    db.ref('users/'+myUid+'/eggs').once('value', function(s) {
-        myEggs = s.val() || savedEggs || 0;
-        if(myEggs < savedEggs) {
-            myEggs = savedEggs;
-            db.ref('users/'+myUid).update({eggs: myEggs});
-        }
-        document.getElementById('headerEggs').textContent = myEggs;
-        checkAllLoaded();
+            }, 1500);
+        }, 100);
     });
     
-    // Загружаем аватары
-    db.ref('users/'+myUid+'/boughtAvatars').once('value', function(s) {
-        boughtAvatars = s.val() || [];
-        checkAllLoaded();
-    });
-    
-    // Загружаем чат
-    loadChatMessages();
-    setTimeout(checkAllLoaded, 500);
-    
-    // Загружаем мемы
-    loadMemes();
-    setTimeout(checkAllLoaded, 500);
-    
-    // Загружаем идеи
-    loadIdeas();
-    setTimeout(checkAllLoaded, 500);
-    
-    // Загружаем шортсы
-    loadShorts();
-    setTimeout(checkAllLoaded, 500);
-    
-    // Загружаем рейтинги фильмов
-    loadAllRatings();
-    setTimeout(checkAllLoaded, 500);
-    
-    // Загружаем рейтинги игр
-    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-    var gamesLoaded = 0;
-    games.forEach(function(g) {
-        loadLeaderboard(g);
-        gamesLoaded++;
-        if(gamesLoaded >= games.length) {
-            setTimeout(checkAllLoaded, 500);
-        }
-    });
-    
-    // Загружаем цитаты
-    try {
-        initQuotes();
-        setTimeout(checkAllLoaded, 500);
-    } catch(e) { checkAllLoaded(); }
-    
-    // Загружаем подарки
-    loadGifts();
-    setTimeout(checkAllLoaded, 500);
-    
-    // Загружаем задания
-    generateDailyQuests(false);
-    setTimeout(checkAllLoaded, 500);
-    
-    // Загружаем друзей
-    setupFriendNotifications();
-    setTimeout(checkAllLoaded, 500);
-    
-    // Обновляем онлайн статус
-    setInterval(syncOnlineProfile, 5000);
-    checkAllLoaded();
-  }
+    setInterval(syncOnlineProfile,5000);
+}
 
-// Функция обновления процентов и анекдота
-function updateLoadingPercent(percent, jokeText) {
+function updateLoadingPercent(percent) {
     var fill = document.getElementById('loadingFill');
     var percentSpan = document.getElementById('loadingPercent');
-    var jokeSpan = document.getElementById('loadingJoke');
-    
     if(fill) fill.style.width = percent + '%';
     if(percentSpan) percentSpan.textContent = percent + '%';
-    if(jokeSpan && jokeText) {
-        // Показываем случайный анекдот
-        var allJokes = loadingJokes || [];
-        if(allJokes.length > 0 && percent < 100) {
-            var randomJoke = allJokes[Math.floor(Math.random() * allJokes.length)];
-            jokeSpan.innerHTML = '🐔 ' + randomJoke;
-        } else {
-            jokeSpan.innerHTML = '🐔 ' + jokeText;
-        }
-    }
 }
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
