@@ -2952,7 +2952,7 @@ function showQuoteAdmin() {
                         <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
                         <div>— ${q.author} (${q.movie})</div>
                         <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
-                        <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${j.id}'}, '*')">🗑️ Удалить</button>
+                        <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${q.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских цитат</p>'}
                 
