@@ -824,6 +824,10 @@ allPromises.push(gamesLeaderboardPromise);
     });
     
     setInterval(syncOnlineProfile, 5000);
+  // В КОНЦЕ ФУНКЦИИ loadAllData(), ПЕРЕД ЗАКРЫВАЮЩЕЙ СКОБКОЙ, ДОБАВЬТЕ:
+
+ensureInviteListener();
+console.log('✅ Слушатель приглашений активирован');
 }
 // Добавь эту функцию для обновления интерфейса на телефоне
 function refreshUI() {
