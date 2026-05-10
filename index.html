@@ -392,7 +392,7 @@
 
 <div id="movie-screen" class="screen"><div class="hero"><img id="moviePoster" class="poster"><h1 id="movieTitle"></h1><h2 id="movieRatingHero">⭐ ...</h2><div class="tags" id="movieTags"></div></div><div class="content"><div class="section"><h2>📖 Описание</h2><p id="movieDescription"></p><div class="rating-info"><span id="totalRatingDisplay"></span><span id="reviewsCountDisplay"></span></div></div><div class="section" id="seasonsSection" style="display:none"><h2>📺 Сезоны</h2><div id="seasonsContent"></div></div><div class="section"><h2>▶️ Смотреть</h2><video id="player" controls><source id="videosrc"></video></div><div class="section"><h2>💭 Отзывы</h2><div class="stars-container" id="revStars"><span>Оценка: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="ratingText">10/10</span></div><textarea id="reviewText" placeholder="Отзыв..."></textarea><button onclick="addReview()">📝 Отправить</button><div id="reviews"></div></div></div></div>
 
-<div id="game-screen" class="screen"><button onclick="stopGame();showScreen('home')">← На главную</button><h2 id="gameTitle"></h2><div class="game-score" id="gameScoreDisplay">Счёт: 0</div><div id="gameContent"></div><div id="gameRatingArea"></div><div class="leaderboard" id="leaderboard"><h3>🏆 Лидеры</h3></div></div></div>
+<div id="game-screen" class="screen"><button onclick="window.stopGame && window.stopGame()">← На главную</button><h2 id="gameTitle"></h2><div class="game-score" id="gameScoreDisplay">Счёт: 0</div><div id="gameContent"></div><div id="gameRatingArea"></div><div class="leaderboard" id="leaderboard"><h3>🏆 Лидеры</h3></div></div></div>
 
 <div id="chat-screen" class="screen"><div class="chat-container"><h2>💬 Чат</h2><div class="chat-messages" id="chatMessagesLive"></div><textarea id="chatMessageLive" placeholder="Сообщение..."></textarea><button id="chatSendBtn" onclick="sendChatMessage()">💬 Отправить</button></div></div>
 <div id="memes-screen" class="screen"><div class="chat-container"><h2>😂 Мемы</h2><textarea id="memeCaption" placeholder="Подпись..."></textarea><div class="media-upload"><label for="memePhoto">📷 Фото</label><input type="file" id="memePhoto" accept="image/*" onchange="previewMemeMedia('photo')"><label for="memeVideo">🎬 Видео</label><input type="file" id="memeVideo" accept="video/*" onchange="previewMemeMedia('video')"></div><div id="memePreview"></div><button id="memeSendBtn" onclick="postMeme()">😂 Опубликовать</button><div id="memesList" style="margin-top:25px"></div></div></div>
@@ -3292,6 +3292,139 @@ window.addEventListener('message', function(event) {
     else if(data.type === 'deleteJoke') deleteJoke(data.id);
     else if(data.type === 'approveQuote') approveQuote(data.id);
     else if(data.type === 'deleteQuote') deleteQuote(data.id);
+});
+// ========== ФИКС: ГЛОБАЛЬНАЯ ФУНКЦИЯ stopGame ==========
+window.stopGame = function() {
+    console.log('stopGame вызван');
+    if(gameInterval) {
+        clearInterval(gameInterval);
+        gameInterval = null;
+    }
+    if(tamaInterval) {
+        clearInterval(tamaInterval);
+        tamaInterval = null;
+    }
+    // Также останавливаем таймер в тире, если он есть
+    if(window.shooterTimerInterval) {
+        clearInterval(window.shooterTimerInterval);
+        window.shooterTimerInterval = null;
+    }
+    showScreen('home');
+};
+
+// ========== ФИКС: ПРОБЕЛ В ЧАТЕ И ДРУГИХ ПОЛЯХ ==========
+// Отключаем глобальный обработчик клавиш, который мешает вводу текста
+document.addEventListener('keydown', function(e) {
+    // Если активный элемент - это input или textarea, не мешаем
+    var activeElement = document.activeElement;
+    if(activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+        // Не блокируем клавиши при вводе текста
+        return;
+    }
+    // Для других случаев - тут можно добавить обработку, но не блокируем пробел глобально
+}, false);
+
+// ========== ФИКС: КНОПКА НАЗАД В ИГРАХ (ДОБАВЛЯЕМ ОБРАБОТЧИК) ==========
+// Переопределяем кнопку "← На главную" в game-screen, когда она появляется
+function fixBackButton() {
+    var backBtn = document.querySelector('#game-screen button');
+    if(backBtn && backBtn.textContent.includes('На главную')) {
+        // Удаляем старый onclick, если он есть, и вешаем новый
+        backBtn.removeAttribute('onclick');
+        backBtn.onclick = function() {
+            console.log('Кнопка На главную нажата');
+            if(window.gameInterval) {
+                clearInterval(window.gameInterval);
+                window.gameInterval = null;
+            }
+            if(window.tamaInterval) {
+                clearInterval(window.tamaInterval);
+                window.tamaInterval = null;
+            }
+            showScreen('home');
+        };
+    }
+}
+
+// Наблюдатель за изменениями в DOM, чтобы поймать момент появления кнопки
+var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if(mutation.type === 'childList') {
+            fixBackButton();
+        }
+    });
+});
+observer.observe(document.getElementById('game-screen'), { childList: true, subtree: true });
+
+// Вызываем сразу при загрузке
+setTimeout(fixBackButton, 100);
+
+// ========== ФИКС: ENTER В ЧАТЕ ==========
+// Добавляем отправку по Enter в поле ввода чата
+document.addEventListener('DOMContentLoaded', function() {
+    var chatInput = document.getElementById('chatMessageLive');
+    if(chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+    }
+    
+    // Также фикс для идеи
+    var ideaInput = document.getElementById('ideaText');
+    if(ideaInput) {
+        ideaInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                addIdea();
+            }
+        });
+    }
+});
+
+// ========== ФИКС: ИСПРАВЛЕНИЕ showScreen ДЛЯ КОРРЕКТНОЙ РАБОТЫ ==========
+// Сохраняем оригинальную функцию
+var originalShowScreen = window.showScreen;
+window.showScreen = function(id) {
+    console.log('showScreen вызван с id:', id);
+    
+    // Останавливаем игры при выходе с игрового экрана
+    var currentScreen = document.querySelector('.screen.active');
+    if(currentScreen && currentScreen.id === 'game-screen' && id !== 'game') {
+        if(window.gameInterval) {
+            clearInterval(window.gameInterval);
+            window.gameInterval = null;
+        }
+        if(window.tamaInterval) {
+            clearInterval(window.tamaInterval);
+            window.tamaInterval = null;
+        }
+    }
+    
+    // Вызываем оригинальную функцию
+    originalShowScreen(id);
+};
+
+// ========== ДОПОЛНИТЕЛЬНЫЙ ФИКС ДЛЯ ТЕЛЕФОНА ==========
+// Убеждаемся, что все кликабельные элементы имеют правильные обработчики
+document.addEventListener('DOMContentLoaded', function() {
+    // Исправляем кнопку "На главную" в game-screen, если она уже есть
+    fixBackButton();
+    
+    // Добавляем явные обработчики для всех game-card
+    var gameCards = document.querySelectorAll('.game-card');
+    gameCards.forEach(function(card) {
+        card.addEventListener('click', function(e) {
+            var onclickAttr = card.getAttribute('onclick');
+            if(onclickAttr) {
+                console.log('Клик по игре:', onclickAttr);
+            }
+        });
+    });
+    
+    console.log('✅ Все фиксы применены');
 });
       </script>
 
