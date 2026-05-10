@@ -1792,23 +1792,25 @@ function sendInvite(uid, game, maxScore){
     });
     showWaiting('Ожидаем '+onlineUsers[uid].name+'...', 30000);
 }
-db.ref('game_invites').on('child_added',function(snap){
-    var inv=snap.val();
-    if(inv.to===myUid&&inv.status==='pending'&&inv.ts>Date.now()-15000){
-        pendingInvite={
-            id:snap.key,
-            from:inv.from,
-            fromName:inv.fromName,
-            game:inv.game,
-            maxScore:inv.maxScore || 10
+db.ref('game_invites').on('child_added', function(snap){
+    var inv = snap.val();
+    if(inv.to === myUid && inv.status === 'pending' && inv.ts > Date.now() - 15000){
+        pendingInvite = {
+            id: snap.key,
+            from: inv.from,
+            fromName: inv.fromName,
+            game: inv.game,
+            maxScore: inv.maxScore || 10
         };
         var scoreText = (pendingInvite.maxScore === 0) ? '∞' : pendingInvite.maxScore;
-        document.getElementById('inviteContent').innerHTML='<p>'+inv.fromName+' зовёт в <b>'+inv.game+'</b>! (до ' + scoreText + ')</p>';
-        document.getElementById('inviteActions').innerHTML='<button onclick="acceptInvite()" style="background:#4f4">✅</button><button onclick="declineInvite()" style="background:#f44">❌</button>';
-        document.getElementById('inviteTitle').textContent='📨 Приглашение';
+        document.getElementById('inviteContent').innerHTML = '<p>' + inv.fromName + ' зовёт в <b>' + inv.game + '</b>! (до ' + scoreText + ')</p>';
+        document.getElementById('inviteActions').innerHTML = '<button onclick="acceptInvite()" style="background:#4f4">✅</button><button onclick="declineInvite()" style="background:#f44">❌</button>';
+        document.getElementById('inviteTitle').textContent = '📨 Приглашение';
         document.getElementById('inviteModal').classList.add('show');
     }
 });
+
+function acceptInvite(){
     if(!pendingInvite) return;
     document.getElementById('inviteModal').classList.remove('show');
     var inv = pendingInvite;
@@ -1829,7 +1831,13 @@ db.ref('game_invites').on('child_added',function(snap){
     
     pendingInvite = null;
 }
-function declineInvite(){if(!pendingInvite)return;document.getElementById('inviteModal').classList.remove('show');db.ref('game_invites/'+pendingInvite.id+'/status').set('declined');pendingInvite=null;}
+
+function declineInvite(){
+    if(!pendingInvite) return;
+    document.getElementById('inviteModal').classList.remove('show');
+    db.ref('game_invites/' + pendingInvite.id + '/status').set('declined');
+    pendingInvite = null;
+}
 function showWaiting(msg,dur){var w=document.getElementById('waitingModal');if(!w){w=document.createElement('div');w.className='modal-overlay';w.id='waitingModal';w.innerHTML='<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';document.body.appendChild(w);}document.getElementById('waitingContent').textContent='⏳ '+msg;w.classList.add('show');if(window._wt)clearTimeout(window._wt);window._wt=setTimeout(function(){w.classList.remove('show');},dur);}
 function hideWaiting(){var w=document.getElementById('waitingModal');if(w){w.classList.remove('show');if(window._wt)clearTimeout(window._wt);}}
 
