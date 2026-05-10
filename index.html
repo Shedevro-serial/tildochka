@@ -1714,7 +1714,12 @@ playSound("jump");
 }
 window.runnerJump=runnerJump;
 
-document.onkeydown=function(e){if(e.key===' ') runnerJump();};
+document.onkeydown=function(e){
+    if(e.key===' ' || e.key==='Space') {
+        e.preventDefault();
+        runnerJump();
+    }
+};
 c.onclick=runnerJump;
 c.addEventListener('touchstart',function(e){e.preventDefault(); runnerJump();});
 
@@ -2464,13 +2469,28 @@ function initShooter(){
     };
     
     var keyHandler = function(e) {
-        if(!gameActive) return;
-        if(e.key === 'ArrowLeft') moveAimTir('left');
-        if(e.key === 'ArrowRight') moveAimTir('right');
-        if(e.key === 'ArrowUp') moveAimTir('up');
-        if(e.key === 'ArrowDown') moveAimTir('down');
-        if(e.key === ' ' || e.key === 'Space') { e.preventDefault(); shootNowTir(); }
-    };
+    if(!gameActive) return;
+    if(e.key === 'ArrowLeft') {
+        e.preventDefault();
+        moveAimTir('left');
+    }
+    if(e.key === 'ArrowRight') {
+        e.preventDefault();
+        moveAimTir('right');
+    }
+    if(e.key === 'ArrowUp') {
+        e.preventDefault();
+        moveAimTir('up');
+    }
+    if(e.key === 'ArrowDown') {
+        e.preventDefault();
+        moveAimTir('down');
+    }
+    if(e.key === ' ' || e.key === 'Space') { 
+        e.preventDefault(); 
+        shootNowTir(); 
+    }
+};
     document.addEventListener('keydown', keyHandler);
     
     canvas.onclick = function(e) {
