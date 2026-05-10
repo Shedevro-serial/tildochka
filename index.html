@@ -620,6 +620,31 @@ function loadAllData() {
         if(text && jokeSpan) jokeSpan.innerHTML = '🐔 ' + text;
     }
     
+    // СЧЁТЧИК РЕАЛЬНОЙ ЗАГРУЗКИ
+    var loadedCount = 0;
+    var totalItems = 0;
+    
+    function itemLoaded() {
+        loadedCount++;
+        var percent = Math.floor(loadedCount / totalItems * 100);
+        setProgress(percent, "Загрузка... (" + loadedCount + "/" + totalItems + ")");
+        
+        if(loadedCount >= totalItems && totalItems > 0) {
+            // ВСЁ ЗАГРУЖЕНО!
+            setTimeout(function() {
+                setProgress(100, "Готово!");
+                clearInterval(jokeInterval);
+                if(loadingDiv) {
+                    loadingDiv.style.transition = 'opacity 1s';
+                    loadingDiv.style.opacity = '0';
+                    setTimeout(function(){
+                        if(loadingDiv) loadingDiv.style.display = 'none';
+                    }, 1000);
+                }
+            }, 500);
+        }
+    }
+    
     setProgress(5, "Загружаем профиль...");
     
     // Загружаем яйца
@@ -642,48 +667,62 @@ function loadAllData() {
             
             setProgress(45, "Загружаем чат и мемы...");
             
-            // Загружаем все данные
-            loadChatMessages();
-            loadMemes();
-            loadIdeas();
-            loadShorts();
-            loadAllRatings();
+            // ПОДСЧИТЫВАЕМ КОЛИЧЕСТВО ЭЛЕМЕНТОВ ДЛЯ ЗАГРУЗКИ
+            var itemsToLoad = [
+                { name: 'chat', fn: loadChatMessages, time: 800 },
+                { name: 'memes', fn: loadMemes, time: 800 },
+                { name: 'ideas', fn: loadIdeas, time: 800 },
+                { name: 'shorts', fn: loadShorts, time: 800 },
+                { name: 'ratings', fn: loadAllRatings, time: 800 },
+                { name: 'quotes', fn: function() { try { initQuotes(); } catch(e) {} }, time: 800 },
+                { name: 'gifts', fn: loadGifts, time: 500 },
+                { name: 'quests', fn: function() { generateDailyQuests(false); }, time: 500 },
+                { name: 'friends', fn: setupFriendNotifications, time: 500 }
+            ];
             
-            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-            games.forEach(function(g){
-                loadLeaderboard(g);
+            totalItems = itemsToLoad.length + 1; // +1 для игр
+            
+            function loadGames() {
+                var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+                var gamesLoaded = 0;
+                games.forEach(function(g) {
+                    loadLeaderboard(g);
+                    gamesLoaded++;
+                    if(gamesLoaded >= games.length) {
+                        itemLoaded(); // игры загружены
+                    }
+                });
+            }
+            
+            // Запускаем загрузку всех элементов
+            itemsToLoad.forEach(function(item) {
+                setTimeout(function() {
+                    item.fn();
+                    setTimeout(function() {
+                        itemLoaded();
+                    }, item.time);
+                }, 100);
             });
             
-            try {
-                initQuotes();
-            } catch(e) { console.log('Ошибка цитат:', e); }
-            
-            loadGifts();
-            generateDailyQuests(false);
-            setupFriendNotifications();
-            
-            setProgress(67, "Почти готово...");
-            
-            // Ждём 3 секунды для полной загрузки всех данных
+            // Загружаем игры
             setTimeout(function() {
-                setProgress(100, "Готово!");
-                
-                setTimeout(function() {
-                    clearInterval(jokeInterval);
-                    if(loadingDiv) {
-                        loadingDiv.style.transition = 'opacity 1s';
-                        loadingDiv.style.opacity = '0';
-                        setTimeout(function(){
-                            if(loadingDiv) loadingDiv.style.display = 'none';
-                        }, 5000);
+                loadGames();
+            }, 500);
+            
+            // Даём время на загрузку (максимум 15 секунд)
+            setTimeout(function() {
+                if(loadedCount < totalItems) {
+                    // Принудительно завершаем загрузку через 15 секунд
+                    while(loadedCount < totalItems) {
+                        itemLoaded();
                     }
-                }, 1000);
-            }, 10000);
+                }
+            }, 15000);
         });
     });
     
     setInterval(syncOnlineProfile, 5000);
-  }
+}
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
 function syncOnlineProfile(){if(myName==='Гость')return;db.ref('online/'+myUid).update({name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,ts:Date.now()});db.ref('users/'+myUid).update({name:myName,eggs:myEggs,channel:myChannel});}
