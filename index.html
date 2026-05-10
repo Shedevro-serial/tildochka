@@ -644,17 +644,6 @@ function showQuoteAdmin() {
     });
 }
 
-function approveJoke(id) {
-    db.ref('jokes/' + id).update({ approved: true });
-    alert('✅ Шутка одобрена');
-}
-
-function deleteJoke(id) {
-    if(confirm('Удалить шутку?')) {
-        db.ref('jokes/' + id).remove();
-        alert('🗑️ Шутка удалена');
-    }
-}
 if(isAdmin) {
     setTimeout(function() {
         addAdminButtonsToMenu();
