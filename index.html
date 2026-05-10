@@ -783,7 +783,6 @@ var gamesLeaderboardPromise = new Promise(function(resolve) {
             loadedGames++;
             if(loadedGames === games.length) {
                 // Дополнительно вызываем загрузку рейтингов для отображения звезд
-                loadAllGameRatings();
                 resolve();
             }
         });
@@ -1238,8 +1237,51 @@ function updateStars(stars,r){stars.forEach(function(s){var v=parseInt(s.getAttr
 function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;var ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');db.ref('reviews/'+currentMovieId).push({name:myName,avatarType:ad.type,avatarValue:ad.value,text:t,rating:reviewRating,ts:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';progressQuest('review',1);addEggs(2,'Отзыв!');});}
 function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(s){var revs=[];s.forEach(function(c){revs.push({name:c.val().name,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'🐔',text:c.val().text,rating:c.val().rating,ts:c.val().ts});});revs.sort(function(a,b){return(b.ts||0)-(a.ts||0);});var c=document.getElementById('reviews');if(!revs.length)c.innerHTML='<p style="color:#888">Нет отзывов</p>';else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var av=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:5px;vertical-align:middle">':r.avatarValue;c.innerHTML+='<div class="review"><span class="review-avatar">'+av+'</span> <strong>'+r.name+'</strong><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div></div>';});}updateMovieRating(mid,revs);});}
 function updateMovieRating(mid,revs){if(!revs.length){var el=document.getElementById('rating-'+mid);if(el)el.textContent='—';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';}
-function loadAllRatings(){Object.keys(moviesData).forEach(function(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push(c.val());});var el=document.getElementById('rating-'+mid);if(el&&revs.length>0){var sum=0;revs.forEach(function(r){sum+=r.rating;});el.textContent='⭐ '+(sum/revs.length).toFixed(1)+'/10';}});});}
-
+// ==================== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ВСЕХ РЕЙТИНГОВ ====================
+function loadAllRatings() {
+    // Рейтинги фильмов
+    Object.keys(moviesData).forEach(function(mid) {
+        db.ref('reviews/'+mid).on('value', function(snap) {
+            var revs = [];
+            snap.forEach(function(c) {
+                revs.push(c.val());
+            });
+            var el = document.getElementById('rating-'+mid);
+            if(el && revs.length > 0) {
+                var sum = 0;
+                revs.forEach(function(r) {
+                    sum += (r.rating || 0);
+                });
+                el.textContent = '⭐ ' + (sum/revs.length).toFixed(1) + '/10';
+            }
+        });
+    });
+    
+    // Рейтинги игр - ДОБАВЛЯЕМ!
+    var games = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter'];
+    games.forEach(function(game) {
+        db.ref('gameRatings/' + game).on('value', function(snapshot) {
+            var ratings = [];
+            snapshot.forEach(function(child) {
+                ratings.push(child.val());
+            });
+            
+            var ratingEl = document.getElementById('rating-' + game);
+            if(ratingEl) {
+                if(ratings.length > 0) {
+                    var sum = 0;
+                    ratings.forEach(function(r) {
+                        sum += (r.rating || 0);
+                    });
+                    var avg = (sum / ratings.length).toFixed(1);
+                    ratingEl.textContent = '⭐ ' + avg + '/10 (' + ratings.length + ')';
+                } else {
+                    ratingEl.textContent = '⭐ 0/10';
+                }
+            }
+        });
+    });
+}
 function showGame(type){
     // Останавливаем все текущие игры
     if(gameInterval) {
@@ -3512,32 +3554,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Все фиксы применены');
 });
-// ==================== ФИКС: ЗАГРУЗКА ВСЕХ РЕЙТИНГОВ ИГР ====================
-function loadAllGameRatings() {
-    var games = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter'];
-    
-    games.forEach(function(game) {
-        db.ref('gameRatings/' + game).on('value', function(snapshot) {
-            var ratings = [];
-            snapshot.forEach(function(child) {
-                ratings.push(child.val());
-            });
-            
-            if(ratings.length > 0) {
-                var sum = 0;
-                ratings.forEach(function(r) {
-                    sum += (r.rating || 0);
-                });
-                var avg = (sum / ratings.length).toFixed(1);
-                
-                var ratingEl = document.getElementById('rating-' + game);
-                if(ratingEl) {
-                    ratingEl.textContent = '⭐ ' + avg + '/10 (' + ratings.length + ')';
-                }
-            }
-        });
-    });
-}
+
       </script>
 
 </body>
