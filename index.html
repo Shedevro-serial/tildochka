@@ -30,7 +30,27 @@
     #content{padding-top:70px;}.screen{display:none}.screen.active{display:block}
     .catalog{max-width:1200px;margin:0 auto;padding:30px 20px}.catalog h2{margin-bottom:25px;font-size:1.8rem;border-bottom:2px solid #ffd700;padding-bottom:8px;display:inline-block}
     .movie-grid,.games-grid{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
-    .movie-card,.game-card{width:200px;cursor:pointer}
+    .movie-card,.game-card{
+    width:200px;
+    cursor:pointer;
+    transition:.3s;
+    text-align:center;
+    background:rgba(0,0,0,.3);
+    border-radius:15px;
+    padding:12px;
+    border:1px solid rgba(255,255,255,.1)
+}
+.movie-card:hover,.game-card:hover{
+    transform:translateY(-8px);
+    background:rgba(255,215,0,.1)
+}
+.movie-card img{
+    width:100%;
+    border-radius:12px;
+    margin-bottom:8px;
+    aspect-ratio:2/3;
+    object-fit:cover
+}
     .movie-card:hover,.game-card:hover{transform:translateY(-8px);background:rgba(255,215,0,.1)}
     .movie-card img{width:100%;border-radius:12px;margin-bottom:8px;aspect-ratio:2/3;object-fit:cover}
     .game-icon{font-size:50px;display:block;margin-bottom:8px}
@@ -235,11 +255,6 @@ button,
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Убираем задержку при нажатии на телефоне */
-* {
-    touch-action: manipulation;
-}
-
 /* Фикс для активного состояния на телефоне */
 .quick-card:active,
 .movie-card:active,
@@ -247,6 +262,17 @@ button,
 button:active {
     transform: scale(0.98);
     transition: transform 0.05s;
+}
+/* Мобильные устройства */
+@media (max-width: 768px) {
+    .quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo {
+        touch-action: manipulation;
+        cursor: pointer;
+    }
+    /* Возвращаем прокрутку страницы */
+    body {
+        touch-action: pan-y pan-x;
+    }
 }
     }
   </style>
