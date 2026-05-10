@@ -414,6 +414,23 @@ button:active {
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
 
 <script>
+// ========== ФИКС ДЛЯ ТЕЛЕФОНА ==========
+// Убираем все конфликты и делаем клики рабочими
+document.addEventListener('DOMContentLoaded', function() {
+    // Убираем возможную блокировку
+    document.body.style.touchAction = 'manipulation';
+    
+    // Принудительно делаем все кликабельные элементы рабочими
+    var clickables = document.querySelectorAll('.quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo');
+    clickables.forEach(function(el) {
+        // Добавляем touch-action
+        el.style.touchAction = 'manipulation';
+        // Убираем задержку при нажатии
+        el.style.webkitTapHighlightColor = 'transparent';
+    });
+    
+    console.log('✅ Телефон фикс применён, найдено элементов: ' + clickables.length);
+});
 // Убираем блокировку касаний на телефоне
 document.addEventListener('touchstart', function(){}, {passive: true});
 function escapeHtml(str) {
@@ -1102,8 +1119,64 @@ function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(s){var
 function updateMovieRating(mid,revs){if(!revs.length){var el=document.getElementById('rating-'+mid);if(el)el.textContent='—';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';}
 function loadAllRatings(){Object.keys(moviesData).forEach(function(mid){db.ref('reviews/'+mid).on('value',function(snap){var revs=[];snap.forEach(function(c){revs.push(c.val());});var el=document.getElementById('rating-'+mid);if(el&&revs.length>0){var sum=0;revs.forEach(function(r){sum+=r.rating;});el.textContent='⭐ '+(sum/revs.length).toFixed(1)+'/10';}});});}
 
-function showGame(type){stopGame();currentGame=type;showScreen('game');var titles={snake:'🐍 Змейка',tetris:'🧱 Тетрис',runner:'🏃 Раннер',chickenrain:'🌧️ Кур. дождь',flappy:'🐔 Flappy курица',memory:'🧠 Memory',tamagotchi:'🐣 Тамагочи',guess:'🔢 Угадай число',rps:'✂️ Камень-ножницы',shooter:'🎯 Птичий тир'};document.getElementById('gameTitle').textContent=titles[type]||type;document.getElementById('gameContent').innerHTML='';document.getElementById('gameRatingArea').innerHTML='';document.getElementById('gameScoreDisplay').textContent='Счёт: 0';if(type==='snake'){initSnake();progressQuest('playSnake',1);}if(type==='tetris'){initTetris();progressQuest('playTetris',1);}if(type==='runner'){initRunner();progressQuest('playRunner',1);}if(type==='chickenrain')initChickenRain();if(type==='flappy')initFlappy();if(type==='memory')initMemory();if(type==='tamagotchi')initTamagotchi();if(type==='guess')initGuess();if(type==='rps')initRPS();progressQuest('play',1);loadLeaderboard(type);if(type==='shooter') initShooter();}
-function stopGame(){if(gameInterval){clearInterval(gameInterval);gameInterval=null;}if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}currentGame=null;document.onkeydown=null;}
+function showGame(type){
+    // Останавливаем все текущие игры
+    if(gameInterval) {
+        clearInterval(gameInterval);
+        gameInterval = null;
+    }
+    if(tamaInterval) {
+        clearInterval(tamaInterval);
+        tamaInterval = null;
+    }
+    
+    currentGame = type;
+    showScreen('game');
+    
+    var titles = {
+        snake: '🐍 Змейка',
+        tetris: '🧱 Тетрис',
+        runner: '🏃 Раннер',
+        chickenrain: '🌧️ Кур. дождь',
+        flappy: '🐔 Flappy курица',
+        memory: '🧠 Memory',
+        tamagotchi: '🐣 Тамагочи',
+        guess: '🔢 Угадай число',
+        rps: '✂️ Камень-ножницы',
+        shooter: '🎯 Птичий тир'
+    };
+    
+    document.getElementById('gameTitle').textContent = titles[type] || type;
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameRatingArea').innerHTML = '';
+    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+    
+    // Запускаем игру с небольшой задержкой для перерисовки экрана
+    setTimeout(function() {
+        if(type === 'snake') {
+            initSnake();
+            progressQuest('playSnake', 1);
+        }
+        if(type === 'tetris') {
+            initTetris();
+            progressQuest('playTetris', 1);
+        }
+        if(type === 'runner') {
+            initRunner();
+            progressQuest('playRunner', 1);
+        }
+        if(type === 'chickenrain') initChickenRain();
+        if(type === 'flappy') initFlappy();
+        if(type === 'memory') initMemory();
+        if(type === 'tamagotchi') initTamagotchi();
+        if(type === 'guess') initGuess();
+        if(type === 'rps') initRPS();
+        if(type === 'shooter') initShooter();
+        
+        progressQuest('play', 1);
+        loadLeaderboard(type);
+    }, 50);
+}
 function loadLeaderboard(type){db.ref('gameRatings/'+type).on('value',function(s){var rats=[];s.forEach(function(c){rats.push(c.val());});rats.sort(function(a,b){return(b.score||0)-(a.score||0);});var h='<h3>🏆 Лидеры</h3>';if(!rats.length)h+='<p>Нет игроков</p>';else{for(var i=0;i<Math.min(rats.length,10);i++)h+='<div class="leaderboard-item"><span>'+(i+1)+'. '+(rats[i].name||'—')+'</span><span>'+rats[i].score+' | ⭐'+rats[i].rating+'/10</span></div>';var sum=0;rats.forEach(function(r){sum+=r.rating||0;});var el=document.getElementById('rating-'+type);if(el)el.textContent='⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';}document.getElementById('leaderboard').innerHTML=h;});}
 function createGameRating(){document.getElementById('gameRatingArea').innerHTML='<div class="stars-container"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';var stars=document.querySelectorAll('#gameRatingArea .star');stars.forEach(function(s){s.onclick=function(){gameRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,gameRating);};});updateStars(stars,10);}
 function submitGameRating(){var sc=parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0;db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:sc,ts:Date.now()});addEggs(Math.floor(sc/10),'Игра!');}
