@@ -1771,27 +1771,146 @@ var resRef=db.ref('og/'+rid+'/rs'+opp);resRef.on('value',function(snap){if(go) r
 
 function initOnlineXO(opp,rid){currentGame='onlinexo';showScreen('game');document.getElementById('gameTitle').textContent='❌ vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');var b=['','','','','','','','',''],mt=myUid<opp,ms=mt?'X':'O',go=false;function r(){var h='<div class="xo-board">';for(var i=0;i<9;i++){var cl=mt&&!b[i]&&!go;h+='<div class="xo-cell'+(b[i]==='X'?' x':'')+(b[i]==='O'?' o':'')+'"'+(cl?' onclick="xoClick('+i+',\''+rid+'\')"':'')+'>'+(b[i]==='X'?'❌':b[i]==='O'?'⭕':'')+'</div>';}h+='</div><p>'+(go?'Конец':(mt?'Твой ход':'Ход соперника'))+'</p>';document.getElementById('gameContent').innerHTML=h;}window.xoClick=function(i,rid){if(!mt||b[i]||go)return;b[i]=ms;mt=false;db.ref('og/'+rid).set({b:b,t:opp});r();cw();playSound("jump");};db.ref('og/'+rid).on('value',function(s){var d=s.val();if(d&&d.t===myUid){b=d.b;mt=true;r();cw();}});function cw(){var w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];for(var i=0;i<w.length;i++)if(b[w[i][0]]&&b[w[i][0]]===b[w[i][1]]&&b[w[i][1]]===b[w[i][2]]){go=true;r();alert((b[w[i][0]]===ms?'Ты':'Соперник')+' победил!');addEggs(5,'Победа!');return;}if(!b.includes('')){go=true;r();alert('Ничья!');}}r();}
 
-function initOnlinePong(opp,rid){currentGame='onlinepong';showScreen('game');document.getElementById('gameTitle').textContent='🏓 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');document.getElementById('gameContent').innerHTML='<canvas id="pc" width="500" height="300" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="pu">↑</button><div></div><button class="ds4-btn" id="pl">←</button><div></div><button class="ds4-btn" id="pr">→</button><div></div><button class="ds4-btn" id="pd">↓</button><div></div></div>';var c=document.getElementById('pc'),ctx=c.getContext('2d'),pad={};pad[myUid]={y:120};pad[opp]={y:120};var ball={x:250,y:150,vx:4,vy:3},sc={};sc[myUid]=0;sc[opp]=0,go=false;
-function mvPaddle(dir){if(go)return;if(dir==='up')pad[myUid].y=Math.max(0,pad[myUid].y-20);if(dir==='down')pad[myUid].y=Math.min(240,pad[myUid].y+20);db.ref('og/'+rid+'/p'+myUid).set(pad[myUid]);playSound("jump");}
-document.getElementById('pu').onclick=function(){mvPaddle('up');};document.getElementById('pd').onclick=function(){mvPaddle('down');};
-document.getElementById('pl').onclick=function(){mvPaddle('up');};document.getElementById('pr').onclick=function(){mvPaddle('down');};
-document.onkeydown = function(e) {
-    if(go) return;
-    // Предотвращаем прокрутку страницы при нажатии на стрелки и W/S
-    if(e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 's') {
-        e.preventDefault();
-    }
-    var ch = 0;
-    if(e.key === 'w' || e.key === 'ArrowUp') ch = -20;
-    if(e.key === 's' || e.key === 'ArrowDown') ch = 20;
-    if(ch !== 0) {
-        pad[myUid].y = Math.max(0, Math.min(240, pad[myUid].y + ch));
-        db.ref('og/' + rid + '/p' + myUid).set(pad[myUid]);
+function initOnlinePong(opp,rid){
+    currentGame='onlinepong';
+    showScreen('game');
+    document.getElementById('gameTitle').textContent='🏓 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?');
+    document.getElementById('gameContent').innerHTML='<canvas id="pc" width="500" height="300" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="pu">↑</button><div></div><button class="ds4-btn" id="pl">←</button><div></div><button class="ds4-btn" id="pr">→</button><div></div><button class="ds4-btn" id="pd">↓</button><div></div></div>';
+    var c=document.getElementById('pc'),ctx=c.getContext('2d'),pad={};
+    pad[myUid]={y:120};
+    pad[opp]={y:120};
+    var ball={x:250,y:150,vx:4,vy:3};
+    // Счет теперь синхронизируется через Firebase!
+    var sc={};
+    sc[myUid]=0;
+    sc[opp]=0;
+    var go=false;
+    var lastUpdate = Date.now();
+    
+    function mvPaddle(dir){
+        if(go)return;
+        if(dir==='up')pad[myUid].y=Math.max(0,pad[myUid].y-20);
+        if(dir==='down')pad[myUid].y=Math.min(240,pad[myUid].y+20);
+        db.ref('og/'+rid+'/p'+myUid).set(pad[myUid]);
         playSound("jump");
     }
-};
-db.ref('og/'+rid+'/p'+opp).on('value',function(s){if(s.val())pad[opp]=s.val();});db.ref('og/'+rid+'/ball').on('value',function(s){if(s.val())ball=s.val();});
-function loop(){if(go){clearInterval(gameInterval);return;}ctx.clearRect(0,0,500,300);ctx.fillStyle='#4f4';ctx.fillRect(3,pad[myUid].y,8,60);ctx.fillStyle='#f44';ctx.fillRect(489,pad[opp].y,8,60);ball.x+=ball.vx;ball.y+=ball.vy;if(ball.y<=0||ball.y>=290)ball.vy*=-1;if(ball.x<=15&&ball.y>pad[myUid].y-5&&ball.y<pad[myUid].y+65)ball.vx=Math.abs(ball.vx);if(ball.x>=485&&ball.y>pad[opp].y-5&&ball.y<pad[opp].y+65)ball.vx=-Math.abs(ball.vx);if(ball.x<0){sc[opp]++;ball={x:250,y:150,vx:4,vy:3};playSound("hit");}if(ball.x>500){sc[myUid]++;ball={x:250,y:150,vx:-4,vy:3};playSound("coin");}document.getElementById('gameScoreDisplay').textContent='Ты: '+sc[myUid]+' | Соперник: '+sc[opp];ctx.beginPath();ctx.arc(ball.x,ball.y,8,0,Math.PI*2);ctx.fillStyle='#ffd700';ctx.fill();if(sc[myUid]>=5||sc[opp]>=5){go=true;alert((sc[myUid]>=5?'Ты':'Соперник')+' победил!');addEggs(5,'Победа!');}else{db.ref('og/'+rid+'/ball').set(ball);}}gameInterval=setInterval(loop,20);}
+    
+    document.getElementById('pu').onclick=function(){mvPaddle('up');};
+    document.getElementById('pd').onclick=function(){mvPaddle('down');};
+    document.getElementById('pl').onclick=function(){mvPaddle('up');};
+    document.getElementById('pr').onclick=function(){mvPaddle('down');};
+    
+    document.onkeydown = function(e) {
+        if(go) return;
+        if(e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 's') {
+            e.preventDefault();
+        }
+        var ch = 0;
+        if(e.key === 'w' || e.key === 'ArrowUp') ch = -20;
+        if(e.key === 's' || e.key === 'ArrowDown') ch = 20;
+        if(ch !== 0) {
+            pad[myUid].y = Math.max(0, Math.min(240, pad[myUid].y + ch));
+            db.ref('og/' + rid + '/p' + myUid).set(pad[myUid]);
+            playSound("jump");
+        }
+    };
+    
+    // СЛУШАЕМ ПОЗИЦИИ РАКЕТОК
+    db.ref('og/'+rid+'/p'+opp).on('value',function(s){
+        if(s.val()) pad[opp]=s.val();
+    });
+    
+    // СЛУШАЕМ МЯЧ
+    db.ref('og/'+rid+'/ball').on('value',function(s){
+        if(s.val()) ball=s.val();
+    });
+    
+    // СЛУШАЕМ СЧЕТ (ВАЖНО!)
+    db.ref('og/'+rid+'/score/'+myUid).on('value',function(s){
+        if(s.val() !== null) sc[myUid]=s.val();
+        document.getElementById('gameScoreDisplay').textContent='Ты: '+sc[myUid]+' | Соперник: '+sc[opp];
+        if(sc[myUid]>=5 || sc[opp]>=5){
+            go=true;
+            alert((sc[myUid]>=5?'Ты':'Соперник')+' победил!');
+            addEggs(5,'Победа в пинг-понге!');
+        }
+    });
+    
+    db.ref('og/'+rid+'/score/'+opp).on('value',function(s){
+        if(s.val() !== null) sc[opp]=s.val();
+        document.getElementById('gameScoreDisplay').textContent='Ты: '+sc[myUid]+' | Соперник: '+sc[opp];
+        if(sc[myUid]>=5 || sc[opp]>=5){
+            go=true;
+            alert((sc[myUid]>=5?'Ты':'Соперник')+' победил!');
+            addEggs(5,'Победа в пинг-понге!');
+        }
+    });
+    
+    function loop(){
+        if(go){
+            clearInterval(gameInterval);
+            return;
+        }
+        
+        ctx.clearRect(0,0,500,300);
+        
+        // Ракетки
+        ctx.fillStyle='#4f4';
+        ctx.fillRect(3,pad[myUid].y,8,60);
+        ctx.fillStyle='#f44';
+        ctx.fillRect(489,pad[opp].y,8,60);
+        
+        // Движение мяча
+        ball.x+=ball.vx;
+        ball.y+=ball.vy;
+        
+        // Отскок от верха/низа
+        if(ball.y<=0||ball.y>=290) ball.vy*=-1;
+        
+        // Отскок от ракеток
+        if(ball.x<=15 && ball.y>pad[myUid].y-5 && ball.y<pad[myUid].y+65){
+            ball.vx=Math.abs(ball.vx);
+            playSound("jump");
+        }
+        if(ball.x>=485 && ball.y>pad[opp].y-5 && ball.y<pad[opp].y+65){
+            ball.vx=-Math.abs(ball.vx);
+            playSound("jump");
+        }
+        
+        // ГОЛ!
+        if(ball.x<0){
+            // Соперник забил
+            sc[opp]++;
+            db.ref('og/'+rid+'/score/'+opp).set(sc[opp]);
+            // Сбрасываем мяч в центр
+            ball={x:250,y:150,vx:4,vy:3};
+            playSound("hit");
+        }
+        if(ball.x>500){
+            // Ты забил
+            sc[myUid]++;
+            db.ref('og/'+rid+'/score/'+myUid).set(sc[myUid]);
+            // Сбрасываем мяч в центр
+            ball={x:250,y:150,vx:-4,vy:3};
+            playSound("coin");
+        }
+        
+        // Отрисовка мяча
+        ctx.beginPath();
+        ctx.arc(ball.x,ball.y,8,0,Math.PI*2);
+        ctx.fillStyle='#ffd700';
+        ctx.fill();
+        
+        // Отправляем мяч в Firebase (но не слишком часто, чтобы не заспамить)
+        var now = Date.now();
+        if(now - lastUpdate > 30){
+            lastUpdate = now;
+            db.ref('og/'+rid+'/ball').set(ball);
+        }
+    }
+    
+    gameInterval=setInterval(loop,20);
+}
 
 // ==================== MEMORY ====================
 function initMemory(){
