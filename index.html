@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Tildochka - Сериалы и Игры</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -249,11 +249,7 @@ button,
 .profile-area,
 .menu a,
 .logo,
-.avatar {
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-}
+.avatar
 
 /* Фикс для активного состояния на телефоне */
 .quick-card:active,
@@ -265,10 +261,7 @@ button:active {
 }
 /* Мобильные устройства */
 @media (max-width: 768px) {
-    .quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo {
-        touch-action: manipulation;
-        cursor: pointer;
-    }
+    .quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo
     /* Возвращаем прокрутку страницы */
     body {
         touch-action: pan-y pan-x;
