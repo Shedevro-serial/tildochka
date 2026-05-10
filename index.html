@@ -30,7 +30,7 @@
     #content{padding-top:70px;}.screen{display:none}.screen.active{display:block}
     .catalog{max-width:1200px;margin:0 auto;padding:30px 20px}.catalog h2{margin-bottom:25px;font-size:1.8rem;border-bottom:2px solid #ffd700;padding-bottom:8px;display:inline-block}
     .movie-grid,.games-grid{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
-    .movie-card,.game-card{width:200px;cursor:pointer;transition:.3s;text-align:center;background:rgba(0,0,0,.3);border-radius:15px;padding:12px;border:1px solid rgba(255,255,255,.1)}
+    .movie-card,.game-card{width:200px;cursor:pointer}
     .movie-card:hover,.game-card:hover{transform:translateY(-8px);background:rgba(255,215,0,.1)}
     .movie-card img{width:100%;border-radius:12px;margin-bottom:8px;aspect-ratio:2/3;object-fit:cover}
     .game-icon{font-size:50px;display:block;margin-bottom:8px}
@@ -220,6 +220,7 @@
 .loading-overlay {
     display: flex !important;
 }
+    }
     }
   </style>
 </head>
@@ -1693,7 +1694,9 @@ document.onkeydown=function(e){
     }
 };
 c.onclick=runnerJump;
-c.addEventListener('touchstart',function(e){e.preventDefault(); runnerJump();});
+c.addEventListener('touchstart',function(e){
+   runnerJump();
+},{passive:true});
 
 function update(){
 if(ov) return;
