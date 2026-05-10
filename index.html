@@ -1738,6 +1738,8 @@ renderTamagotchi();
 // ==================== ОНЛАЙН-ИГРЫ ====================
 // ==================== ИСПРАВЛЕННЫЙ КОД ДЛЯ ПРИГЛАШЕНИЙ ====================
 
+// ==================== ИСПРАВЛЕННЫЙ КОД ДЛЯ ОНЛАЙН-ИГР ====================
+
 function showOnlineGame(type){
     var users = Object.keys(onlineUsers);
     if(users.length === 0){
@@ -1745,23 +1747,30 @@ function showOnlineGame(type){
         return;
     }
     
-    var maxScore = prompt('🎯 До скольки очков играем?\n\nВведите число (например: 5, 10, 20)\nИли 0 для бесконечной игры', '10');
-    if(maxScore === null) return;
+    var maxScore = 10; // значение по умолчанию
     
-    var maxScoreNum = parseInt(maxScore);
-    if(isNaN(maxScoreNum)) {
-        alert('Введите число!');
-        return;
+    // ТОЛЬКО для пинг-понга спрашиваем до скольки очков
+    if(type === 'pong') {
+        var scoreInput = prompt('🏓 До скольки очков играем?\n\nВведите число (например: 5, 10, 20)\nИли 0 для бесконечной игры', '10');
+        if(scoreInput === null) return; // отмена
+        
+        maxScore = parseInt(scoreInput);
+        if(isNaN(maxScore)) {
+            alert('Введите число!');
+            return;
+        }
     }
     
-    var scoreText = (maxScoreNum === 0) ? '∞ бесконечно' : maxScoreNum;
+    var scoreText = (maxScore === 0) ? '∞ бесконечно' : maxScore;
+    var gameName = (type === 'pong') ? 'Пинг-понг' : (type === 'xo' ? 'Крестики-нолики' : 'Морской бой');
+    var extraText = (type === 'pong') ? ' (до ' + scoreText + ')' : '';
     
-    var h = '<p>Выбери соперника (игра до ' + scoreText + '):</p>';
+    var h = '<p>Выбери соперника для игры <b>' + gameName + '</b>' + extraText + ':</p>';
     users.forEach(function(u){
-        h += '<button onclick="sendInvite(\''+u+'\',\''+type+'\', '+maxScoreNum+')" style="display:block;width:100%;margin:4px 0;background:#444">'+onlineUsers[u].name+'</button>';
+        h += '<button onclick="sendInvite(\''+u+'\',\''+type+'\', '+maxScore+')" style="display:block;width:100%;margin:4px 0;background:#444">'+onlineUsers[u].name+'</button>';
     });
     document.getElementById('inviteContent').innerHTML = h;
-    document.getElementById('inviteTitle').textContent = '🎮 Пригласить (до ' + scoreText + ')';
+    document.getElementById('inviteTitle').textContent = '🎮 Пригласить в ' + gameName + extraText;
     document.getElementById('inviteModal').classList.add('show');
 }
 
@@ -1770,15 +1779,21 @@ function sendInvite(uid, game, maxScore){
     var rid = myUid + '_' + uid + '_' + game + '_' + Date.now();
     
     // Сохраняем инвайт в Firebase
-    db.ref('game_invites/' + rid).set({
+    var inviteData = {
         from: myUid,
         fromName: myName,
         game: game,
         to: uid,
-        maxScore: maxScore,
         status: 'pending',
         ts: Date.now()
-    });
+    };
+    
+    // Только для пинг-понга добавляем maxScore
+    if(game === 'pong') {
+        inviteData.maxScore = maxScore;
+    }
+    
+    db.ref('game_invites/' + rid).set(inviteData);
     
     // Показываем ожидание
     showWaiting('Ожидаем ' + (onlineUsers[uid] ? onlineUsers[uid].name : 'соперника') + '...', 30000);
@@ -1800,9 +1815,9 @@ function sendInvite(uid, game, maxScore){
             db.ref('game_invites/' + rid).remove();
             hideWaiting();
             
-            if(game === 'battleship') startBattleshipSetup(uid, rid, maxScore);
-            if(game === 'pong') initOnlinePong(uid, rid, maxScore);
-            if(game === 'xo') initOnlineXO(uid, rid, maxScore);
+            if(game === 'battleship') startBattleshipSetup(uid, rid);
+            if(game === 'pong') initOnlinePong(uid, rid, maxScore || 10);
+            if(game === 'xo') initOnlineXO(uid, rid);
         } else if(status === 'declined'){
             statusRef.off();
             clearTimeout(timeoutId);
@@ -1813,7 +1828,7 @@ function sendInvite(uid, game, maxScore){
     });
 }
 
-// Слушаем ВСЕ приглашения (включая те, которые были созданы до загрузки)
+// Слушаем ВСЕ приглашения
 function setupInviteListener() {
     db.ref('game_invites').on('child_added', function(snap){
         var inv = snap.val();
@@ -1835,8 +1850,10 @@ function setupInviteListener() {
                 maxScore: inv.maxScore || 10
             };
             
-            var scoreText = (pendingInvite.maxScore === 0) ? '∞' : pendingInvite.maxScore;
-            document.getElementById('inviteContent').innerHTML = '<p>' + escapeHtml(inv.fromName) + ' зовёт в <b>' + inv.game + '</b>! (до ' + scoreText + ')</p>';
+            var gameName = (pendingInvite.game === 'pong') ? 'Пинг-понг' : (pendingInvite.game === 'xo' ? 'Крестики-нолики' : 'Морской бой');
+            var extraText = (pendingInvite.game === 'pong') ? ' (до ' + (pendingInvite.maxScore === 0 ? '∞' : pendingInvite.maxScore) + ')' : '';
+            
+            document.getElementById('inviteContent').innerHTML = '<p>' + escapeHtml(inv.fromName) + ' зовёт в <b>' + gameName + '</b>' + extraText + '!</p>';
             document.getElementById('inviteActions').innerHTML = '<button onclick="acceptInvite()" style="background:#4f4;padding:10px 20px">✅ Принять</button> <button onclick="declineInvite()" style="background:#f44;padding:10px 20px">❌ Отклонить</button>';
             document.getElementById('inviteTitle').textContent = '📨 Приглашение в игру!';
             document.getElementById('inviteModal').classList.add('show');
@@ -1862,13 +1879,13 @@ function acceptInvite(){
     
     setTimeout(function() {
         if(inv.game === 'battleship') {
-            startBattleshipSetup(inv.from, inv.id, inv.maxScore || 10);
+            startBattleshipSetup(inv.from, inv.id);
         }
         if(inv.game === 'pong') {
             initOnlinePong(inv.from, inv.id, inv.maxScore || 10);
         }
         if(inv.game === 'xo') {
-            initOnlineXO(inv.from, inv.id, inv.maxScore || 10);
+            initOnlineXO(inv.from, inv.id);
         }
     }, 300);
     
@@ -1886,6 +1903,15 @@ function declineInvite(){
     }, 1000);
     
     pendingInvite = null;
+}
+
+var inviteListenerSetup = false;
+function ensureInviteListener() {
+    if(!inviteListenerSetup) {
+        inviteListenerSetup = true;
+        setupInviteListener();
+        console.log('✅ Слушатель приглашений установлен');
+    }
 }
 
 // ========== ДОБАВИТЬ ЭТО В loadAllData() ==========
