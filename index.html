@@ -139,6 +139,25 @@
     .short-comments{margin-top:10px;font-size:13px}
     .short-comment{background:rgba(0,0,0,.3);padding:8px;border-radius:8px;margin:5px 0}
     .tag{display:inline-block;background:rgba(255,215,0,.2);border:1px solid #ffd700;border-radius:20px;padding:4px 12px;margin:3px;font-size:12px;color:#ffd700}
+    @media (max-width: 768px) {
+    /* Убираем возможные блокировки касаний */
+    button, .game-card, .movie-card, .quick-card, .menu a {
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+    
+    /* Центрируем анекдоты */
+    .loading-joke {
+        text-align: center !important;
+        margin: 30px auto !important;
+        display: block !important;
+    }
+    
+    /* Полоска загрузки на весь экран */
+    .loading-bar {
+        width: 100% !important;
+    }
+}
     @media(max-width:768px){
       .logo{font-size:22px}.header{padding:10px 15px}.profile-name{max-width:70px;font-size:12px}
       .movie-card,.game-card{width:calc(50% - 8px);min-width:130px;padding:8px}
@@ -604,7 +623,7 @@ function loadAllData() {
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // Запускаем анекдоты (меняются каждые 5 секунд)
+    // Запускаем анекдоты
     var jokeInterval = setInterval(function() {
         var jokeSpan = document.getElementById('loadingJoke');
         if(jokeSpan && window.loadingJokes && window.loadingJokes.length > 0) {
@@ -624,31 +643,6 @@ function loadAllData() {
     
     setProgress(5, "Загружаем профиль...");
     
-    // СЧЁТЧИК ЗАГРУЗКИ
-    var loadedCount = 0;
-    var totalToLoad = 0;
-    
-    function itemLoaded() {
-        loadedCount++;
-        var percent = Math.floor(loadedCount / totalToLoad * 100);
-        setProgress(percent, "Загружено " + loadedCount + " из " + totalToLoad);
-        
-        if(loadedCount >= totalToLoad && totalToLoad > 0) {
-            // ВСЁ ЗАГРУЗИЛОСЬ!
-            clearInterval(jokeInterval);
-            setProgress(100, "Готово!");
-            setTimeout(function() {
-                if(loadingDiv) {
-                    loadingDiv.style.transition = 'opacity 0.5s';
-                    loadingDiv.style.opacity = '0';
-                    setTimeout(function(){
-                        if(loadingDiv) loadingDiv.style.display = 'none';
-                    }, 500);
-                }
-            }, 500);
-        }
-    }
-    
     // Загружаем яйца
     db.ref('users/'+myUid+'/eggs').once('value', function(s) {
         myEggs = s.val() || savedEggs || 0;
@@ -657,65 +651,74 @@ function loadAllData() {
             db.ref('users/'+myUid).update({eggs: myEggs});
         }
         document.getElementById('headerEggs').textContent = myEggs;
-        setProgress(15, "Загружаем аватары...");
+        setProgress(20, "Загружаем аватары...");
         
         // Загружаем аватары
         db.ref('users/'+myUid+'/boughtAvatars').once('value', function(s2) {
             boughtAvatars = s2.val() || [];
-            setProgress(30, "Загружаем контент...");
+            setProgress(35, "Загружаем контент...");
             
             document.getElementById('app').style.display = 'block';
             showScreen('home');
             
-            setProgress(40, "Загружаем данные из Firebase...");
+            setProgress(50, "Загружаем данные...");
             
-            // СПИСОК ВСЕХ ДАННЫХ, КОТОРЫЕ НАДО ЗАГРУЗИТЬ
-            var tasks = [
-                { name: 'чат', ref: db.ref('chat').limitToLast(1) },
-                { name: 'мемы', ref: db.ref('memes').limitToLast(1) },
-                { name: 'идеи', ref: db.ref('ideas').limitToLast(1) },
-                { name: 'шортсы', ref: db.ref('shorts').limitToLast(1) },
-                { name: 'цитаты', ref: db.ref('quotes').limitToLast(1) },
-                { name: 'подарки', ref: db.ref('users/'+myUid+'/gifts').limitToLast(1) }
-            ];
-            
-            totalToLoad = tasks.length + 1; // +1 для игр
-            
-            // Загружаем каждые данные (РЕАЛЬНО ЖДЁМ)
-            tasks.forEach(function(task) {
-                task.ref.once('value', function() {
-                    console.log("✅ Загружено: " + task.name);
-                    itemLoaded();
-                });
-            });
-            
-            // Загружаем игры
-            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-            var gamesLoaded = 0;
-            games.forEach(function(g) {
-                db.ref('gameRatings/' + g).limitToLast(1).once('value', function() {
-                    gamesLoaded++;
-                    if(gamesLoaded >= games.length) {
-                        console.log("✅ Игры загружены");
-                        itemLoaded();
-                    }
-                });
-            });
-            
-            // Запускаем функции загрузки (они работают в фоне)
+            // Загружаем все данные
             loadChatMessages();
             loadMemes();
             loadIdeas();
             loadShorts();
             loadAllRatings();
-            try { initQuotes(); } catch(e) {}
+            
+            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+            games.forEach(function(g){
+                loadLeaderboard(g);
+            });
+            
+            try {
+                initQuotes();
+            } catch(e) { console.log('Ошибка цитат:', e); }
+            
             loadGifts();
             generateDailyQuests(false);
             setupFriendNotifications();
+            
+            setProgress(75, "Почти готово...");
+            
+            // Ждём 5 секунд для полной загрузки (достаточно для телефона)
+            setTimeout(function() {
+                setProgress(100, "Готово!");
+                setTimeout(function() {
+                    clearInterval(jokeInterval);
+                    if(loadingDiv) {
+                        loadingDiv.style.transition = 'opacity 0.5s';
+                        loadingDiv.style.opacity = '0';
+                        setTimeout(function(){
+                            if(loadingDiv) loadingDiv.style.display = 'none';
+                            // Принудительно обновляем интерфейс для телефона
+                            if(typeof refreshUI === 'function') refreshUI();
+                        }, 500);
+                    }
+                }, 1000);
+            }, 5000);
         });
     });
     
     setInterval(syncOnlineProfile, 5000);
+}
+
+// Добавь эту функцию для обновления интерфейса на телефоне
+function refreshUI() {
+    // Принудительно перерисовываем экран
+    var activeScreen = document.querySelector('.screen.active');
+    if(activeScreen) {
+        activeScreen.style.display = 'none';
+        setTimeout(function() {
+            activeScreen.style.display = 'block';
+        }, 10);
+    }
+    // Проверяем, что кнопки работают
+    console.log("UI обновлён для телефона");
 }
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
