@@ -700,7 +700,7 @@ function loadAllData() {
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // Загрузка яиц и аватаров пользователя
+    // Основная загрузка - ждем данные пользователя
     db.ref('users/'+myUid).once('value', function(s) {
         var userData = s.val() || {};
         myEggs = (userData.eggs !== undefined) ? userData.eggs : savedEggs;
@@ -716,43 +716,126 @@ function loadAllData() {
         
         document.getElementById('app').style.display = 'block';
         showScreen('home');
-        setProgress(55);
+        setProgress(50);
         
-        // Загружаем все остальное
-        loadChatMessages();
-        loadMemes();
-        loadIdeas();
-        loadShorts();
-        loadAllRatings();
+        // Собираем все промисы для параллельной загрузки остальных данных
+        var allPromises = [];
         
-        var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-        games.forEach(function(g){
-            loadLeaderboard(g);
+        // Чат
+        var chatPromise = new Promise(function(resolve) {
+            db.ref('chat').limitToLast(50).once('value', function() {
+                loadChatMessages(); // подписываемся на изменения
+                resolve();
+            });
         });
+        allPromises.push(chatPromise);
         
-        try { initQuotes(); } catch(e) {}
-        loadGifts();
-        generateDailyQuests(false);
-        setupFriendNotifications();
+        // Мемы
+        var memesPromise = new Promise(function(resolve) {
+            db.ref('memes').limitToLast(30).once('value', function() {
+                loadMemes();
+                resolve();
+            });
+        });
+        allPromises.push(memesPromise);
         
-        setProgress(80);
+        // Идеи
+        var ideasPromise = new Promise(function(resolve) {
+            db.ref('ideas').limitToLast(30).once('value', function() {
+                loadIdeas();
+                resolve();
+            });
+        });
+        allPromises.push(ideasPromise);
         
-        // Ждем немного для финальной отрисовки, затем скрываем загрузчик
-        setTimeout(function() {
+        // Шортсы
+        var shortsPromise = new Promise(function(resolve) {
+            db.ref('shorts').once('value', function() {
+                loadShorts();
+                resolve();
+            });
+        });
+        allPromises.push(shortsPromise);
+        
+        // Рейтинги фильмов
+        var ratingsPromise = new Promise(function(resolve) {
+            loadAllRatings();
+            // Ждем загрузки всех рейтингов фильмов
+            var movieIds = Object.keys(moviesData);
+            var loadedMovies = 0;
+            movieIds.forEach(function(mid) {
+                db.ref('reviews/'+mid).once('value', function() {
+                    loadedMovies++;
+                    if(loadedMovies === movieIds.length) resolve();
+                });
+            });
+        });
+        allPromises.push(ratingsPromise);
+        
+        // Лидерборды игр
+        var gamesLeaderboardPromise = new Promise(function(resolve) {
+            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+            var loadedGames = 0;
+            games.forEach(function(g) {
+                db.ref('gameRatings/'+g).once('value', function() {
+                    loadLeaderboard(g);
+                    loadedGames++;
+                    if(loadedGames === games.length) resolve();
+                });
+            });
+        });
+        allPromises.push(gamesLeaderboardPromise);
+        
+        // Цитаты
+        var quotesPromise = new Promise(function(resolve) {
+            try { 
+                initQuotes(); 
+                db.ref('quotes').once('value', function() {
+                    resolve();
+                });
+            } catch(e) { resolve(); }
+        });
+        allPromises.push(quotesPromise);
+        
+        // Подарки
+        var giftsPromise = new Promise(function(resolve) {
+            loadGifts();
+            setTimeout(resolve, 500); // небольшой таймаут только для подарков, они не критичны
+        });
+        allPromises.push(giftsPromise);
+        
+        // Задания
+        var questsPromise = new Promise(function(resolve) {
+            generateDailyQuests(false);
+            resolve();
+        });
+        allPromises.push(questsPromise);
+        
+        // Друзья
+        var friendsPromise = new Promise(function(resolve) {
+            setupFriendNotifications();
+            resolve();
+        });
+        allPromises.push(friendsPromise);
+        
+        setProgress(60);
+        
+        // Ждем ВСЕ загрузки
+        Promise.all(allPromises).then(function() {
             setProgress(100);
             clearInterval(jokeInterval);
             if(loadingDiv) {
                 loadingDiv.style.opacity = '0';
                 setTimeout(function(){
                     loadingDiv.style.display = 'none';
-                }, 500);
+                }, 300);
             }
-        }, 1500);
+            console.log('✅ ВСЕ ДАННЫЕ ЗАГРУЖЕНЫ!');
+        });
     });
     
     setInterval(syncOnlineProfile, 5000);
 }
-
 // Добавь эту функцию для обновления интерфейса на телефоне
 function refreshUI() {
     // Принудительно перерисовываем экран
