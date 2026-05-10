@@ -599,53 +599,55 @@ function loadAllData() {
     var simpleLoading = document.getElementById('loading');
     if(simpleLoading) simpleLoading.style.display = 'none';
     
-    // ПРОВЕРКА: существует ли массив с анекдотами
-    if(!window.loadingJokes || window.loadingJokes.length === 0) {
-        // Если нет - создаём прямо здесь
-        window.loadingJokes = [
-            "— Доктор, я ходить буду?\n— Ну, если только под себя.",
-            "Что сказал нуль восьмёрке?\n— «Ты так стянута! Надо бы тебе развязаться!»",
-            "Как называется битва без рук и без ног?\nБитва бесконечностей...",
-            "Почему птицы улетают на юг?\nПотому что им пешком не дойти",
-            "Как каннибалы называют морг?\nАдвент календарь...",
-            "Почему программисты любят хэллоуин?\nПотому что 31 октября — это 25 декабря в восьмеричной системе!",
-            "— Официант, почему мой кофе холодный?\n— Потому что вы заказали кофе со льдом, сэр.",
-            "Как назвать слепого оленя?\nНе вижу оленя",
-            "Почему пчелы не болеют?\nПотому что они делают уколы каждый день!"
-        ];
-    }
-    
     loadProfile();
     setupOnline();
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // Функция обновления анекдота
-    function updateJoke() {
+    // Запускаем анекдоты (меняются каждые 5 секунд)
+    var jokeInterval = setInterval(function() {
         var jokeSpan = document.getElementById('loadingJoke');
         if(jokeSpan && window.loadingJokes && window.loadingJokes.length > 0) {
             var randomJoke = window.loadingJokes[Math.floor(Math.random() * window.loadingJokes.length)];
             jokeSpan.innerHTML = '🐔 ' + randomJoke;
-            console.log('Анекдот обновлён'); // Отладка
-        } else {
-            console.log('Нет анекдотов, длина:', window.loadingJokes ? window.loadingJokes.length : 0);
         }
-    }
-    
-    // Первый анекдот сразу
-    setTimeout(updateJoke, 100);
-    
-    // Запускаем анекдоты (меняются каждые 5 секунд)
-    var jokeInterval = setInterval(updateJoke, 5000);
+    }, 5000);
     
     function setProgress(percent, text) {
         var fill = document.getElementById('loadingFill');
         var percentSpan = document.getElementById('loadingPercent');
+        var jokeSpan = document.getElementById('loadingJoke');
         if(fill) fill.style.width = percent + '%';
         if(percentSpan) percentSpan.textContent = percent + '%';
+        if(text && jokeSpan) jokeSpan.innerHTML = '🐔 ' + text;
     }
     
-    setProgress(5);
+    setProgress(5, "Загружаем профиль...");
+    
+    // СЧЁТЧИК ЗАГРУЗКИ
+    var loadedCount = 0;
+    var totalToLoad = 0;
+    
+    function itemLoaded() {
+        loadedCount++;
+        var percent = Math.floor(loadedCount / totalToLoad * 100);
+        setProgress(percent, "Загружено " + loadedCount + " из " + totalToLoad);
+        
+        if(loadedCount >= totalToLoad && totalToLoad > 0) {
+            // ВСЁ ЗАГРУЗИЛОСЬ!
+            clearInterval(jokeInterval);
+            setProgress(100, "Готово!");
+            setTimeout(function() {
+                if(loadingDiv) {
+                    loadingDiv.style.transition = 'opacity 0.5s';
+                    loadingDiv.style.opacity = '0';
+                    setTimeout(function(){
+                        if(loadingDiv) loadingDiv.style.display = 'none';
+                    }, 500);
+                }
+            }, 500);
+        }
+    }
     
     // Загружаем яйца
     db.ref('users/'+myUid+'/eggs').once('value', function(s) {
@@ -655,55 +657,61 @@ function loadAllData() {
             db.ref('users/'+myUid).update({eggs: myEggs});
         }
         document.getElementById('headerEggs').textContent = myEggs;
-        setProgress(15);
+        setProgress(15, "Загружаем аватары...");
         
         // Загружаем аватары
         db.ref('users/'+myUid+'/boughtAvatars').once('value', function(s2) {
             boughtAvatars = s2.val() || [];
-            setProgress(30);
+            setProgress(30, "Загружаем контент...");
             
             document.getElementById('app').style.display = 'block';
             showScreen('home');
             
-            setProgress(45);
+            setProgress(40, "Загружаем данные из Firebase...");
             
-            // Загружаем все данные
+            // СПИСОК ВСЕХ ДАННЫХ, КОТОРЫЕ НАДО ЗАГРУЗИТЬ
+            var tasks = [
+                { name: 'чат', ref: db.ref('chat').limitToLast(1) },
+                { name: 'мемы', ref: db.ref('memes').limitToLast(1) },
+                { name: 'идеи', ref: db.ref('ideas').limitToLast(1) },
+                { name: 'шортсы', ref: db.ref('shorts').limitToLast(1) },
+                { name: 'цитаты', ref: db.ref('quotes').limitToLast(1) },
+                { name: 'подарки', ref: db.ref('users/'+myUid+'/gifts').limitToLast(1) }
+            ];
+            
+            totalToLoad = tasks.length + 1; // +1 для игр
+            
+            // Загружаем каждые данные (РЕАЛЬНО ЖДЁМ)
+            tasks.forEach(function(task) {
+                task.ref.once('value', function() {
+                    console.log("✅ Загружено: " + task.name);
+                    itemLoaded();
+                });
+            });
+            
+            // Загружаем игры
+            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+            var gamesLoaded = 0;
+            games.forEach(function(g) {
+                db.ref('gameRatings/' + g).limitToLast(1).once('value', function() {
+                    gamesLoaded++;
+                    if(gamesLoaded >= games.length) {
+                        console.log("✅ Игры загружены");
+                        itemLoaded();
+                    }
+                });
+            });
+            
+            // Запускаем функции загрузки (они работают в фоне)
             loadChatMessages();
             loadMemes();
             loadIdeas();
             loadShorts();
             loadAllRatings();
-            
-            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-            games.forEach(function(g){
-                loadLeaderboard(g);
-            });
-            
-            try {
-                initQuotes();
-            } catch(e) { console.log('Ошибка цитат:', e); }
-            
+            try { initQuotes(); } catch(e) {}
             loadGifts();
             generateDailyQuests(false);
             setupFriendNotifications();
-            
-            setProgress(70);
-            
-            // Ждём реальной загрузки всех данных (увеличил до 5 секунд)
-            setTimeout(function() {
-                setProgress(100);
-                
-                setTimeout(function() {
-                    clearInterval(jokeInterval);
-                    if(loadingDiv) {
-                        loadingDiv.style.transition = 'opacity 1s';
-                        loadingDiv.style.opacity = '0';
-                        setTimeout(function(){
-                            if(loadingDiv) loadingDiv.style.display = 'none';
-                        }, 500);
-                    }
-                }, 1000);
-            }, 5000); // Ждём 5 секунд для загрузки данных
         });
     });
     
