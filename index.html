@@ -363,22 +363,23 @@
             <div class="movie-card" onclick="openMovie('pta')"><img src="cover-pta.jpg"><h3>Приключения ПТА</h3><div class="rating" id="rating-pta">—</div></div>
         </div>
 
-        <h2 style="margin-top:35px">🎮 Игры</h2>
-        <div class="games-grid">
-            <div class="game-card" onclick="showGame('snake')"><span class="game-icon">🐍</span><h3>Змейка</h3><div class="game-rating" id="rating-snake">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showGame('tetris')"><span class="game-icon">🧱</span><h3>Тетрис</h3><div class="game-rating" id="rating-tetris">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showGame('runner')"><span class="game-icon">🏃</span><h3>Раннер</h3><div class="game-rating" id="rating-runner">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showGame('chickenrain')"><span class="game-icon">🌧️</span><h3>Кур. дождь</h3><div class="game-rating" id="rating-chickenrain">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showGame('flappy')"><span class="game-icon">🐔</span><h3>Flappy курица</h3><div class="game-rating" id="rating-flappy">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showOnlineGame('pong')"><span class="game-icon">🏓</span><h3>Пинг-понг</h3><div class="game-rating" id="rating-pong">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showOnlineGame('xo')"><span class="game-icon">❌</span><h3>Крестики-нолики</h3><div class="game-rating" id="rating-xo">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showOnlineGame('battleship')"><span class="game-icon">🚢</span><h3>Морской бой</h3><div class="game-rating" id="rating-battleship">⭐ 0/10</div></div>
-            <div class="game-card" onclick="showGame('memory')"><span class="game-icon">🧠</span><h3>Memory</h3></div>
-            <div class="game-card" onclick="showGame('tamagotchi')"><span class="game-icon">🐣</span><h3>Тамагочи</h3></div>
-            <div class="game-card" onclick="showGame('guess')"><span class="game-icon">🔢</span><h3>Угадай число</h3></div>
-            <div class="game-card" onclick="showGame('rps')"><span class="game-icon">✂️</span><h3>Камень-ножницы</h3></div>
-            <div class="game-card" onclick="showGame('shooter')"><span class="game-icon">🎯</span><h3>Птичий тир</h3><div class="game-rating" id="rating-shooter">⭐ 0/10</div></div>
+        <div style="margin-top:35px">
+    <div onclick="showScreen('games-all')" style="background:linear-gradient(135deg,#4a90d9,#357abd);border-radius:20px;padding:25px;text-align:center;cursor:pointer;transition:0.3s;border:2px solid rgba(255,215,0,0.3)">
+        <div style="font-size:60px;margin-bottom:10px">🎮</div>
+        <h2 style="color:#fff;margin-bottom:8px;border-bottom:none;display:block">ВСЕ ИГРЫ</h2>
+        <p style="color:#ffd700;font-size:14px">Нажми, чтобы открыть все игры →</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:15px">
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">🐍 Змейка</span>
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">🧱 Тетрис</span>
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">🏓 Пинг-понг</span>
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">🚢 Морской бой</span>
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">❌ Крестики-нолики</span>
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">🐣 Тамагочи</span>
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">🎯 ТиР</span>
+            <span style="background:rgba(0,0,0,0.3);padding:5px 12px;border-radius:20px;font-size:12px">➕ и другие</span>
         </div>
+    </div>
+</div>
 <!-- 👇👇👇 СЮДА ВСТАВИТЬ ЦИТАТУ 👇👇👇 -->
 <div id="dailyQuoteBlock" style="max-width:600px;margin:40px auto 0 auto">
     <h3 style="color:#ffd700; text-align:center">💬 Цитата дня</h3>
