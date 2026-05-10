@@ -700,11 +700,8 @@ function loadAllData() {
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
     
-    // Собираем все промисы для параллельной загрузки
-    var loadPromises = [];
-    
-    // 1. Загрузка яиц и аватаров пользователя
-    var userDataPromise = db.ref('users/'+myUid).once('value').then(function(s) {
+    // Загрузка яиц и аватаров пользователя
+    db.ref('users/'+myUid).once('value', function(s) {
         var userData = s.val() || {};
         myEggs = (userData.eggs !== undefined) ? userData.eggs : savedEggs;
         if(myEggs < savedEggs) {
@@ -712,157 +709,47 @@ function loadAllData() {
             db.ref('users/'+myUid).update({eggs: myEggs});
         }
         document.getElementById('headerEggs').textContent = myEggs;
-        setProgress(15);
+        setProgress(25);
         
         boughtAvatars = userData.boughtAvatars || [];
-        setProgress(25);
-        return true;
-    });
-    loadPromises.push(userDataPromise);
-    
-    // 2. Загрузка чата
-    var chatPromise = new Promise(function(resolve) {
-        var chatRef = db.ref('chat');
-        chatRef.limitToLast(50).once('value', function() {
-            resolve(true);
-        });
-        // Также подписываемся на изменения
-        loadChatMessages();
-        setTimeout(resolve, 500); // таймаут на всякий случай
-    });
-    loadPromises.push(chatPromise);
-    
-    // 3. Загрузка мемов
-    var memesPromise = new Promise(function(resolve) {
-        db.ref('memes').limitToLast(30).once('value', function() {
-            resolve(true);
-        });
-        loadMemes();
-        setTimeout(resolve, 500);
-    });
-    loadPromises.push(memesPromise);
-    
-    // 4. Загрузка идей
-    var ideasPromise = new Promise(function(resolve) {
-        db.ref('ideas').limitToLast(30).once('value', function() {
-            resolve(true);
-        });
-        loadIdeas();
-        setTimeout(resolve, 500);
-    });
-    loadPromises.push(ideasPromise);
-    
-    // 5. Загрузка шортсов
-    var shortsPromise = new Promise(function(resolve) {
-        db.ref('shorts').once('value', function() {
-            resolve(true);
-        });
-        loadShorts();
-        setTimeout(resolve, 500);
-    });
-    loadPromises.push(shortsPromise);
-    
-    // 6. Загрузка рейтингов фильмов
-    var ratingsPromise = new Promise(function(resolve) {
-        loadAllRatings();
-        setTimeout(resolve, 800);
-    });
-    loadPromises.push(ratingsPromise);
-    
-    // 7. Загрузка лидеров игр
-    var gamesLeaderboardPromise = new Promise(function(resolve) {
-        var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-        var gamesLoaded = 0;
-        games.forEach(function(g) {
-            db.ref('gameRatings/'+g).once('value', function() {
-                gamesLoaded++;
-                if(gamesLoaded === games.length) resolve(true);
-            });
-            loadLeaderboard(g);
-        });
-        setTimeout(resolve, 2000);
-    });
-    loadPromises.push(gamesLeaderboardPromise);
-    
-    // 8. Цитаты
-    var quotesPromise = new Promise(function(resolve) {
-        try { 
-            initQuotes(); 
-            setTimeout(resolve, 500);
-        } catch(e) { resolve(true); }
-    });
-    loadPromises.push(quotesPromise);
-    
-    // 9. Подарки
-    var giftsPromise = new Promise(function(resolve) {
-        loadGifts();
-        setTimeout(resolve, 500);
-    });
-    loadPromises.push(giftsPromise);
-    
-    // 10. Задания
-    var questsPromise = new Promise(function(resolve) {
-        generateDailyQuests(false);
-        setTimeout(resolve, 300);
-    });
-    loadPromises.push(questsPromise);
-    
-    // 11. Уведомления о друзьях
-    var friendsPromise = new Promise(function(resolve) {
-        setupFriendNotifications();
-        setTimeout(resolve, 300);
-    });
-    loadPromises.push(friendsPromise);
-    
-    // 12. Онлайн статус
-    var onlinePromise = new Promise(function(resolve) {
-        setTimeout(resolve, 500);
-    });
-    loadPromises.push(onlinePromise);
-    
-    setProgress(30);
-    
-    // Ждем загрузки пользовательских данных, потом показываем приложение
-    userDataPromise.then(function() {
+        setProgress(40);
+        
         document.getElementById('app').style.display = 'block';
         showScreen('home');
-        setProgress(50);
+        setProgress(55);
         
-        // Ждем все остальные загрузки
-        Promise.all(loadPromises).then(function() {
-            setProgress(90);
-            
-            // Даем время на финальную отрисовку
-            setTimeout(function() {
-                setProgress(100);
-                setTimeout(function() {
-                    clearInterval(jokeInterval);
-                    if(loadingDiv) {
-                        loadingDiv.style.opacity = '0';
-                        setTimeout(function(){
-                            loadingDiv.style.display = 'none';
-                        }, 500);
-                    }
-                    console.log('✅ Все данные загружены, загрузчик скрыт');
-                }, 300);
-            }, 500);
-        }).catch(function(err) {
-            console.error('Ошибка загрузки:', err);
-            // Даже если ошибка, скрываем загрузчик через 3 секунды
-            setTimeout(function() {
-                setProgress(100);
-                clearInterval(jokeInterval);
-                if(loadingDiv) {
-                    loadingDiv.style.opacity = '0';
-                    setTimeout(function(){
-                        loadingDiv.style.display = 'none';
-                    }, 500);
-                }
-            }, 3000);
+        // Загружаем все остальное
+        loadChatMessages();
+        loadMemes();
+        loadIdeas();
+        loadShorts();
+        loadAllRatings();
+        
+        var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+        games.forEach(function(g){
+            loadLeaderboard(g);
         });
+        
+        try { initQuotes(); } catch(e) {}
+        loadGifts();
+        generateDailyQuests(false);
+        setupFriendNotifications();
+        
+        setProgress(80);
+        
+        // Ждем немного для финальной отрисовки, затем скрываем загрузчик
+        setTimeout(function() {
+            setProgress(100);
+            clearInterval(jokeInterval);
+            if(loadingDiv) {
+                loadingDiv.style.opacity = '0';
+                setTimeout(function(){
+                    loadingDiv.style.display = 'none';
+                }, 500);
+            }
+        }, 1500);
     });
     
-    // Синхронизация онлайн профиля каждые 5 секунд
     setInterval(syncOnlineProfile, 5000);
 }
 
