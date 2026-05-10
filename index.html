@@ -773,18 +773,23 @@ function loadAllData() {
         allPromises.push(ratingsPromise);
         
         // Лидерборды игр
-        var gamesLeaderboardPromise = new Promise(function(resolve) {
-            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-            var loadedGames = 0;
-            games.forEach(function(g) {
-                db.ref('gameRatings/'+g).once('value', function() {
-                    loadLeaderboard(g);
-                    loadedGames++;
-                    if(loadedGames === games.length) resolve();
-                });
-            });
+        // Загрузка рейтингов игр
+var gamesLeaderboardPromise = new Promise(function(resolve) {
+    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+    var loadedGames = 0;
+    games.forEach(function(g) {
+        db.ref('gameRatings/'+g).once('value', function() {
+            loadLeaderboard(g);
+            loadedGames++;
+            if(loadedGames === games.length) {
+                // Дополнительно вызываем загрузку рейтингов для отображения звезд
+                loadAllGameRatings();
+                resolve();
+            }
         });
-        allPromises.push(gamesLeaderboardPromise);
+    });
+});
+allPromises.push(gamesLeaderboardPromise);
         
         // Цитаты
         var quotesPromise = new Promise(function(resolve) {
@@ -3507,6 +3512,32 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ Все фиксы применены');
 });
+// ==================== ФИКС: ЗАГРУЗКА ВСЕХ РЕЙТИНГОВ ИГР ====================
+function loadAllGameRatings() {
+    var games = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter'];
+    
+    games.forEach(function(game) {
+        db.ref('gameRatings/' + game).on('value', function(snapshot) {
+            var ratings = [];
+            snapshot.forEach(function(child) {
+                ratings.push(child.val());
+            });
+            
+            if(ratings.length > 0) {
+                var sum = 0;
+                ratings.forEach(function(r) {
+                    sum += (r.rating || 0);
+                });
+                var avg = (sum / ratings.length).toFixed(1);
+                
+                var ratingEl = document.getElementById('rating-' + game);
+                if(ratingEl) {
+                    ratingEl.textContent = '⭐ ' + avg + '/10 (' + ratings.length + ')';
+                }
+            }
+        });
+    });
+}
       </script>
 
 </body>
