@@ -7,7 +7,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box}
+       *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:Arial;background:#1a1a1a;color:#fff;min-height:100vh}
     #bg{position:fixed;top:0;left:0;width:100%;height:100%;background:url("bg.jpg") center/cover;z-index:-2}
     #bg::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85)}
@@ -159,114 +159,119 @@
     .short-comments{margin-top:10px;font-size:13px}
     .short-comment{background:rgba(0,0,0,.3);padding:8px;border-radius:8px;margin:5px 0}
     .tag{display:inline-block;background:rgba(255,215,0,.2);border:1px solid #ffd700;border-radius:20px;padding:4px 12px;margin:3px;font-size:12px;color:#ffd700}
-    @media(max-width:768px){
-      .logo{font-size:22px}.header{padding:10px 15px}.profile-name{max-width:70px;font-size:12px}
-      .movie-card,.game-card{width:calc(50% - 8px);min-width:130px;padding:8px}
-      .game-icon{font-size:35px}.section{padding:12px}button{padding:8px 14px;font-size:13px}
-      .star{font-size:26px;width:26px}.xo-board{grid-template-columns:repeat(3,75px);grid-template-rows:repeat(3,75px)}
-      .xo-cell{width:75px;height:75px;font-size:35px}
-      .battle-board{grid-template-columns:repeat(10,28px);grid-template-rows:repeat(10,28px)}
-      .battle-cell{width:28px;height:28px;font-size:10px}
-      .tamagotchi-room{width:240px;height:240px}
-      .ds4{grid-template-columns:50px 50px 50px;grid-template-rows:50px 50px 50px}
-      .ds4-btn{width:50px;height:50px;font-size:22px}
-      .pet-card{width:110px;padding:10px}
-      .loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: #1a1a1a;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    transition: opacity 0.5s;
-}
-.loading-container {
-    width: 80%;
-    max-width: 500px;
-    text-align: center;
-}
-.loading-bar {
-    width: 100%;
-    height: 20px;
-    background: #333;
-    border-radius: 10px;
-    overflow: hidden;
-    margin: 20px 0;
-}
-.loading-fill {
-    width: 0%;
-    height: 100%;
-    background: linear-gradient(90deg, #ffd700, #ffaa00);
-    border-radius: 10px;
-    transition: width 0.3s ease;
-}
-.loading-percent {
-    font-size: 24px;
-    color: #ffd700;
-    margin: 10px 0;
-}
-.loading-joke {
-    font-size: 16px;
-    color: #aaa;
-    font-style: italic;
-    margin-top: 30px;
-    padding: 15px;
-    background: rgba(255,215,0,0.1);
-    border-radius: 15px;
-    max-width: 400px;
-    text-align: center;
-}
-.loading-tip {
-    font-size: 12px;
-    color: #666;
-    margin-top: 20px;
-}
-.quick-card {
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.quick-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-.quick-card:active {
-    transform: translateY(2px);
-}
-.loading-overlay {
-    display: flex !important;
-}
-/* Исправление для телефона - ВСЕ кликабельные элементы */
-.quick-card,
-.movie-card,
-.game-card,
-button,
-.burger,
-.profile-area,
-.menu a,
-.logo,
-.avatar
-
-/* Фикс для активного состояния на телефоне */
-.quick-card:active,
-.movie-card:active,
-.game-card:active,
-button:active {
-    transform: scale(0.98);
-    transition: transform 0.05s;
-}
-/* Мобильные устройства */
-@media (max-width: 768px) {
-    .quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo
-    /* Возвращаем прокрутку страницы */
-    body {
-        touch-action: pan-y pan-x;
+    
+    /* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ЗАГРУЗКИ */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #1a1a1a;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        transition: opacity 0.5s;
     }
-}
+    .loading-container {
+        width: 80%;
+        max-width: 500px;
+        text-align: center;
+    }
+    .loading-bar {
+        width: 100%;
+        height: 20px;
+        background: #333;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 20px 0;
+    }
+    .loading-fill {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #ffd700, #ffaa00);
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    .loading-percent {
+        font-size: 24px;
+        color: #ffd700;
+        margin: 10px 0;
+    }
+    .loading-joke {
+        font-size: 16px;
+        color: #aaa;
+        font-style: italic;
+        margin-top: 30px;
+        padding: 15px;
+        background: rgba(255,215,0,0.1);
+        border-radius: 15px;
+        max-width: 400px;
+        text-align: center;
+    }
+    .loading-tip {
+        font-size: 12px;
+        color: #666;
+        margin-top: 20px;
+    }
+    .quick-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .quick-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .quick-card:active {
+        transform: translateY(2px);
+    }
+    
+    /* ФИКС ДЛЯ ТЕЛЕФОНА - ВСЕ КЛИКАБЕЛЬНЫЕ ЭЛЕМЕНТЫ */
+    .quick-card,
+    .movie-card,
+    .game-card,
+    button,
+    .burger,
+    .profile-area,
+    .menu a,
+    .logo,
+    .avatar {
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .quick-card:active,
+    .movie-card:active,
+    .game-card:active,
+    button:active {
+        transform: scale(0.98);
+        transition: transform 0.05s;
+    }
+    
+    /* МОБИЛЬНЫЕ УСТРОЙСТВА */
+    @media (max-width: 768px) {
+        .logo{font-size:22px}
+        .header{padding:10px 15px}
+        .profile-name{max-width:70px;font-size:12px}
+        .movie-card,.game-card{width:calc(50% - 8px);min-width:130px;padding:8px}
+        .game-icon{font-size:35px}
+        .section{padding:12px}
+        button{padding:8px 14px;font-size:13px}
+        .star{font-size:26px;width:26px}
+        .xo-board{grid-template-columns:repeat(3,75px);grid-template-rows:repeat(3,75px)}
+        .xo-cell{width:75px;height:75px;font-size:35px}
+        .battle-board{grid-template-columns:repeat(10,28px);grid-template-rows:repeat(10,28px)}
+        .battle-cell{width:28px;height:28px;font-size:10px}
+        .tamagotchi-room{width:240px;height:240px}
+        .ds4{grid-template-columns:50px 50px 50px;grid-template-rows:50px 50px 50px}
+        .ds4-btn{width:50px;height:50px;font-size:22px}
+        .pet-card{width:110px;padding:10px}
+        body {
+            touch-action: pan-y pan-x;
+        }
     }
   </style>
 </head>
