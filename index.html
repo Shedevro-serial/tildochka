@@ -3312,18 +3312,14 @@ window.stopGame = function() {
     showScreen('home');
 };
 
-// ========== ФИКС: ПРОБЕЛ В ЧАТЕ И ДРУГИХ ПОЛЯХ ==========
-// Отключаем глобальный обработчик клавиш, который мешает вводу текста
+// ========== ФИКС: НЕ МЕШАЕМ ВВОДУ В ПОЛЯ ==========
+// Этот обработчик вообще ничего не блокирует, просто лог для отладки
 document.addEventListener('keydown', function(e) {
-    // Если активный элемент - это input или textarea, не мешаем
-    var activeElement = document.activeElement;
-    if(activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-        // Не блокируем клавиши при вводе текста
-        return;
+    // Ничего не блокируем, просто логируем если нужно
+    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        console.log('Печатаем в поле:', e.key);
     }
-    // Для других случаев - тут можно добавить обработку, но не блокируем пробел глобально
-}, false);
-
+});
 // ========== ФИКС: КНОПКА НАЗАД В ИГРАХ (ДОБАВЛЯЕМ ОБРАБОТЧИК) ==========
 // Переопределяем кнопку "← На главную" в game-screen, когда она появляется
 function fixBackButton() {
