@@ -217,6 +217,9 @@
 .quick-card:active {
     transform: translateY(2px);
 }
+.loading-overlay {
+    display: flex !important;
+}
     }
   </style>
 </head>
@@ -610,7 +613,6 @@ function loadAllData() {
         }
     }, 5000);
     
-    // Функция обновления процентов
     function setProgress(percent, text) {
         var fill = document.getElementById('loadingFill');
         var percentSpan = document.getElementById('loadingPercent');
@@ -620,32 +622,31 @@ function loadAllData() {
         if(text && jokeSpan) jokeSpan.innerHTML = '🐔 ' + text;
     }
     
-    // СЧЁТЧИК РЕАЛЬНОЙ ЗАГРУЗКИ
-    var loadedCount = 0;
+    setProgress(5, "Загружаем профиль...");
+    
+    // Счётчик загруженных элементов
+    var loadedItems = 0;
     var totalItems = 0;
     
-    function itemLoaded() {
-        loadedCount++;
-        var percent = Math.floor(loadedCount / totalItems * 100);
-        setProgress(percent, "Загрузка... (" + loadedCount + "/" + totalItems + ")");
+    function finishLoading() {
+        loadedItems++;
+        var percent = Math.floor(loadedItems / totalItems * 100);
+        setProgress(percent, "Загрузка... (" + loadedItems + "/" + totalItems + ")");
         
-        if(loadedCount >= totalItems && totalItems > 0) {
-            // ВСЁ ЗАГРУЖЕНО!
+        if(loadedItems >= totalItems && totalItems > 0) {
+            clearInterval(jokeInterval);
             setTimeout(function() {
                 setProgress(100, "Готово!");
-                clearInterval(jokeInterval);
                 if(loadingDiv) {
-                    loadingDiv.style.transition = 'opacity 1s';
+                    loadingDiv.style.transition = 'opacity 0.5s';
                     loadingDiv.style.opacity = '0';
-                    setTimeout(function(){
+                    setTimeout(function() {
                         if(loadingDiv) loadingDiv.style.display = 'none';
-                    }, 1000);
+                    }, 500);
                 }
             }, 500);
         }
     }
-    
-    setProgress(5, "Загружаем профиль...");
     
     // Загружаем яйца
     db.ref('users/'+myUid+'/eggs').once('value', function(s) {
@@ -665,59 +666,51 @@ function loadAllData() {
             document.getElementById('app').style.display = 'block';
             showScreen('home');
             
-            setProgress(45, "Загружаем чат и мемы...");
+            setProgress(40, "Загружаем данные...");
             
-            // ПОДСЧИТЫВАЕМ КОЛИЧЕСТВО ЭЛЕМЕНТОВ ДЛЯ ЗАГРУЗКИ
-            var itemsToLoad = [
-                { name: 'chat', fn: loadChatMessages, time: 800 },
-                { name: 'memes', fn: loadMemes, time: 800 },
-                { name: 'ideas', fn: loadIdeas, time: 800 },
-                { name: 'shorts', fn: loadShorts, time: 800 },
-                { name: 'ratings', fn: loadAllRatings, time: 800 },
-                { name: 'quotes', fn: function() { try { initQuotes(); } catch(e) {} }, time: 800 },
-                { name: 'gifts', fn: loadGifts, time: 500 },
-                { name: 'quests', fn: function() { generateDailyQuests(false); }, time: 500 },
-                { name: 'friends', fn: setupFriendNotifications, time: 500 }
+            // СПИСОК ВСЕХ ДАННЫХ ДЛЯ ЗАГРУЗКИ
+            var loadingTasks = [
+                { name: 'чат', fn: function(cb) { loadChatMessages(); setTimeout(cb, 1500); } },
+                { name: 'мемы', fn: function(cb) { loadMemes(); setTimeout(cb, 1500); } },
+                { name: 'идеи', fn: function(cb) { loadIdeas(); setTimeout(cb, 1500); } },
+                { name: 'шортсы', fn: function(cb) { loadShorts(); setTimeout(cb, 1500); } },
+                { name: 'рейтинги', fn: function(cb) { loadAllRatings(); setTimeout(cb, 1500); } },
+                { name: 'цитаты', fn: function(cb) { try { initQuotes(); } catch(e) {} setTimeout(cb, 1000); } },
+                { name: 'подарки', fn: function(cb) { loadGifts(); setTimeout(cb, 1000); } },
+                { name: 'задания', fn: function(cb) { generateDailyQuests(false); setTimeout(cb, 1000); } },
+                { name: 'друзья', fn: function(cb) { setupFriendNotifications(); setTimeout(cb, 1000); } }
             ];
             
-            totalItems = itemsToLoad.length + 1; // +1 для игр
+            totalItems = loadingTasks.length + 1; // +1 для игр
+            var tasksCompleted = 0;
             
-            function loadGames() {
-                var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-                var gamesLoaded = 0;
-                games.forEach(function(g) {
-                    loadLeaderboard(g);
-                    gamesLoaded++;
-                    if(gamesLoaded >= games.length) {
-                        itemLoaded(); // игры загружены
-                    }
-                });
+            function taskDone() {
+                tasksCompleted++;
+                finishLoading();
             }
             
-            // Запускаем загрузку всех элементов
-            itemsToLoad.forEach(function(item) {
-                setTimeout(function() {
-                    item.fn();
-                    setTimeout(function() {
-                        itemLoaded();
-                    }, item.time);
-                }, 100);
+            // Запускаем загрузку всех задач
+            loadingTasks.forEach(function(task) {
+                task.fn(taskDone);
             });
             
             // Загружаем игры
-            setTimeout(function() {
-                loadGames();
-            }, 500);
-            
-            // Даём время на загрузку (максимум 15 секунд)
-            setTimeout(function() {
-                if(loadedCount < totalItems) {
-                    // Принудительно завершаем загрузку через 15 секунд
-                    while(loadedCount < totalItems) {
-                        itemLoaded();
-                    }
+            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+            var gamesLoaded = 0;
+            games.forEach(function(g) {
+                loadLeaderboard(g);
+                gamesLoaded++;
+                if(gamesLoaded >= games.length) {
+                    taskDone();
                 }
-            }, 15000);
+            });
+            
+            // Защита от вечной загрузки - через 20 секунд принудительно завершаем
+            setTimeout(function() {
+                while(tasksCompleted < totalItems) {
+                    taskDone();
+                }
+            }, 20000);
         });
     });
     
