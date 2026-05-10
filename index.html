@@ -140,22 +140,10 @@
     .short-comment{background:rgba(0,0,0,.3);padding:8px;border-radius:8px;margin:5px 0}
     .tag{display:inline-block;background:rgba(255,215,0,.2);border:1px solid #ffd700;border-radius:20px;padding:4px 12px;margin:3px;font-size:12px;color:#ffd700}
     @media (max-width: 768px) {
-    /* Убираем возможные блокировки касаний */
-    button, .game-card, .movie-card, .quick-card, .menu a {
+    button, .game-card, .movie-card, .quick-card, .menu a, .profile-area, .burger {
         cursor: pointer;
         touch-action: manipulation;
-    }
-    
-    /* Центрируем анекдоты */
-    .loading-joke {
-        text-align: center !important;
-        margin: 30px auto !important;
-        display: block !important;
-    }
-    
-    /* Полоска загрузки на весь экран */
-    .loading-bar {
-        width: 100% !important;
+        -webkit-tap-highlight-color: transparent;
     }
 }
     @media(max-width:768px){
