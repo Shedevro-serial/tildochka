@@ -313,60 +313,67 @@ button:active {
 </div>
 <div id="content">
 
-<div id="home-screen" class="screen active"><div class="catalog">
-<!-- 6 БЫСТРЫХ КВАДРАТИКОВ (МАЛЕНЬКИЕ) -->
-<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px">
-    <div class="quick-card" onclick="showScreen('games-all')" style="background:linear-gradient(135deg,#4a90d9,#357abd);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-        <div style="font-size:24px">🎮</div>
-        <div style="font-size:11px;font-weight:bold">Игры</div>
-    </div>
-    <div class="quick-card" onclick="showScreen('chat')" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-        <div style="font-size:24px">💬</div>
-        <div style="font-size:11px;font-weight:bold">Чат</div>
-    </div>
-    <div class="quick-card" onclick="showScreen('memes')" style="background:linear-gradient(135deg,#e67e22,#d35400);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-        <div style="font-size:24px">😂</div>
-        <div style="font-size:11px;font-weight:bold">Мемы</div>
-    </div>
-    <div class="quick-card" onclick="showScreen('ideas')" style="background:linear-gradient(135deg,#1abc9c,#16a085);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-        <div style="font-size:24px">💡</div>
-        <div style="font-size:11px;font-weight:bold">Идеи</div>
-    </div>
-    <div class="quick-card" onclick="showScreen('chickentube')" style="background:linear-gradient(135deg,#e74c3c,#c0392b);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-        <div style="font-size:24px">🐔</div>
-        <div style="font-size:11px;font-weight:bold">Tube</div>
-    </div>
-    <div class="quick-card" onclick="showScreen('friends')" style="background:linear-gradient(135deg,#2ecc71,#27ae60);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-        <div style="font-size:24px">👥</div>
-        <div style="font-size:11px;font-weight:bold">Друзья</div>
-    </div>
-</div>
-</div>  <!-- это закрывающий тег быстрых квадратиков -->
+<div id="home-screen" class="screen active">
+    <div class="catalog">
+        <!-- 6 БЫСТРЫХ КВАДРАТИКОВ -->
+        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px">
+            <div class="quick-card" onclick="showScreen('games-all')" style="background:linear-gradient(135deg,#4a90d9,#357abd);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+                <div style="font-size:24px">🎮</div>
+                <div style="font-size:11px;font-weight:bold">Игры</div>
+            </div>
+            <div class="quick-card" onclick="showScreen('chat')" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+                <div style="font-size:24px">💬</div>
+                <div style="font-size:11px;font-weight:bold">Чат</div>
+            </div>
+            <div class="quick-card" onclick="showScreen('memes')" style="background:linear-gradient(135deg,#e67e22,#d35400);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+                <div style="font-size:24px">😂</div>
+                <div style="font-size:11px;font-weight:bold">Мемы</div>
+            </div>
+            <div class="quick-card" onclick="showScreen('ideas')" style="background:linear-gradient(135deg,#1abc9c,#16a085);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+                <div style="font-size:24px">💡</div>
+                <div style="font-size:11px;font-weight:bold">Идеи</div>
+            </div>
+            <div class="quick-card" onclick="showScreen('chickentube')" style="background:linear-gradient(135deg,#e74c3c,#c0392b);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+                <div style="font-size:24px">🐔</div>
+                <div style="font-size:11px;font-weight:bold">Tube</div>
+            </div>
+            <div class="quick-card" onclick="showScreen('friends')" style="background:linear-gradient(135deg,#2ecc71,#27ae60);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+                <div style="font-size:24px">👥</div>
+                <div style="font-size:11px;font-weight:bold">Друзья</div>
+            </div>
+        </div>
 
-<h2>🎬 Сериалы</h2><div class="movie-grid"><div class="movie-card" onclick="openMovie('series')"><img src="cover.jpg"><h3>Приключения 4 куриц</h3><div class="rating" id="rating-series">⭐ 9.5/10</div></div></div>
-<h2 style="margin-top:35px">🎥 Фильмы</h2><div class="movie-grid">
-<div class="movie-card" onclick="openMovie('comb')"><img src="cover-comb.jpg"><h3>Расческа для лысых</h3><div class="rating" id="rating-comb">—</div></div>
-<div class="movie-card" onclick="openMovie('pirates')"><img src="cover-pirates.jpg"><h3>Пираты</h3><div class="rating" id="rating-pirates">—</div></div>
-<div class="movie-card" onclick="openMovie('americans')"><img src="cover-americans.jpg"><h3>Американцы зло</h3><div class="rating" id="rating-americans">—</div></div>
-<div class="movie-card" onclick="openMovie('ads1')"><img src="cover-ads.jpg"><h3>Рекламки (ч.1)</h3><div class="rating" id="rating-ads1">—</div></div>
-<div class="movie-card" onclick="openMovie('ads2')"><img src="cover-ads.jpg"><h3>Рекламки (ч.2)</h3><div class="rating" id="rating-ads2">—</div></div>
-<div class="movie-card" onclick="openMovie('pta')"><img src="cover-pta.jpg"><h3>Приключения ПТА</h3><div class="rating" id="rating-pta">—</div></div>
-</div>
-<h2 style="margin-top:35px">🎮 Игры</h2><div class="games-grid">
-<div class="game-card" onclick="showGame('snake')"><span class="game-icon">🐍</span><h3>Змейка</h3><div class="game-rating" id="rating-snake">⭐ 0/10</div></div>
-<div class="game-card" onclick="showGame('tetris')"><span class="game-icon">🧱</span><h3>Тетрис</h3><div class="game-rating" id="rating-tetris">⭐ 0/10</div></div>
-<div class="game-card" onclick="showGame('runner')"><span class="game-icon">🏃</span><h3>Раннер</h3><div class="game-rating" id="rating-runner">⭐ 0/10</div></div>
-<div class="game-card" onclick="showGame('chickenrain')"><span class="game-icon">🌧️</span><h3>Кур. дождь</h3><div class="game-rating" id="rating-chickenrain">⭐ 0/10</div></div>
-<div class="game-card" onclick="showGame('flappy')"><span class="game-icon">🐔</span><h3>Flappy курица</h3><div class="game-rating" id="rating-flappy">⭐ 0/10</div></div>
-<div class="game-card" onclick="showOnlineGame('pong')"><span class="game-icon">🏓</span><h3>Пинг-понг</h3><div class="game-rating" id="rating-pong">⭐ 0/10</div></div>
-<div class="game-card" onclick="showOnlineGame('xo')"><span class="game-icon">❌</span><h3>Крестики-нолики</h3><div class="game-rating" id="rating-xo">⭐ 0/10</div></div>
-<div class="game-card" onclick="showOnlineGame('battleship')"><span class="game-icon">🚢</span><h3>Морской бой</h3><div class="game-rating" id="rating-battleship">⭐ 0/10</div></div>
-<div class="game-card" onclick="showGame('memory')"><span class="game-icon">🧠</span><h3>Memory</h3></div>
-<div class="game-card" onclick="showGame('tamagotchi')"><span class="game-icon">🐣</span><h3>Тамагочи</h3></div>
-<div class="game-card" onclick="showGame('guess')"><span class="game-icon">🔢</span><h3>Угадай число</h3></div>
-<div class="game-card" onclick="showGame('rps')"><span class="game-icon">✂️</span><h3>Камень-ножницы</h3></div>
-<div class="game-card" onclick="showGame('shooter')"><span class="game-icon">🎯</span><h3>Птичий тир</h3><div class="game-rating" id="rating-shooter">⭐ 0/10</div></div>
-</div>
+        <h2>🎬 Сериалы</h2>
+        <div class="movie-grid">
+            <div class="movie-card" onclick="openMovie('series')"><img src="cover.jpg"><h3>Приключения 4 куриц</h3><div class="rating" id="rating-series">⭐ 9.5/10</div></div>
+        </div>
+
+        <h2 style="margin-top:35px">🎥 Фильмы</h2>
+        <div class="movie-grid">
+            <div class="movie-card" onclick="openMovie('comb')"><img src="cover-comb.jpg"><h3>Расческа для лысых</h3><div class="rating" id="rating-comb">—</div></div>
+            <div class="movie-card" onclick="openMovie('pirates')"><img src="cover-pirates.jpg"><h3>Пираты</h3><div class="rating" id="rating-pirates">—</div></div>
+            <div class="movie-card" onclick="openMovie('americans')"><img src="cover-americans.jpg"><h3>Американцы зло</h3><div class="rating" id="rating-americans">—</div></div>
+            <div class="movie-card" onclick="openMovie('ads1')"><img src="cover-ads.jpg"><h3>Рекламки (ч.1)</h3><div class="rating" id="rating-ads1">—</div></div>
+            <div class="movie-card" onclick="openMovie('ads2')"><img src="cover-ads.jpg"><h3>Рекламки (ч.2)</h3><div class="rating" id="rating-ads2">—</div></div>
+            <div class="movie-card" onclick="openMovie('pta')"><img src="cover-pta.jpg"><h3>Приключения ПТА</h3><div class="rating" id="rating-pta">—</div></div>
+        </div>
+
+        <h2 style="margin-top:35px">🎮 Игры</h2>
+        <div class="games-grid">
+            <div class="game-card" onclick="showGame('snake')"><span class="game-icon">🐍</span><h3>Змейка</h3><div class="game-rating" id="rating-snake">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showGame('tetris')"><span class="game-icon">🧱</span><h3>Тетрис</h3><div class="game-rating" id="rating-tetris">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showGame('runner')"><span class="game-icon">🏃</span><h3>Раннер</h3><div class="game-rating" id="rating-runner">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showGame('chickenrain')"><span class="game-icon">🌧️</span><h3>Кур. дождь</h3><div class="game-rating" id="rating-chickenrain">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showGame('flappy')"><span class="game-icon">🐔</span><h3>Flappy курица</h3><div class="game-rating" id="rating-flappy">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showOnlineGame('pong')"><span class="game-icon">🏓</span><h3>Пинг-понг</h3><div class="game-rating" id="rating-pong">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showOnlineGame('xo')"><span class="game-icon">❌</span><h3>Крестики-нолики</h3><div class="game-rating" id="rating-xo">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showOnlineGame('battleship')"><span class="game-icon">🚢</span><h3>Морской бой</h3><div class="game-rating" id="rating-battleship">⭐ 0/10</div></div>
+            <div class="game-card" onclick="showGame('memory')"><span class="game-icon">🧠</span><h3>Memory</h3></div>
+            <div class="game-card" onclick="showGame('tamagotchi')"><span class="game-icon">🐣</span><h3>Тамагочи</h3></div>
+            <div class="game-card" onclick="showGame('guess')"><span class="game-icon">🔢</span><h3>Угадай число</h3></div>
+            <div class="game-card" onclick="showGame('rps')"><span class="game-icon">✂️</span><h3>Камень-ножницы</h3></div>
+            <div class="game-card" onclick="showGame('shooter')"><span class="game-icon">🎯</span><h3>Птичий тир</h3><div class="game-rating" id="rating-shooter">⭐ 0/10</div></div>
+        </div>
 <!-- 👇👇👇 СЮДА ВСТАВИТЬ ЦИТАТУ 👇👇👇 -->
 <div id="dailyQuoteBlock" style="max-width:600px;margin:40px auto 0 auto">
     <h3 style="color:#ffd700; text-align:center">💬 Цитата дня</h3>
