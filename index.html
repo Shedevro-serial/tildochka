@@ -1732,6 +1732,8 @@ renderTamagotchi();
      }
 
 // ==================== ОНЛАЙН-ИГРЫ ====================
+// ==================== ИСПРАВЛЕННЫЙ КОД ДЛЯ ПРИГЛАШЕНИЙ ====================
+
 function showOnlineGame(type){
     var users = Object.keys(onlineUsers);
     if(users.length === 0){
@@ -1739,10 +1741,8 @@ function showOnlineGame(type){
         return;
     }
     
-    // Спрашиваем до скольки играть
-    var maxScore = prompt('🎯 До скольки очков играем?\n\nВведите число (например: 5, 10, 20)\nИли 0 для бесконечной игры (пока кто-то не сдастся)', '10');
-    
-    if(maxScore === null) return; // отмена
+    var maxScore = prompt('🎯 До скольки очков играем?\n\nВведите число (например: 5, 10, 20)\nИли 0 для бесконечной игры', '10');
+    if(maxScore === null) return;
     
     var maxScoreNum = parseInt(maxScore);
     if(isNaN(maxScoreNum)) {
@@ -1760,61 +1760,100 @@ function showOnlineGame(type){
     document.getElementById('inviteTitle').textContent = '🎮 Пригласить (до ' + scoreText + ')';
     document.getElementById('inviteModal').classList.add('show');
 }
+
 function sendInvite(uid, game, maxScore){
     document.getElementById('inviteModal').classList.remove('show');
     var rid = myUid + '_' + uid + '_' + game + '_' + Date.now();
     
-    db.ref('game_invites/'+rid).set({
+    // Сохраняем инвайт в Firebase
+    db.ref('game_invites/' + rid).set({
         from: myUid,
         fromName: myName,
         game: game,
         to: uid,
-        maxScore: maxScore,  // <-- ДОБАВЛЯЕМ
+        maxScore: maxScore,
         status: 'pending',
         ts: Date.now()
     });
     
-    var ref = db.ref('game_invites/'+rid+'/status');
-    ref.on('value', function(snap){
-        if(snap.val() === 'accepted'){
-            ref.off();
-            db.ref('game_invites/'+rid).remove();
+    // Показываем ожидание
+    showWaiting('Ожидаем ' + (onlineUsers[uid] ? onlineUsers[uid].name : 'соперника') + '...', 30000);
+    
+    // Слушаем ответ
+    var statusRef = db.ref('game_invites/' + rid + '/status');
+    var timeoutId = setTimeout(function() {
+        statusRef.off();
+        db.ref('game_invites/' + rid).remove();
+        hideWaiting();
+        alert('⏰ Время ожидания истекло. Соперник не ответил.');
+    }, 30000);
+    
+    statusRef.on('value', function(snap){
+        var status = snap.val();
+        if(status === 'accepted'){
+            statusRef.off();
+            clearTimeout(timeoutId);
+            db.ref('game_invites/' + rid).remove();
             hideWaiting();
+            
             if(game === 'battleship') startBattleshipSetup(uid, rid, maxScore);
             if(game === 'pong') initOnlinePong(uid, rid, maxScore);
             if(game === 'xo') initOnlineXO(uid, rid, maxScore);
-        } else if(snap.val() === 'declined'){
-            ref.off();
-            db.ref('game_invites/'+rid).remove();
+        } else if(status === 'declined'){
+            statusRef.off();
+            clearTimeout(timeoutId);
+            db.ref('game_invites/' + rid).remove();
             hideWaiting();
             alert('❌ Соперник отклонил приглашение');
         }
     });
-    showWaiting('Ожидаем '+onlineUsers[uid].name+'...', 30000);
 }
-db.ref('game_invites').on('child_added', function(snap){
-    var inv = snap.val();
-    if(inv.to === myUid && inv.status === 'pending' && inv.ts > Date.now() - 15000){
-        pendingInvite = {
-            id: snap.key,
-            from: inv.from,
-            fromName: inv.fromName,
-            game: inv.game,
-            maxScore: inv.maxScore || 10
-        };
-        var scoreText = (pendingInvite.maxScore === 0) ? '∞' : pendingInvite.maxScore;
-        document.getElementById('inviteContent').innerHTML = '<p>' + inv.fromName + ' зовёт в <b>' + inv.game + '</b>! (до ' + scoreText + ')</p>';
-        document.getElementById('inviteActions').innerHTML = '<button onclick="acceptInvite()" style="background:#4f4">✅</button><button onclick="declineInvite()" style="background:#f44">❌</button>';
-        document.getElementById('inviteTitle').textContent = '📨 Приглашение';
-        document.getElementById('inviteModal').classList.add('show');
-    }
-});
+
+// Слушаем ВСЕ приглашения (включая те, которые были созданы до загрузки)
+function setupInviteListener() {
+    db.ref('game_invites').on('child_added', function(snap){
+        var inv = snap.val();
+        if(!inv) return;
+        
+        // Проверяем, что приглашение адресовано нам и ещё не обработано
+        if(inv.to === myUid && inv.status === 'pending') {
+            // Проверяем, не слишком ли старое (старше 30 секунд)
+            if(inv.ts < Date.now() - 30000) {
+                snap.ref.remove(); // удаляем старые
+                return;
+            }
+            
+            pendingInvite = {
+                id: snap.key,
+                from: inv.from,
+                fromName: inv.fromName,
+                game: inv.game,
+                maxScore: inv.maxScore || 10
+            };
+            
+            var scoreText = (pendingInvite.maxScore === 0) ? '∞' : pendingInvite.maxScore;
+            document.getElementById('inviteContent').innerHTML = '<p>' + escapeHtml(inv.fromName) + ' зовёт в <b>' + inv.game + '</b>! (до ' + scoreText + ')</p>';
+            document.getElementById('inviteActions').innerHTML = '<button onclick="acceptInvite()" style="background:#4f4;padding:10px 20px">✅ Принять</button> <button onclick="declineInvite()" style="background:#f44;padding:10px 20px">❌ Отклонить</button>';
+            document.getElementById('inviteTitle').textContent = '📨 Приглашение в игру!';
+            document.getElementById('inviteModal').classList.add('show');
+            
+            // Вибрируем на телефоне, если возможно
+            if(window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(200);
+            }
+            
+            // Воспроизводим звук уведомления
+            playSound("jump");
+        }
+    });
+}
 
 function acceptInvite(){
     if(!pendingInvite) return;
     document.getElementById('inviteModal').classList.remove('show');
     var inv = pendingInvite;
     
+    // Отправляем подтверждение
     db.ref('game_invites/' + inv.id + '/status').set('accepted');
     
     setTimeout(function() {
@@ -1836,8 +1875,30 @@ function declineInvite(){
     if(!pendingInvite) return;
     document.getElementById('inviteModal').classList.remove('show');
     db.ref('game_invites/' + pendingInvite.id + '/status').set('declined');
+    
+    // Небольшая задержка перед удалением, чтобы другой игрок успел прочитать статус
+    setTimeout(function() {
+        db.ref('game_invites/' + pendingInvite.id).remove();
+    }, 1000);
+    
     pendingInvite = null;
 }
+
+// ========== ДОБАВИТЬ ЭТО В loadAllData() ==========
+// В конце функции loadAllData() добавьте:
+// setupInviteListener();
+
+// Также добавьте проверку на повторный вызов
+var inviteListenerSetup = false;
+function ensureInviteListener() {
+    if(!inviteListenerSetup) {
+        inviteListenerSetup = true;
+        setupInviteListener();
+        console.log('✅ Слушатель приглашений установлен');
+    }
+}
+
+// Вызвать ensureInviteListener() после загрузки данных
 function showWaiting(msg,dur){var w=document.getElementById('waitingModal');if(!w){w=document.createElement('div');w.className='modal-overlay';w.id='waitingModal';w.innerHTML='<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';document.body.appendChild(w);}document.getElementById('waitingContent').textContent='⏳ '+msg;w.classList.add('show');if(window._wt)clearTimeout(window._wt);window._wt=setTimeout(function(){w.classList.remove('show');},dur);}
 function hideWaiting(){var w=document.getElementById('waitingModal');if(w){w.classList.remove('show');if(window._wt)clearTimeout(window._wt);}}
 
