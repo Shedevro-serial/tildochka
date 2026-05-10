@@ -220,6 +220,34 @@
 .loading-overlay {
     display: flex !important;
 }
+/* Исправление для телефона - ВСЕ кликабельные элементы */
+.quick-card,
+.movie-card,
+.game-card,
+button,
+.burger,
+.profile-area,
+.menu a,
+.logo,
+.avatar {
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Убираем задержку при нажатии на телефоне */
+* {
+    touch-action: manipulation;
+}
+
+/* Фикс для активного состояния на телефоне */
+.quick-card:active,
+.movie-card:active,
+.game-card:active,
+button:active {
+    transform: scale(0.98);
+    transition: transform 0.05s;
+}
     }
   </style>
 </head>
