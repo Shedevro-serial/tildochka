@@ -1943,7 +1943,15 @@ var savedTama=localStorage.getItem('tildochka_tamagotchi');
 if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamagotchiData.isAlive)startTamagotchiLoop();}catch(e){}}
 
 var pass=prompt("🔐 Введите кодовое слово:");
-if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){loadAllData();}
+if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){
+    // Временно показываем сайт без загрузки
+    document.getElementById('customLoading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    showScreen('home');
+    // loadAllData(); // отключено для теста
+} else {
+    document.getElementById("blocked").style.display="flex";
+}
 else{document.getElementById("blocked").style.display="flex";document.getElementById("loading").style.display="none";}
 // ==================== ДРУЗЬЯ ====================
 var myFriends = [];
