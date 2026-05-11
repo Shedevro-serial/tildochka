@@ -3705,42 +3705,60 @@ if(isAdmin) {
     setTimeout(addAdminButtonsToMenu, 1000);
 }
 function showAllGames() {
+    // Сначала показываем экран
     showScreen('games-all');
-    var container = document.getElementById('allGamesGrid');
-    if(!container) return;
     
-    var allGames = [
-        { name: 'Змейка', icon: '🐍', id: 'snake' },
-        { name: 'Тетрис', icon: '🧱', id: 'tetris' },
-        { name: 'Раннер', icon: '🏃', id: 'runner' },
-        { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain' },
-        { name: 'Flappy курица', icon: '🐔', id: 'flappy' },
-        { name: 'Memory', icon: '🧠', id: 'memory' },
-        { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi' },
-        { name: 'Угадай число', icon: '🔢', id: 'guess' },
-        { name: 'Камень-ножницы', icon: '✂️', id: 'rps' },
-        { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
-        { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
-        { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
-        { name: 'Птичий тир', icon: '🎯', id: 'shooter' }
-    ];
-    
-    container.innerHTML = '';
-    allGames.forEach(function(game) {
-        var playFunc = game.online ? 'showOnlineGame' : 'showGame';
-        container.innerHTML += `
-            <div class="game-card" onclick="${playFunc}('${game.id}')">
+    // Ждём немного, чтобы DOM обновился
+    setTimeout(function() {
+        var container = document.getElementById('allGamesGrid');
+        if(!container) {
+            console.error('Контейнер allGamesGrid не найден!');
+            return;
+        }
+        
+        // Все игры
+        var allGames = [
+            { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
+            { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
+            { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
+            { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
+            { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
+            { name: 'Memory', icon: '🧠', id: 'memory', online: false },
+            { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
+            { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
+            { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
+            { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
+            { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
+            { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
+            { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false }
+        ];
+        
+        // Очищаем контейнер
+        container.innerHTML = '';
+        
+        // Создаём карточки игр
+        for(var i = 0; i < allGames.length; i++) {
+            var game = allGames[i];
+            var playFunc = game.online ? 'showOnlineGame' : 'showGame';
+            
+            var card = document.createElement('div');
+            card.className = 'game-card';
+            card.setAttribute('onclick', playFunc + "('" + game.id + "')");
+            card.innerHTML = `
                 <span class="game-icon">${game.icon}</span>
                 <h3>${game.name}</h3>
-                <div class="game-rating" id="rating-${game.id}">⭐ 0/10</div>
-            </div>
-        `;
-    });
-    
-    // Загружаем рейтинги для всех игр
-    allGames.forEach(function(game) {
-        loadLeaderboard(game.id);
-    });
+                <div class="game-rating" id="rating-${game.id}">⭐ Загрузка...</div>
+            `;
+            container.appendChild(card);
+        }
+        
+        // Загружаем рейтинги для игр
+        for(var i = 0; i < allGames.length; i++) {
+            loadLeaderboard(allGames[i].id);
+        }
+        
+        console.log('✅ Игры загружены, найдено:', allGames.length);
+    }, 50);
 }
 // Слушаем сообщения из админ-окна (МГНОВЕННО)
 window.addEventListener('message', function(event) {
