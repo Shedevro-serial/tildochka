@@ -3705,15 +3705,17 @@ if(isAdmin) {
     setTimeout(addAdminButtonsToMenu, 1000);
 }
 function showAllGames() {
+    console.log('showAllGames вызвана');
+    
     // Сначала показываем экран
     showScreen('games-all');
     
-    // Ждём немного, чтобы DOM обновился
-    setTimeout(function() {
+    // Функция для отрисовки игр
+    function renderGames() {
         var container = document.getElementById('allGamesGrid');
         if(!container) {
             console.error('Контейнер allGamesGrid не найден!');
-            return;
+            return false;
         }
         
         // Все игры
@@ -3744,6 +3746,7 @@ function showAllGames() {
             var card = document.createElement('div');
             card.className = 'game-card';
             card.setAttribute('onclick', playFunc + "('" + game.id + "')");
+            card.setAttribute('style', 'cursor:pointer');
             card.innerHTML = `
                 <span class="game-icon">${game.icon}</span>
                 <h3>${game.name}</h3>
@@ -3752,13 +3755,28 @@ function showAllGames() {
             container.appendChild(card);
         }
         
-        // Загружаем рейтинги для игр
+        console.log('✅ Игры отрисованы, найдено:', allGames.length);
+        return true;
+    }
+    
+    // Пробуем отрисовать сразу
+    if(!renderGames()) {
+        // Если не получилось, ждём когда DOM загрузится
+        setTimeout(function() {
+            renderGames();
+        }, 100);
+    }
+    
+    // Загружаем рейтинги для игр
+    setTimeout(function() {
+        var allGames = [
+            'snake', 'tetris', 'runner', 'chickenrain', 'flappy', 
+            'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter'
+        ];
         for(var i = 0; i < allGames.length; i++) {
-            loadLeaderboard(allGames[i].id);
+            loadLeaderboard(allGames[i]);
         }
-        
-        console.log('✅ Игры загружены, найдено:', allGames.length);
-    }, 50);
+    }, 200);
 }
 // Слушаем сообщения из админ-окна (МГНОВЕННО)
 window.addEventListener('message', function(event) {
