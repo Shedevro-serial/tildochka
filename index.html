@@ -932,7 +932,31 @@ function claimQuest(id) {
 
 
   
-function showScreen(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});var t=document.getElementById(id+'-screen');if(t)t.classList.add('active');closeMenu();window.scrollTo(0,0);if(id==='quests')loadQuests();if(id==='eggsLB')loadEggsLeaderboard();if(id==='chickentube')loadShorts();if(id==='friends') loadFriends();if(id === 'games-all') showAllGames();}
+function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){
+        s.classList.remove('active');
+    });
+    var t = document.getElementById(id+'-screen');
+    if(t) {
+        t.classList.add('active');
+    } else {
+        // Если экран не найден, пробуем без суффикса
+        t = document.getElementById(id);
+        if(t) t.classList.add('active');
+    }
+    closeMenu();
+    window.scrollTo(0,0);
+    if(id === 'quests') loadQuests();
+    if(id === 'eggsLB') loadEggsLeaderboard();
+    if(id === 'chickentube') loadShorts();
+    if(id === 'friends') loadFriends();
+    if(id === 'games-all') {
+        // Загружаем игры каждый раз при открытии
+        setTimeout(function() {
+            renderAllGames();
+        }, 50);
+    }
+}
 function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
 document.addEventListener('click',function(e){if(!e.target.closest('.burger')&&!e.target.closest('.menu')&&!e.target.closest('.modal-box'))closeMenu();});
 
@@ -3703,6 +3727,64 @@ function showJokeAdmin() {
 // При загрузке страницы проверяем админа и добавляем кнопки
 if(isAdmin) {
     setTimeout(addAdminButtonsToMenu, 1000);
+}
+// Функция для отрисовки всех игр
+function renderAllGames() {
+    var container = document.getElementById('allGamesGrid');
+    if(!container) {
+        console.error('Контейнер allGamesGrid не найден!');
+        return;
+    }
+    
+    // Все игры
+    var allGames = [
+        { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
+        { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
+        { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
+        { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
+        { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
+        { name: 'Memory', icon: '🧠', id: 'memory', online: false },
+        { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
+        { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
+        { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
+        { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
+        { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
+        { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
+        { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false }
+    ];
+    
+    // Очищаем контейнер
+    container.innerHTML = '';
+    
+    // Создаём карточки игр
+    for(var i = 0; i < allGames.length; i++) {
+        var game = allGames[i];
+        var playFunc = game.online ? 'showOnlineGame' : 'showGame';
+        
+        var card = document.createElement('div');
+        card.className = 'game-card';
+        card.setAttribute('onclick', playFunc + "('" + game.id + "')");
+        card.setAttribute('style', 'cursor:pointer');
+        card.innerHTML = `
+            <span class="game-icon">${game.icon}</span>
+            <h3>${game.name}</h3>
+            <div class="game-rating" id="rating-${game.id}">⭐ Загрузка...</div>
+        `;
+        container.appendChild(card);
+    }
+    
+    // Загружаем рейтинги для всех игр
+    for(var i = 0; i < allGames.length; i++) {
+        loadLeaderboard(allGames[i].id);
+    }
+    
+    console.log('✅ Игры отрисованы, найдено:', allGames.length);
+}
+
+// Функция showAllGames (вызывается по клику на квадратик)
+function showAllGames() {
+    console.log('showAllGames вызвана');
+    showScreen('games-all');
 }
 function showAllGames() {
     console.log('showAllGames вызвана');
