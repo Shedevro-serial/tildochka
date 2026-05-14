@@ -482,6 +482,29 @@ var lastSoundTime=0;
 var customCharacters = [];
 var activeCharacter = null;
 
+// Загрузка при старте
+(function initCharactersFromStorage() {
+    var saved = localStorage.getItem('tildochka_characters');
+    if(saved) {
+        try {
+            customCharacters = JSON.parse(saved);
+        } catch(e) { customCharacters = []; }
+    }
+    
+    var active = localStorage.getItem('tildochka_active_character');
+    if(active) {
+        try {
+            activeCharacter = JSON.parse(active);
+        } catch(e) { activeCharacter = null; }
+    }
+    
+    // Если нет активного, ставим курицу по умолчанию
+    if(!activeCharacter) {
+        activeCharacter = { id: '🐔', name: 'Курица', price: 0, purchased: true };
+        saveCustomCharacters();
+    }
+})();
+
 // Загрузка купленных персонажей
 function loadCustomCharacters() {
     var saved = localStorage.getItem('tildochka_characters');
@@ -514,7 +537,7 @@ function buyCharacter(characterId, price) {
         return false;
     }
     
-    if(customCharacters.some(c => c.id === characterId)) {
+    if(customCharacters.some(function(c) { return c.id === characterId; })) {
         alert('У тебя уже есть этот персонаж!');
         return false;
     }
@@ -524,21 +547,44 @@ function buyCharacter(characterId, price) {
     document.getElementById('headerEggs').textContent = myEggs;
     db.ref('users/' + myUid).update({ eggs: myEggs });
     
+    // Находим имя персонажа
+    var chars = [
+        { id: '🐔', name: 'Курица' }, { id: '🐣', name: 'Цыплёнок' }, { id: '🐓', name: 'Петух' },
+        { id: '🦅', name: 'Орёл' }, { id: '🦉', name: 'Сова' }, { id: '🐧', name: 'Пингвин' },
+        { id: '🦆', name: 'Утка' }, { id: '🦜', name: 'Попугай' }, { id: '🐉', name: 'Дракон' }
+    ];
+    var charName = characterId;
+    for(var i = 0; i < chars.length; i++) {
+        if(chars[i].id === characterId) { charName = chars[i].name; break; }
+    }
+    
     customCharacters.push({
         id: characterId,
-        name: characterId,
+        name: charName,
         price: price,
         purchased: true
     });
     
     saveCustomCharacters();
-    alert('✅ Персонаж куплен!');
+    alert('✅ Персонаж ' + charName + ' куплен! Теперь выбери его в магазине.');
     return true;
-}
+                                                                  }
 
 // Выбрать активного персонажа
 function selectCharacter(characterId) {
-    var char = customCharacters.find(c => c.id === characterId);
+    var char = null;
+    for(var i = 0; i < customCharacters.length; i++) {
+        if(customCharacters[i].id === characterId) {
+            char = customCharacters[i];
+            break;
+        }
+    }
+    
+    // Проверяем стандартного персонажа
+    if(!char && characterId === '🐔') {
+        char = { id: '🐔', name: 'Курица', price: 0, purchased: true };
+    }
+    
     if(!char) {
         alert('Сначала купи этого персонажа в магазине!');
         return false;
@@ -546,7 +592,7 @@ function selectCharacter(characterId) {
     
     activeCharacter = char;
     saveCustomCharacters();
-    alert('✅ Теперь ты играешь за ' + characterId);
+    alert('✅ Теперь ты играешь за ' + char.name + ' ' + char.id);
     return true;
 }
 
@@ -557,50 +603,63 @@ function getCurrentGameCharacter() {
     }
     return '🐔'; // Стандартный персонаж
 }
+function getCurrentCharacterColor() {
+    if(activeCharacter) {
+        var colors = {
+            '🐔': '#ffd700', '🐣': '#ffee88', '🐓': '#ff4444',
+            '🦅': '#8B4513', '🦉': '#aa8844', '🐧': '#334455',
+            '🦆': '#88aa44', '🦜': '#44ff44', '🐉': '#ff6600'
+        };
+        return colors[activeCharacter.id] || '#ffd700';
+    }
+    return '#ffd700';
+}
 
 // Магазин персонажей
 function openCharactersShop() {
     var charactersShop = [
-        { id: '🐔', name: 'Курица', price: 0, default: true },
-        { id: '🐣', name: 'Цыплёнок', price: 30 },
-        { id: '🐓', name: 'Петух', price: 50 },
-        { id: '🦅', name: 'Орёл', price: 100 },
-        { id: '🦉', name: 'Сова', price: 80 },
-        { id: '🐧', name: 'Пингвин', price: 70 },
-        { id: '🦆', name: 'Утка', price: 60 },
-        { id: '🦜', name: 'Попугай', price: 90 },
-        { id: '🐦‍⬛', name: 'Ворон', price: 110 },
-        { id: '🐉', name: 'Дракон', price: 300 }
+        { id: '🐔', name: 'Курица', price: 0, default: true, color: '#ffd700' },
+        { id: '🐣', name: 'Цыплёнок', price: 30, default: false, color: '#ffee88' },
+        { id: '🐓', name: 'Петух', price: 50, default: false, color: '#ff4444' },
+        { id: '🦅', name: 'Орёл', price: 100, default: false, color: '#8B4513' },
+        { id: '🦉', name: 'Сова', price: 80, default: false, color: '#aa8844' },
+        { id: '🐧', name: 'Пингвин', price: 70, default: false, color: '#334455' },
+        { id: '🦆', name: 'Утка', price: 60, default: false, color: '#88aa44' },
+        { id: '🦜', name: 'Попугай', price: 90, default: false, color: '#44ff44' },
+        { id: '🐉', name: 'Дракон', price: 300, default: false, color: '#ff6600' }
     ];
     
-    var html = '<h3>🐔 Кастомные персонажи для игр</h3><p>🥚 У тебя: ' + myEggs + '</p><div class="shop-grid">';
+    var ownedIds = customCharacters.map(function(c) { return c.id; });
+    var activeId = activeCharacter ? activeCharacter.id : '🐔';
     
-    charactersShop.forEach(char => {
-        var owned = char.default || customCharacters.some(c => c.id === char.id);
-        var isActive = activeCharacter && activeCharacter.id === char.id;
-        html += '<div class="shop-item' + (owned ? '' : ' locked') + '" style="flex-direction:column;width:70px;height:80px">';
-        html += '<div style="font-size:40px">' + char.id + '</div>';
-        html += '<div style="font-size:10px">' + char.name + '</div>';
+    var html = '<h3>🐔 Кастомные персонажи для игр</h3><p>🥚 У тебя: ' + myEggs + '</p><div class="shop-grid" style="grid-template-columns:repeat(3,1fr);">';
+    
+    for(var i = 0; i < charactersShop.length; i++) {
+        var char = charactersShop[i];
+        var owned = char.default || ownedIds.includes(char.id);
+        var isActive = (activeId === char.id);
+        
+        html += '<div class="shop-item' + (!owned && char.price > 0 ? ' locked' : '') + '" style="flex-direction:column;width:90px;padding:8px">';
+        html += '<div style="font-size:48px">' + char.id + '</div>';
+        html += '<div style="font-size:12px;font-weight:bold">' + char.name + '</div>';
+        
         if(char.price > 0 && !owned) {
-            html += '<div class="price" style="position:relative;margin-top:4px">' + char.price + '🥚</div>';
-            html += '<button onclick="buyCharacter(\'' + char.id + '\',' + char.price + '); setTimeout(openCharactersShop, 100)" style="font-size:10px;padding:2px 5px;margin:2px">Купить</button>';
-        } else if(owned && !char.default) {
-            if(isActive) {
-                html += '<div style="font-size:10px;color:#4f4">✅ Активен</div>';
-            } else {
-                html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 100)" style="font-size:10px;padding:2px 5px;margin:2px">Выбрать</button>';
-            }
+            html += '<div class="price" style="position:static;margin:5px 0">' + char.price + '🥚</div>';
+            html += '<button onclick="buyCharacter(\'' + char.id + '\',' + char.price + '); setTimeout(openCharactersShop, 500)" style="font-size:11px;padding:4px 8px;background:#ffd700;color:#000">Купить</button>';
+        } else if(!char.default && owned && !isActive) {
+            html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 500)" style="font-size:11px;padding:4px 8px;margin-top:5px;background:#4f4;color:#000">Выбрать</button>';
+        } else if(isActive) {
+            html += '<div style="font-size:11px;color:#4f4;margin-top:5px">✅ Активен</div>';
         } else if(char.default && isActive) {
-            html += '<div style="font-size:10px;color:#4f4">✅ Активен</div>';
-        } else if(char.default) {
-            html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 100)" style="font-size:10px;padding:2px 5px;margin:2px">Выбрать</button>';
+            html += '<div style="font-size:11px;color:#4f4;margin-top:5px">✅ Активен</div>';
+        } else if(char.default && !isActive) {
+            html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 500)" style="font-size:11px;padding:4px 8px;margin-top:5px">Выбрать</button>';
         }
         html += '</div>';
-    });
+    }
     
-    html += '</div><button onclick="document.getElementById(\'charactersModal\').classList.remove(\'show\')" style="margin-top:10px">Закрыть</button>';
+    html += '</div><button onclick="closeModal(\'charactersModal\')" style="margin-top:15px">Закрыть</button>';
     
-    // Создаём модальное окно если его нет
     var modal = document.getElementById('charactersModal');
     if(!modal) {
         modal = document.createElement('div');
@@ -841,6 +900,7 @@ function loadAllData() {
     
     // Загружаем профиль
     loadProfile();
+    loadCustomCharacters();  // ← добавить эту строку
     setupOnline();
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
@@ -2428,18 +2488,182 @@ rM();
 
 // ==================== FLAPPY КУРИЦА ====================
 function initFlappy(){
-document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p>';
-createGameRating();
-var c=document.getElementById('fc'),ctx=c.getContext('2d'),bird={x:80,y:250},pipes=[],sc=0,ov=false,vy=0;
-function sp(){var gap=130,top=Math.random()*250+50;return{x:400,top:top,bottom:top+gap};}
-function jump(){if(!ov){vy=-8;playSound("jump");}}
-document.onkeydown=function(e){if(e.key===' '||e.key==='ArrowUp'){e.preventDefault();jump();}};
-c.onclick=jump;
-c.addEventListener('touchstart',function(e){e.preventDefault();jump();});
-pipes.push(sp());
-function loop(){if(ov)return;ctx.clearRect(0,0,400,500);var grad=ctx.createLinearGradient(0,0,0,500);grad.addColorStop(0,'#4a90d9');grad.addColorStop(1,'#87CEEB');ctx.fillStyle=grad;ctx.fillRect(0,0,400,500);vy+=0.5;bird.y+=vy;ctx.fillStyle='#ffd700';ctx.beginPath();ctx.arc(bird.x,bird.y,15,0,Math.PI*2);ctx.fill();ctx.fillStyle='#000';ctx.beginPath();ctx.arc(bird.x+5,bird.y-5,3,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f60';ctx.beginPath();ctx.arc(bird.x+8,bird.y+2,5,0,Math.PI*2);ctx.fill();if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());for(var i=pipes.length-1;i>=0;i--){pipes[i].x-=2;ctx.fillStyle='#2d5a1e';ctx.fillRect(pipes[i].x,0,45,pipes[i].top);ctx.fillRect(pipes[i].x,pipes[i].bottom,45,500-pipes[i].bottom);ctx.fillStyle='#4a8c2a';ctx.fillRect(pipes[i].x-3,pipes[i].top-20,51,20);ctx.fillRect(pipes[i].x-3,pipes[i].bottom,51,20);if(pipes[i].x+45<0){pipes.splice(i,1);sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();}if(bird.y>480||bird.y<0)end();}function end(){ov=true;clearInterval(gameInterval);playSound("hit");if(sc >= 50) progressQuest('score50', sc);if(sc >= 100) progressQuest('score100', sc);var b=document.createElement('button');b.textContent='🔄 Заново';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initFlappy();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+sc);}gameInterval=setInterval(loop,20);}
+    document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p>';
+    createGameRating();
+    var c=document.getElementById('fc'),ctx=c.getContext('2d'),bird={x:80,y:250},pipes=[],sc=0,ov=false,vy=0;
+    function sp(){var gap=130,top=Math.random()*250+50;return{x:400,top:top,bottom:top+gap};}
+    function jump(){if(!ov){vy=-8;playSound("jump");}}
+    document.onkeydown=function(e){if(e.key===' '||e.key==='ArrowUp'){e.preventDefault();jump();}};
+    c.onclick=jump;
+    c.addEventListener('touchstart',function(e){e.preventDefault();jump();});
+    pipes.push(sp());
+    
+    // ========== ПОЛНАЯ ПЕРЕПИСАННАЯ ФУНКЦИЯ loop ==========
+    function loop(){
+        if(ov)return;
+        ctx.clearRect(0,0,400,500);
+        
+        // НЕБО
+        var grad=ctx.createLinearGradient(0,0,0,500);
+        grad.addColorStop(0,'#4a90d9');
+        grad.addColorStop(1,'#87CEEB');
+        ctx.fillStyle=grad;
+        ctx.fillRect(0,0,400,500);
+        
+        // ОБЛАКА
+        ctx.fillStyle='rgba(255,255,255,0.7)';
+        ctx.beginPath();
+        ctx.ellipse(50+(Date.now()*0.02)%400, 60, 35, 25, 0, 0, Math.PI*2);
+        ctx.ellipse(80+(Date.now()*0.02)%400, 55, 30, 22, 0, 0, Math.PI*2);
+        ctx.ellipse(20+(Date.now()*0.02)%400, 55, 28, 20, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(300-(Date.now()*0.015)%400, 100, 40, 28, 0, 0, Math.PI*2);
+        ctx.ellipse(340-(Date.now()*0.015)%400, 95, 32, 24, 0, 0, Math.PI*2);
+        ctx.fill();
+        
+        // ТРУБЫ
+        for(var i=pipes.length-1;i>=0;i--){
+            pipes[i].x-=2;
+            ctx.fillStyle='#2d5a1e';
+            ctx.fillRect(pipes[i].x,0,45,pipes[i].top);
+            ctx.fillRect(pipes[i].x,pipes[i].bottom,45,500-pipes[i].bottom);
+            ctx.fillStyle='#4a8c2a';
+            ctx.fillRect(pipes[i].x-3,pipes[i].top-20,51,20);
+            ctx.fillRect(pipes[i].x-3,pipes[i].bottom,51,20);
+            if(pipes[i].x+45<0){pipes.splice(i,1);sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}
+            if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();
+        }
+        if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());
+        
+        // ГРАВИТАЦИЯ
+        vy+=0.5;
+        bird.y+=vy;
+        if(bird.y>480||bird.y<0)end();
+        
+        // ========== ОТРИСОВКА КАСТОМНОГО ПЕРСОНАЖА ==========
+        var character = getCurrentGameCharacter();      // эмодзи персонажа (🐔, 🐣, 🐓 и т.д.)
+        var charColor = getCurrentCharacterColor();     // цвет персонажа
 
+        function getCurrentGameCharacter() {
+    if(activeCharacter && activeCharacter.id) {
+        return activeCharacter.id;
+    }
+    return '🐔';
+}
 
+function getCurrentCharacterColor() {
+    if(activeCharacter && activeCharacter.id) {
+        var colors = {
+            '🐔': '#ffd700',
+            '🐣': '#ffee88',
+            '🐓': '#ff4444',
+            '🦅': '#8B4513',
+            '🦉': '#aa8844',
+            '🐧': '#334455',
+            '🦆': '#88aa44',
+            '🦜': '#44ff44',
+            '🐉': '#ff6600'
+        };
+        return colors[activeCharacter.id] || '#ffd700';
+    }
+    return '#ffd700';
+}
+        
+        // ТЕЛО (круглое)
+        ctx.fillStyle = charColor;
+        ctx.beginPath();
+        ctx.arc(bird.x, bird.y, 14, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // КРЫЛО (машет в зависимости от вертикальной скорости)
+        ctx.fillStyle = '#cc8800';
+        var wingAngle = vy > 0 ? 0.8 : -0.3;
+        ctx.beginPath();
+        ctx.ellipse(bird.x - 12, bird.y - 2 + (vy * 0.5), 9, 6, wingAngle, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // ГЛАЗ
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(bird.x + 6, bird.y - 4, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(bird.x + 7, bird.y - 5, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // БЛИК В ГЛАЗУ
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(bird.x + 8, bird.y - 6, 1, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // КЛЮВ
+        ctx.fillStyle = '#ff6600';
+        ctx.beginPath();
+        ctx.moveTo(bird.x + 12, bird.y - 4);
+        ctx.lineTo(bird.x + 19, bird.y - 6);
+        ctx.lineTo(bird.x + 13, bird.y + 1);
+        ctx.fill();
+        
+        // ХОХОЛОК (3 пёрышка)
+        ctx.fillStyle = charColor;
+        ctx.beginPath();
+        ctx.moveTo(bird.x - 3, bird.y - 13);
+        ctx.lineTo(bird.x - 1, bird.y - 22);
+        ctx.lineTo(bird.x + 3, bird.y - 13);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(bird.x + 1, bird.y - 14);
+        ctx.lineTo(bird.x + 5, bird.y - 24);
+        ctx.lineTo(bird.x + 7, bird.y - 14);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(bird.x - 7, bird.y - 12);
+        ctx.lineTo(bird.x - 8, bird.y - 20);
+        ctx.lineTo(bird.x - 3, bird.y - 12);
+        ctx.fill();
+        
+        // РУМЯНЕЦ (для милоты)
+        ctx.fillStyle = 'rgba(255,100,100,0.5)';
+        ctx.beginPath();
+        ctx.arc(bird.x + 10, bird.y + 2, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // ЭМОДЗИ ПЕРСОНАЖА (маленький поверх, для узнавания)
+        ctx.font = '16px Arial';
+        ctx.fillStyle = '#000';
+        ctx.shadowBlur = 2;
+        ctx.fillText(character, bird.x - 6, bird.y - 8);
+        ctx.shadowBlur = 0;
+        
+        // СЧЁТ
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 24px Arial';
+        ctx.fillText(''+sc, 350, 50);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillText(''+sc, 348, 48);
+    }
+    
+    function end(){
+        ov=true;
+        clearInterval(gameInterval);
+        playSound("hit");
+        if(sc >= 50) progressQuest('score50', sc);
+        if(sc >= 100) progressQuest('score100', sc);
+        var b=document.createElement('button');
+        b.textContent='🔄 Заново';
+        b.onclick=function(){
+            document.getElementById('gameContent').innerHTML='';
+            initFlappy();
+        };
+        document.getElementById('gameContent').appendChild(b);
+        alert('Счёт: '+sc);
+    }
+    
+    gameInterval=setInterval(loop,20);
+}
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
 function initChickenRain(){
 document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p>';
@@ -2580,7 +2804,50 @@ for(var i=0;i<10;i++) ctx.fillRect(i*60, groundY+5, 30, 5);
 // ПЕТУХ
 ctx.font='42px Arial';
 ctx.fillStyle='#ffd700';
-ctx.fillText('🐓',50,y);
+var char = getCurrentGameCharacter();
+var charColor = getCurrentCharacterColor();
+
+// Ноги (бегущие)
+ctx.fillStyle = '#cc8800';
+ctx.fillRect(45, y + 25, 8, 12);
+ctx.fillRect(57, y + 28, 8, 12);
+
+// Тело
+ctx.fillStyle = charColor;
+ctx.beginPath();
+ctx.ellipse(55, y + 12, 18, 20, 0, 0, Math.PI * 2);
+ctx.fill();
+
+// Голова
+ctx.beginPath();
+ctx.arc(55, y + 2, 14, 0, Math.PI * 2);
+ctx.fill();
+
+// Глаз
+ctx.fillStyle = '#fff';
+ctx.beginPath();
+ctx.arc(62, y - 2, 4, 0, Math.PI * 2);
+ctx.fill();
+ctx.fillStyle = '#000';
+ctx.beginPath();
+ctx.arc(63, y - 3, 2, 0, Math.PI * 2);
+ctx.fill();
+
+// Клюв
+ctx.fillStyle = '#ff6600';
+ctx.beginPath();
+ctx.moveTo(68, y - 2);
+ctx.lineTo(76, y - 4);
+ctx.lineTo(69, y + 2);
+ctx.fill();
+
+// Хохолок
+ctx.fillStyle = charColor;
+ctx.beginPath();
+ctx.moveTo(48, y - 10);
+ctx.lineTo(52, y - 18);
+ctx.lineTo(56, y - 10);
+ctx.fill();
 
 // ПРЕГРАДЫ (КАМНИ 🪨)
 if(Math.random()<0.025 && obstacles.length<2){
@@ -2685,22 +2952,104 @@ function initSnake(){
             document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;
             food=rf();
         }else sn.pop();
+        
+        // ОЧИСТКА
         ctx.clearRect(0,0,400,400);
-        ctx.fillStyle='#ffd700';
-        ctx.fillRect(food.x,food.y,18,18);
-        ctx.fillStyle='#4CAF50';
-        sn.forEach(function(s){ctx.fillRect(s.x,s.y,18,18);});
+        
+        // РИСУЕМ ФОН (сетка для стиля)
+        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+        for(var i = 0; i <= 20; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i*20, 0);
+            ctx.lineTo(i*20, 400);
+            ctx.stroke();
+            ctx.moveTo(0, i*20);
+            ctx.lineTo(400, i*20);
+            ctx.stroke();
+        }
+        
+        // РИСУЕМ ЕДУ
+        var character = getCurrentGameCharacter();
+        var charColor = getCurrentCharacterColor();
+        
+        ctx.font = '22px Arial';
+        ctx.fillStyle = '#ff4444';
+        ctx.fillText('🍎', food.x + 2, food.y + 18);
+        
+        // РИСУЕМ ЗМЕЙКУ С КАСТОМНОЙ ГОЛОВОЙ
+        for(var i = 0; i < sn.length; i++) {
+            if(i === 0) {
+                // ГОЛОВА — рисуем персонажа
+                ctx.fillStyle = charColor;
+                ctx.fillRect(sn[i].x, sn[i].y, 18, 18);
+                
+                // ГЛАЗА (смотрят в сторону движения)
+                ctx.fillStyle = '#fff';
+                if(dir.x === 20) { // вправо
+                    ctx.fillRect(sn[i].x + 13, sn[i].y + 4, 4, 4);
+                    ctx.fillRect(sn[i].x + 13, sn[i].y + 11, 4, 4);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(sn[i].x + 14, sn[i].y + 5, 2, 2);
+                    ctx.fillRect(sn[i].x + 14, sn[i].y + 12, 2, 2);
+                } else if(dir.x === -20) { // влево
+                    ctx.fillRect(sn[i].x + 2, sn[i].y + 4, 4, 4);
+                    ctx.fillRect(sn[i].x + 2, sn[i].y + 11, 4, 4);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(sn[i].x + 3, sn[i].y + 5, 2, 2);
+                    ctx.fillRect(sn[i].x + 3, sn[i].y + 12, 2, 2);
+                } else if(dir.y === -20) { // вверх
+                    ctx.fillRect(sn[i].x + 4, sn[i].y + 2, 4, 4);
+                    ctx.fillRect(sn[i].x + 11, sn[i].y + 2, 4, 4);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(sn[i].x + 5, sn[i].y + 3, 2, 2);
+                    ctx.fillRect(sn[i].x + 12, sn[i].y + 3, 2, 2);
+                } else { // вниз
+                    ctx.fillRect(sn[i].x + 4, sn[i].y + 13, 4, 4);
+                    ctx.fillRect(sn[i].x + 11, sn[i].y + 13, 4, 4);
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(sn[i].x + 5, sn[i].y + 14, 2, 2);
+                    ctx.fillRect(sn[i].x + 12, sn[i].y + 14, 2, 2);
+                }
+                
+                // ЯЗЫК (красный)
+                ctx.fillStyle = '#ff4444';
+                if(dir.x === 20) ctx.fillRect(sn[i].x + 18, sn[i].y + 7, 4, 3);
+                else if(dir.x === -20) ctx.fillRect(sn[i].x - 2, sn[i].y + 7, 4, 3);
+                else if(dir.y === -20) ctx.fillRect(sn[i].x + 7, sn[i].y - 2, 3, 4);
+                else ctx.fillRect(sn[i].x + 7, sn[i].y + 18, 3, 4);
+                
+                // ЭМОДЗИ ПЕРСОНАЖА НА ГОЛОВЕ
+                ctx.font = '12px Arial';
+                ctx.fillStyle = '#000';
+                ctx.fillText(character, sn[i].x + 4, sn[i].y + 14);
+                
+            } else {
+                // ТЕЛО — градиент от цвета персонажа
+                var gradient = ctx.createLinearGradient(sn[i].x, sn[i].y, sn[i].x+18, sn[i].y+18);
+                gradient.addColorStop(0, charColor);
+                gradient.addColorStop(1, '#aa8800');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(sn[i].x, sn[i].y, 18, 18);
+                
+                // ЧЕШУЙКИ (маленькие точки)
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fillRect(sn[i].x + 5, sn[i].y + 5, 3, 3);
+                ctx.fillRect(sn[i].x + 12, sn[i].y + 12, 3, 3);
+            }
+        }
+        
+        // ОБВОДКА ДЛЯ ГОЛОВЫ
+        ctx.strokeStyle = '#aa6600';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(sn[0].x, sn[0].y, 18, 18);
     }
     
     function end(s){
         ov=true;
         clearInterval(gameInterval);
         playSound("hit");
-        
-        // 👇👇👇 ЗАДАНИЯ НА ОЧКИ 👇👇👇
         if(s >= 50) progressQuest('score50', s);
         if(s >= 100) progressQuest('score100', s);
-        
         var b=document.createElement('button');
         b.textContent='🔄 Заново';
         b.onclick=function(){
@@ -2712,7 +3061,7 @@ function initSnake(){
     }
     
     gameInterval=setInterval(loop,100);
-}
+                      }
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
 document.getElementById('tl').onclick=function(){if(!ov)ml();};document.getElementById('tr').onclick=function(){if(!ov)mr();};
 document.getElementById('tu').onclick=function(){if(!ov)rotate();};document.getElementById('td').onclick=function(){if(!ov)drop();};
@@ -4320,6 +4669,11 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Все фиксы применены');
 });
 
+
+function closeModal(modalId) {
+    var modal = document.getElementById(modalId);
+    if(modal) modal.classList.remove('show');
+}
       </script>
 
 </body>
