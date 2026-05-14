@@ -1714,7 +1714,6 @@ function showThought(emotion, x, y) {
 }
 
 function initTamagotchi(){
-createGameRating();
 if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
 var saved=localStorage.getItem('tildochka_tamagotchi');
 if(saved){try{var p=JSON.parse(saved);if(p&&p.isAlive){tamagotchiData=p;renderTamagotchi();startTamagotchiLoop();return;}}catch(e){}}
