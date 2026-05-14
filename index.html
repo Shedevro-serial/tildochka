@@ -1706,6 +1706,7 @@ function showThought(emotion, x, y) {
 }
 
 function initTamagotchi(){
+createGameRating();
 if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
 var saved=localStorage.getItem('tildochka_tamagotchi');
 if(saved){try{var p=JSON.parse(saved);if(p&&p.isAlive){tamagotchiData=p;renderTamagotchi();startTamagotchiLoop();return;}}catch(e){}}
@@ -1729,10 +1730,28 @@ renderTamagotchi();startTamagotchiLoop();
 function renderTamagotchi(){
 var t=tamagotchiData;
 if(!t||!t.isAlive){
-var deadName=t?t.name:'Питомец';
-document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+(t?t.age:0)+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div>';
-if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
-return;
+    var deadName=t?t.name:'Питомец';
+    var ageValue = t ? t.age : 0;
+    
+    // ОТПРАВКА РЕЙТИНГА (счёт = возраст питомца)
+    if(t && t.age > 0) {
+        var rating = Math.min(10, Math.floor(t.age / 5) + 1); // рейтинг от 1 до 10
+        db.ref('gameRatings/tamagotchi').push({
+            name: myName,
+            rating: rating,
+            score: t.age,
+            ts: Date.now()
+        });
+        addEggs(Math.floor(t.age / 10), 'Тамагочи прожил ' + t.age + ' дней!');
+    }
+    
+    document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+ageValue+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div><div id="gameRatingArea"></div>';
+    
+    // Показываем звёзды для оценки после смерти
+    createGameRating();
+    
+    if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
+    return;
 }
 
 var petClass='tamagotchi-pet';
@@ -1752,6 +1771,7 @@ h+='</div><h3>'+t.name+' ('+t.stage+') | '+t.age+' дн.</h3>';
 h+='<p style="color:#aaa;font-size:12px;margin-bottom:8px">'+t.hint+'</p>';
 h+='<div style="max-width:250px;margin:0 auto"><p>😊</p><div class="stat-bar"><div class="stat-fill happy" style="width:'+t.happy+'%"></div></div><p>🍗</p><div class="stat-bar"><div class="stat-fill hunger" style="width:'+t.hunger+'%"></div></div><p>⚡</p><div class="stat-bar"><div class="stat-fill energy" style="width:'+t.energy+'%"></div></div></div>';
 h+='<button onclick="feedPet()">🍗 Кормить</button><button onclick="playWithPet()">🎾 Играть</button><button onclick="sleepPet()">😴 Спать</button>';
+h+='<div id="gameRatingArea" style="margin-top:15px"></div>';
 document.getElementById('gameContent').innerHTML=h;
 document.getElementById('gameScoreDisplay').textContent='Возраст: '+t.age;
 localStorage.setItem('tildochka_tamagotchi',JSON.stringify(t));
@@ -4673,6 +4693,25 @@ document.addEventListener('DOMContentLoaded', function() {
 function closeModal(modalId) {
     var modal = document.getElementById(modalId);
     if(modal) modal.classList.remove('show');
+}
+function rateTamagotchiNow() {
+    if(!tamagotchiData || !tamagotchiData.isAlive) {
+        alert('Питомец мёртв или не выбран!');
+        return;
+    }
+    var rating = parseInt(prompt('Оцените игру Тамагочи от 1 до 10:', '10'));
+    if(isNaN(rating) || rating < 1 || rating > 10) {
+        alert('Введите число от 1 до 10');
+        return;
+    }
+    db.ref('gameRatings/tamagotchi').push({
+        name: myName,
+        rating: rating,
+        score: tamagotchiData.age,
+        ts: Date.now()
+    });
+    alert('⭐ Спасибо за оценку!');
+    addEggs(2, 'Оценка игры!');
 }
       </script>
 
