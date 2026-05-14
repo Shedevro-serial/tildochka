@@ -1162,7 +1162,7 @@ function sendChatMessage() {
     var btn = document.getElementById('chatSendBtn');
     if(btn) {
         btn.disabled = true;
-        btn.innerHTML = '✅';
+        btn.innerHTML = '⏳...';
     }
     
     db.ref('chat').push({
@@ -1189,7 +1189,7 @@ function sendChatMessage() {
             btn.innerHTML = '💬 Отправить';
         }
     });
-}
+  }
 function loadChatMessages() {
     const chatRef = db.ref('chat');
     chatRef.limitToLast(50).on('value', (snapshot) => {
@@ -1386,9 +1386,9 @@ function postShort(){
     });
 }
 function loadShorts() {
-    db.ref('shorts').on('value', (snapshot) => {
+    db.ref('shorts').on('value', function(snapshot) {
         const shorts = [];
-        snapshot.forEach((child) => {
+        snapshot.forEach(function(child) {
             shorts.push({
                 id: child.key,
                 channel: child.val().channel || 'Без канала',
@@ -1400,36 +1400,51 @@ function loadShorts() {
                 ts: child.val().ts || 0
             });
         });
-        shorts.sort((a, b) => b.ts - a.ts);
+        shorts.sort(function(a, b) { return b.ts - a.ts; });
         
         const container = document.getElementById('shortsList');
         if(!container) return;
         
         if(shorts.length === 0) {
-            container.innerHTML = '<p style="color:#888">Нет шортсов. Создай первый канал и загрузи видео!</p>';
+            container.innerHTML = '<p style="color:#888;text-align:center">📺 Нет видео. Создай канал и загрузи первое видео!</p>';
             return;
         }
         
         container.innerHTML = '';
-        shorts.forEach(sh => {
-            let commentsHtml = '';
-            Object.keys(sh.comments).forEach(key => {
-                commentsHtml += `<div class="short-comment"><b>${escapeHtml(sh.comments[key].name)}:</b> ${escapeHtml(sh.comments[key].text)}</div>`;
-            });
+        for(var i = 0; i < shorts.length; i++) {
+            var sh = shorts[i];
+            var commentsHtml = '';
+            if(sh.comments) {
+                var commentKeys = Object.keys(sh.comments);
+                for(var j = 0; j < commentKeys.length; j++) {
+                    var key = commentKeys[j];
+                    commentsHtml += '<div class="short-comment"><b>' + escapeHtml(sh.comments[key].name) + ':</b> ' + escapeHtml(sh.comments[key].text) + '</div>';
+                }
+            }
+            
+            var mediaHtml = '';
+            if(sh.media) {
+                if(sh.media.startsWith('data:video')) {
+                    mediaHtml = '<video src="' + sh.media + '" class="short-video" controls></video>';
+                } else {
+                    mediaHtml = '<video src="' + sh.media + '" class="short-video" controls></video>';
+                }
+            }
+            
             container.innerHTML += `
                 <div class="short-card">
                     <div style="color:#ffd700">📺 ${escapeHtml(sh.channel)} | ${escapeHtml(sh.author)}</div>
-                    ${sh.caption ? '<div>'+escapeHtml(sh.caption)+'</div>' : ''}
-                    ${sh.media ? '<video src="'+sh.media+'" class="short-video" controls></video>' : ''}
+                    ${sh.caption ? '<div><strong>' + escapeHtml(sh.caption) + '</strong></div>' : ''}
+                    ${mediaHtml}
                     <div class="short-actions">
                         <button onclick="likeShort('${sh.id}',${sh.likes})">❤️ ${sh.likes}</button>
                     </div>
                     <div class="short-comments">${commentsHtml}</div>
-                    <input id="sc_${sh.id}" placeholder="Комментарий..." style="width:100%;padding:6px;margin:4px 0;font-size:12px">
-                    <button onclick="addShortComment('${sh.id}')" style="font-size:12px;padding:6px 10px">💬</button>
+                    <input id="sc_${sh.id}" placeholder="Напиши комментарий..." style="width:100%;padding:6px;margin:4px 0;font-size:12px;border-radius:8px">
+                    <button onclick="addShortComment('${sh.id}')" style="font-size:12px;padding:6px 10px">💬 Отправить</button>
                 </div>
             `;
-        });
+        }
     });
 }
 function likeShort(id,l){db.ref('shorts/'+id).update({likes:l+1});}
@@ -2793,6 +2808,10 @@ function addFriend() {
         return;
     }
     
+    // Показываем, что идёт поиск
+    var btn = document.querySelector('#friends-screen button');
+    if(btn) btn.disabled = true;
+    
     db.ref('users').orderByChild('name').equalTo(friendName).once('value', function(snap) {
         var found = false;
         snap.forEach(function(child) {
@@ -2801,8 +2820,8 @@ function addFriend() {
             var friendData = child.val();
             
             // Проверяем, не отправляли ли уже заявку
-            var alreadySent = false;
             db.ref('users/' + friendUid + '/friendRequests').once('value', function(reqSnap) {
+                var alreadySent = false;
                 reqSnap.forEach(function(reqChild) {
                     if(reqChild.val().uid === myUid) {
                         alreadySent = true;
@@ -2810,6 +2829,7 @@ function addFriend() {
                 });
                 if(alreadySent) {
                     alert('Заявка этому пользователю уже отправлена');
+                    if(btn) btn.disabled = false;
                     return;
                 }
                 
@@ -2818,15 +2838,24 @@ function addFriend() {
                     uid: myUid,
                     name: myName,
                     ts: Date.now()
+                }).then(function() {
+                    alert('✅ Заявка отправлена пользователю ' + friendName);
+                    progressQuest('addFriend', 1);
+                    document.getElementById('friendNameInput').value = '';
+                    if(btn) btn.disabled = false;
+                }).catch(function(err) {
+                    alert('Ошибка: ' + err.message);
+                    if(btn) btn.disabled = false;
                 });
-                alert('✅ Заявка отправлена пользователю ' + friendName);
-                progressQuest('addFriend', 1);
-                document.getElementById('friendNameInput').value = '';
             });
         });
         if(!found) {
             alert('Пользователь с именем "' + friendName + '" не найден');
+            if(btn) btn.disabled = false;
         }
+    }).catch(function(err) {
+        alert('Ошибка поиска: ' + err.message);
+        if(btn) btn.disabled = false;
     });
 }
 
