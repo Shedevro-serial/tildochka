@@ -2944,7 +2944,11 @@ function initSnake(){
     var c=document.getElementById('sc'),ctx=c.getContext('2d'),sn=[{x:200,y:200}],food=rf(),dir={x:20,y:0},sc=0,ov=false;
     
     function rf(){
-        return{x:Math.floor(Math.random()*20)*20,y:Math.floor(Math.random()*20)*20};
+        // Яблоко спавнится ТОЛЬКО на координатах, кратных 20
+        var maxCells = 20; // 400 / 20 = 20 клеток
+        var cellX = Math.floor(Math.random() * maxCells);
+        var cellY = Math.floor(Math.random() * maxCells);
+        return {x: cellX * 20, y: cellY * 20};
     }
     
     function cd(nd){
@@ -2978,31 +2982,42 @@ function initSnake(){
             sc++;
             playSound("coin");
             document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;
-            food=rf();
+            // Проверяем, не занята ли клетка телом змейки
+            var newFood = rf();
+            var attempts = 0;
+            while(sn.some(function(s){ return s.x===newFood.x && s.y===newFood.y; }) && attempts < 100) {
+                newFood = rf();
+                attempts++;
+            }
+            food = newFood;
         }else sn.pop();
         
-        // ОЧИСТКА
-        ctx.clearRect(0,0,400,400);
+        // ОЧИСТКА (фон — тёмный, без сетки)
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, 400, 400);
         
-        // РИСУЕМ ФОН (сетка для стиля)
-        ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-        for(var i = 0; i <= 20; i++) {
-            ctx.beginPath();
-            ctx.moveTo(i*20, 0);
-            ctx.lineTo(i*20, 400);
-            ctx.stroke();
-            ctx.moveTo(0, i*20);
-            ctx.lineTo(400, i*20);
-            ctx.stroke();
-        }
-        
-        // РИСУЕМ ЕДУ
+        // РИСУЕМ ЕДУ (красное яблоко с блеском)
         var character = getCurrentGameCharacter();
         var charColor = getCurrentCharacterColor();
         
-        ctx.font = '22px Arial';
-        ctx.fillStyle = '#ff4444';
-        ctx.fillText('🍎', food.x + 2, food.y + 18);
+        // Яблоко
+        ctx.fillStyle = '#ff3333';
+        ctx.beginPath();
+        ctx.arc(food.x + 10, food.y + 10, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#cc0000';
+        ctx.beginPath();
+        ctx.arc(food.x + 7, food.y + 7, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(food.x + 5, food.y + 5, 2, 0, Math.PI * 2);
+        ctx.fill();
+        // Листик
+        ctx.fillStyle = '#44ff44';
+        ctx.beginPath();
+        ctx.ellipse(food.x + 15, food.y + 4, 4, 6, -0.5, 0, Math.PI * 2);
+        ctx.fill();
         
         // РИСУЕМ ЗМЕЙКУ С КАСТОМНОЙ ГОЛОВОЙ
         for(var i = 0; i < sn.length; i++) {
@@ -3052,7 +3067,7 @@ function initSnake(){
                 ctx.fillText(character, sn[i].x + 4, sn[i].y + 14);
                 
             } else {
-                // ТЕЛО — градиент от цвета персонажа
+                // ТЕЛО — градиент от цвета персонажа + чешуйки
                 var gradient = ctx.createLinearGradient(sn[i].x, sn[i].y, sn[i].x+18, sn[i].y+18);
                 gradient.addColorStop(0, charColor);
                 gradient.addColorStop(1, '#aa8800');
@@ -3089,7 +3104,8 @@ function initSnake(){
     }
     
     gameInterval=setInterval(loop,100);
-                      }
+    }
+
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
 document.getElementById('tl').onclick=function(){if(!ov)ml();};document.getElementById('tr').onclick=function(){if(!ov)mr();};
 document.getElementById('tu').onclick=function(){if(!ov)rotate();};document.getElementById('td').onclick=function(){if(!ov)drop();};
