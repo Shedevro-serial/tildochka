@@ -250,6 +250,11 @@
         transform: scale(0.98);
         transition: transform 0.05s;
     }
+    @media (max-width: 600px) {
+    #charactersModalBox > div:first-of-type {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    }
     
     /* МОБИЛЬНЫЕ УСТРОЙСТВА */
     @media (max-width: 768px) {
@@ -632,40 +637,43 @@ function openCharactersShop() {
     var ownedIds = customCharacters.map(function(c) { return c.id; });
     var activeId = activeCharacter ? activeCharacter.id : '🐔';
     
-    var html = '<h3>🐔 Кастомные персонажи для игр</h3><p>🥚 У тебя: ' + myEggs + '</p><div class="shop-grid" style="grid-template-columns:repeat(3,1fr);">';
+    // Используем обычный div с фиксированной сеткой, а не shop-grid
+    var html = '<h3>🐔 Кастомные персонажи для игр</h3><p>🥚 У тебя: ' + myEggs + '</p>';
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:10px 0;">';
     
     for(var i = 0; i < charactersShop.length; i++) {
         var char = charactersShop[i];
         var owned = char.default || ownedIds.includes(char.id);
         var isActive = (activeId === char.id);
         
-        html += '<div class="shop-item' + (!owned && char.price > 0 ? ' locked' : '') + '" style="flex-direction:column;width:90px;padding:8px">';
-        html += '<div style="font-size:48px">' + char.id + '</div>';
-        html += '<div style="font-size:12px;font-weight:bold">' + char.name + '</div>';
+        html += '<div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:12px;text-align:center;border:1px solid rgba(255,215,0,0.2);">';
+        html += '<div style="font-size:48px;margin-bottom:5px;">' + char.id + '</div>';
+        html += '<div style="font-size:14px;font-weight:bold;margin-bottom:8px;">' + char.name + '</div>';
         
         if(char.price > 0 && !owned) {
-            html += '<div class="price" style="position:static;margin:5px 0">' + char.price + '🥚</div>';
-            html += '<button onclick="buyCharacter(\'' + char.id + '\',' + char.price + '); setTimeout(openCharactersShop, 500)" style="font-size:11px;padding:4px 8px;background:#ffd700;color:#000">Купить</button>';
+            html += '<div style="font-size:12px;color:#ffd700;margin:5px 0;">Цена: ' + char.price + '🥚</div>';
+            html += '<button onclick="buyCharacter(\'' + char.id + '\',' + char.price + '); setTimeout(openCharactersShop, 500)" style="font-size:12px;padding:6px 12px;background:#ffd700;color:#000;border:none;border-radius:8px;cursor:pointer;width:100%;">Купить</button>';
         } else if(!char.default && owned && !isActive) {
-            html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 500)" style="font-size:11px;padding:4px 8px;margin-top:5px;background:#4f4;color:#000">Выбрать</button>';
+            html += '<div style="font-size:12px;color:#4f4;margin:5px 0;">✅ Куплен</div>';
+            html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 500)" style="font-size:12px;padding:6px 12px;background:#4f4;color:#000;border:none;border-radius:8px;cursor:pointer;width:100%;">Выбрать</button>';
         } else if(isActive) {
-            html += '<div style="font-size:11px;color:#4f4;margin-top:5px">✅ Активен</div>';
-        } else if(char.default && isActive) {
-            html += '<div style="font-size:11px;color:#4f4;margin-top:5px">✅ Активен</div>';
+            html += '<div style="font-size:12px;color:#4f4;margin:8px 0;">✅ Активен сейчас</div>';
         } else if(char.default && !isActive) {
-            html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 500)" style="font-size:11px;padding:4px 8px;margin-top:5px">Выбрать</button>';
+            html += '<button onclick="selectCharacter(\'' + char.id + '\'); setTimeout(openCharactersShop, 500)" style="font-size:12px;padding:6px 12px;background:#444;color:#fff;border:1px solid #ffd700;border-radius:8px;cursor:pointer;width:100%;">Выбрать</button>';
+        } else if(char.default && isActive) {
+            html += '<div style="font-size:12px;color:#4f4;margin:8px 0;">✅ Активен сейчас</div>';
         }
         html += '</div>';
     }
     
-    html += '</div><button onclick="closeModal(\'charactersModal\')" style="margin-top:15px">Закрыть</button>';
+    html += '</div><button onclick="closeModal(\'charactersModal\')" style="margin-top:15px;padding:10px 25px;background:#444;color:#fff;border:none;border-radius:8px;cursor:pointer;">Закрыть</button>';
     
     var modal = document.getElementById('charactersModal');
     if(!modal) {
         modal = document.createElement('div');
         modal.id = 'charactersModal';
         modal.className = 'modal-overlay';
-        modal.innerHTML = '<div class="modal-box" id="charactersModalBox"></div>';
+        modal.innerHTML = '<div class="modal-box" id="charactersModalBox" style="max-width:550px;"></div>';
         document.body.appendChild(modal);
     }
     document.getElementById('charactersModalBox').innerHTML = html;
