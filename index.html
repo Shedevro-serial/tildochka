@@ -2846,26 +2846,19 @@ function initChickenRain(){
     
     update();
     gameInterval=setInterval(function(){},1000);
-              }
-// ==================== РАННЕР (ПРЫГАЕТ!) ====================
-// ==================== РАННЕР С ЖИВОТНЫМИ (бегут лицом вперёд) ====================
+}
+// ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
 function initRunner(){
-    document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p><button id="runnerSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
-    
-    // Кнопка магазина скинов для Runner
-    document.getElementById('runnerSkinBtn').onclick = function() {
-        var currentSkin = getCurrentGameSkin('runner');
-        openGameSkinShop('runner', currentSkin, 'restartCurrentGame()');
-    };
+    document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
     
     createGameRating();
     var c=document.getElementById('rc'),ctx=c.getContext('2d');
-    var y=140,vy=0,groundY=160;
+    var y=110,vy=0,groundY=160;  // y=110 - животные ВЫСОКО
     var obstacles=[];
     var score=0,ov=false;
     var bgX=0;
     var cloudOffset=0;
-    var legWobble = 0; // для анимации бега
+    var legSwing = 0;
 
     function runnerJump(){
         if(y>=groundY-10 && !ov){
@@ -2875,9 +2868,9 @@ function initRunner(){
     }
     window.runnerJump=runnerJump;
 
-    // Анимация бега (ног/прыжка)
+    // Анимация ног (без дрожания тела)
     setInterval(function() {
-        if(!ov) legWobble = (legWobble + 0.3) % (Math.PI * 2);
+        if(!ov) legSwing = (legSwing + 0.3) % (Math.PI * 2);
     }, 50);
 
     document.onkeydown=function(e){
@@ -2928,25 +2921,13 @@ function initRunner(){
         var runnerSkin = getCurrentGameSkin('runner');
         var animalEmoji = runnerSkin.emoji || '🦍';
         
-        // ОТРИСОВКА ЖИВОТНОГО (целиком, лицом вперёд)
+        // ОТРИСОВКА ЖИВОТНОГО (целиком, без дрожания)
         ctx.font = '52px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // Эффект прыжка/бега (лёгкое сжатие)
-        var scaleY = 1;
-        var scaleX = 1;
-        if(vy !== 0) {
-            scaleY = 0.9;
-            scaleX = 1.1;
-        } else {
-            scaleX = 1 + Math.sin(legWobble) * 0.05;
-            scaleY = 1 - Math.sin(legWobble) * 0.03;
-        }
-        
         ctx.save();
-        ctx.translate(55, y + 25);
-        ctx.scale(scaleX, scaleY);
+        ctx.translate(55, y + 15);  // +15 чтобы центр был на уровне тела
         ctx.fillStyle = '#000';
         ctx.shadowBlur = 3;
         ctx.shadowColor = 'rgba(0,0,0,0.3)';
