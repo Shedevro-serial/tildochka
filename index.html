@@ -2705,15 +2705,9 @@ function initFlappy(){
     gameInterval=setInterval(loop,20);
 }
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
-// ==================== КУРИНЫЙ ДОЖДЬ С ЖИВОТНЫМИ (ловят яйца) ====================
+// ==================== КУРИНЫЙ ДОЖДЬ (без дрожания) ====================
 function initChickenRain(){
-    document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
-    
-    // Кнопка магазина скинов
-    document.getElementById('chickenRainSkinBtn').onclick = function() {
-        var currentSkin = getCurrentGameSkin('chickenrain');
-        openGameSkinShop('chickenrain', currentSkin, 'restartCurrentGame()');
-    };
+    document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p>';
     
     createGameRating();
     var c=document.getElementById('cr'),ctx=c.getContext('2d');
@@ -2723,12 +2717,6 @@ function initChickenRain(){
     var score=0;
     var ov=false;
     var particles=[];
-    var wobble=0;
-    
-    // Анимация покачивания
-    setInterval(function() {
-        if(!ov) wobble = (wobble + 0.2) % (Math.PI * 2);
-    }, 50);
     
     function spawnEgg(){
         if(Math.random()<0.02){
@@ -2776,22 +2764,15 @@ function initChickenRain(){
         ctx.fillStyle='#6aae5a';
         for(var i=0;i<10;i++) ctx.fillRect(i*40,460,38,10);
         
-        // ОТРИСОВКА ЖИВОТНОГО (целиком, с эффектом покачивания)
+        // ОТРИСОВКА ЖИВОТНОГО (целиком, БЕЗ ДРОЖАНИЯ)
         ctx.font = '54px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
-        // Лёгкое покачивание при движении
-        var tilt = Math.sin(wobble) * 0.05;
-        ctx.save();
-        ctx.translate(animalX + 20, 460);
-        ctx.rotate(tilt);
         ctx.shadowBlur = 3;
         ctx.shadowColor = 'rgba(0,0,0,0.3)';
         ctx.fillStyle = '#000';
-        ctx.fillText(animalEmoji, 0, 0);
+        ctx.fillText(animalEmoji, animalX + 20, 455);
         ctx.shadowBlur = 0;
-        ctx.restore();
         
         // ЯЙЦА
         for(var i=eggs.length-1;i>=0;i--){
