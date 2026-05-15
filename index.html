@@ -1632,7 +1632,7 @@ function loadIdeas() {
 }
 function likeIdea(id,l){db.ref('ideas/'+id).update({likes:l+1});progressQuest('like',1);}
 
-function createChannel(){var n=prompt('Название канала:');if(!n)return;myChannel=n;localStorage.setItem('tildochka_channel',n);syncOnlineProfile();alert('✅ Канал "'+n+'" создан!');progressQuest('createChannel', 1);}
+function createChannel(){var n=prompt('Название канала:');if(!n)return;myChannel=n;localStorage.setItem('tildochka_channel',n);syncOnlineProfile();updateChannelUI();alert('✅ Канал "'+n+'" создан!');progressQuest('createChannel', 1);}
 function previewShortVideo(){var f=document.getElementById('shortVideo').files[0];if(!f)return;var r=new FileReader();r.onload=function(e){shortMedia=e.target.result;document.getElementById('shortPreview').innerHTML='<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};r.readAsDataURL(f);}
 function postShort(){
     var cap = document.getElementById('shortCaption').value.trim();
@@ -1684,7 +1684,7 @@ function previewShortMedia(type) {
         if(type === 'image') {
             preview.innerHTML = '<img src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px">';
         } else {
-            preview.innerHTML = '<video src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px" controls></video>';
+            preview.innerHTML = '<video src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px" controls playsinline preload="auto"></video>';
         }
     };
     reader.readAsDataURL(file);
@@ -1732,8 +1732,8 @@ function loadShorts() {
                 if(sh.mediaType === 'image') {
                     mediaHtml = '<img src="'+sh.media+'" style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px">';
                 } else if(sh.mediaType === 'video') {
-                    mediaHtml = '<video src="'+sh.media+'" class="short-video" controls playsinline style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px" preload="metadata"></video>';
-                }
+    mediaHtml = '<video src="'+sh.media+'" class="short-video" controls playsinline style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px" preload="auto"></video>';
+}
             }
             
             var commentsHtml = '';
@@ -3048,22 +3048,39 @@ function initChickenRain(){
             }
             // ПРОПУЩЕНО
             else if(e.y > 500){
-                eggs.splice(i,1);
-                if(!ov){
-                    ov=true;
-                    playSound("hit");
-                    if(score >= 50) progressQuest('score50', score);
-                    if(score >= 100) progressQuest('score100', score);
-                    var b=document.createElement('button');
-                    b.textContent='🔄 Заново';
-                    b.onclick=function(){
-                        document.getElementById('gameContent').innerHTML='';
-                        initChickenRain();
-                    };
-                    document.getElementById('gameContent').appendChild(b);
-                    alert('Игра окончена! Счёт: '+score);
-                }
-            }
+    eggs.splice(i,1);
+    if(!ov){
+        ov=true;
+        playSound("hit");
+        if(score >= 50) progressQuest('score50', score);
+        if(score >= 100) progressQuest('score100', score);
+        
+        var container = document.createElement('div');
+        container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
+        
+        var scoreText = document.createElement('p');
+        scoreText.textContent = '🏆 Счёт: ' + score;
+        scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
+        
+        var button = document.createElement('button');
+        button.textContent = '🔄 Заново';
+        button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+        button.onclick = function(){
+            document.getElementById('gameContent').innerHTML = '';
+            initChickenRain();
+        };
+        
+        container.appendChild(scoreText);
+        container.appendChild(button);
+        
+        document.getElementById('gameContent').innerHTML = '';
+        document.getElementById('gameContent').style.position = 'relative';
+        document.getElementById('gameContent').style.minHeight = '500px';
+        document.getElementById('gameContent').appendChild(container);
+        
+        // alert('Игра окончена! Счёт: '+score); // можно убрать или оставить
+    }
+}
         }
         
         // ЧАСТИЦЫ
@@ -3234,7 +3251,7 @@ function initRunner(){
     container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
     
     var scoreText = document.createElement('p');
-    scoreText.textContent = '🏆 Счёт: ' + sc;
+    scoreText.textContent = '🏆 Счёт: ' + score;
     scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
     
     var button = document.createElement('button');
