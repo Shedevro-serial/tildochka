@@ -1604,29 +1604,58 @@ function createChannel(){var n=prompt('Название канала:');if(!n)re
 function previewShortVideo(){var f=document.getElementById('shortVideo').files[0];if(!f)return;var r=new FileReader();r.onload=function(e){shortMedia=e.target.result;document.getElementById('shortPreview').innerHTML='<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};r.readAsDataURL(f);}
 function postShort(){
     var cap = document.getElementById('shortCaption').value.trim();
-    if(!cap && !shortMedia) return;
+    if(!cap && !shortMedia) {
+        alert('Напиши описание или добавь медиа!');
+        return;
+    }
     if(!myChannel){
         alert('Создай канал!');
         return;
     }
-    safeSend('short', function(){
-        return db.ref('shorts').push({
-            channel: myChannel,
-            author: myName,
-            caption: cap,
-            media: shortMedia || null,
-            likes: 0,
-            comments: {},
-            ts: Date.now()
-        }).then(function(){
-            document.getElementById('shortCaption').value = '';
-            document.getElementById('shortVideo').value = '';
-            document.getElementById('shortPreview').innerHTML = '';
-            shortMedia = null;
-            // 👇👇👇 ДОБАВЬ ЭТУ СТРОЧКУ 👇👇👇
-            progressQuest('postShort', 1);
-        });
+    
+    var avatar = JSON.parse(localStorage.getItem('tildochka_channel_avatar') || '{"type":"emoji","value":"📺"}');
+    
+    db.ref('shorts').push({
+        channel: myChannel,
+        channelAvatar: avatar,
+        author: myName,
+        caption: cap,
+        media: shortMedia || null,
+        mediaType: shortMediaType || null,
+        likes: 0,
+        comments: {},
+        ts: Date.now()
+    }).then(function() {
+        document.getElementById('shortCaption').value = '';
+        document.getElementById('shortImage').value = '';
+        document.getElementById('shortVideo').value = '';
+        document.getElementById('shortPreview').innerHTML = '';
+        shortMedia = null;
+        shortMediaType = null;
+        updateChannelUI();
+        alert('✅ Пост опубликован!');
+        progressQuest('postShort', 1);
+    }).catch(function(err) {
+        alert('Ошибка: ' + err.message);
     });
+}
+function previewShortMedia(type) {
+    var input = document.getElementById(type === 'image' ? 'shortImage' : 'shortVideo');
+    var file = input.files[0];
+    if(!file) return;
+    
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        shortMedia = e.target.result;
+        shortMediaType = type;
+        var preview = document.getElementById('shortPreview');
+        if(type === 'image') {
+            preview.innerHTML = '<img src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px">';
+        } else {
+            preview.innerHTML = '<video src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px" controls></video>';
+        }
+    };
+    reader.readAsDataURL(file);
 }
 function loadShorts() {
     db.ref('shorts').on('value', function(snapshot) {
@@ -1684,7 +1713,7 @@ function loadShorts() {
                 }
             }
             
-            // КНОПКА УДАЛЕНИЯ ТОЛЬКО ДЛЯ АДМИНОВ
+            // Кнопка удаления только для админов
             var deleteBtn = '';
             if(isAdmin) {
                 deleteBtn = '<button class="delete-btn" onclick="deleteShort(\''+sh.id+'\')">🗑️ Удалить</button>';
@@ -2995,79 +3024,88 @@ function initChickenRain(){
     gameInterval=setInterval(function(){},1000);
                      }
 // ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
+// ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
 function initRunner(){
-    document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
-    // Добавить обработчик кнопки
-    document.getElementById('runnerSkinBtn').onclick = function() {
-        var currentSkin = getCurrentGameSkin('runner');
-        openGameSkinShop('runner', currentSkin, 'restartCurrentGame()');
-    };
+    document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p><button id="runnerSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
+    
+    // Кнопка магазина скинов для Runner
+    var skinBtn = document.getElementById('runnerSkinBtn');
+    if(skinBtn) {
+        skinBtn.onclick = function() {
+            var currentSkin = getCurrentGameSkin('runner');
+            openGameSkinShop('runner', currentSkin, 'restartCurrentGame()');
+        };
+    }
     
     createGameRating();
-    var c=document.getElementById('rc'),ctx=c.getContext('2d');
-    var y=110,vy=0,groundY=160;  // y=110 - животные ВЫСОКО
-    var obstacles=[];
-    var score=0,ov=false;
-    var bgX=0;
-    var cloudOffset=0;
+    var c = document.getElementById('rc');
+    var ctx = c.getContext('2d');
+    var y = 110, vy = 0, groundY = 160;
+    var obstacles = [];
+    var score = 0, ov = false;
+    var bgX = 0;
+    var cloudOffset = 0;
     var legSwing = 0;
 
     function runnerJump(){
-        if(y>=groundY-10 && !ov){
-            vy=-11;
+        if(y >= groundY - 10 && !ov){
+            vy = -11;
             playSound("jump");
         }
     }
-    window.runnerJump=runnerJump;
+    window.runnerJump = runnerJump;
 
     // Анимация ног (без дрожания тела)
     setInterval(function() {
         if(!ov) legSwing = (legSwing + 0.3) % (Math.PI * 2);
     }, 50);
 
-    document.onkeydown=function(e){
-        if(e.key===' ' || e.key==='Space') {
+    document.onkeydown = function(e){
+        if(e.key === ' ' || e.key === 'Space') {
             e.preventDefault();
             runnerJump();
         }
     };
-    c.onclick=runnerJump;
-    c.addEventListener('touchstart',function(e){
-       runnerJump();
-    },{passive:true});
+    
+    c.onclick = runnerJump;
+    c.addEventListener('touchstart', function(e){
+        runnerJump();
+    }, {passive: true});
 
     function update(){
         if(ov) return;
 
-        bgX=(bgX-2)%600;
-        cloudOffset=(cloudOffset+0.5)%600;
+        bgX = (bgX - 2) % 600;
+        cloudOffset = (cloudOffset + 0.5) % 600;
 
         // НЕБО
-        ctx.fillStyle='#87CEEB';
-        ctx.fillRect(0,0,600,200);
+        ctx.fillStyle = '#87CEEB';
+        ctx.fillRect(0, 0, 600, 200);
 
         // ОБЛАКА
-        ctx.fillStyle='rgba(255,255,255,0.8)';
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.beginPath();
-        ctx.ellipse(100+cloudOffset, 40, 35, 25, 0, 0, Math.PI*2);
-        ctx.ellipse(130+cloudOffset, 35, 30, 22, 0, 0, Math.PI*2);
-        ctx.ellipse(70+cloudOffset, 35, 28, 20, 0, 0, Math.PI*2);
+        ctx.ellipse(100 + cloudOffset, 40, 35, 25, 0, 0, Math.PI * 2);
+        ctx.ellipse(130 + cloudOffset, 35, 30, 22, 0, 0, Math.PI * 2);
+        ctx.ellipse(70 + cloudOffset, 35, 28, 20, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.ellipse(400-cloudOffset*0.7, 65, 40, 28, 0, 0, Math.PI*2);
-        ctx.ellipse(440-cloudOffset*0.7, 60, 32, 24, 0, 0, Math.PI*2);
-        ctx.ellipse(365-cloudOffset*0.7, 60, 30, 22, 0, 0, Math.PI*2);
+        ctx.ellipse(400 - cloudOffset * 0.7, 65, 40, 28, 0, 0, Math.PI * 2);
+        ctx.ellipse(440 - cloudOffset * 0.7, 60, 32, 24, 0, 0, Math.PI * 2);
+        ctx.ellipse(365 - cloudOffset * 0.7, 60, 30, 22, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
-        ctx.ellipse(550+cloudOffset*0.3, 25, 30, 22, 0, 0, Math.PI*2);
-        ctx.ellipse(580+cloudOffset*0.3, 22, 25, 18, 0, 0, Math.PI*2);
+        ctx.ellipse(550 + cloudOffset * 0.3, 25, 30, 22, 0, 0, Math.PI * 2);
+        ctx.ellipse(580 + cloudOffset * 0.3, 22, 25, 18, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // ЗЕМЛЯ
-        ctx.fillStyle='#4CAF50';
-        ctx.fillRect(0,groundY,600,40);
-        ctx.fillStyle='#388E3C';
-        for(var i=0;i<10;i++) ctx.fillRect(i*60, groundY+5, 30, 5);
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(0, groundY, 600, 40);
+        ctx.fillStyle = '#388E3C';
+        for(var i = 0; i < 10; i++) {
+            ctx.fillRect(i * 60, groundY + 5, 30, 5);
+        }
 
         // ПОЛУЧАЕМ СКИН ДЛЯ РАННЕРА
         var runnerSkin = getCurrentGameSkin('runner');
@@ -3079,7 +3117,7 @@ function initRunner(){
         ctx.textBaseline = 'middle';
         
         ctx.save();
-        ctx.translate(55, y + 15);  // +15 чтобы центр был на уровне тела
+        ctx.translate(55, y + 15);
         ctx.fillStyle = '#000';
         ctx.shadowBlur = 3;
         ctx.shadowColor = 'rgba(0,0,0,0.3)';
@@ -3088,65 +3126,65 @@ function initRunner(){
         ctx.restore();
 
         // ПРЕГРАДЫ (КАМНИ)
-        if(Math.random()<0.025 && obstacles.length<2){
-            obstacles.push({x:600, y:groundY-18, width:28, height:28});
+        if(Math.random() < 0.025 && obstacles.length < 2){
+            obstacles.push({x: 600, y: groundY - 18, width: 28, height: 28});
         }
 
-        for(var i=0;i<obstacles.length;i++){
-            ctx.font='32px Arial';
-            ctx.fillStyle='#888';
-            ctx.fillText('🪨', obstacles[i].x, obstacles[i].y+25);
-            obstacles[i].x-=8;
+        for(var i = 0; i < obstacles.length; i++){
+            ctx.font = '32px Arial';
+            ctx.fillStyle = '#888';
+            ctx.fillText('🪨', obstacles[i].x, obstacles[i].y + 25);
+            obstacles[i].x -= 8;
 
-            if(obstacles[i].x < 58 && obstacles[i].x+25 > 52 && y+32 > obstacles[i].y+5 && y+15 < obstacles[i].y+25){
+            if(obstacles[i].x < 58 && obstacles[i].x + 25 > 52 && y + 32 > obstacles[i].y + 5 && y + 15 < obstacles[i].y + 25){
                 end();
             }
 
-            if(obstacles[i].x+28<0){
-                obstacles.splice(i,1);
+            if(obstacles[i].x + 28 < 0){
+                obstacles.splice(i, 1);
                 score++;
                 playSound("coin");
-                document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;
+                document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + score;
                 i--;
             }
         }
 
-        vy+=0.8;
-        y+=vy;
-        if(y>=groundY-10){
-            y=groundY-10;
-            vy=0;
+        vy += 0.8;
+        y += vy;
+        if(y >= groundY - 10){
+            y = groundY - 10;
+            vy = 0;
         }
-        if(y<0){
-            y=0;
-            vy=0;
+        if(y < 0){
+            y = 0;
+            vy = 0;
         }
 
-        ctx.fillStyle='#000';
-        ctx.font='bold 18px Arial';
-        ctx.fillText('Счёт: '+score,500,30);
+        ctx.fillStyle = '#000';
+        ctx.font = 'bold 18px Arial';
+        ctx.fillText('Счёт: ' + score, 500, 30);
         requestAnimationFrame(update);
     }
 
     function end(){
-        ov=true;
+        ov = true;
         clearInterval(gameInterval);
         playSound("hit");
         if(score >= 50) progressQuest('score50', score);
         if(score >= 100) progressQuest('score100', score);
-        var b=document.createElement('button');
-        b.textContent='🔄 Заново';
-        b.style.cssText='display:block;margin:15px auto;font-size:18px';
-        b.onclick=function(){
-            document.getElementById('gameContent').innerHTML='';
+        var b = document.createElement('button');
+        b.textContent = '🔄 Заново';
+        b.style.cssText = 'display:block;margin:15px auto;font-size:18px';
+        b.onclick = function(){
+            document.getElementById('gameContent').innerHTML = '';
             initRunner();
         };
         document.getElementById('gameContent').appendChild(b);
-        alert('Счёт: '+score);
+        alert('Счёт: ' + score);
     }
     
     update();
-    gameInterval=setInterval(function(){},1000);
+    gameInterval = setInterval(function(){}, 1000);
 }
 // ==================== ЗМЕЙКА, ТЕТРИС, УГАДАЙ ЧИСЛО, КАМЕНЬ-НОЖНИЦЫ ====================
 function initSnake(){
