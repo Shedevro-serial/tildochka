@@ -2705,8 +2705,9 @@ function initFlappy(){
     gameInterval=setInterval(loop,20);
 }
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
+// ==================== КУРИНЫЙ ДОЖДЬ С ЖИВОТНЫМИ (ловят яйца) ====================
 function initChickenRain(){
-document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
+    document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     
     // Кнопка магазина скинов
     document.getElementById('chickenRainSkinBtn').onclick = function() {
@@ -2714,259 +2715,305 @@ document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" he
         openGameSkinShop('chickenrain', currentSkin, 'restartCurrentGame()');
     };
     
-createGameRating();
-var c=document.getElementById('cr'),ctx=c.getContext('2d');
-c.width=400;c.height=500;
-var chickenX=180;
-var eggs=[];
-var score=0;
-var ov=false;
-var particles=[];
-function spawnEgg(){if(Math.random()<0.01){eggs.push({x:Math.random()*370,y:-20,speed:1.5+Math.random()*3,type:Math.random()>0.85?'gold':'normal'});}}
-function addParticle(x,y){for(var i=0;i<5;i++){particles.push({x:x+Math.random()*20-10,y:y+Math.random()*20-10,life:1});}}
-document.onkeydown=function(e){if(e.key==='ArrowLeft') chickenX=Math.max(10,chickenX-30);if(e.key==='ArrowRight') chickenX=Math.min(360,chickenX+30);playSound("jump");};
-document.getElementById('crl').onclick=function(){chickenX=Math.max(10,chickenX-30); playSound("jump");};
-document.getElementById('crr').onclick=function(){chickenX=Math.min(360,chickenX+30); playSound("jump");};
-function update(){
-if(ov) return;
-
-// ПОЛУЧАЕМ СКИН ДЛЯ КУРИНОГО ДОЖДЯ
-var rainSkin = getCurrentGameSkin('chickenrain');
-var rainEmoji = rainSkin.emoji || '🦅';
-var rainColor = rainSkin.color || '#ffd700';
-
-ctx.fillStyle='#2a5a8a';
-ctx.fillRect(0,0,400,500);
-ctx.fillStyle='#4a8a3a';
-ctx.fillRect(0,460,400,40);
-ctx.fillStyle='#6aae5a';
-for(var i=0;i<10;i++) ctx.fillRect(i*40,460,38,10);
-ctx.font='48px Arial';
-ctx.fillStyle = rainColor;
-ctx.fillText(rainEmoji, chickenX, 450);
-
-// Тень для эффекта
-ctx.shadowBlur = 3;
-ctx.shadowColor = 'rgba(0,0,0,0.3)';
-ctx.fillText(rainEmoji, chickenX, 450);
-ctx.shadowBlur = 0;
-
-for(var i=eggs.length-1;i>=0;i--){
-var e=eggs[i];
-e.y+=e.speed;
-if(e.type==='gold') ctx.fillStyle='#FFD700';
-else ctx.fillStyle='#FFF8DC';
-ctx.font='32px Arial';
-ctx.fillText('🥚',e.x,e.y);
-if(e.y+30>440 && e.y<480 && Math.abs(e.x+15-chickenX-25)<45){
-eggs.splice(i,1);
-score+=e.type==='gold'?3:1;
-playSound("coin");
-addParticle(e.x+15,e.y+15);
-document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;
-if(score>=50) addEggs(5,'Отлично!');
-} else if(e.y>500){
-eggs.splice(i,1);
-if(!ov){
-ov=true;
-playSound("hit");
-if(score >= 50) progressQuest('score50', score);
-if(score >= 100) progressQuest('score100', score);
-var b=document.createElement('button');
-b.textContent='🔄 Заново';
-b.onclick=function(){document.getElementById('gameContent').innerHTML='';initChickenRain();};
-document.getElementById('gameContent').appendChild(b);
-alert('Игра окончена! Счёт: '+score);
-}
-}
-}
-for(var i=particles.length-1;i>=0;i--){
-particles[i].life-=0.05;
-ctx.fillStyle='rgba(255,200,0,'+particles[i].life+')';
-ctx.fillRect(particles[i].x,particles[i].y,4,4);
-if(particles[i].life<=0) particles.splice(i,1);
-}
-spawnEgg();
-requestAnimationFrame(update);
-}
-update();
-gameInterval=setInterval(function(){},1000);
-}
-// ==================== РАННЕР (ПРЫГАЕТ!) ====================
-function initRunner(){
-document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
-createGameRating();
-var c=document.getElementById('rc'),ctx=c.getContext('2d');
-var y=140,vy=0,groundY=160;
-var obstacles=[];
-var score=0,ov=false;
-var bgX=0;
-var cloudOffset=0;
-
-function runnerJump(){
-if(y>=groundY-10 && !ov){
-vy=-11;
-playSound("jump");
-}
-}
-window.runnerJump=runnerJump;
-
-document.onkeydown=function(e){
-    if(e.key===' ' || e.key==='Space') {
-        e.preventDefault();
-        runnerJump();
+    createGameRating();
+    var c=document.getElementById('cr'),ctx=c.getContext('2d');
+    c.width=400;c.height=500;
+    var animalX=180;
+    var eggs=[];
+    var score=0;
+    var ov=false;
+    var particles=[];
+    var wobble=0;
+    
+    // Анимация покачивания
+    setInterval(function() {
+        if(!ov) wobble = (wobble + 0.2) % (Math.PI * 2);
+    }, 50);
+    
+    function spawnEgg(){
+        if(Math.random()<0.02){
+            eggs.push({
+                x: Math.random()*370,
+                y: -20,
+                speed: 1.5 + Math.random()*3,
+                type: Math.random()>0.85 ? 'gold' : 'normal'
+            });
+        }
     }
-};
-c.onclick=runnerJump;
-c.addEventListener('touchstart',function(e){
-   runnerJump();
-},{passive:true});
+    
+    function addParticle(x,y){
+        for(var i=0;i<5;i++){
+            particles.push({
+                x: x + Math.random()*20-10,
+                y: y + Math.random()*20-10,
+                life: 1
+            });
+        }
+    }
+    
+    document.onkeydown=function(e){
+        if(e.key==='ArrowLeft') animalX=Math.max(10, animalX-30);
+        if(e.key==='ArrowRight') animalX=Math.min(360, animalX+30);
+        playSound("jump");
+    };
+    document.getElementById('crl').onclick=function(){animalX=Math.max(10, animalX-30); playSound("jump");};
+    document.getElementById('crr').onclick=function(){animalX=Math.min(360, animalX+30); playSound("jump");};
+    
+    function update(){
+        if(ov) return;
+        
+        // ПОЛУЧАЕМ СКИН ДЛЯ КУРИНОГО ДОЖДЯ
+        var rainSkin = getCurrentGameSkin('chickenrain');
+        var animalEmoji = rainSkin.emoji || '🐩';
+        
+        // НЕБО
+        ctx.fillStyle='#2a5a8a';
+        ctx.fillRect(0,0,400,500);
+        
+        // ТРАВА
+        ctx.fillStyle='#4a8a3a';
+        ctx.fillRect(0,460,400,40);
+        ctx.fillStyle='#6aae5a';
+        for(var i=0;i<10;i++) ctx.fillRect(i*40,460,38,10);
+        
+        // ОТРИСОВКА ЖИВОТНОГО (целиком, с эффектом покачивания)
+        ctx.font = '54px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Лёгкое покачивание при движении
+        var tilt = Math.sin(wobble) * 0.05;
+        ctx.save();
+        ctx.translate(animalX + 20, 460);
+        ctx.rotate(tilt);
+        ctx.shadowBlur = 3;
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.fillStyle = '#000';
+        ctx.fillText(animalEmoji, 0, 0);
+        ctx.shadowBlur = 0;
+        ctx.restore();
+        
+        // ЯЙЦА
+        for(var i=eggs.length-1;i>=0;i--){
+            var e=eggs[i];
+            e.y += e.speed;
+            
+            if(e.type==='gold') ctx.fillStyle='#FFD700';
+            else ctx.fillStyle='#FFF8DC';
+            ctx.font='32px Arial';
+            ctx.fillText('🥚', e.x, e.y);
+            
+            // СТОЛКНОВЕНИЕ С ЖИВОТНЫМ
+            if(e.y+30 > 440 && e.y < 480 && Math.abs(e.x+15 - animalX-20) < 40){
+                eggs.splice(i,1);
+                score += (e.type==='gold' ? 3 : 1);
+                playSound("coin");
+                addParticle(e.x+15, e.y+15);
+                document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;
+                if(score>=50) addEggs(5,'Отлично!');
+            }
+            // ПРОПУЩЕНО
+            else if(e.y > 500){
+                eggs.splice(i,1);
+                if(!ov){
+                    ov=true;
+                    playSound("hit");
+                    if(score >= 50) progressQuest('score50', score);
+                    if(score >= 100) progressQuest('score100', score);
+                    var b=document.createElement('button');
+                    b.textContent='🔄 Заново';
+                    b.onclick=function(){
+                        document.getElementById('gameContent').innerHTML='';
+                        initChickenRain();
+                    };
+                    document.getElementById('gameContent').appendChild(b);
+                    alert('Игра окончена! Счёт: '+score);
+                }
+            }
+        }
+        
+        // ЧАСТИЦЫ
+        for(var i=particles.length-1;i>=0;i--){
+            particles[i].life -= 0.05;
+            ctx.fillStyle='rgba(255,200,0,'+particles[i].life+')';
+            ctx.fillRect(particles[i].x, particles[i].y, 4, 4);
+            if(particles[i].life <= 0) particles.splice(i,1);
+        }
+        
+        spawnEgg();
+        requestAnimationFrame(update);
+    }
+    
+    update();
+    gameInterval=setInterval(function(){},1000);
+              }
+// ==================== РАННЕР (ПРЫГАЕТ!) ====================
+// ==================== РАННЕР С ЖИВОТНЫМИ (бегут лицом вперёд) ====================
+function initRunner(){
+    document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p><button id="runnerSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
+    
+    // Кнопка магазина скинов для Runner
+    document.getElementById('runnerSkinBtn').onclick = function() {
+        var currentSkin = getCurrentGameSkin('runner');
+        openGameSkinShop('runner', currentSkin, 'restartCurrentGame()');
+    };
+    
+    createGameRating();
+    var c=document.getElementById('rc'),ctx=c.getContext('2d');
+    var y=140,vy=0,groundY=160;
+    var obstacles=[];
+    var score=0,ov=false;
+    var bgX=0;
+    var cloudOffset=0;
+    var legWobble = 0; // для анимации бега
 
-function update(){
-if(ov) return;
+    function runnerJump(){
+        if(y>=groundY-10 && !ov){
+            vy=-11;
+            playSound("jump");
+        }
+    }
+    window.runnerJump=runnerJump;
 
-bgX=(bgX-2)%600;
-cloudOffset=(cloudOffset+0.5)%600;
+    // Анимация бега (ног/прыжка)
+    setInterval(function() {
+        if(!ov) legWobble = (legWobble + 0.3) % (Math.PI * 2);
+    }, 50);
 
-// НЕБО (голубое)
-ctx.fillStyle='#87CEEB';
-ctx.fillRect(0,0,600,200);
+    document.onkeydown=function(e){
+        if(e.key===' ' || e.key==='Space') {
+            e.preventDefault();
+            runnerJump();
+        }
+    };
+    c.onclick=runnerJump;
+    c.addEventListener('touchstart',function(e){
+       runnerJump();
+    },{passive:true});
 
-// ОБЛАКА
-ctx.fillStyle='rgba(255,255,255,0.8)';
-// Облако 1
-ctx.beginPath();
-ctx.ellipse(100+cloudOffset, 40, 35, 25, 0, 0, Math.PI*2);
-ctx.ellipse(130+cloudOffset, 35, 30, 22, 0, 0, Math.PI*2);
-ctx.ellipse(70+cloudOffset, 35, 28, 20, 0, 0, Math.PI*2);
-ctx.fill();
-// Облако 2
-ctx.beginPath();
-ctx.ellipse(400-cloudOffset*0.7, 65, 40, 28, 0, 0, Math.PI*2);
-ctx.ellipse(440-cloudOffset*0.7, 60, 32, 24, 0, 0, Math.PI*2);
-ctx.ellipse(365-cloudOffset*0.7, 60, 30, 22, 0, 0, Math.PI*2);
-ctx.fill();
-// Облако 3
-ctx.beginPath();
-ctx.ellipse(550+cloudOffset*0.3, 25, 30, 22, 0, 0, Math.PI*2);
-ctx.ellipse(580+cloudOffset*0.3, 22, 25, 18, 0, 0, Math.PI*2);
-ctx.fill();
+    function update(){
+        if(ov) return;
 
-// ЗЕМЛЯ (зелёная)
-ctx.fillStyle='#4CAF50';
-ctx.fillRect(0,groundY,600,40);
+        bgX=(bgX-2)%600;
+        cloudOffset=(cloudOffset+0.5)%600;
 
-// ТЕНИ НА ЗЕМЛЕ (для объёма)
-ctx.fillStyle='#388E3C';
-for(var i=0;i<10;i++) ctx.fillRect(i*60, groundY+5, 30, 5);
+        // НЕБО
+        ctx.fillStyle='#87CEEB';
+        ctx.fillRect(0,0,600,200);
 
-// ПЕТУХ
-ctx.font='42px Arial';
-ctx.fillStyle='#ffd700';
-var char = getCurrentGameCharacter();
-var charColor = getCurrentCharacterColor();
+        // ОБЛАКА
+        ctx.fillStyle='rgba(255,255,255,0.8)';
+        ctx.beginPath();
+        ctx.ellipse(100+cloudOffset, 40, 35, 25, 0, 0, Math.PI*2);
+        ctx.ellipse(130+cloudOffset, 35, 30, 22, 0, 0, Math.PI*2);
+        ctx.ellipse(70+cloudOffset, 35, 28, 20, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(400-cloudOffset*0.7, 65, 40, 28, 0, 0, Math.PI*2);
+        ctx.ellipse(440-cloudOffset*0.7, 60, 32, 24, 0, 0, Math.PI*2);
+        ctx.ellipse(365-cloudOffset*0.7, 60, 30, 22, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(550+cloudOffset*0.3, 25, 30, 22, 0, 0, Math.PI*2);
+        ctx.ellipse(580+cloudOffset*0.3, 22, 25, 18, 0, 0, Math.PI*2);
+        ctx.fill();
 
-// Ноги (бегущие)
-ctx.fillStyle = '#cc8800';
-ctx.fillRect(45, y + 25, 8, 12);
-ctx.fillRect(57, y + 28, 8, 12);
+        // ЗЕМЛЯ
+        ctx.fillStyle='#4CAF50';
+        ctx.fillRect(0,groundY,600,40);
+        ctx.fillStyle='#388E3C';
+        for(var i=0;i<10;i++) ctx.fillRect(i*60, groundY+5, 30, 5);
 
-// Тело
-ctx.fillStyle = charColor;
-ctx.beginPath();
-ctx.ellipse(55, y + 12, 18, 20, 0, 0, Math.PI * 2);
-ctx.fill();
+        // ПОЛУЧАЕМ СКИН ДЛЯ РАННЕРА
+        var runnerSkin = getCurrentGameSkin('runner');
+        var animalEmoji = runnerSkin.emoji || '🦍';
+        
+        // ОТРИСОВКА ЖИВОТНОГО (целиком, лицом вперёд)
+        ctx.font = '52px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Эффект прыжка/бега (лёгкое сжатие)
+        var scaleY = 1;
+        var scaleX = 1;
+        if(vy !== 0) {
+            scaleY = 0.9;
+            scaleX = 1.1;
+        } else {
+            scaleX = 1 + Math.sin(legWobble) * 0.05;
+            scaleY = 1 - Math.sin(legWobble) * 0.03;
+        }
+        
+        ctx.save();
+        ctx.translate(55, y + 25);
+        ctx.scale(scaleX, scaleY);
+        ctx.fillStyle = '#000';
+        ctx.shadowBlur = 3;
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.fillText(animalEmoji, 0, 0);
+        ctx.shadowBlur = 0;
+        ctx.restore();
 
-// Голова
-ctx.beginPath();
-ctx.arc(55, y + 2, 14, 0, Math.PI * 2);
-ctx.fill();
+        // ПРЕГРАДЫ (КАМНИ)
+        if(Math.random()<0.025 && obstacles.length<2){
+            obstacles.push({x:600, y:groundY-18, width:28, height:28});
+        }
 
-// Глаз
-ctx.fillStyle = '#fff';
-ctx.beginPath();
-ctx.arc(62, y - 2, 4, 0, Math.PI * 2);
-ctx.fill();
-ctx.fillStyle = '#000';
-ctx.beginPath();
-ctx.arc(63, y - 3, 2, 0, Math.PI * 2);
-ctx.fill();
+        for(var i=0;i<obstacles.length;i++){
+            ctx.font='32px Arial';
+            ctx.fillStyle='#888';
+            ctx.fillText('🪨', obstacles[i].x, obstacles[i].y+25);
+            obstacles[i].x-=8;
 
-// Клюв
-ctx.fillStyle = '#ff6600';
-ctx.beginPath();
-ctx.moveTo(68, y - 2);
-ctx.lineTo(76, y - 4);
-ctx.lineTo(69, y + 2);
-ctx.fill();
+            if(obstacles[i].x < 58 && obstacles[i].x+25 > 52 && y+32 > obstacles[i].y+5 && y+15 < obstacles[i].y+25){
+                end();
+            }
 
-// Хохолок
-ctx.fillStyle = charColor;
-ctx.beginPath();
-ctx.moveTo(48, y - 10);
-ctx.lineTo(52, y - 18);
-ctx.lineTo(56, y - 10);
-ctx.fill();
+            if(obstacles[i].x+28<0){
+                obstacles.splice(i,1);
+                score++;
+                playSound("coin");
+                document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;
+                i--;
+            }
+        }
 
-// ПРЕГРАДЫ (КАМНИ 🪨)
-if(Math.random()<0.025 && obstacles.length<2){
-obstacles.push({x:600,y:groundY-18,width:28,height:28});
-}
+        vy+=0.8;
+        y+=vy;
+        if(y>=groundY-10){
+            y=groundY-10;
+            vy=0;
+        }
+        if(y<0){
+            y=0;
+            vy=0;
+        }
 
-for(var i=0;i<obstacles.length;i++){
-ctx.font='32px Arial';
-ctx.fillStyle='#888';
-ctx.fillText('🪨', obstacles[i].x, obstacles[i].y+25);
-obstacles[i].x-=8;
+        ctx.fillStyle='#000';
+        ctx.font='bold 18px Arial';
+        ctx.fillText('Счёт: '+score,500,30);
+        requestAnimationFrame(update);
+    }
 
-if(obstacles[i].x < 58 && obstacles[i].x+25 > 52 && y+32 > obstacles[i].y+5 && y+15 < obstacles[i].y+25){
-end();
-}
-
-if(obstacles[i].x+28<0){
-obstacles.splice(i,1);
-score++;
-playSound("coin");
-document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;
-i--;
-}
-}
-
-vy+=0.8;
-y+=vy;
-if(y>=groundY-10){
-y=groundY-10;
-vy=0;
-}
-if(y<0){
-y=0;
-vy=0;
-}
-
-ctx.fillStyle='#000';
-ctx.font='bold 18px Arial';
-ctx.fillText('Счёт: '+score,500,30);
-requestAnimationFrame(update);
-}
-
-function end(){
-ov=true;
-clearInterval(gameInterval);
-playSound("hit");
-if(score >= 50) progressQuest('score50', score);
-if(score >= 100) progressQuest('score100', score);
-var b=document.createElement('button');
-b.textContent='🔄 Заново';
-b.style.cssText='display:block;margin:15px auto;font-size:18px';
-b.onclick=function(){
-document.getElementById('gameContent').innerHTML='';
-initRunner();
-};
-document.getElementById('gameContent').appendChild(b);
-alert('Счёт: '+score);
-}
-update();
-gameInterval=setInterval(function(){},1000);
+    function end(){
+        ov=true;
+        clearInterval(gameInterval);
+        playSound("hit");
+        if(score >= 50) progressQuest('score50', score);
+        if(score >= 100) progressQuest('score100', score);
+        var b=document.createElement('button');
+        b.textContent='🔄 Заново';
+        b.style.cssText='display:block;margin:15px auto;font-size:18px';
+        b.onclick=function(){
+            document.getElementById('gameContent').innerHTML='';
+            initRunner();
+        };
+        document.getElementById('gameContent').appendChild(b);
+        alert('Счёт: '+score);
+    }
+    
+    update();
+    gameInterval=setInterval(function(){},1000);
 }
 // ==================== ЗМЕЙКА, ТЕТРИС, УГАДАЙ ЧИСЛО, КАМЕНЬ-НОЖНИЦЫ ====================
 function initSnake(){
@@ -4787,21 +4834,30 @@ var gameSkins = {
         ]
     },
     chickenrain: {
-        default: { id: 'chicken_default', name: '🐔 Курица', emoji: '🐔', color: '#FFD700', price: 0, icon: '🐔' },
-        skins: [
-            { id: 'chicken_dragon', name: '🐉 Дракон', emoji: '🐉', color: '#FF6600', price: 70, icon: '🐉', preview: '🐉' },
-            { id: 'chicken_robot', name: '🤖 Робот', emoji: '🤖', color: '#708090', price: 50, icon: '🤖', preview: '🤖' },
-            { id: 'chicken_ghost', name: '👻 Призрак', emoji: '👻', color: '#E0E0E0', price: 40, icon: '👻', preview: '👻' },
-            { id: 'chicken_phoenix', name: '🦅 Феникс', emoji: '🦅', color: '#FF4500', price: 65, icon: '🦅', preview: '🦅' }
-        ]
+    default: { id: 'chicken_default', name: '🐩 Пудель', emoji: '🐩', color: '#FFF', price: 0, icon: '🐩', preview: '🐩' },
+    skins: [
+        { id: 'chicken_rooster', name: '🐓 Петух', emoji: '🐓', color: '#FF4500', price: 30, icon: '🐓', preview: '🐓' },
+        { id: 'chicken_turkey', name: '🦃 Индюк', emoji: '🦃', color: '#8B4513', price: 35, icon: '🦃', preview: '🦃' },
+        { id: 'chicken_badger', name: '🦡 Барсук', emoji: '🦡', color: '#696969', price: 40, icon: '🦡', preview: '🦡' },
+        { id: 'chicken_kangaroo', name: '🦘 Кенгуру', emoji: '🦘', color: '#CD853F', price: 45, icon: '🦘', preview: '🦘' },
+        { id: 'chicken_beaver', name: '🦫 Бобр', emoji: '🦫', color: '#8B5A2B', price: 40, icon: '🦫', preview: '🦫' },
+        { id: 'chicken_ape', name: '🦧 Орангутан', emoji: '🦧', color: '#A0522D', price: 50, icon: '🦧', preview: '🦧' },
+        { id: 'chicken_eagle', name: '🦅 Орёл', emoji: '🦅', color: '#8B4513', price: 55, icon: '🦅', preview: '🦅' },
+        { id: 'chicken_goose', name: '🪿 Гусь', emoji: '🪿', color: '#FFF', price: 35, icon: '🪿', preview: '🪿' }
+    ]
     },
     runner: {
-        default: { id: 'runner_default', name: '🏃 Бегун', emoji: '🐔', color: '#FFD700', price: 0, icon: '🐔' },
-        skins: [
-            { id: 'runner_cheetah', name: '🐆 Гепард', emoji: '🐆', color: '#DAA520', price: 55, icon: '🐆', preview: '🐆' },
-            { id: 'runner_robot', name: '🤖 Робот', emoji: '🤖', color: '#A9A9A9', price: 45, icon: '🤖', preview: '🤖' }
-        ]
-    },
+    default: { id: 'runner_default', name: '🦍 Горилла', emoji: '🦍', color: '#4a4a4a', price: 0, icon: '🦍', preview: '🦍' },
+    skins: [
+        { id: 'runner_monkey', name: '🐒 Обезьяна', emoji: '🐒', color: '#8B5A2B', price: 30, icon: '🐒', preview: '🐒' },
+        { id: 'runner_dog', name: '🐕 Собака', emoji: '🐕', color: '#CD853F', price: 35, icon: '🐕', preview: '🐕' },
+        { id: 'runner_cat', name: '🐈‍⬛ Чёрный кот', emoji: '🐈‍⬛', color: '#2F2F2F', price: 40, icon: '🐈‍⬛', preview: '🐈‍⬛' },
+        { id: 'runner_tiger', name: '🐅 Тигр', emoji: '🐅', color: '#FF8C00', price: 50, icon: '🐅', preview: '🐅' },
+        { id: 'runner_buffalo', name: '🦬 Буйвол', emoji: '🦬', color: '#5C4033', price: 45, icon: '🦬', preview: '🦬' },
+        { id: 'runner_elephant', name: '🐘 Слон', emoji: '🐘', color: '#808080', price: 55, icon: '🐘', preview: '🐘' },
+        { id: 'runner_rabbit', name: '🐇 Кролик', emoji: '🐇', color: '#FFB6C1', price: 25, icon: '🐇', preview: '🐇' }
+    ]
+},
     tetris: {
         default: { id: 'tetris_default', name: '🧱 Классический', emoji: '🧱', color: '#FFD700', price: 0, icon: '🧱' },
         skins: [
