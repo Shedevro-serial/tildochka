@@ -1599,6 +1599,19 @@ function showGame(type){
     };
     
     document.getElementById('gameTitle').textContent = titles[type] || type;
+    var gameHeader = document.getElementById('gameTitle');
+    var existingShopBtn = document.getElementById('gameSkinShopBtn');
+    if(!existingShopBtn) {
+        var shopBtn = document.createElement('button');
+        shopBtn.id = 'gameSkinShopBtn';
+        shopBtn.textContent = '🎨 Магазин скинов';
+        shopBtn.style.cssText = 'margin-left:15px;background:#ffd700;color:#000;border:none;padding:5px 15px;font-size:14px';
+        shopBtn.onclick = function() {
+            var currentSkin = getCurrentGameSkin(type);
+            openGameSkinShop(type, currentSkin, 'restartCurrentGame()');
+        };
+        gameHeader.parentNode.insertBefore(shopBtn, gameHeader.nextSibling);
+    }
     document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameRatingArea').innerHTML = '';
     document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
@@ -2514,8 +2527,16 @@ rM();
 }
 
 // ==================== FLAPPY КУРИЦА ====================
+// ==================== FLAPPY КУРИЦА С ПОДДЕРЖКОЙ СКИНОВ ====================
 function initFlappy(){
-    document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p>';
+    document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p><button id="flappySkinBtn" style="margin:5px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
+    
+    // Кнопка магазина скинов для Flappy
+    document.getElementById('flappySkinBtn').onclick = function() {
+        var currentSkin = getCurrentGameSkin('flappy');
+        openGameSkinShop('flappy', currentSkin, 'restartCurrentGame()');
+    };
+    
     createGameRating();
     var c=document.getElementById('fc'),ctx=c.getContext('2d'),bird={x:80,y:250},pipes=[],sc=0,ov=false,vy=0;
     function sp(){var gap=130,top=Math.random()*250+50;return{x:400,top:top,bottom:top+gap};}
@@ -2525,7 +2546,7 @@ function initFlappy(){
     c.addEventListener('touchstart',function(e){e.preventDefault();jump();});
     pipes.push(sp());
     
-    // ========== ПОЛНАЯ ПЕРЕПИСАННАЯ ФУНКЦИЯ loop ==========
+    // ========== НОВАЯ ФУНКЦИЯ loop С ПОДДЕРЖКОЙ СКИНОВ ==========
     function loop(){
         if(ov)return;
         ctx.clearRect(0,0,400,500);
@@ -2568,37 +2589,25 @@ function initFlappy(){
         bird.y+=vy;
         if(bird.y>480||bird.y<0)end();
         
-        // ========== ОТРИСОВКА КАСТОМНОГО ПЕРСОНАЖА ==========
-        var character = getCurrentGameCharacter();      // эмодзи персонажа (🐔, 🐣, 🐓 и т.д.)
-        var charColor = getCurrentCharacterColor();     // цвет персонажа
-
-        function getCurrentGameCharacter() {
-    if(activeCharacter && activeCharacter.id) {
-        return activeCharacter.id;
-    }
-    return '🐔';
-}
-
-function getCurrentCharacterColor() {
-    if(activeCharacter && activeCharacter.id) {
-        var colors = {
-            '🐔': '#ffd700',
-            '🐣': '#ffee88',
-            '🐓': '#ff4444',
-            '🦅': '#8B4513',
-            '🦉': '#aa8844',
-            '🐧': '#334455',
-            '🦆': '#88aa44',
-            '🦜': '#44ff44',
-            '🐉': '#ff6600'
-        };
-        return colors[activeCharacter.id] || '#ffd700';
-    }
-    return '#ffd700';
-}
+        // ========== ОТРИСОВКА ПТИЦЫ С ПОДДЕРЖКОЙ СКИНОВ ==========
+        var flappySkin = getCurrentGameSkin('flappy');
+        var birdColor = flappySkin.color || '#FFD700';
+        var birdEmoji = flappySkin.emoji || '🐔';
         
-        // ТЕЛО (круглое)
-        ctx.fillStyle = charColor;
+        // ТЕЛО (круглое) с поддержкой градиента
+        if(typeof birdColor === 'string' && birdColor.includes('linear-gradient')) {
+            // Для радужного скина
+            var grad2 = ctx.createLinearGradient(bird.x-10, bird.y-10, bird.x+10, bird.y+10);
+            grad2.addColorStop(0, '#ff0000');
+            grad2.addColorStop(0.2, '#ff9900');
+            grad2.addColorStop(0.4, '#ffff00');
+            grad2.addColorStop(0.6, '#00ff00');
+            grad2.addColorStop(0.8, '#0066ff');
+            grad2.addColorStop(1, '#9900ff');
+            ctx.fillStyle = grad2;
+        } else {
+            ctx.fillStyle = birdColor;
+        }
         ctx.beginPath();
         ctx.arc(bird.x, bird.y, 14, 0, Math.PI * 2);
         ctx.fill();
@@ -2634,8 +2643,12 @@ function getCurrentCharacterColor() {
         ctx.lineTo(bird.x + 13, bird.y + 1);
         ctx.fill();
         
-        // ХОХОЛОК (3 пёрышка)
-        ctx.fillStyle = charColor;
+        // ХОХОЛОК (3 пёрышка) - цветом скина
+        if(typeof birdColor === 'string' && birdColor.includes('linear-gradient')) {
+            ctx.fillStyle = '#ffaa00';
+        } else {
+            ctx.fillStyle = birdColor;
+        }
         ctx.beginPath();
         ctx.moveTo(bird.x - 3, bird.y - 13);
         ctx.lineTo(bird.x - 1, bird.y - 22);
@@ -2652,17 +2665,17 @@ function getCurrentCharacterColor() {
         ctx.lineTo(bird.x - 3, bird.y - 12);
         ctx.fill();
         
-        // РУМЯНЕЦ (для милоты)
+        // РУМЯНЕЦ
         ctx.fillStyle = 'rgba(255,100,100,0.5)';
         ctx.beginPath();
         ctx.arc(bird.x + 10, bird.y + 2, 3, 0, Math.PI * 2);
         ctx.fill();
         
-        // ЭМОДЗИ ПЕРСОНАЖА (маленький поверх, для узнавания)
-        ctx.font = '16px Arial';
+        // ЭМОДЗИ СКИНА ПОВЕРХ
+        ctx.font = '18px Arial';
         ctx.fillStyle = '#000';
         ctx.shadowBlur = 2;
-        ctx.fillText(character, bird.x - 6, bird.y - 8);
+        ctx.fillText(birdEmoji, bird.x - 8, bird.y - 10);
         ctx.shadowBlur = 0;
         
         // СЧЁТ
@@ -2693,7 +2706,14 @@ function getCurrentCharacterColor() {
 }
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
 function initChickenRain(){
-document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p>';
+document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
+    
+    // Кнопка магазина скинов
+    document.getElementById('chickenRainSkinBtn').onclick = function() {
+        var currentSkin = getCurrentGameSkin('chickenrain');
+        openGameSkinShop('chickenrain', currentSkin, 'restartCurrentGame()');
+    };
+    
 createGameRating();
 var c=document.getElementById('cr'),ctx=c.getContext('2d');
 c.width=400;c.height=500;
@@ -2709,6 +2729,12 @@ document.getElementById('crl').onclick=function(){chickenX=Math.max(10,chickenX-
 document.getElementById('crr').onclick=function(){chickenX=Math.min(360,chickenX+30); playSound("jump");};
 function update(){
 if(ov) return;
+
+// ПОЛУЧАЕМ СКИН ДЛЯ КУРИНОГО ДОЖДЯ
+var rainSkin = getCurrentGameSkin('chickenrain');
+var rainEmoji = rainSkin.emoji || '🦅';
+var rainColor = rainSkin.color || '#ffd700';
+
 ctx.fillStyle='#2a5a8a';
 ctx.fillRect(0,0,400,500);
 ctx.fillStyle='#4a8a3a';
@@ -2716,8 +2742,15 @@ ctx.fillRect(0,460,400,40);
 ctx.fillStyle='#6aae5a';
 for(var i=0;i<10;i++) ctx.fillRect(i*40,460,38,10);
 ctx.font='48px Arial';
-ctx.fillStyle='#ffd700';
-ctx.fillText('🦅',chickenX,450);
+ctx.fillStyle = rainColor;
+ctx.fillText(rainEmoji, chickenX, 450);
+
+// Тень для эффекта
+ctx.shadowBlur = 3;
+ctx.shadowColor = 'rgba(0,0,0,0.3)';
+ctx.fillText(rainEmoji, chickenX, 450);
+ctx.shadowBlur = 0;
+
 for(var i=eggs.length-1;i>=0;i--){
 var e=eggs[i];
 e.y+=e.speed;
@@ -2759,7 +2792,6 @@ requestAnimationFrame(update);
 update();
 gameInterval=setInterval(function(){},1000);
 }
-
 // ==================== РАННЕР (ПРЫГАЕТ!) ====================
 function initRunner(){
 document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
@@ -2938,13 +2970,19 @@ gameInterval=setInterval(function(){},1000);
 }
 // ==================== ЗМЕЙКА, ТЕТРИС, УГАДАЙ ЧИСЛО, КАМЕНЬ-НОЖНИЦЫ ====================
 function initSnake(){
-    document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div>';
+    document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div><button id="snakeSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
+    
+    // Кнопка магазина скинов
+    document.getElementById('snakeSkinBtn').onclick = function() {
+        var currentSkin = getCurrentGameSkin('snake');
+        openGameSkinShop('snake', currentSkin, 'restartCurrentGame()');
+    };
+    
     createGameRating();
     var c=document.getElementById('sc'),ctx=c.getContext('2d'),sn=[{x:200,y:200}],food=rf(),dir={x:20,y:0},sc=0,ov=false;
     
     function rf(){
-        // Яблоко спавнится ТОЛЬКО на координатах, кратных 20
-        var maxCells = 20; // 400 / 20 = 20 клеток
+        var maxCells = 20;
         var cellX = Math.floor(Math.random() * maxCells);
         var cellY = Math.floor(Math.random() * maxCells);
         return {x: cellX * 20, y: cellY * 20};
@@ -2981,7 +3019,6 @@ function initSnake(){
             sc++;
             playSound("coin");
             document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;
-            // Проверяем, не занята ли клетка телом змейки
             var newFood = rf();
             var attempts = 0;
             while(sn.some(function(s){ return s.x===newFood.x && s.y===newFood.y; }) && attempts < 100) {
@@ -2991,15 +3028,15 @@ function initSnake(){
             food = newFood;
         }else sn.pop();
         
-        // ОЧИСТКА (фон — тёмный, без сетки)
+        // ========== НОВАЯ ОТРИСОВКА С ПОДДЕРЖКОЙ СКИНОВ ==========
+        var snakeSkin = getCurrentGameSkin('snake');
+        var snakeColor = snakeSkin.color || '#4CAF50';
+        var snakeEmoji = snakeSkin.emoji || '🐍';
+        
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, 400, 400);
         
-        // РИСУЕМ ЕДУ (красное яблоко с блеском)
-        var character = getCurrentGameCharacter();
-        var charColor = getCurrentCharacterColor();
-        
-        // Яблоко
+        // ЕДА
         ctx.fillStyle = '#ff3333';
         ctx.beginPath();
         ctx.arc(food.x + 10, food.y + 10, 9, 0, Math.PI * 2);
@@ -3012,40 +3049,38 @@ function initSnake(){
         ctx.beginPath();
         ctx.arc(food.x + 5, food.y + 5, 2, 0, Math.PI * 2);
         ctx.fill();
-        // Листик
         ctx.fillStyle = '#44ff44';
         ctx.beginPath();
         ctx.ellipse(food.x + 15, food.y + 4, 4, 6, -0.5, 0, Math.PI * 2);
         ctx.fill();
         
-        // РИСУЕМ ЗМЕЙКУ С КАСТОМНОЙ ГОЛОВОЙ
+        // ЗМЕЙКА
         for(var i = 0; i < sn.length; i++) {
             if(i === 0) {
-                // ГОЛОВА — рисуем персонажа
-                ctx.fillStyle = charColor;
+                // ГОЛОВА
+                ctx.fillStyle = snakeColor;
                 ctx.fillRect(sn[i].x, sn[i].y, 18, 18);
                 
-                // ГЛАЗА (смотрят в сторону движения)
                 ctx.fillStyle = '#fff';
-                if(dir.x === 20) { // вправо
+                if(dir.x === 20) {
                     ctx.fillRect(sn[i].x + 13, sn[i].y + 4, 4, 4);
                     ctx.fillRect(sn[i].x + 13, sn[i].y + 11, 4, 4);
                     ctx.fillStyle = '#000';
                     ctx.fillRect(sn[i].x + 14, sn[i].y + 5, 2, 2);
                     ctx.fillRect(sn[i].x + 14, sn[i].y + 12, 2, 2);
-                } else if(dir.x === -20) { // влево
+                } else if(dir.x === -20) {
                     ctx.fillRect(sn[i].x + 2, sn[i].y + 4, 4, 4);
                     ctx.fillRect(sn[i].x + 2, sn[i].y + 11, 4, 4);
                     ctx.fillStyle = '#000';
                     ctx.fillRect(sn[i].x + 3, sn[i].y + 5, 2, 2);
                     ctx.fillRect(sn[i].x + 3, sn[i].y + 12, 2, 2);
-                } else if(dir.y === -20) { // вверх
+                } else if(dir.y === -20) {
                     ctx.fillRect(sn[i].x + 4, sn[i].y + 2, 4, 4);
                     ctx.fillRect(sn[i].x + 11, sn[i].y + 2, 4, 4);
                     ctx.fillStyle = '#000';
                     ctx.fillRect(sn[i].x + 5, sn[i].y + 3, 2, 2);
                     ctx.fillRect(sn[i].x + 12, sn[i].y + 3, 2, 2);
-                } else { // вниз
+                } else {
                     ctx.fillRect(sn[i].x + 4, sn[i].y + 13, 4, 4);
                     ctx.fillRect(sn[i].x + 11, sn[i].y + 13, 4, 4);
                     ctx.fillStyle = '#000';
@@ -3053,34 +3088,29 @@ function initSnake(){
                     ctx.fillRect(sn[i].x + 12, sn[i].y + 14, 2, 2);
                 }
                 
-                // ЯЗЫК (красный)
                 ctx.fillStyle = '#ff4444';
                 if(dir.x === 20) ctx.fillRect(sn[i].x + 18, sn[i].y + 7, 4, 3);
                 else if(dir.x === -20) ctx.fillRect(sn[i].x - 2, sn[i].y + 7, 4, 3);
                 else if(dir.y === -20) ctx.fillRect(sn[i].x + 7, sn[i].y - 2, 3, 4);
                 else ctx.fillRect(sn[i].x + 7, sn[i].y + 18, 3, 4);
                 
-                // ЭМОДЗИ ПЕРСОНАЖА НА ГОЛОВЕ
                 ctx.font = '12px Arial';
                 ctx.fillStyle = '#000';
-                ctx.fillText(character, sn[i].x + 4, sn[i].y + 14);
+                ctx.fillText(snakeEmoji, sn[i].x + 4, sn[i].y + 14);
                 
             } else {
-                // ТЕЛО — градиент от цвета персонажа + чешуйки
                 var gradient = ctx.createLinearGradient(sn[i].x, sn[i].y, sn[i].x+18, sn[i].y+18);
-                gradient.addColorStop(0, charColor);
+                gradient.addColorStop(0, snakeColor);
                 gradient.addColorStop(1, '#aa8800');
                 ctx.fillStyle = gradient;
                 ctx.fillRect(sn[i].x, sn[i].y, 18, 18);
                 
-                // ЧЕШУЙКИ (маленькие точки)
                 ctx.fillStyle = 'rgba(0,0,0,0.2)';
                 ctx.fillRect(sn[i].x + 5, sn[i].y + 5, 3, 3);
                 ctx.fillRect(sn[i].x + 12, sn[i].y + 12, 3, 3);
             }
         }
         
-        // ОБВОДКА ДЛЯ ГОЛОВЫ
         ctx.strokeStyle = '#aa6600';
         ctx.lineWidth = 1;
         ctx.strokeRect(sn[0].x, sn[0].y, 18, 18);
@@ -3103,7 +3133,7 @@ function initSnake(){
     }
     
     gameInterval=setInterval(loop,100);
-    }
+}
 
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
 document.getElementById('tl').onclick=function(){if(!ov)ml();};document.getElementById('tr').onclick=function(){if(!ov)mr();};
@@ -4735,6 +4765,237 @@ function rateTamagotchiNow() {
     });
     alert('⭐ Спасибо за оценку!');
     addEggs(2, 'Оценка игры!');
+}
+// ==================== СКИНЫ ДЛЯ ИГР (ПЕРСОНАЛИЗИРОВАННЫЕ МАГАЗИНЫ) ====================
+var gameSkins = {
+    snake: {
+        default: { id: 'snake_default', name: '🐍 Классическая', emoji: '🐍', color: '#4CAF50', price: 0, icon: '🐍' },
+        skins: [
+            { id: 'snake_gold', name: '✨ Золотая', emoji: '🐉', color: '#FFD700', price: 50, icon: '🐉', preview: '🐉' },
+            { id: 'snake_fire', name: '🔥 Огненная', emoji: '🐲', color: '#FF4500', price: 40, icon: '🐲', preview: '🐲' },
+            { id: 'snake_ice', name: '❄️ Ледяная', emoji: '🐍', color: '#00BFFF', price: 35, icon: '🐍', preview: '🐍' },
+            { id: 'snake_rainbow', name: '🌈 Радужная', emoji: '🌈', color: 'linear-gradient(90deg,red,orange,yellow,green,blue,indigo,violet)', price: 80, icon: '🌈', preview: '🌈' }
+        ]
+    },
+    flappy: {
+        default: { id: 'flappy_default', name: '🐔 Классическая', emoji: '🐔', color: '#FFD700', price: 0, icon: '🐔' },
+        skins: [
+            { id: 'flappy_angel', name: '😇 Ангел', emoji: '😇', color: '#FFFFFF', price: 45, icon: '😇', preview: '😇' },
+            { id: 'flappy_devil', name: '👿 Демон', emoji: '👿', color: '#8B0000', price: 45, icon: '👿', preview: '👿' },
+            { id: 'flappy_phoenix', name: '🔥 Феникс', emoji: '🦅', color: '#FF6347', price: 60, icon: '🦅', preview: '🦅' },
+            { id: 'flappy_penguin', name: '🐧 Пингвин', emoji: '🐧', color: '#2F4F4F', price: 30, icon: '🐧', preview: '🐧' }
+        ]
+    },
+    chickenrain: {
+        default: { id: 'chicken_default', name: '🐔 Курица', emoji: '🐔', color: '#FFD700', price: 0, icon: '🐔' },
+        skins: [
+            { id: 'chicken_dragon', name: '🐉 Дракон', emoji: '🐉', color: '#FF6600', price: 70, icon: '🐉', preview: '🐉' },
+            { id: 'chicken_robot', name: '🤖 Робот', emoji: '🤖', color: '#708090', price: 50, icon: '🤖', preview: '🤖' },
+            { id: 'chicken_ghost', name: '👻 Призрак', emoji: '👻', color: '#E0E0E0', price: 40, icon: '👻', preview: '👻' },
+            { id: 'chicken_phoenix', name: '🦅 Феникс', emoji: '🦅', color: '#FF4500', price: 65, icon: '🦅', preview: '🦅' }
+        ]
+    },
+    runner: {
+        default: { id: 'runner_default', name: '🏃 Бегун', emoji: '🐔', color: '#FFD700', price: 0, icon: '🐔' },
+        skins: [
+            { id: 'runner_cheetah', name: '🐆 Гепард', emoji: '🐆', color: '#DAA520', price: 55, icon: '🐆', preview: '🐆' },
+            { id: 'runner_robot', name: '🤖 Робот', emoji: '🤖', color: '#A9A9A9', price: 45, icon: '🤖', preview: '🤖' }
+        ]
+    },
+    tetris: {
+        default: { id: 'tetris_default', name: '🧱 Классический', emoji: '🧱', color: '#FFD700', price: 0, icon: '🧱' },
+        skins: [
+            { id: 'tetris_neon', name: '💚 Неон', emoji: '💚', color: '#00FF00', price: 40, icon: '💚', preview: '💚' }
+        ]
+    }
+};
+
+// Загрузка купленных скинов для игр
+function loadBoughtGameSkins() {
+    var saved = localStorage.getItem('tildochka_game_skins');
+    if(saved) {
+        try {
+            return JSON.parse(saved);
+        } catch(e) { return {}; }
+    }
+    return {};
+}
+
+function saveBoughtGameSkins(bought) {
+    localStorage.setItem('tildochka_game_skins', JSON.stringify(bought));
+}
+
+// Получить текущий скин для игры
+function getCurrentGameSkin(gameId) {
+    var saved = localStorage.getItem('tildochka_skin_' + gameId);
+    if(saved) {
+        try {
+            return JSON.parse(saved);
+        } catch(e) {}
+    }
+    // Возвращаем дефолтный скин
+    if(gameSkins[gameId]) {
+        return gameSkins[gameId].default;
+    }
+    return { id: 'default', name: 'Стандартный', emoji: '🐔', color: '#FFD700' };
+}
+
+// Установить скин для игры
+function setCurrentGameSkin(gameId, skin) {
+    localStorage.setItem('tildochka_skin_' + gameId, JSON.stringify(skin));
+}
+
+// Покупка скина для игры
+function buyGameSkin(gameId, skin, price) {
+    if(myEggs < price) {
+        alert('❌ Не хватает яиц! Нужно ' + price + ' 🥚');
+        return false;
+    }
+    
+    var bought = loadBoughtGameSkins();
+    if(!bought[gameId]) bought[gameId] = [];
+    
+    if(bought[gameId].includes(skin.id)) {
+        alert('У тебя уже есть этот скин!');
+        return false;
+    }
+    
+    myEggs -= price;
+    localStorage.setItem('tildochka_eggs', myEggs);
+    document.getElementById('headerEggs').textContent = myEggs;
+    db.ref('users/' + myUid).update({ eggs: myEggs });
+    
+    bought[gameId].push(skin.id);
+    saveBoughtGameSkins(bought);
+    
+    alert('✅ Скин "' + skin.name + '" куплен! Теперь выбери его в магазине игры.');
+    return true;
+}
+
+// Проверить, куплен ли скин
+function isSkinBought(gameId, skinId) {
+    var bought = loadBoughtGameSkins();
+    return bought[gameId] && bought[gameId].includes(skinId);
+}
+// Открыть магазин скинов для конкретной игры с предпросмотром
+function openGameSkinShop(gameId, currentSkin, onSelectCallback) {
+    if(!gameSkins[gameId]) {
+        alert('Магазин для этой игры пока не готов');
+        return;
+    }
+    
+    var gameData = gameSkins[gameId];
+    var allSkins = [gameData.default, ...gameData.skins];
+    var boughtSkins = loadBoughtGameSkins();
+    var boughtIds = boughtSkins[gameId] || [];
+    
+    // Создаём модальное окно
+    var modal = document.getElementById('gameSkinModal');
+    if(!modal) {
+        modal = document.createElement('div');
+        modal.id = 'gameSkinModal';
+        modal.className = 'modal-overlay';
+        modal.innerHTML = '<div class="modal-box" id="gameSkinModalBox" style="max-width:600px;"></div>';
+        document.body.appendChild(modal);
+    }
+    
+    // HTML магазина с предпросмотром
+    var html = '<h3>🎨 Магазин скинов для ' + getGameName(gameId) + '</h3>';
+    html += '<p>🥚 У тебя: <span style="color:#ffd700;font-weight:bold">' + myEggs + '</span> яиц</p>';
+    
+    // ПРЕДПРОСМОТР текущего персонажа
+    html += '<div style="background:rgba(0,0,0,0.5);border-radius:15px;padding:15px;margin:10px 0;text-align:center">';
+    html += '<div style="font-size:14px;color:#aaa;margin-bottom:5px">🎮 Твой текущий персонаж:</div>';
+    html += '<div style="font-size:48px;margin:10px 0" id="skinPreviewEmoji">' + (currentSkin.emoji || '🐔') + '</div>';
+    html += '<div style="font-size:16px;font-weight:bold;color:#ffd700" id="skinPreviewName">' + (currentSkin.name || 'Стандартный') + '</div>';
+    html += '<div style="font-size:12px;margin-top:5px" id="skinPreviewColor">🎨 ' + (currentSkin.color || '#FFD700') + '</div>';
+    html += '</div>';
+    
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:15px 0;max-height:300px;overflow-y:auto;">';
+    
+    for(var i = 0; i < allSkins.length; i++) {
+        var skin = allSkins[i];
+        var isOwned = skin.price === 0 || boughtIds.includes(skin.id);
+        var isActive = currentSkin.id === skin.id;
+        
+        html += '<div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:10px;text-align:center;border:1px solid ' + (isActive ? '#ffd700' : 'rgba(255,215,0,0.2)') + '">';
+        html += '<div style="font-size:42px;margin-bottom:5px;">' + (skin.preview || skin.emoji || '🐔') + '</div>';
+        html += '<div style="font-size:13px;font-weight:bold;">' + skin.name + '</div>';
+        
+        if(skin.price > 0 && !isOwned) {
+            html += '<div style="font-size:11px;color:#ffd700;margin:5px 0;">Цена: ' + skin.price + '🥚</div>';
+            html += '<button onclick="buyAndSelectSkin(\'' + gameId + '\', \'' + skin.id + '\', ' + skin.price + ')" style="font-size:11px;padding:5px 10px;background:#ffd700;color:#000;border:none;border-radius:8px;cursor:pointer;width:100%;">Купить</button>';
+        } else if(isOwned && !isActive) {
+            html += '<div style="font-size:11px;color:#4f4;margin:5px 0;">✅ Куплен</div>';
+            html += '<button onclick="selectGameSkin(\'' + gameId + '\', \'' + skin.id + '\'); ' + (onSelectCallback ? 'setTimeout(function(){ ' + onSelectCallback + ' }, 100);' : '') + '" style="font-size:11px;padding:5px 10px;background:#4f4;color:#000;border:none;border-radius:8px;cursor:pointer;width:100%;">Выбрать</button>';
+        } else if(isActive) {
+            html += '<div style="font-size:11px;color:#ffd700;margin:8px 0;">✨ Используется</div>';
+        }
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    html += '<button onclick="closeModal(\'gameSkinModal\')" style="margin-top:10px;background:#444;color:#fff;padding:8px 20px;border:none;border-radius:8px;cursor:pointer;">Закрыть</button>';
+    
+    document.getElementById('gameSkinModalBox').innerHTML = html;
+    modal.classList.add('show');
+}
+
+// Вспомогательная функция для получения названия игры
+function getGameName(gameId) {
+    var names = {
+        snake: '🐍 Змейки',
+        flappy: '🐔 Flappy Курицы',
+        chickenrain: '🌧️ Куриного дождя',
+        runner: '🏃 Раннера',
+        tetris: '🧱 Тетриса'
+    };
+    return names[gameId] || 'игры';
+}
+
+// Выбрать скин и закрыть магазин
+function selectGameSkin(gameId, skinId) {
+    var gameData = gameSkins[gameId];
+    if(!gameData) return;
+    
+    var allSkins = [gameData.default, ...gameData.skins];
+    var selectedSkin = allSkins.find(function(s) { return s.id === skinId; });
+    
+    if(selectedSkin) {
+        setCurrentGameSkin(gameId, selectedSkin);
+        closeModal('gameSkinModal');
+        alert('✅ Скин "' + selectedSkin.name + '" выбран для игры!');
+    }
+}
+
+// Купить и сразу выбрать скин
+function buyAndSelectSkin(gameId, skinId, price) {
+    var gameData = gameSkins[gameId];
+    if(!gameData) return;
+    
+    var allSkins = [gameData.default, ...gameData.skins];
+    var skin = allSkins.find(function(s) { return s.id === skinId; });
+    
+    if(skin && buyGameSkin(gameId, skin, price)) {
+        setCurrentGameSkin(gameId, skin);
+        closeModal('gameSkinModal');
+        alert('✅ Скин "' + skin.name + '" куплен и выбран!');
+        // Перезапускаем игру если она активна
+        if(currentGame === gameId) {
+            restartCurrentGame();
+        }
+    }
+}
+
+// Перезапуск текущей игры (для применения скина)
+function restartCurrentGame() {
+    if(currentGame) {
+        var gameType = currentGame;
+        currentGame = null;
+        setTimeout(function() {
+            showGame(gameType);
+        }, 100);
+    }
 }
       </script>
 
