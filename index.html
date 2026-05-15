@@ -564,10 +564,85 @@ function updateAdminBadge() {
     }
 }
 function deleteShort(postId) {
+    if(!isAdmin) {
+        alert('❌ Удалять посты могут только администраторы!');
+        return;
+    }
     if(!confirm('🗑️ Удалить этот пост? (Это действие необратимо)')) return;
     
     db.ref('shorts/' + postId).remove();
     alert('✅ Пост удалён!');
+}
+function updateChannelUI() {
+    var nameSpan = document.getElementById('channelNameDisplay');
+    var avatarDiv = document.getElementById('channelAvatarDisplay');
+    var statsSpan = document.getElementById('channelStats');
+    
+    if(nameSpan) {
+        nameSpan.textContent = myChannel || 'Без канала';
+    }
+    
+    var avatar = JSON.parse(localStorage.getItem('tildochka_channel_avatar') || '{"type":"emoji","value":"📺"}');
+    if(avatarDiv) {
+        if(avatar.type === 'emoji') {
+            avatarDiv.innerHTML = avatar.value;
+            avatarDiv.style.fontSize = '32px';
+            avatarDiv.style.display = 'flex';
+            avatarDiv.style.alignItems = 'center';
+            avatarDiv.style.justifyContent = 'center';
+        } else {
+            avatarDiv.innerHTML = '<img src="'+avatar.value+'" style="width:100%;height:100%;object-fit:cover">';
+        }
+    }
+    
+    // Подсчёт видео
+    if(statsSpan && myChannel && myChannel !== '') {
+        db.ref('shorts').once('value', function(snap) {
+            var count = 0;
+            snap.forEach(function(child) {
+                if(child.val().channel === myChannel) count++;
+            });
+            statsSpan.textContent = count + ' видео';
+        });
+    } else if(statsSpan) {
+        statsSpan.textContent = '0 видео';
+    }
+}
+
+// Функция изменения аватарки (чтобы можно было загрузить реальное фото)
+function changeChannelAvatar() {
+    if(!myChannel || myChannel === '') {
+        alert('Сначала создай канал!');
+        return;
+    }
+    
+    var choice = prompt('Выбери аватарку:\n1 - Эмодзи\n2 - Загрузить фото', '1');
+    
+    if(choice === '1') {
+        var emoji = prompt('Введи эмодзи для аватарки (например: 🐔, 📺, 🎬):', '📺');
+        if(emoji && emoji.trim()) {
+            localStorage.setItem('tildochka_channel_avatar', JSON.stringify({type:'emoji', value: emoji.trim()}));
+            updateChannelUI();
+            alert('✅ Аватарка изменена!');
+        }
+    } else if(choice === '2') {
+        var input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = function(e) {
+            var file = e.target.files[0];
+            if(file) {
+                var reader = new FileReader();
+                reader.onload = function(ev) {
+                    localStorage.setItem('tildochka_channel_avatar', JSON.stringify({type:'image', value: ev.target.result}));
+                    updateChannelUI();
+                    alert('✅ Аватарка загружена!');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    }
 }
 // ==================== FIREBASE ====================
 firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
@@ -1063,6 +1138,8 @@ function loadAllData() {
         var shortsPromise = new Promise(function(resolve) {
             db.ref('shorts').once('value', function() {
                 loadShorts();
+              // После loadShorts() добавьте:
+                updateChannelUI();
                 resolve();
             });
         });
@@ -1582,7 +1659,6 @@ function loadShorts() {
         for(var i = 0; i < shorts.length; i++) {
             var sh = shorts[i];
             
-            // Аватарка канала
             var avatarHtml = '';
             if(sh.channelAvatar.type === 'emoji') {
                 avatarHtml = '<span style="font-size:28px;">' + sh.channelAvatar.value + '</span>';
@@ -1590,7 +1666,6 @@ function loadShorts() {
                 avatarHtml = '<img src="'+sh.channelAvatar.value+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
             }
             
-            // Медиа
             var mediaHtml = '';
             if(sh.media) {
                 if(sh.mediaType === 'image') {
@@ -1600,7 +1675,6 @@ function loadShorts() {
                 }
             }
             
-            // Комментарии
             var commentsHtml = '';
             if(sh.comments) {
                 var commentKeys = Object.keys(sh.comments);
@@ -1610,8 +1684,11 @@ function loadShorts() {
                 }
             }
             
-            // КНОПКА УДАЛЕНИЯ - ТЕПЕРЬ ДЛЯ ВСЕХ (не только для автора)
-            var deleteBtn = '<button class="delete-btn" onclick="deleteShort(\''+sh.id+'\')">🗑️ Удалить</button>';
+            // КНОПКА УДАЛЕНИЯ ТОЛЬКО ДЛЯ АДМИНОВ
+            var deleteBtn = '';
+            if(isAdmin) {
+                deleteBtn = '<button class="delete-btn" onclick="deleteShort(\''+sh.id+'\')">🗑️ Удалить</button>';
+            }
             
             container.innerHTML += `
                 <div class="short-card">
@@ -2920,6 +2997,11 @@ function initChickenRain(){
 // ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
 function initRunner(){
     document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
+    // Добавить обработчик кнопки
+    document.getElementById('runnerSkinBtn').onclick = function() {
+        var currentSkin = getCurrentGameSkin('runner');
+        openGameSkinShop('runner', currentSkin, 'restartCurrentGame()');
+    };
     
     createGameRating();
     var c=document.getElementById('rc'),ctx=c.getContext('2d');
