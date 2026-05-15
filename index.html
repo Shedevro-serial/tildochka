@@ -1599,19 +1599,6 @@ function showGame(type){
     };
     
     document.getElementById('gameTitle').textContent = titles[type] || type;
-    var gameHeader = document.getElementById('gameTitle');
-    var existingShopBtn = document.getElementById('gameSkinShopBtn');
-    if(!existingShopBtn) {
-        var shopBtn = document.createElement('button');
-        shopBtn.id = 'gameSkinShopBtn';
-        shopBtn.textContent = '🎨 Магазин скинов';
-        shopBtn.style.cssText = 'margin-left:15px;background:#ffd700;color:#000;border:none;padding:5px 15px;font-size:14px';
-        shopBtn.onclick = function() {
-            var currentSkin = getCurrentGameSkin(type);
-            openGameSkinShop(type, currentSkin, 'restartCurrentGame()');
-        };
-        gameHeader.parentNode.insertBefore(shopBtn, gameHeader.nextSibling);
-    }
     document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameRatingArea').innerHTML = '';
     document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
@@ -1727,6 +1714,7 @@ function showThought(emotion, x, y) {
 }
 
 function initTamagotchi(){
+createGameRating();
 if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
 var saved=localStorage.getItem('tildochka_tamagotchi');
 if(saved){try{var p=JSON.parse(saved);if(p&&p.isAlive){tamagotchiData=p;renderTamagotchi();startTamagotchiLoop();return;}}catch(e){}}
@@ -1768,7 +1756,6 @@ if(!t||!t.isAlive){
     document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+ageValue+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div><div id="gameRatingArea"></div>';
     
     // Показываем звёзды для оценки после смерти
-    createGameRating();
     
     if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
     return;
@@ -2527,11 +2514,10 @@ rM();
 }
 
 // ==================== FLAPPY КУРИЦА ====================
-// ==================== FLAPPY КУРИЦА С ПОДДЕРЖКОЙ СКИНОВ ====================
+// ==================== FLAPPY КУРИЦА (одна кнопка магазина) ====================
 function initFlappy(){
     document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p><button id="flappySkinBtn" style="margin:5px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     
-    // Кнопка магазина скинов для Flappy
     document.getElementById('flappySkinBtn').onclick = function() {
         var currentSkin = getCurrentGameSkin('flappy');
         openGameSkinShop('flappy', currentSkin, 'restartCurrentGame()');
@@ -2546,19 +2532,16 @@ function initFlappy(){
     c.addEventListener('touchstart',function(e){e.preventDefault();jump();});
     pipes.push(sp());
     
-    // ========== НОВАЯ ФУНКЦИЯ loop С ПОДДЕРЖКОЙ СКИНОВ ==========
     function loop(){
         if(ov)return;
         ctx.clearRect(0,0,400,500);
         
-        // НЕБО
         var grad=ctx.createLinearGradient(0,0,0,500);
         grad.addColorStop(0,'#4a90d9');
         grad.addColorStop(1,'#87CEEB');
         ctx.fillStyle=grad;
         ctx.fillRect(0,0,400,500);
         
-        // ОБЛАКА
         ctx.fillStyle='rgba(255,255,255,0.7)';
         ctx.beginPath();
         ctx.ellipse(50+(Date.now()*0.02)%400, 60, 35, 25, 0, 0, Math.PI*2);
@@ -2570,7 +2553,6 @@ function initFlappy(){
         ctx.ellipse(340-(Date.now()*0.015)%400, 95, 32, 24, 0, 0, Math.PI*2);
         ctx.fill();
         
-        // ТРУБЫ
         for(var i=pipes.length-1;i>=0;i--){
             pipes[i].x-=2;
             ctx.fillStyle='#2d5a1e';
@@ -2584,42 +2566,25 @@ function initFlappy(){
         }
         if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());
         
-        // ГРАВИТАЦИЯ
         vy+=0.5;
         bird.y+=vy;
         if(bird.y>480||bird.y<0)end();
         
-        // ========== ОТРИСОВКА ПТИЦЫ С ПОДДЕРЖКОЙ СКИНОВ ==========
         var flappySkin = getCurrentGameSkin('flappy');
         var birdColor = flappySkin.color || '#FFD700';
         var birdEmoji = flappySkin.emoji || '🐔';
         
-        // ТЕЛО (круглое) с поддержкой градиента
-        if(typeof birdColor === 'string' && birdColor.includes('linear-gradient')) {
-            // Для радужного скина
-            var grad2 = ctx.createLinearGradient(bird.x-10, bird.y-10, bird.x+10, bird.y+10);
-            grad2.addColorStop(0, '#ff0000');
-            grad2.addColorStop(0.2, '#ff9900');
-            grad2.addColorStop(0.4, '#ffff00');
-            grad2.addColorStop(0.6, '#00ff00');
-            grad2.addColorStop(0.8, '#0066ff');
-            grad2.addColorStop(1, '#9900ff');
-            ctx.fillStyle = grad2;
-        } else {
-            ctx.fillStyle = birdColor;
-        }
+        ctx.fillStyle = birdColor;
         ctx.beginPath();
         ctx.arc(bird.x, bird.y, 14, 0, Math.PI * 2);
         ctx.fill();
         
-        // КРЫЛО (машет в зависимости от вертикальной скорости)
         ctx.fillStyle = '#cc8800';
         var wingAngle = vy > 0 ? 0.8 : -0.3;
         ctx.beginPath();
         ctx.ellipse(bird.x - 12, bird.y - 2 + (vy * 0.5), 9, 6, wingAngle, 0, Math.PI * 2);
         ctx.fill();
         
-        // ГЛАЗ
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(bird.x + 6, bird.y - 4, 5, 0, Math.PI * 2);
@@ -2629,13 +2594,11 @@ function initFlappy(){
         ctx.arc(bird.x + 7, bird.y - 5, 2.5, 0, Math.PI * 2);
         ctx.fill();
         
-        // БЛИК В ГЛАЗУ
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(bird.x + 8, bird.y - 6, 1, 0, Math.PI * 2);
         ctx.fill();
         
-        // КЛЮВ
         ctx.fillStyle = '#ff6600';
         ctx.beginPath();
         ctx.moveTo(bird.x + 12, bird.y - 4);
@@ -2643,12 +2606,7 @@ function initFlappy(){
         ctx.lineTo(bird.x + 13, bird.y + 1);
         ctx.fill();
         
-        // ХОХОЛОК (3 пёрышка) - цветом скина
-        if(typeof birdColor === 'string' && birdColor.includes('linear-gradient')) {
-            ctx.fillStyle = '#ffaa00';
-        } else {
-            ctx.fillStyle = birdColor;
-        }
+        ctx.fillStyle = birdColor;
         ctx.beginPath();
         ctx.moveTo(bird.x - 3, bird.y - 13);
         ctx.lineTo(bird.x - 1, bird.y - 22);
@@ -2665,20 +2623,17 @@ function initFlappy(){
         ctx.lineTo(bird.x - 3, bird.y - 12);
         ctx.fill();
         
-        // РУМЯНЕЦ
         ctx.fillStyle = 'rgba(255,100,100,0.5)';
         ctx.beginPath();
         ctx.arc(bird.x + 10, bird.y + 2, 3, 0, Math.PI * 2);
         ctx.fill();
         
-        // ЭМОДЗИ СКИНА ПОВЕРХ
         ctx.font = '18px Arial';
         ctx.fillStyle = '#000';
         ctx.shadowBlur = 2;
         ctx.fillText(birdEmoji, bird.x - 8, bird.y - 10);
         ctx.shadowBlur = 0;
         
-        // СЧЁТ
         ctx.fillStyle = '#000';
         ctx.font = 'bold 24px Arial';
         ctx.fillText(''+sc, 350, 50);
@@ -2981,7 +2936,6 @@ function initRunner(){
 function initSnake(){
     document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div><button id="snakeSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     
-    // Кнопка магазина скинов
     document.getElementById('snakeSkinBtn').onclick = function() {
         var currentSkin = getCurrentGameSkin('snake');
         openGameSkinShop('snake', currentSkin, 'restartCurrentGame()');
@@ -3037,7 +2991,6 @@ function initSnake(){
             food = newFood;
         }else sn.pop();
         
-        // ========== НОВАЯ ОТРИСОВКА С ПОДДЕРЖКОЙ СКИНОВ ==========
         var snakeSkin = getCurrentGameSkin('snake');
         var snakeColor = snakeSkin.color || '#4CAF50';
         var snakeEmoji = snakeSkin.emoji || '🐍';
@@ -3045,7 +2998,6 @@ function initSnake(){
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, 400, 400);
         
-        // ЕДА
         ctx.fillStyle = '#ff3333';
         ctx.beginPath();
         ctx.arc(food.x + 10, food.y + 10, 9, 0, Math.PI * 2);
@@ -3063,10 +3015,8 @@ function initSnake(){
         ctx.ellipse(food.x + 15, food.y + 4, 4, 6, -0.5, 0, Math.PI * 2);
         ctx.fill();
         
-        // ЗМЕЙКА
         for(var i = 0; i < sn.length; i++) {
             if(i === 0) {
-                // ГОЛОВА
                 ctx.fillStyle = snakeColor;
                 ctx.fillRect(sn[i].x, sn[i].y, 18, 18);
                 
@@ -3143,7 +3093,6 @@ function initSnake(){
     
     gameInterval=setInterval(loop,100);
 }
-
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
 document.getElementById('tl').onclick=function(){if(!ov)ml();};document.getElementById('tr').onclick=function(){if(!ov)mr();};
 document.getElementById('tu').onclick=function(){if(!ov)rotate();};document.getElementById('td').onclick=function(){if(!ov)drop();};
