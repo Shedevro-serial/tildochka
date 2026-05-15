@@ -316,6 +316,38 @@
     font-size: 10px;
     margin-left: 8px;
 }
+.game-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.9);
+    border: 2px solid #ffd700;
+    border-radius: 20px;
+    padding: 25px 35px;
+    text-align: center;
+    z-index: 100;
+    min-width: 220px;
+    backdrop-filter: blur(5px);
+}
+.game-overlay button {
+    background: #ffd700;
+    color: #000;
+    font-size: 18px;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: transform 0.2s;
+}
+.game-overlay button:hover {
+    transform: scale(1.05);
+}
+.game-overlay button:active {
+    transform: scale(0.95);
+}
     
     /* МОБИЛЬНЫЕ УСТРОЙСТВА */
     @media (max-width: 768px) {
@@ -1700,7 +1732,7 @@ function loadShorts() {
                 if(sh.mediaType === 'image') {
                     mediaHtml = '<img src="'+sh.media+'" style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px">';
                 } else if(sh.mediaType === 'video') {
-                    mediaHtml = '<video src="'+sh.media+'" class="short-video" controls style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px"></video>';
+                    mediaHtml = '<video src="'+sh.media+'" class="short-video" controls playsinline style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px" preload="metadata"></video>';
                 }
             }
             
@@ -2873,20 +2905,46 @@ function initFlappy(){
     }
     
     function end(){
-        ov=true;
-        clearInterval(gameInterval);
-        playSound("hit");
-        if(sc >= 50) progressQuest('score50', sc);
-        if(sc >= 100) progressQuest('score100', sc);
-        var b=document.createElement('button');
-        b.textContent='🔄 Заново';
-        b.onclick=function(){
-            document.getElementById('gameContent').innerHTML='';
-            initFlappy();
-        };
-        document.getElementById('gameContent').appendChild(b);
-        alert('Счёт: '+sc);
-    }
+    ov=true;
+    clearInterval(gameInterval);
+    playSound("hit");
+    
+    // Создаём центрированный контейнер
+    var container = document.createElement('div');
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
+    
+    var scoreText = document.createElement('p');
+    scoreText.textContent = '🏆 Счёт: ' + sc;
+    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
+    
+    var button = document.createElement('button');
+    button.textContent = '🔄 Заново';
+    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+    button.onclick = function(){
+        document.getElementById('gameContent').innerHTML = '';
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
+    };
+    
+    container.appendChild(scoreText);
+    container.appendChild(button);
+    
+    // Очищаем контент и добавляем центрированную кнопку
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameContent').style.position = 'relative';
+    document.getElementById('gameContent').style.minHeight = '400px';
+    document.getElementById('gameContent').appendChild(container);
+    
+    // Убираем alert, чтобы не мешал
+    // alert('Счёт: '+sc); // можно закомментировать или оставить
+}
     
     gameInterval=setInterval(loop,20);
 }
@@ -3167,21 +3225,46 @@ function initRunner(){
     }
 
     function end(){
-        ov = true;
-        clearInterval(gameInterval);
-        playSound("hit");
-        if(score >= 50) progressQuest('score50', score);
-        if(score >= 100) progressQuest('score100', score);
-        var b = document.createElement('button');
-        b.textContent = '🔄 Заново';
-        b.style.cssText = 'display:block;margin:15px auto;font-size:18px';
-        b.onclick = function(){
-            document.getElementById('gameContent').innerHTML = '';
-            initRunner();
-        };
-        document.getElementById('gameContent').appendChild(b);
-        alert('Счёт: ' + score);
-    }
+    ov=true;
+    clearInterval(gameInterval);
+    playSound("hit");
+    
+    // Создаём центрированный контейнер
+    var container = document.createElement('div');
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
+    
+    var scoreText = document.createElement('p');
+    scoreText.textContent = '🏆 Счёт: ' + sc;
+    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
+    
+    var button = document.createElement('button');
+    button.textContent = '🔄 Заново';
+    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+    button.onclick = function(){
+        document.getElementById('gameContent').innerHTML = '';
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
+    };
+    
+    container.appendChild(scoreText);
+    container.appendChild(button);
+    
+    // Очищаем контент и добавляем центрированную кнопку
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameContent').style.position = 'relative';
+    document.getElementById('gameContent').style.minHeight = '400px';
+    document.getElementById('gameContent').appendChild(container);
+    
+    // Убираем alert, чтобы не мешал
+    // alert('Счёт: '+sc); // можно закомментировать или оставить
+}
     
     update();
     gameInterval = setInterval(function(){}, 1000);
@@ -3329,21 +3412,47 @@ function initSnake(){
         ctx.strokeRect(sn[0].x, sn[0].y, 18, 18);
     }
     
-    function end(s){
-        ov=true;
-        clearInterval(gameInterval);
-        playSound("hit");
-        if(s >= 50) progressQuest('score50', s);
-        if(s >= 100) progressQuest('score100', s);
-        var b=document.createElement('button');
-        b.textContent='🔄 Заново';
-        b.onclick=function(){
-            document.getElementById('gameContent').innerHTML='';
-            initSnake();
-        };
-        document.getElementById('gameContent').appendChild(b);
-        alert('Счёт: '+s);
-    }
+    function end(){
+    ov=true;
+    clearInterval(gameInterval);
+    playSound("hit");
+    
+    // Создаём центрированный контейнер
+    var container = document.createElement('div');
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
+    
+    var scoreText = document.createElement('p');
+    scoreText.textContent = '🏆 Счёт: ' + sc;
+    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
+    
+    var button = document.createElement('button');
+    button.textContent = '🔄 Заново';
+    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+    button.onclick = function(){
+        document.getElementById('gameContent').innerHTML = '';
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
+    };
+    
+    container.appendChild(scoreText);
+    container.appendChild(button);
+    
+    // Очищаем контент и добавляем центрированную кнопку
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameContent').style.position = 'relative';
+    document.getElementById('gameContent').style.minHeight = '400px';
+    document.getElementById('gameContent').appendChild(container);
+    
+    // Убираем alert, чтобы не мешал
+    // alert('Счёт: '+sc); // можно закомментировать или оставить
+}
     
     gameInterval=setInterval(loop,100);
 }
@@ -3353,7 +3462,47 @@ document.getElementById('tu').onclick=function(){if(!ov)rotate();};document.getE
 document.onkeydown=function(e){if(ov)return;if(e.key==='ArrowLeft')ml();if(e.key==='ArrowRight')mr();if(e.key==='ArrowDown')drop();if(e.key==='ArrowUp')rotate();e.preventDefault();};
 function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,300,480);for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++)if(board[y][x]){ctx.fillStyle='#ffd700';ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK-1,BLOCK-1);}for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){ctx.fillStyle='#f60';ctx.fillRect((piece.x+x)*BLOCK,(piece.y+y)*BLOCK,BLOCK-1,BLOCK-1);}}
 function loop(){if(ov)return;if(Date.now()-last>500)drop();draw();requestAnimationFrame(loop);}
-function end(){ov=true;playSound("hit");if(sc >= 50) progressQuest('score50', sc);if(sc >= 100) progressQuest('score100', sc);var b=document.createElement('button');b.textContent='🔄 Заново';b.onclick=function(){document.getElementById('gameContent').innerHTML='';initTetris();};document.getElementById('gameContent').appendChild(b);alert('Счёт: '+sc);}
+function end(){
+    ov=true;
+    clearInterval(gameInterval);
+    playSound("hit");
+    
+    // Создаём центрированный контейнер
+    var container = document.createElement('div');
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
+    
+    var scoreText = document.createElement('p');
+    scoreText.textContent = '🏆 Счёт: ' + sc;
+    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
+    
+    var button = document.createElement('button');
+    button.textContent = '🔄 Заново';
+    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+    button.onclick = function(){
+        document.getElementById('gameContent').innerHTML = '';
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
+    };
+    
+    container.appendChild(scoreText);
+    container.appendChild(button);
+    
+    // Очищаем контент и добавляем центрированную кнопку
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameContent').style.position = 'relative';
+    document.getElementById('gameContent').style.minHeight = '400px';
+    document.getElementById('gameContent').appendChild(container);
+    
+    // Убираем alert, чтобы не мешал
+    // alert('Счёт: '+sc); // можно закомментировать или оставить
+}
 requestAnimationFrame(loop);}
 function initGuess(){createGameRating();var n=Math.floor(Math.random()*100)+1,a=0;document.getElementById('gameContent').innerHTML='<p>Угадай число 1-100!</p><input id="gi" type="number"><br><button onclick="guessClick()">Угадать</button><p id="gh"></p>';window.guessClick=function(){var g=parseInt(document.getElementById('gi').value);if(!g)return;a++;playSound("jump");if(g===n){alert('Победа! '+a+' попыток!');addEggs(5,'Победа!');}else document.getElementById('gh').textContent=g<n?'🔺 Больше!':'🔻 Меньше!';document.getElementById('gameScoreDisplay').textContent='Попыток: '+a;};}
 function initRPS(){createGameRating();var sc={p:0,b:0};document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center"><button onclick="rpsClick(0)" style="font-size:22px;padding:18px">🪨</button><button onclick="rpsClick(1)" style="font-size:22px;padding:18px">📄</button><button onclick="rpsClick(2)" style="font-size:22px;padding:18px">✂️</button></div><p id="rr"></p>';window.rpsClick=function(p){var bot=Math.floor(Math.random()*3);playSound("jump");if(p===bot)document.getElementById('rr').textContent='Ничья!';else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){sc.p++;document.getElementById('rr').textContent='Ты победил!';addEggs(2,'Победа!');}else{sc.b++;document.getElementById('rr').textContent='Бот победил!';}document.getElementById('gameScoreDisplay').textContent='Ты: '+sc.p+' | Бот: '+sc.b;};}
@@ -3944,11 +4093,21 @@ function initShooter(){
             createMissEffect(x, y);
             if(misses >= maxMisses) {
                 gameActive = false;
-                if(timerInterval) clearInterval(timerInterval);
-                // Там где игра окончена (победа или проигрыш), добавь:
-                if(gameScore >= 50) progressQuest('score50', gameScore);
-                if(gameScore >= 100) progressQuest('score100', gameScore);
-                alert('😢 Игра окончена! 10 промахов! Счёт: ' + gameScore);
+if(timerInterval) clearInterval(timerInterval);
+
+// Центрированная панель окончания
+var endPanel = document.createElement('div');
+endPanel.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); padding:20px 30px; border-radius:20px; border:2px solid #ffd700; text-align:center; z-index:200;';
+endPanel.innerHTML = '<div style="font-size:28px; margin-bottom:10px">💀 ИГРА ОКОНЧЕНА</div><div style="font-size:22px; color:#ffd700; margin-bottom:15px">Счёт: ' + gameScore + '</div>';
+var restartBtn = document.createElement('button');
+restartBtn.textContent = '🔫 Новая игра';
+restartBtn.style.cssText = 'background:#ffd700; color:#000; font-size:16px; padding:8px 25px; border:none; border-radius:30px; cursor:pointer; font-weight:bold;';
+restartBtn.onclick = function() {
+    document.getElementById('gameContent').innerHTML = '';
+    initShooter();
+};
+endPanel.appendChild(restartBtn);
+document.getElementById('gameContent').appendChild(endPanel);
             }
         }
         
