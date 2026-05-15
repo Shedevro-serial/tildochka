@@ -1433,23 +1433,25 @@ function sendChatMessage() {
         return;
     }
     
-    // Блокируем кнопку на время отправки
     var btn = document.getElementById('chatSendBtn');
     if(btn) {
         btn.disabled = true;
         btn.innerHTML = '⏳...';
     }
     
+    // Получаем текущую аватарку пользователя
+    var avatarData = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
+    
     db.ref('chat').push({
         name: myName,
         text: text,
-        ts: Date.now()
+        ts: Date.now(),
+        avatarType: avatarData.type,
+        avatarValue: avatarData.value
     }).then(function() {
-        // Очищаем поле ТОЛЬКО после успешной отправки
         input.value = '';
         progressQuest('chat', 1);
         
-        // Возвращаем кнопку через 1 секунду
         setTimeout(function() {
             if(btn) {
                 btn.disabled = false;
@@ -1464,16 +1466,18 @@ function sendChatMessage() {
             btn.innerHTML = '💬 Отправить';
         }
     });
-  }
+}
 function loadChatMessages() {
-    const chatRef = db.ref('chat');
-    chatRef.limitToLast(50).on('value', (snapshot) => {
+    db.ref('chat').limitToLast(50).on('value', (snapshot) => {
         const messages = [];
         snapshot.forEach((child) => {
             messages.push({
+                id: child.key,
                 name: child.val().name || 'Гость',
                 text: child.val().text || '',
-                ts: child.val().ts || 0
+                ts: child.val().ts || 0,
+                avatarType: child.val().avatarType || 'emoji',
+                avatarValue: child.val().avatarValue || '🐔'
             });
         });
         messages.sort((a, b) => a.ts - b.ts);
@@ -1483,12 +1487,37 @@ function loadChatMessages() {
         
         const wasAtBottom = container.scrollHeight - container.scrollTop < 100;
         container.innerHTML = '';
+        
         messages.forEach(msg => {
             const div = document.createElement('div');
             div.className = 'message';
-            div.innerHTML = '<strong>' + escapeHtml(msg.name) + ':</strong> ' + escapeHtml(msg.text);
+            
+            // Аватарка
+            let avatarHtml = '';
+            if(msg.avatarType === 'emoji') {
+                avatarHtml = '<span class="message-avatar" style="font-size:16px;">' + escapeHtml(msg.avatarValue) + '</span>';
+            } else {
+                avatarHtml = '<span class="message-avatar"><img src="' + msg.avatarValue + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover"></span>';
+            }
+            
+            // Время
+            let timeStr = '';
+            if(msg.ts) {
+                const date = new Date(msg.ts);
+                timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            div.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    ${avatarHtml}
+                    <strong>${escapeHtml(msg.name)}</strong>
+                    <span style="font-size:10px;color:#888;">${timeStr}</span>
+                </div>
+                <div style="margin-left:32px;">${escapeHtml(msg.text)}</div>
+            `;
             container.appendChild(div);
         });
+        
         if(wasAtBottom) {
             container.scrollTop = container.scrollHeight;
         }
@@ -2972,15 +3001,15 @@ function initChickenRain(){
     var particles=[];
     
     function spawnEgg(){
-        if(Math.random()<0.02){
-            eggs.push({
-                x: Math.random()*370,
-                y: -20,
-                speed: 1.5 + Math.random()*3,
-                type: Math.random()>0.85 ? 'gold' : 'normal'
-            });
-        }
+    if(Math.random()<0.008){  // было 0.02, стало 0.008 (в 2.5 раза реже)
+        eggs.push({
+            x: Math.random()*370,
+            y: -20,
+            speed: 1.5 + Math.random()*3,
+            type: Math.random()>0.85 ? 'gold' : 'normal'
+        });
     }
+}
     
     function addParticle(x,y){
         for(var i=0;i<5;i++){
