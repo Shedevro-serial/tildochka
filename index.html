@@ -563,6 +563,12 @@ function updateAdminBadge() {
         }
     }
 }
+function deleteShort(postId) {
+    if(!confirm('🗑️ Удалить этот пост? (Это действие необратимо)')) return;
+    
+    db.ref('shorts/' + postId).remove();
+    alert('✅ Пост удалён!');
+}
 // ==================== FIREBASE ====================
 firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
 var db=firebase.database();
@@ -2754,7 +2760,16 @@ function initFlappy(){
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
 // ==================== КУРИНЫЙ ДОЖДЬ (без дрожания) ====================
 function initChickenRain(){
-    document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p>';
+    document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
+    
+    // Кнопка магазина скинов для ChickenRain
+    var skinBtn = document.getElementById('chickenRainSkinBtn');
+    if(skinBtn) {
+        skinBtn.onclick = function() {
+            var currentSkin = getCurrentGameSkin('chickenrain');
+            openGameSkinShop('chickenrain', currentSkin, 'restartCurrentGame()');
+        };
+    }
     
     createGameRating();
     var c=document.getElementById('cr'),ctx=c.getContext('2d');
@@ -2874,7 +2889,7 @@ function initChickenRain(){
     
     update();
     gameInterval=setInterval(function(){},1000);
-}
+                     }
 // ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
 function initRunner(){
     document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p>';
