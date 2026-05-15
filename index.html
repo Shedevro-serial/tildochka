@@ -3043,6 +3043,7 @@ function initChickenRain(){
     };
     document.getElementById('crl').onclick=function(){animalX=Math.max(10, animalX-30); playSound("jump");};
     document.getElementById('crr').onclick=function(){animalX=Math.min(360, animalX+30); playSound("jump");};
+    var shortMediaType = null;
     
     function update(){
         if(ov) return;
