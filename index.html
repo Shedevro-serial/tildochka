@@ -1316,6 +1316,7 @@ function generateDailyQuests(force) {
         var shuffled = [...questTemplates].sort(() => Math.random() - 0.5);
         for(var i = 0; i < 5; i++) {
             dailyQuests.push({
+                uid: Date.now() + '_' + i + '_' + Math.random(), // УНИКАЛЬНЫЙ ID
                 id: i,
                 text: shuffled[i].text,
                 type: shuffled[i].type,
@@ -1330,18 +1331,12 @@ function generateDailyQuests(force) {
     
     var qp = JSON.parse(localStorage.getItem('tildochka_qp') || '{}');
     dailyQuests.forEach(function(q) {
-        if(qp[q.id]) q.progress = qp[q.id];
+        if(qp[q.uid]) q.progress = qp[q.uid];
         if(q.progress >= q.target) q.completed = true;
     });
     
     renderQuests();
 }
-
-function loadQuests() {
-    generateDailyQuests(false);
-}
-// ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЗАДАНИЙ ====================
-dailyQuests = [];
 
 function renderQuests() {
     var c = document.getElementById('questsList');
@@ -1353,7 +1348,7 @@ function renderQuests() {
     c.innerHTML = dailyQuests.map(function(q) {
         return '<div class="daily-quest' + (q.completed ? ' completed' : '') + '">' +
                '<div><b>' + q.text + '</b><br><small>' + q.progress + '/' + q.target + '</small></div>' +
-               '<div>' + (q.completed ? '✅ <button onclick="claimQuest(' + q.id + ')">🥚' + q.reward + '</button>' : '🥚' + q.reward) + '</div>' +
+               '<div>' + (q.completed ? '✅ <button onclick="claimQuest(\'' + q.uid + '\')">🥚' + q.reward + '</button>' : '🥚' + q.reward) + '</div>' +
                '</div>';
     }).join('');
 }
@@ -1373,18 +1368,43 @@ function progressQuest(type, amount) {
         }
     });
     var qp = {};
-    dailyQuests.forEach(function(q) { qp[q.id] = q.progress; });
+    dailyQuests.forEach(function(q) { 
+        qp[q.uid] = q.progress; 
+    });
     localStorage.setItem('tildochka_qp', JSON.stringify(qp));
     renderQuests();
 }
 
-function claimQuest(id) {
-    if(!dailyQuests || !dailyQuests[id]) return;
-    var q = dailyQuests[id];
+function claimQuest(uid) {
+    if(!dailyQuests) return;
+    
+    var questIndex = -1;
+    for(var i = 0; i < dailyQuests.length; i++) {
+        if(dailyQuests[i].uid === uid) {
+            questIndex = i;
+            break;
+        }
+    }
+    
+    if(questIndex === -1) return;
+    
+    var q = dailyQuests[questIndex];
     if(!q || !q.completed) return;
-    addEggs(q.reward, 'Задание выполнено!');
-    dailyQuests.splice(id, 1);
-    localStorage.setItem('tildochka_quests_' + new Date().toDateString(), JSON.stringify(dailyQuests));
+    
+    addEggs(q.reward, 'Задание выполнено! +' + q.reward + '🥚');
+    
+    // Удаляем задание
+    dailyQuests.splice(questIndex, 1);
+    
+    // Сохраняем
+    var today = new Date().toDateString();
+    localStorage.setItem('tildochka_quests_' + today, JSON.stringify(dailyQuests));
+    
+    // Удаляем прогресс для этого задания
+    var qp = JSON.parse(localStorage.getItem('tildochka_qp') || '{}');
+    delete qp[uid];
+    localStorage.setItem('tildochka_qp', JSON.stringify(qp));
+    
     renderQuests();
 }
 
