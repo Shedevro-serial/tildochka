@@ -1558,9 +1558,11 @@ function loadShorts() {
             shorts.push({
                 id: child.key,
                 channel: child.val().channel || 'Без канала',
+                channelAvatar: child.val().channelAvatar || {type:'emoji', value:'📺'},
                 author: child.val().author || 'Аноним',
                 caption: child.val().caption || '',
                 media: child.val().media || null,
+                mediaType: child.val().mediaType || null,
                 likes: child.val().likes || 0,
                 comments: child.val().comments || {},
                 ts: child.val().ts || 0
@@ -1572,13 +1574,33 @@ function loadShorts() {
         if(!container) return;
         
         if(shorts.length === 0) {
-            container.innerHTML = '<p style="color:#888;text-align:center">📺 Нет видео. Создай канал и загрузи первое видео!</p>';
+            container.innerHTML = '<p style="color:#888;text-align:center">📺 Нет постов. Создай канал и выложи первый пост!</p>';
             return;
         }
         
         container.innerHTML = '';
         for(var i = 0; i < shorts.length; i++) {
             var sh = shorts[i];
+            
+            // Аватарка канала
+            var avatarHtml = '';
+            if(sh.channelAvatar.type === 'emoji') {
+                avatarHtml = '<span style="font-size:28px;">' + sh.channelAvatar.value + '</span>';
+            } else {
+                avatarHtml = '<img src="'+sh.channelAvatar.value+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
+            }
+            
+            // Медиа
+            var mediaHtml = '';
+            if(sh.media) {
+                if(sh.mediaType === 'image') {
+                    mediaHtml = '<img src="'+sh.media+'" style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px">';
+                } else if(sh.mediaType === 'video') {
+                    mediaHtml = '<video src="'+sh.media+'" class="short-video" controls style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px"></video>';
+                }
+            }
+            
+            // Комментарии
             var commentsHtml = '';
             if(sh.comments) {
                 var commentKeys = Object.keys(sh.comments);
@@ -1588,26 +1610,31 @@ function loadShorts() {
                 }
             }
             
-            var mediaHtml = '';
-            if(sh.media) {
-                if(sh.media.startsWith('data:video')) {
-                    mediaHtml = '<video src="' + sh.media + '" class="short-video" controls></video>';
-                } else {
-                    mediaHtml = '<video src="' + sh.media + '" class="short-video" controls></video>';
-                }
-            }
+            // КНОПКА УДАЛЕНИЯ - ТЕПЕРЬ ДЛЯ ВСЕХ (не только для автора)
+            var deleteBtn = '<button class="delete-btn" onclick="deleteShort(\''+sh.id+'\')">🗑️ Удалить</button>';
             
             container.innerHTML += `
                 <div class="short-card">
-                    <div style="color:#ffd700">📺 ${escapeHtml(sh.channel)} | ${escapeHtml(sh.author)}</div>
-                    ${sh.caption ? '<div><strong>' + escapeHtml(sh.caption) + '</strong></div>' : ''}
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                        <div style="width:45px;height:45px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.3);border:2px solid #ffd700;overflow:hidden">
+                            ${avatarHtml}
+                        </div>
+                        <div style="flex:1">
+                            <div style="color:#ffd700;font-weight:bold">${escapeHtml(sh.channel)}</div>
+                            <div style="font-size:11px;color:#aaa">${escapeHtml(sh.author)} • ${new Date(sh.ts).toLocaleString()}</div>
+                        </div>
+                        ${deleteBtn}
+                    </div>
+                    ${sh.caption ? '<div style="margin:8px 0"><strong>' + escapeHtml(sh.caption) + '</strong></div>' : ''}
                     ${mediaHtml}
                     <div class="short-actions">
                         <button onclick="likeShort('${sh.id}',${sh.likes})">❤️ ${sh.likes}</button>
                     </div>
                     <div class="short-comments">${commentsHtml}</div>
-                    <input id="sc_${sh.id}" placeholder="Напиши комментарий..." style="width:100%;padding:6px;margin:4px 0;font-size:12px;border-radius:8px">
-                    <button onclick="addShortComment('${sh.id}')" style="font-size:12px;padding:6px 10px">💬 Отправить</button>
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <input id="sc_${sh.id}" placeholder="Напиши комментарий..." style="flex:1;padding:6px;font-size:12px;border-radius:8px">
+                        <button onclick="addShortComment('${sh.id}')" style="font-size:12px;padding:6px 12px">💬</button>
+                    </div>
                 </div>
             `;
         }
