@@ -3572,9 +3572,20 @@ function initRPS(){createGameRating();var sc={p:0,b:0};document.getElementById('
 var savedTama=localStorage.getItem('tildochka_tamagotchi');
 if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamagotchiData.isAlive)startTamagotchiLoop();}catch(e){}}
 
-var pass=prompt("🔐 Введите кодовое слово:");
-if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){loadAllData();}
-else {document.getElementById("blocked").style.display="flex";}
+// Ждем полной загрузки DOM перед показом запроса пароля
+document.addEventListener('DOMContentLoaded', function() {
+    var pass = prompt("🔐 Введите кодовое слово:");
+    if(pass && (pass === "четыре курицы" || pass === "Четыре курицы" || pass === "4 курицы")) {
+        loadAllData();
+    } else {
+        var blockedDiv = document.getElementById("blocked");
+        if(blockedDiv) {
+            blockedDiv.style.display = "flex";
+            // Добавляем понятное сообщение
+            blockedDiv.innerHTML = '<div style="text-align:center"><div>🚫 ДОСТУП ЗАПРЕЩЁН</div><div style="font-size:16px;margin-top:20px">Неверное кодовое слово!</div><button onclick="location.reload()" style="margin-top:20px;padding:10px 20px;background:#ffd700;color:#000;border:none;border-radius:8px;cursor:pointer">↻ Попробовать снова</button></div>';
+        }
+    }
+});
 // ==================== ДРУЗЬЯ ====================
 var myFriends = [];
 var friendRequests = [];
