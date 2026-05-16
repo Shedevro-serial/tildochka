@@ -413,6 +413,7 @@
 <a onclick="suggestQuote();closeMenu()">💬 Предложить цитату</a>
 <a onclick="suggestJoke();closeMenu()">😂 Предложить шутку</a>
 <a onclick="showAdminLogin();closeMenu()">👑 Стать админом</a>
+<a onclick="openCharactersShop();closeMenu()">🐔 Купить персонажа</a>
 </div>
 <div id="content">
 
@@ -686,30 +687,6 @@ var myName='Гость',myEggs=0,boughtAvatars=[],onlineUsers={},pendingInvite=n
 var myChannel=localStorage.getItem('tildochka_channel')||'';
 var audioCtx=null;
 var lastSoundTime=0;
-// Добавить ПЕРЕД document.addEventListener('DOMContentLoaded', ...)
-
-function previewMemeMedia(type) {
-    var input = document.getElementById(type === 'photo' ? 'memePhoto' : 'memeVideo');
-    var file = input.files[0];
-    if(!file) return;
-    
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        memeMedia = e.target.result;
-        memeMediaType = type;
-        var preview = document.getElementById('memePreview');
-        if(type === 'photo') {
-            preview.innerHTML = '<img src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px">';
-        } else {
-            preview.innerHTML = '<video src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px" controls></video>';
-        }
-    };
-    reader.readAsDataURL(file);
-}
-
-function loadQuests() {
-    generateDailyQuests(false);
-}
 
 // КАСТОМНЫЕ ПЕРСОНАЖИ ДЛЯ ИГР
 var customCharacters = [];
@@ -3067,7 +3044,6 @@ function initChickenRain(){
     };
     document.getElementById('crl').onclick=function(){animalX=Math.max(10, animalX-30); playSound("jump");};
     document.getElementById('crr').onclick=function(){animalX=Math.min(360, animalX+30); playSound("jump");};
-    var shortMediaType = null;
     
     function update(){
         if(ov) return;
@@ -3596,20 +3572,9 @@ function initRPS(){createGameRating();var sc={p:0,b:0};document.getElementById('
 var savedTama=localStorage.getItem('tildochka_tamagotchi');
 if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamagotchiData.isAlive)startTamagotchiLoop();}catch(e){}}
 
-// Ждем полной загрузки DOM перед показом запроса пароля
-document.addEventListener('DOMContentLoaded', function() {
-    var pass = prompt("🔐 Введите кодовое слово:");
-    if(pass && (pass === "четыре курицы" || pass === "Четыре курицы" || pass === "4 курицы")) {
-        loadAllData();
-    } else {
-        var blockedDiv = document.getElementById("blocked");
-        if(blockedDiv) {
-            blockedDiv.style.display = "flex";
-            // Добавляем понятное сообщение
-            blockedDiv.innerHTML = '<div style="text-align:center"><div>🚫 ДОСТУП ЗАПРЕЩЁН</div><div style="font-size:16px;margin-top:20px">Неверное кодовое слово!</div><button onclick="location.reload()" style="margin-top:20px;padding:10px 20px;background:#ffd700;color:#000;border:none;border-radius:8px;cursor:pointer">↻ Попробовать снова</button></div>';
-        }
-    }
-});
+var pass=prompt("🔐 Введите кодовое слово:");
+if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){loadAllData();}
+else {document.getElementById("blocked").style.display="flex";}
 // ==================== ДРУЗЬЯ ====================
 var myFriends = [];
 var friendRequests = [];
@@ -5476,4 +5441,4 @@ function restartCurrentGame() {
       </script>
 
 </body>
-                  </html>
+  </html>
