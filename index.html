@@ -2958,29 +2958,26 @@ function initFlappy(){
     clearInterval(gameInterval);
     playSound("hit");
     
-    // Создаём центрированный контейнер
-    var container = document.createElement('div');
-    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
+    // Удаляем старый оверлей если есть
+    var existingOverlay = document.querySelector('#gameContent .game-overlay');
+    if(existingOverlay) existingOverlay.remove();
     
-    var scoreText = document.createElement('p');
-    scoreText.textContent = '🏆 Счёт: ' + sc;
-    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
+    // Создаём оверлей поверх существующего контента (НЕ УДАЛЯЯ ЕГО)
+    var overlay = document.createElement('div');
+    overlay.className = 'game-overlay';
+    overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + sc + '</div><button id="restartFlappyBtn">🔄 Заново</button>';
     
-    var button = document.createElement('button');
-    button.textContent = '🔄 Заново';
-    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
-    button.onclick = function(){
+    var restartBtn = overlay.querySelector('#restartFlappyBtn');
+    restartBtn.onclick = function(e){
+        e.stopPropagation();
+        overlay.remove();
+        // Очищаем контент и перезапускаем игру
         document.getElementById('gameContent').innerHTML = '';
-        // Вызываем инициализацию нужной игры
-        if(currentGame === 'snake') initSnake();
-        else if(currentGame === 'tetris') initTetris();
-        else if(currentGame === 'runner') initRunner();
-        else if(currentGame === 'flappy') initFlappy();
-        else if(currentGame === 'chickenrain') initChickenRain();
-        else if(currentGame === 'memory') initMemory();
-        else if(currentGame === 'shooter') initShooter();
-        // ... добавьте другие игры
+        initFlappy();
     };
+    
+    document.getElementById('gameContent').appendChild(overlay);
+}
     
     container.appendChild(scoreText);
     container.appendChild(button);
