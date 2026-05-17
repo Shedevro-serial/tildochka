@@ -2980,11 +2980,9 @@ function initFlappy(){
     gameInterval = setInterval(gameLoop, 20);
 }
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
-// ==================== КУРИНЫЙ ДОЖДЬ (без дрожания) ====================
 function initChickenRain(){
     document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     
-    // Кнопка магазина скинов для ChickenRain
     var skinBtn = document.getElementById('chickenRainSkinBtn');
     if(skinBtn) {
         skinBtn.onclick = function() {
@@ -3003,15 +3001,15 @@ function initChickenRain(){
     var particles=[];
     
     function spawnEgg(){
-    if(Math.random()<0.008){  // было 0.02, стало 0.008 (в 2.5 раза реже)
-        eggs.push({
-            x: Math.random()*370,
-            y: -20,
-            speed: 1.5 + Math.random()*3,
-            type: Math.random()>0.85 ? 'gold' : 'normal'
-        });
+        if(Math.random()<0.008){
+            eggs.push({
+                x: Math.random()*370,
+                y: -20,
+                speed: 1.5 + Math.random()*3,
+                type: Math.random()>0.85 ? 'gold' : 'normal'
+            });
+        }
     }
-}
     
     function addParticle(x,y){
         for(var i=0;i<5;i++){
@@ -3031,24 +3029,44 @@ function initChickenRain(){
     document.getElementById('crl').onclick=function(){animalX=Math.max(10, animalX-30); playSound("jump");};
     document.getElementById('crr').onclick=function(){animalX=Math.min(360, animalX+30); playSound("jump");};
     
+    function endGame(){
+        ov=true;
+        playSound("hit");
+        if(score >= 50) progressQuest('score50', score);
+        if(score >= 100) progressQuest('score100', score);
+        
+        var existingOverlay = document.querySelector('#gameContent .game-overlay');
+        if(existingOverlay) existingOverlay.remove();
+        
+        var overlay = document.createElement('div');
+        overlay.className = 'game-overlay';
+        overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + score + '</div><button id="restartChickenBtn">🔄 Заново</button>';
+        
+        var restartBtn = overlay.querySelector('#restartChickenBtn');
+        restartBtn.onclick = function(e){
+            e.stopPropagation();
+            overlay.remove();
+            document.getElementById('gameContent').innerHTML = '';
+            initChickenRain();
+        };
+        
+        document.getElementById('gameContent').appendChild(overlay);
+    }
+    
     function update(){
         if(ov) return;
         
-        // ПОЛУЧАЕМ СКИН ДЛЯ КУРИНОГО ДОЖДЯ
         var rainSkin = getCurrentGameSkin('chickenrain');
         var animalEmoji = rainSkin.emoji || '🐩';
         
-        // НЕБО
         ctx.fillStyle='#2a5a8a';
         ctx.fillRect(0,0,400,500);
         
-        // ТРАВА
         ctx.fillStyle='#4a8a3a';
         ctx.fillRect(0,460,400,40);
         ctx.fillStyle='#6aae5a';
         for(var i=0;i<10;i++) ctx.fillRect(i*40,460,38,10);
         
-        // ОТРИСОВКА ЖИВОТНОГО (целиком, БЕЗ ДРОЖАНИЯ)
         ctx.font = '54px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -3058,7 +3076,6 @@ function initChickenRain(){
         ctx.fillText(animalEmoji, animalX + 20, 455);
         ctx.shadowBlur = 0;
         
-        // ЯЙЦА
         for(var i=eggs.length-1;i>=0;i--){
             var e=eggs[i];
             e.y += e.speed;
@@ -3068,7 +3085,6 @@ function initChickenRain(){
             ctx.font='32px Arial';
             ctx.fillText('🥚', e.x, e.y);
             
-            // СТОЛКНОВЕНИЕ С ЖИВОТНЫМ
             if(e.y+30 > 440 && e.y < 480 && Math.abs(e.x+15 - animalX-20) < 40){
                 eggs.splice(i,1);
                 score += (e.type==='gold' ? 3 : 1);
@@ -3077,44 +3093,14 @@ function initChickenRain(){
                 document.getElementById('gameScoreDisplay').textContent='Счёт: '+score;
                 if(score>=50) addEggs(5,'Отлично!');
             }
-            // ПРОПУЩЕНО
             else if(e.y > 500){
-    eggs.splice(i,1);
-    if(!ov){
-        ov=true;
-        playSound("hit");
-        if(score >= 50) progressQuest('score50', score);
-        if(score >= 100) progressQuest('score100', score);
-        
-        var container = document.createElement('div');
-        container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
-        
-        var scoreText = document.createElement('p');
-        scoreText.textContent = '🏆 Счёт: ' + score;
-        scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
-        
-        var button = document.createElement('button');
-        button.textContent = '🔄 Заново';
-        button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
-        button.onclick = function(){
-            document.getElementById('gameContent').innerHTML = '';
-            initChickenRain();
-        };
-        
-        container.appendChild(scoreText);
-        container.appendChild(button);
-        
-        document.getElementById('gameContent').innerHTML = '';
-        document.getElementById('gameContent').style.position = 'relative';
-        document.getElementById('gameContent').style.minHeight = '500px';
-        document.getElementById('gameContent').appendChild(container);
-        
-        // alert('Игра окончена! Счёт: '+score); // можно убрать или оставить
-    }
-}
+                eggs.splice(i,1);
+                if(!ov){
+                    endGame();
+                }
+            }
         }
         
-        // ЧАСТИЦЫ
         for(var i=particles.length-1;i>=0;i--){
             particles[i].life -= 0.05;
             ctx.fillStyle='rgba(255,200,0,'+particles[i].life+')';
@@ -3128,13 +3114,11 @@ function initChickenRain(){
     
     update();
     gameInterval=setInterval(function(){},1000);
-                     }
-// ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
+}
 // ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
 function initRunner(){
     document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p><button id="runnerSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     
-    // Кнопка магазина скинов для Runner
     var skinBtn = document.getElementById('runnerSkinBtn');
     if(skinBtn) {
         skinBtn.onclick = function() {
@@ -3161,7 +3145,6 @@ function initRunner(){
     }
     window.runnerJump = runnerJump;
 
-    // Анимация ног (без дрожания тела)
     setInterval(function() {
         if(!ov) legSwing = (legSwing + 0.3) % (Math.PI * 2);
     }, 50);
@@ -3178,17 +3161,38 @@ function initRunner(){
         runnerJump();
     }, {passive: true});
 
+    function endGame(){
+        ov=true;
+        clearInterval(gameInterval);
+        playSound("hit");
+        
+        var existingOverlay = document.querySelector('#gameContent .game-overlay');
+        if(existingOverlay) existingOverlay.remove();
+        
+        var overlay = document.createElement('div');
+        overlay.className = 'game-overlay';
+        overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + score + '</div><button id="restartRunnerBtn">🔄 Заново</button>';
+        
+        var restartBtn = overlay.querySelector('#restartRunnerBtn');
+        restartBtn.onclick = function(e){
+            e.stopPropagation();
+            overlay.remove();
+            document.getElementById('gameContent').innerHTML = '';
+            initRunner();
+        };
+        
+        document.getElementById('gameContent').appendChild(overlay);
+    }
+
     function update(){
         if(ov) return;
 
         bgX = (bgX - 2) % 600;
         cloudOffset = (cloudOffset + 0.5) % 600;
 
-        // НЕБО
         ctx.fillStyle = '#87CEEB';
         ctx.fillRect(0, 0, 600, 200);
 
-        // ОБЛАКА
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.beginPath();
         ctx.ellipse(100 + cloudOffset, 40, 35, 25, 0, 0, Math.PI * 2);
@@ -3205,7 +3209,6 @@ function initRunner(){
         ctx.ellipse(580 + cloudOffset * 0.3, 22, 25, 18, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // ЗЕМЛЯ
         ctx.fillStyle = '#4CAF50';
         ctx.fillRect(0, groundY, 600, 40);
         ctx.fillStyle = '#388E3C';
@@ -3213,11 +3216,9 @@ function initRunner(){
             ctx.fillRect(i * 60, groundY + 5, 30, 5);
         }
 
-        // ПОЛУЧАЕМ СКИН ДЛЯ РАННЕРА
         var runnerSkin = getCurrentGameSkin('runner');
         var animalEmoji = runnerSkin.emoji || '🦍';
         
-        // ОТРИСОВКА ЖИВОТНОГО (целиком, без дрожания)
         ctx.font = '52px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -3231,7 +3232,6 @@ function initRunner(){
         ctx.shadowBlur = 0;
         ctx.restore();
 
-        // ПРЕГРАДЫ (КАМНИ)
         if(Math.random() < 0.025 && obstacles.length < 2){
             obstacles.push({x: 600, y: groundY - 18, width: 28, height: 28});
         }
@@ -3243,7 +3243,7 @@ function initRunner(){
             obstacles[i].x -= 8;
 
             if(obstacles[i].x < 58 && obstacles[i].x + 25 > 52 && y + 32 > obstacles[i].y + 5 && y + 15 < obstacles[i].y + 25){
-                end();
+                endGame();
             }
 
             if(obstacles[i].x + 28 < 0){
@@ -3271,48 +3271,6 @@ function initRunner(){
         ctx.fillText('Счёт: ' + score, 500, 30);
         requestAnimationFrame(update);
     }
-
-    function end(){
-    ov=true;
-    clearInterval(gameInterval);
-    playSound("hit");
-    
-    // Создаём центрированный контейнер
-    var container = document.createElement('div');
-    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
-    
-    var scoreText = document.createElement('p');
-    scoreText.textContent = '🏆 Счёт: ' + score;
-    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
-    
-    var button = document.createElement('button');
-    button.textContent = '🔄 Заново';
-    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
-    button.onclick = function(){
-        document.getElementById('gameContent').innerHTML = '';
-        // Вызываем инициализацию нужной игры
-        if(currentGame === 'snake') initSnake();
-        else if(currentGame === 'tetris') initTetris();
-        else if(currentGame === 'runner') initRunner();
-        else if(currentGame === 'flappy') initFlappy();
-        else if(currentGame === 'chickenrain') initChickenRain();
-        else if(currentGame === 'memory') initMemory();
-        else if(currentGame === 'shooter') initShooter();
-        // ... добавьте другие игры
-    };
-    
-    container.appendChild(scoreText);
-    container.appendChild(button);
-    
-    // Очищаем контент и добавляем центрированную кнопку
-    document.getElementById('gameContent').innerHTML = '';
-    document.getElementById('gameContent').style.position = 'relative';
-    document.getElementById('gameContent').style.minHeight = '400px';
-    document.getElementById('gameContent').appendChild(container);
-    
-    // Убираем alert, чтобы не мешал
-    // alert('Счёт: '+sc); // можно закомментировать или оставить
-}
     
     update();
     gameInterval = setInterval(function(){}, 1000);
@@ -3355,11 +3313,34 @@ function initSnake(){
         e.preventDefault();
     };
     
-    function loop(){
+    function endGame(){
+        ov=true;
+        clearInterval(gameInterval);
+        playSound("hit");
+        
+        var existingOverlay = document.querySelector('#gameContent .game-overlay');
+        if(existingOverlay) existingOverlay.remove();
+        
+        var overlay = document.createElement('div');
+        overlay.className = 'game-overlay';
+        overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + sc + '</div><button id="restartSnakeBtn">🔄 Заново</button>';
+        
+        var restartBtn = overlay.querySelector('#restartSnakeBtn');
+        restartBtn.onclick = function(e){
+            e.stopPropagation();
+            overlay.remove();
+            document.getElementById('gameContent').innerHTML = '';
+            initSnake();
+        };
+        
+        document.getElementById('gameContent').appendChild(overlay);
+    }
+    
+    function gameLoop(){
         if(ov)return;
         var h={x:sn[0].x+dir.x,y:sn[0].y+dir.y};
         if(h.x<0||h.x>=400||h.y<0||h.y>=400||sn.some(function(s){return s.x===h.x&&s.y===h.y;})){
-            end(sc);
+            endGame();
             return;
         }
         sn.unshift(h);
@@ -3460,49 +3441,7 @@ function initSnake(){
         ctx.strokeRect(sn[0].x, sn[0].y, 18, 18);
     }
     
-    function end(){
-    ov=true;
-    clearInterval(gameInterval);
-    playSound("hit");
-    
-    // Создаём центрированный контейнер
-    var container = document.createElement('div');
-    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
-    
-    var scoreText = document.createElement('p');
-    scoreText.textContent = '🏆 Счёт: ' + sc;
-    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
-    
-    var button = document.createElement('button');
-    button.textContent = '🔄 Заново';
-    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
-    button.onclick = function(){
-        document.getElementById('gameContent').innerHTML = '';
-        // Вызываем инициализацию нужной игры
-        if(currentGame === 'snake') initSnake();
-        else if(currentGame === 'tetris') initTetris();
-        else if(currentGame === 'runner') initRunner();
-        else if(currentGame === 'flappy') initFlappy();
-        else if(currentGame === 'chickenrain') initChickenRain();
-        else if(currentGame === 'memory') initMemory();
-        else if(currentGame === 'shooter') initShooter();
-        // ... добавьте другие игры
-    };
-    
-    container.appendChild(scoreText);
-    container.appendChild(button);
-    
-    // Очищаем контент и добавляем центрированную кнопку
-    document.getElementById('gameContent').innerHTML = '';
-    document.getElementById('gameContent').style.position = 'relative';
-    document.getElementById('gameContent').style.minHeight = '400px';
-    document.getElementById('gameContent').appendChild(container);
-    
-    // Убираем alert, чтобы не мешал
-    // alert('Счёт: '+sc); // можно закомментировать или оставить
-}
-    
-    gameInterval=setInterval(loop,100);
+    gameInterval = setInterval(gameLoop, 100);
 }
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
 document.getElementById('tl').onclick=function(){if(!ov)ml();};document.getElementById('tr').onclick=function(){if(!ov)mr();};
