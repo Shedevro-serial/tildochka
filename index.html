@@ -2953,38 +2953,34 @@ function initFlappy(){
         ctx.fillText(''+sc, 348, 48);
     }
     
-    function endFlappy(sc){
+    function end(){
     ov=true;
     clearInterval(gameInterval);
     playSound("hit");
     
-    if(sc >= 50) progressQuest('score50', sc);
-    if(sc >= 100) progressQuest('score100', sc);
+    // Создаём центрированный контейнер
+    var container = document.createElement('div');
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
     
-    // Находим или создаём контейнер для оверлея
-    var gameContainer = document.getElementById('gameContent');
-    var existingOverlay = gameContainer.querySelector('.game-overlay');
-    if(existingOverlay) existingOverlay.remove();
+    var scoreText = document.createElement('p');
+    scoreText.textContent = '🏆 Счёт: ' + sc;
+    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
     
-    // Создаём центрированный оверлей (не удаляя содержимое игры)
-    var overlay = document.createElement('div');
-    overlay.className = 'game-overlay';
-    overlay.innerHTML = `
-        <div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ${sc}</div>
-        <button id="restartFlappyBtn">🔄 Заново</button>
-    `;
-    
-    var restartBtn = overlay.querySelector('#restartFlappyBtn');
-    restartBtn.onclick = function(e) {
-        e.stopPropagation();
-        overlay.remove();
-        gameContainer.innerHTML = '';
-        initFlappy();
+    var button = document.createElement('button');
+    button.textContent = '🔄 Заново';
+    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+    button.onclick = function(){
+        document.getElementById('gameContent').innerHTML = '';
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
     };
-    
-    gameContainer.style.position = 'relative';
-    gameContainer.appendChild(overlay);
-}
     
     container.appendChild(scoreText);
     container.appendChild(button);
@@ -3103,36 +3099,36 @@ function initChickenRain(){
             else if(e.y > 500){
     eggs.splice(i,1);
     if(!ov){
-        function endChickenRain(sc){
-    ov=true;
-    clearInterval(gameInterval);
-    playSound("hit");
-    
-    if(sc >= 50) progressQuest('score50', sc);
-    if(sc >= 100) progressQuest('score100', sc);
-    
-    var gameContainer = document.getElementById('gameContent');
-    var existingOverlay = gameContainer.querySelector('.game-overlay');
-    if(existingOverlay) existingOverlay.remove();
-    
-    var overlay = document.createElement('div');
-    overlay.className = 'game-overlay';
-    overlay.innerHTML = `
-        <div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ${sc}</div>
-        <button id="restartChickenBtn">🔄 Заново</button>
-    `;
-    
-    var restartBtn = overlay.querySelector('#restartChickenBtn');
-    restartBtn.onclick = function(e) {
-        e.stopPropagation();
-        overlay.remove();
-        gameContainer.innerHTML = '';
-        initChickenRain();
-    };
-    
-    gameContainer.style.position = 'relative';
-    gameContainer.appendChild(overlay);
-}
+        ov=true;
+        playSound("hit");
+        if(score >= 50) progressQuest('score50', score);
+        if(score >= 100) progressQuest('score100', score);
+        
+        var container = document.createElement('div');
+        container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
+        
+        var scoreText = document.createElement('p');
+        scoreText.textContent = '🏆 Счёт: ' + score;
+        scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
+        
+        var button = document.createElement('button');
+        button.textContent = '🔄 Заново';
+        button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+        button.onclick = function(){
+            document.getElementById('gameContent').innerHTML = '';
+            initChickenRain();
+        };
+        
+        container.appendChild(scoreText);
+        container.appendChild(button);
+        
+        document.getElementById('gameContent').innerHTML = '';
+        document.getElementById('gameContent').style.position = 'relative';
+        document.getElementById('gameContent').style.minHeight = '500px';
+        document.getElementById('gameContent').appendChild(container);
+        
+        // alert('Игра окончена! Счёт: '+score); // можно убрать или оставить
+    }
 }
         }
         
@@ -3294,33 +3290,34 @@ function initRunner(){
         requestAnimationFrame(update);
     }
 
-    function endRunner(sc){
+    function end(){
     ov=true;
     clearInterval(gameInterval);
     playSound("hit");
     
-    var gameContainer = document.getElementById('gameContent');
-    var existingOverlay = gameContainer.querySelector('.game-overlay');
-    if(existingOverlay) existingOverlay.remove();
+    // Создаём центрированный контейнер
+    var container = document.createElement('div');
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
     
-    var overlay = document.createElement('div');
-    overlay.className = 'game-overlay';
-    overlay.innerHTML = `
-        <div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ${sc}</div>
-        <button id="restartRunnerBtn">🔄 Заново</button>
-    `;
+    var scoreText = document.createElement('p');
+    scoreText.textContent = '🏆 Счёт: ' + score;
+    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
     
-    var restartBtn = overlay.querySelector('#restartRunnerBtn');
-    restartBtn.onclick = function(e) {
-        e.stopPropagation();
-        overlay.remove();
-        gameContainer.innerHTML = '';
-        initRunner();
+    var button = document.createElement('button');
+    button.textContent = '🔄 Заново';
+    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+    button.onclick = function(){
+        document.getElementById('gameContent').innerHTML = '';
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
     };
-    
-    gameContainer.style.position = 'relative';
-    gameContainer.appendChild(overlay);
-}
     
     container.appendChild(scoreText);
     container.appendChild(button);
@@ -3481,33 +3478,34 @@ function initSnake(){
         ctx.strokeRect(sn[0].x, sn[0].y, 18, 18);
     }
     
-    function endSnake(sc){
+    function end(){
     ov=true;
     clearInterval(gameInterval);
     playSound("hit");
     
-    var gameContainer = document.getElementById('gameContent');
-    var existingOverlay = gameContainer.querySelector('.game-overlay');
-    if(existingOverlay) existingOverlay.remove();
+    // Создаём центрированный контейнер
+    var container = document.createElement('div');
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
     
-    var overlay = document.createElement('div');
-    overlay.className = 'game-overlay';
-    overlay.innerHTML = `
-        <div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ${sc}</div>
-        <button id="restartSnakeBtn">🔄 Заново</button>
-    `;
+    var scoreText = document.createElement('p');
+    scoreText.textContent = '🏆 Счёт: ' + sc;
+    scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
     
-    var restartBtn = overlay.querySelector('#restartSnakeBtn');
-    restartBtn.onclick = function(e) {
-        e.stopPropagation();
-        overlay.remove();
-        gameContainer.innerHTML = '';
-        initSnake();
+    var button = document.createElement('button');
+    button.textContent = '🔄 Заново';
+    button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
+    button.onclick = function(){
+        document.getElementById('gameContent').innerHTML = '';
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
     };
-    
-    gameContainer.style.position = 'relative';
-    gameContainer.appendChild(overlay);
-}
     
     container.appendChild(scoreText);
     container.appendChild(button);
