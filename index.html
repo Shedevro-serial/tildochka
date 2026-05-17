@@ -2958,13 +2958,9 @@ function initFlappy(){
     clearInterval(gameInterval);
     playSound("hit");
     
-    // Сохраняем кнопку магазина скинов
-    var skinBtn = document.getElementById('flappySkinBtn');
-    if(skinBtn) skinBtn.remove();
-    
-    // Создаём оверлей
+    // Создаём центрированный контейнер
     var container = document.createElement('div');
-    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.95); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:200; min-width:220px;';
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
     
     var scoreText = document.createElement('p');
     scoreText.textContent = '🏆 Счёт: ' + sc;
@@ -2975,23 +2971,31 @@ function initFlappy(){
     button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
     button.onclick = function(){
         document.getElementById('gameContent').innerHTML = '';
-        initFlappy();
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
     };
     
     container.appendChild(scoreText);
     container.appendChild(button);
     
+    // Очищаем контент и добавляем центрированную кнопку
+    document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameContent').style.position = 'relative';
     document.getElementById('gameContent').style.minHeight = '400px';
-    document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameContent').appendChild(container);
     
-    // Возвращаем кнопку магазина
-    if(skinBtn) {
-        skinBtn.style.margin = '10px auto';
-        skinBtn.style.display = 'block';
-        document.getElementById('gameContent').appendChild(skinBtn);
-    }
+    // Убираем alert, чтобы не мешал
+    // alert('Счёт: '+sc); // можно закомментировать или оставить
+}
+    
+    gameInterval=setInterval(loop,20);
 }
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
 // ==================== КУРИНЫЙ ДОЖДЬ (без дрожания) ====================
@@ -3100,11 +3104,8 @@ function initChickenRain(){
         if(score >= 50) progressQuest('score50', score);
         if(score >= 100) progressQuest('score100', score);
         
-        var skinBtn = document.getElementById('chickenRainSkinBtn');
-        if(skinBtn) skinBtn.remove();
-        
         var container = document.createElement('div');
-        container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.95); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:200; min-width:220px;';
+        container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
         
         var scoreText = document.createElement('p');
         scoreText.textContent = '🏆 Счёт: ' + score;
@@ -3121,16 +3122,12 @@ function initChickenRain(){
         container.appendChild(scoreText);
         container.appendChild(button);
         
+        document.getElementById('gameContent').innerHTML = '';
         document.getElementById('gameContent').style.position = 'relative';
         document.getElementById('gameContent').style.minHeight = '500px';
-        document.getElementById('gameContent').innerHTML = '';
         document.getElementById('gameContent').appendChild(container);
         
-        if(skinBtn) {
-            skinBtn.style.margin = '10px auto';
-            skinBtn.style.display = 'block';
-            document.getElementById('gameContent').appendChild(skinBtn);
-        }
+        // alert('Игра окончена! Счёт: '+score); // можно убрать или оставить
     }
 }
         }
@@ -3298,11 +3295,9 @@ function initRunner(){
     clearInterval(gameInterval);
     playSound("hit");
     
-    var skinBtn = document.getElementById('runnerSkinBtn');
-    if(skinBtn) skinBtn.remove();
-    
+    // Создаём центрированный контейнер
     var container = document.createElement('div');
-    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.95); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:200; min-width:220px;';
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
     
     var scoreText = document.createElement('p');
     scoreText.textContent = '🏆 Счёт: ' + score;
@@ -3313,22 +3308,28 @@ function initRunner(){
     button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
     button.onclick = function(){
         document.getElementById('gameContent').innerHTML = '';
-        initRunner();
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
     };
     
     container.appendChild(scoreText);
     container.appendChild(button);
     
+    // Очищаем контент и добавляем центрированную кнопку
+    document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameContent').style.position = 'relative';
     document.getElementById('gameContent').style.minHeight = '400px';
-    document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameContent').appendChild(container);
     
-    if(skinBtn) {
-        skinBtn.style.margin = '10px auto';
-        skinBtn.style.display = 'block';
-        document.getElementById('gameContent').appendChild(skinBtn);
-    }
+    // Убираем alert, чтобы не мешал
+    // alert('Счёт: '+sc); // можно закомментировать или оставить
 }
     
     update();
@@ -3482,11 +3483,9 @@ function initSnake(){
     clearInterval(gameInterval);
     playSound("hit");
     
-    var skinBtn = document.getElementById('snakeSkinBtn');
-    if(skinBtn) skinBtn.remove();
-    
+    // Создаём центрированный контейнер
     var container = document.createElement('div');
-    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.95); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:200; min-width:220px;';
+    container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
     
     var scoreText = document.createElement('p');
     scoreText.textContent = '🏆 Счёт: ' + sc;
@@ -3497,22 +3496,28 @@ function initSnake(){
     button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
     button.onclick = function(){
         document.getElementById('gameContent').innerHTML = '';
-        initSnake();
+        // Вызываем инициализацию нужной игры
+        if(currentGame === 'snake') initSnake();
+        else if(currentGame === 'tetris') initTetris();
+        else if(currentGame === 'runner') initRunner();
+        else if(currentGame === 'flappy') initFlappy();
+        else if(currentGame === 'chickenrain') initChickenRain();
+        else if(currentGame === 'memory') initMemory();
+        else if(currentGame === 'shooter') initShooter();
+        // ... добавьте другие игры
     };
     
     container.appendChild(scoreText);
     container.appendChild(button);
     
+    // Очищаем контент и добавляем центрированную кнопку
+    document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameContent').style.position = 'relative';
     document.getElementById('gameContent').style.minHeight = '400px';
-    document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameContent').appendChild(container);
     
-    if(skinBtn) {
-        skinBtn.style.margin = '10px auto';
-        skinBtn.style.display = 'block';
-        document.getElementById('gameContent').appendChild(skinBtn);
-    }
+    // Убираем alert, чтобы не мешал
+    // alert('Счёт: '+sc); // можно закомментировать или оставить
 }
     
     gameInterval=setInterval(loop,100);
@@ -5441,4 +5446,4 @@ function restartCurrentGame() {
       </script>
 
 </body>
-  </html>
+                  </html>
