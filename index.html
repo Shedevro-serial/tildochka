@@ -2826,7 +2826,6 @@ rM();
 }
 
 // ==================== FLAPPY КУРИЦА ====================
-// ==================== FLAPPY КУРИЦА (одна кнопка магазина) ====================
 function initFlappy(){
     document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p><button id="flappySkinBtn" style="margin:5px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     
@@ -2844,7 +2843,7 @@ function initFlappy(){
     c.addEventListener('touchstart',function(e){e.preventDefault();jump();});
     pipes.push(sp());
     
-    function loop(){
+    function gameLoop(){
         if(ov)return;
         ctx.clearRect(0,0,400,500);
         
@@ -2874,13 +2873,13 @@ function initFlappy(){
             ctx.fillRect(pipes[i].x-3,pipes[i].top-20,51,20);
             ctx.fillRect(pipes[i].x-3,pipes[i].bottom,51,20);
             if(pipes[i].x+45<0){pipes.splice(i,1);sc++;playSound("coin");document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}
-            if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))end();
+            if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))endGame();
         }
         if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());
         
         vy+=0.5;
         bird.y+=vy;
-        if(bird.y>480||bird.y<0)end();
+        if(bird.y>480||bird.y<0)endGame();
         
         var flappySkin = getCurrentGameSkin('flappy');
         var birdColor = flappySkin.color || '#FFD700';
@@ -2953,46 +2952,32 @@ function initFlappy(){
         ctx.fillText(''+sc, 348, 48);
     }
     
-    function end(){
-    ov=true;
-    clearInterval(gameInterval);
-    playSound("hit");
+    function endGame(){
+        ov=true;
+        clearInterval(gameInterval);
+        playSound("hit");
+        
+        // Удаляем старый оверлей если есть
+        var existingOverlay = document.querySelector('#gameContent .game-overlay');
+        if(existingOverlay) existingOverlay.remove();
+        
+        // Создаём оверлей поверх существующего контента
+        var overlay = document.createElement('div');
+        overlay.className = 'game-overlay';
+        overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + sc + '</div><button id="restartFlappyBtn">🔄 Заново</button>';
+        
+        var restartBtn = overlay.querySelector('#restartFlappyBtn');
+        restartBtn.onclick = function(e){
+            e.stopPropagation();
+            overlay.remove();
+            document.getElementById('gameContent').innerHTML = '';
+            initFlappy();
+        };
+        
+        document.getElementById('gameContent').appendChild(overlay);
+    }
     
-    // Удаляем старый оверлей если есть
-    var existingOverlay = document.querySelector('#gameContent .game-overlay');
-    if(existingOverlay) existingOverlay.remove();
-    
-    // Создаём оверлей поверх существующего контента (НЕ УДАЛЯЯ ЕГО)
-    var overlay = document.createElement('div');
-    overlay.className = 'game-overlay';
-    overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + sc + '</div><button id="restartFlappyBtn">🔄 Заново</button>';
-    
-    var restartBtn = overlay.querySelector('#restartFlappyBtn');
-    restartBtn.onclick = function(e){
-        e.stopPropagation();
-        overlay.remove();
-        // Очищаем контент и перезапускаем игру
-        document.getElementById('gameContent').innerHTML = '';
-        initFlappy();
-    };
-    
-    document.getElementById('gameContent').appendChild(overlay);
-}
-    
-    container.appendChild(scoreText);
-    container.appendChild(button);
-    
-    // Очищаем контент и добавляем центрированную кнопку
-    document.getElementById('gameContent').innerHTML = '';
-    document.getElementById('gameContent').style.position = 'relative';
-    document.getElementById('gameContent').style.minHeight = '400px';
-    document.getElementById('gameContent').appendChild(container);
-    
-    // Убираем alert, чтобы не мешал
-    // alert('Счёт: '+sc); // можно закомментировать или оставить
-}
-    
-    gameInterval=setInterval(loop,20);
+    gameInterval = setInterval(gameLoop, 20);
 }
 // ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
 // ==================== КУРИНЫЙ ДОЖДЬ (без дрожания) ====================
