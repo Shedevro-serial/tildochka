@@ -10,7 +10,13 @@
        *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:Arial;background:#1a1a1a;color:#fff;min-height:100vh}
     #bg{position:fixed;top:0;left:0;width:100%;height:100%;background:url("bg.jpg") center/cover;z-index:-2}
-    #bg::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85)}
+    #bg::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);transition: background 0.5s ease;}
+    /* Динамические фоны для праздников */
+    body.halloween-bg #bg::after { background: rgba(0,0,0,0.7); background-image: radial-gradient(circle at 10% 20%, rgba(255,100,0,0.2) 2%, transparent 2.5%), radial-gradient(circle at 80% 70%, rgba(255,100,0,0.2) 1.5%, transparent 2%); background-size: 50px 50px, 40px 40px; }
+    body.newyear-bg #bg::after { background: rgba(0,0,50,0.8); background-image: radial-gradient(white 1.5px, transparent 1.5px); background-size: 30px 30px; }
+    body.birthday-bg #bg::after { background: rgba(255,105,180,0.4); background-image: repeating-linear-gradient(45deg, rgba(255,192,203,0.2) 0px, rgba(255,192,203,0.2) 2px, transparent 2px, transparent 8px); }
+    body.april-bg #bg::after { background: rgba(0,255,0,0.1); background-image: linear-gradient(45deg, #ff0 1px, transparent 1px); background-size: 20px 20px; }
+    
     #blocked{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;color:#000;font-size:2rem;justify-content:center;align-items:center;z-index:1000}
     #loading{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a1a;display:flex;justify-content:center;align-items:center;z-index:999;font-size:2rem}
     .header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:15px 25px;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(10px)}
@@ -469,6 +475,13 @@
         <div class="quote-author">— Tildochka</div>
         <div class="quote-movie">🎬 Tildochka</div>
     </div>
+</div>
+<!-- БЛОК ЕЖЕДНЕВНОГО СОБЫТИЯ (ПРАЗДНИК) -->
+<div id="dailyEventBlock" style="max-width:600px;margin:30px auto 0 auto; background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,100,0,0.05)); border-radius: 20px; padding: 15px; border: 1px solid rgba(255,215,0,0.3);">
+    <h3 style="color:#ffd700; text-align:center">🎉 СЕГОДНЯШНЕЕ СОБЫТИЕ</h3>
+    <div id="dailyEventText" style="text-align:center; font-size:1.2rem; margin:10px 0">Загрузка...</div>
+    <div id="dailyEventDesc" style="text-align:center; color:#ccc; font-size:0.9rem"></div>
+    <div id="dailyEventAction" style="text-align:center; margin-top:10px"></div>
 </div>
 </div></div></div>
 
@@ -1255,6 +1268,8 @@ allPromises.push(gamesLeaderboardPromise);
                 }, 300);
             }
             console.log('✅ ВСЕ ДАННЫЕ ЗАГРУЖЕНЫ!');
+            // Применяем ежедневное событие (праздник) после полной загрузки
+            applyDailyEvent();
         });
     });
     
@@ -5364,6 +5379,199 @@ function restartCurrentGame() {
         }, 100);
     }
 }
+// ==================== ЕЖЕДНЕВНЫЕ ПРАЗДНИКИ И СОБЫТИЯ (366 дней) ====================
+var dailyEvents = {
+    // Январь
+    '01-01': { name: '🎄 Новый год!', desc: 'Ёлка, мандарины и подарки! С новым счастьем!', type: 'newyear', reward: 50, bg: 'newyear', quest: 'Отправь 10 🎄 в чате', character: { emoji: '🎄', name: 'Дед Мороз' } },
+    '01-07': { name: '✨ Рождество', desc: 'Волшебная ночь, загадывай желания!', type: 'funny', reward: 30, bg: 'newyear', quest: 'Напиши 5 добрых слов в чате' },
+    '01-14': { name: '🐀 Старый Новый год!', desc: 'Второй шанс отметить праздник!', type: 'funny', reward: 25, quest: 'Съешь 3 мандарина (в игре)' },
+    
+    // Февраль
+    '02-14': { name: '❤️ День всех влюблённых', desc: 'Любовь, конфетки и валентинки!', type: 'special', reward: 35, bg: 'birthday', quest: 'Отправь ❤️ 5 друзьям', character: { emoji: '💕', name: 'Амур' } },
+    '02-23': { name: '🪖 День защитника', desc: 'Честь, отвага и поздравления мужчинам!', type: 'funny', reward: 20, quest: 'Сыграй в морской бой' },
+    
+    // Март
+    '03-08': { name: '🌸 8 Марта', desc: 'Поздравляем всех девушек!', type: 'special', reward: 30, bg: 'birthday', quest: 'Отправь 8 🌸 в чате' },
+    '03-14': { name: 'π День числа Пи', desc: '3.14... Праздник математиков!', type: 'funny', reward: 15, quest: 'Угадай число в игре' },
+    
+    // Апрель
+    '04-01': { name: '🤡 День дурака!', desc: 'Сегодня можно шутить и веселиться!', type: 'april', bg: 'april', reward: 25, quest: 'Разошли 3 смешных мема', character: { emoji: '🤡', name: 'Клоун' } },
+    '04-12': { name: '🚀 День космонавтики', desc: 'Поехали! Осваивай космос!', type: 'funny', quest: 'Сыграй в Flappy на 10 очков' },
+    
+    // Май
+    '05-01': { name: '🌿 Праздник весны и труда', desc: 'Май, шашлыки, отдых!', type: 'funny', reward: 15, quest: 'Отдохни в чате 10 минут' },
+    '05-09': { name: '🎖️ День Победы', desc: 'Помним и гордимся!', type: 'special', reward: 40, bg: 'newyear', quest: 'Скажи "Спасибо" ветеранам' },
+    
+    // Июнь
+    '06-01': { name: '🧸 День защиты детей', desc: 'Все мы дети в душе!', type: 'funny', reward: 20, quest: 'Нарисуй мелового человечка' },
+    '06-12': { name: '🇷🇺 День России', desc: 'С днём нашей Родины!', type: 'special', bg: 'newyear', reward: 30, quest: 'Отправь флаг 🇷🇺 в чат' },
+    '06-21': { name: '🎂 День рождения Киры!', desc: 'Кира сегодня королева! Поздравляем! 🎉', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь Кире 10 сердечек ❤️', character: { emoji: '👸', name: 'Кира' }, specialFor: 'Кира' },
+    
+    // Июль
+    '07-25': { name: '🎂 День рождения Киры (ещё раз)!', desc: 'Кира, с днём рождения! Ты лучшая!', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Скажи "С днём рождения, Кира!" в чате', character: { emoji: '👸', name: 'Кира' }, specialFor: 'Кира' },
+    
+    // Август
+    '08-02': { name: '🪂 День ВДВ', desc: 'Никто, кроме нас!', type: 'funny', quest: 'Сыграй в игру "Прыжок"' },
+    
+    // Сентябрь
+    '09-01': { name: '📚 День знаний', desc: 'Школа, парты и знания!', type: 'funny', reward: 20, quest: 'Реши пример 2+2 в чате' },
+    
+    // Октябрь
+    '10-31': { name: '🎃 Хеллоуин!', desc: 'Тыквы, сладости и страшилки! 👻', type: 'halloween', bg: 'halloween', reward: 50, quest: 'Отправь страшный мем', character: { emoji: '🎃', name: 'Хеллоуинский монстр' } },
+    
+    // Ноябрь
+    '11-11': { name: '🖤 День рождения Даши', desc: 'Поздравляем Дашу (Чёрную)! Шутки про чёрный цвет приветствуются!', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь чёрный эмодзи 🖤', character: { emoji: '🖤', name: 'Чёрная Даша' }, specialFor: 'Даша' },
+    '11-20': { name: '👨‍💻 День программиста', desc: 'Код, баги и отладка!', type: 'funny', quest: 'Напиши console.log("Hello")' },
+    
+    // Декабрь
+    '12-09': { name: '🎀 День рождения Ани', desc: 'С днём рождения, Аня! 🎀', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь Ане подарок в чате', character: { emoji: '🎀', name: 'Аня' }, specialFor: 'Аня' },
+    '12-31': { name: '🎆 Канун Нового года!', desc: 'Скоро Новый год! Загадай желание', type: 'newyear', bg: 'newyear', reward: 50, quest: 'Напиши "С наступающим!" в чате' },
+    
+    // Запасные на остальные дни (366 дней, но оставим универсальный)
+};
+// Генератор случайных забавных праздников
+var funnyHolidays = [
+    { name: '🥑 День авокадо', desc: 'Время есть полезные жиры!', quest: 'Съешь авокадо (в воображении)' },
+    { name: '🐱 День котиков', desc: 'Мурчание и лапки', quest: 'Отправь 3 кошачьих мема' },
+    { name: '🍕 День пиццы', desc: 'Вкусный праздник!', quest: 'Съешь кусочек пиццы' },
+    { name: '😂 День смеха', desc: 'Смейся от души!', quest: 'Отправь 3 😂' },
+    { name: '🐸 День лягушки', desc: 'Ква-ква!', quest: 'Нарисуй лягушку' },
+    { name: '💤 День сна', desc: 'Выспись!', quest: 'Посиди 5 минут с закрытыми глазами' },
+    { name: '🎨 День рисования', desc: 'Твори и созидай', quest: 'Нарисуй что-то' },
+    { name: '📖 День чтения', desc: 'Почитай книгу', quest: 'Расскажи о любимой книге в чате' },
+    { name: '🎮 День геймера', desc: 'Играй целый день!', quest: 'Сыграй в 3 разные игры' },
+    { name: '🐥 День цыплёнка', desc: 'Пи-пи-пи!', quest: 'Покорми тамагочи' },
+    { name: '🌧️ День дождя', desc: 'Хмуро, но уютно', quest: 'Сыграй в Куриный дождь' },
+    { name: '☀️ День солнца', desc: 'Светит ярко!', quest: 'Отправь солнце ☀️' }
+];
+
+// Функция получения события для текущей даты
+function getTodayEvent() {
+    var now = new Date();
+    var month = ('0' + (now.getMonth() + 1)).slice(-2);
+    var day = ('0' + now.getDate()).slice(-2);
+    var dateKey = month + '-' + day;
+    
+    // Если есть специальное событие
+    if(dailyEvents[dateKey]) {
+        return dailyEvents[dateKey];
+    }
+    
+    // Иначе генерируем случайное забавное событие (но стабильное для даты)
+    // Используем seed на основе дня года, чтобы каждый день было своё, но постоянное
+    var start = new Date(now.getFullYear(), 0, 0);
+    var dayOfYear = Math.floor((now - start) / (24 * 60 * 60 * 1000));
+    var holidayIndex = dayOfYear % funnyHolidays.length;
+    return funnyHolidays[holidayIndex];
+}
+
+// Применить ежедневное событие (фон, задание, персонаж, поздравление)
+function applyDailyEvent() {
+    var event = getTodayEvent();
+    if(!event) return;
+    
+    // 1. Изменяем фон
+    var body = document.body;
+    if(event.bg === 'halloween') {
+        body.classList.add('halloween-bg');
+    } else if(event.bg === 'newyear') {
+        body.classList.add('newyear-bg');
+    } else if(event.bg === 'birthday') {
+        body.classList.add('birthday-bg');
+    } else if(event.bg === 'april') {
+        body.classList.add('april-bg');
+    } else {
+        // Убираем все спец-фоны, если нет тематического
+        body.classList.remove('halloween-bg', 'newyear-bg', 'birthday-bg', 'april-bg');
+    }
+    
+    // 2. Отображаем блок на главной
+    var block = document.getElementById('dailyEventBlock');
+    if(block) {
+        block.style.display = 'block';
+        var titleEl = document.getElementById('dailyEventText');
+        var descEl = document.getElementById('dailyEventDesc');
+        var actionEl = document.getElementById('dailyEventAction');
+        
+        if(titleEl) titleEl.innerHTML = '🎉 ' + event.name + ' 🎉';
+        if(descEl) descEl.innerHTML = event.desc;
+        
+        if(actionEl) {
+            if(event.quest) {
+                actionEl.innerHTML = '<button onclick="progressQuest(\'dailyEvent\', 1)" style="background:#ffd700;color:#000;border:none;padding:6px 15px;border-radius:20px;margin-top:8px;font-size:12px;">✅ Выполнить задание: ' + event.quest + '</button>';
+                // Добавляем временный квест в список dailyQuests (если его нет)
+                // Для простоты добавим отдельное задание в localStorage или просто вызовем прогресс при клике
+                window.dailyEventQuest = event.quest;
+            } else {
+                actionEl.innerHTML = '';
+            }
+        }
+    }
+    
+    // 3. Специальный персонаж на день (добавляем в магазин персонажей временно)
+    if(event.character) {
+        // Добавляем временного персонажа в customCharacters, если его там нет
+        var alreadyHas = customCharacters.some(function(c) { return c.id === event.character.emoji; });
+        if(!alreadyHas) {
+            customCharacters.push({
+                id: event.character.emoji,
+                name: event.character.name,
+                price: 0,
+                purchased: true,
+                temporary: true
+            });
+            saveCustomCharacters();
+        }
+        // Если это день рождения, показываем уведомление
+        if(event.type === 'birthday') {
+            setTimeout(function() {
+                alert('🎂 ' + event.name + '! 🎂\n\n' + event.desc + '\n\nСпециальный персонаж ' + event.character.name + ' доступен сегодня бесплатно!');
+            }, 1000);
+        }
+    }
+    
+    // 4. Специальное ежедневное задание (добавляем в dailyQuests, если его там нет)
+    if(event.quest) {
+        // Проверяем, есть ли уже такое задание
+        var questExists = dailyQuests.some(function(q) { return q.text === event.quest; });
+        if(!questExists && dailyQuests.length < 5) { // Не больше 5 заданий всего
+            dailyQuests.push({
+                uid: 'daily_event_' + Date.now(),
+                text: event.quest + ' (+' + (event.reward || 15) + ' 🥚)',
+                type: 'dailyEvent',
+                target: 1,
+                reward: event.reward || 15,
+                progress: 0,
+                completed: false
+            });
+            renderQuests();
+        }
+    }
+    
+    // 5. Если день рождения кого-то из пользователей (Кира, Даша, Аня), добавляем особое поздравление
+    if(event.specialFor && (myName === event.specialFor || myName.includes(event.specialFor))) {
+        setTimeout(function() {
+            alert('🎉 С ДНЁМ РОЖДЕНИЯ, ' + myName + '! 🎉\n\nСегодня тебе особый подарок: +' + (event.reward || 100) + ' яиц!');
+            addEggs(event.reward || 100, 'Подарок на день рождения!');
+        }, 1500);
+    }
+}
+
+// ========== ЗАПУСК ВСЕГО ==========
+// (Остальной код выше уже включает loadAllData, который вызывает applyDailyEvent после загрузки)
+// Дополнительно: обновляем событие при смене дня (каждые 24 часа)
+setInterval(function() {
+    var now = new Date();
+    var lastCheck = localStorage.getItem('tildochka_last_date_check');
+    var today = now.toDateString();
+    if(lastCheck !== today) {
+        localStorage.setItem('tildochka_last_date_check', today);
+        applyDailyEvent(); // Переприменяем событие в новый день
+        // Обновляем задания ежедневные
+        generateDailyQuests(false);
+    }
+}, 3600000); // Проверка каждый час
+
       </script>
 
 </body>
