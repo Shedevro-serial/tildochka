@@ -462,6 +462,99 @@
         padding: 0 20px;
         font-weight: bold;
     }
+
+    /* Стили для совместной рисовалки */
+    .drawing-container {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 30px;
+        padding: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        border: 1px solid rgba(255,255,255,0.2);
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .drawing-container canvas {
+        display: block;
+        margin: 0 auto;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        cursor: crosshair;
+        background: white;
+        width: 100%;
+        height: auto;
+    }
+    .drawing-toolbar {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+    }
+    .drawing-color-picker {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        background: rgba(0,0,0,0.5);
+        padding: 8px 15px;
+        border-radius: 50px;
+        backdrop-filter: blur(5px);
+    }
+    .drawing-color-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid white;
+        transition: transform 0.1s, border 0.1s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .drawing-color-btn:hover {
+        transform: scale(1.1);
+    }
+    .drawing-color-btn.active {
+        border: 3px solid #ffd700;
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(255,215,0,0.5);
+    }
+    .drawing-size-control {
+        background: rgba(0,0,0,0.5);
+        padding: 8px 15px;
+        border-radius: 50px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        backdrop-filter: blur(5px);
+    }
+    .drawing-size-control span {
+        color: white;
+        font-weight: bold;
+    }
+    .drawing-size-control input {
+        width: 120px;
+        cursor: pointer;
+    }
+    .drawing-size-preview {
+        width: 30px;
+        height: 30px;
+        background: white;
+        border-radius: 50%;
+        border: 2px solid #ffd700;
+    }
+    .drawing-status {
+        margin-top: 15px;
+        text-align: center;
+        color: #aaa;
+        font-size: 12px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .drawing-status span {
+        color: #66ff66;
+    }
   </style>
 </head>
 <body>
@@ -671,30 +764,60 @@
     </div>
 </div>
 
+<!-- НОВЫЙ ЭКРАН: Совместная рисовалка -->
+<div id="drawing-screen" class="screen">
+    <div class="drawing-container">
+        <h1 style="text-align:center; color:#ffd700; margin-bottom:15px; font-size:24px">🎨 СОВМЕСТНАЯ РИСОВАЛКА</h1>
+        <canvas id="drawCanvas" width="800" height="500" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/500"></canvas>
+        
+        <div class="drawing-toolbar">
+            <div class="drawing-color-picker" id="drawingColorPicker">
+                <div class="drawing-color-btn" style="background:#000000" data-color="#000000"></div>
+                <div class="drawing-color-btn" style="background:#ff0000" data-color="#ff0000"></div>
+                <div class="drawing-color-btn" style="background:#00ff00" data-color="#00ff00"></div>
+                <div class="drawing-color-btn" style="background:#0000ff" data-color="#0000ff"></div>
+                <div class="drawing-color-btn" style="background:#ffff00" data-color="#ffff00"></div>
+                <div class="drawing-color-btn" style="background:#ff00ff" data-color="#ff00ff"></div>
+                <div class="drawing-color-btn" style="background:#00ffff" data-color="#00ffff"></div>
+                <div class="drawing-color-btn" style="background:#ff8800" data-color="#ff8800"></div>
+                <div class="drawing-color-btn" style="background:#ffffff" data-color="#ffffff"></div>
+            </div>
+            
+            <div class="drawing-size-control">
+                <span>✏️</span>
+                <input type="range" id="drawingBrushSize" min="1" max="40" value="5">
+                <div class="drawing-size-preview" id="drawingSizePreview"></div>
+            </div>
+            
+            <button id="drawingClearBtn" class="clear-btn" style="background:linear-gradient(135deg, #ff4444, #cc0000)">🗑️ ОЧИСТИТЬ</button>
+            <button id="drawingSaveBtn" style="background:linear-gradient(135deg, #ff6b6b, #ee5a24)">💾 СОХРАНИТЬ</button>
+        </div>
+        
+        <div class="drawing-status">
+            <div class="online-count">🟢 ОНЛАЙН: <span id="drawingOnlineCount">1</span></div>
+            <div>💡 РИСУЙТЕ ВМЕСТЕ — ВСЕ ВИДЯТ ИЗМЕНЕНИЯ</div>
+            <div>🖱️ МЫШЬ / ПАЛЕЦ — РИСОВАНИЕ</div>
+        </div>
+    </div>
+</div>
+
 </div></div>
 
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
 
 <script>
 // ========== ФИКС ДЛЯ ТЕЛЕФОНА ==========
-// Убираем все конфликты и делаем клики рабочими
 document.addEventListener('DOMContentLoaded', function() {
-    // Убираем возможную блокировку
     document.body.style.touchAction = 'manipulation';
-    
-    // Принудительно делаем все кликабельные элементы рабочими
     var clickables = document.querySelectorAll('.quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo');
     clickables.forEach(function(el) {
-        // Добавляем touch-action
         el.style.touchAction = 'manipulation';
-        // Убираем задержку при нажатии
         el.style.webkitTapHighlightColor = 'transparent';
     });
-    
     console.log('✅ Телефон фикс применён, найдено элементов: ' + clickables.length);
 });
-// Убираем блокировку касаний на телефоне
 document.addEventListener('touchstart', function(){}, {passive: true});
+
 function escapeHtml(str) {
     if(!str) return '';
     return str.replace(/[&<>]/g, function(m) {
@@ -704,97 +827,8 @@ function escapeHtml(str) {
         return m;
     });
 }
-var isAdmin = localStorage.getItem('tildochka_admin') === 'true';
-function updateAdminBadge() {
-    if(isAdmin) {
-        var headerName = document.getElementById('headerName');
-        if(headerName && !headerName.innerHTML.includes('👑')) {
-            headerName.innerHTML = '👑 ' + headerName.innerHTML;
-        }
-    }
-}
-function deleteShort(postId) {
-    if(!isAdmin) {
-        alert('❌ Удалять посты могут только администраторы!');
-        return;
-    }
-    if(!confirm('🗑️ Удалить этот пост? (Это действие необратимо)')) return;
-    
-    db.ref('shorts/' + postId).remove();
-    alert('✅ Пост удалён!');
-}
-function updateChannelUI() {
-    var nameSpan = document.getElementById('channelNameDisplay');
-    var avatarDiv = document.getElementById('channelAvatarDisplay');
-    var statsSpan = document.getElementById('channelStats');
-    
-    if(nameSpan) {
-        nameSpan.textContent = myChannel || 'Без канала';
-    }
-    
-    var avatar = JSON.parse(localStorage.getItem('tildochka_channel_avatar') || '{"type":"emoji","value":"📺"}');
-    if(avatarDiv) {
-        if(avatar.type === 'emoji') {
-            avatarDiv.innerHTML = avatar.value;
-            avatarDiv.style.fontSize = '32px';
-            avatarDiv.style.display = 'flex';
-            avatarDiv.style.alignItems = 'center';
-            avatarDiv.style.justifyContent = 'center';
-        } else {
-            avatarDiv.innerHTML = '<img src="'+avatar.value+'" style="width:100%;height:100%;object-fit:cover">';
-        }
-    }
-    
-    // Подсчёт видео
-    if(statsSpan && myChannel && myChannel !== '') {
-        db.ref('shorts').once('value', function(snap) {
-            var count = 0;
-            snap.forEach(function(child) {
-                if(child.val().channel === myChannel) count++;
-            });
-            statsSpan.textContent = count + ' видео';
-        });
-    } else if(statsSpan) {
-        statsSpan.textContent = '0 видео';
-    }
-}
 
-// Функция изменения аватарки (чтобы можно было загрузить реальное фото)
-function changeChannelAvatar() {
-    if(!myChannel || myChannel === '') {
-        alert('Сначала создай канал!');
-        return;
-    }
-    
-    var choice = prompt('Выбери аватарку:\n1 - Эмодзи\n2 - Загрузить фото', '1');
-    
-    if(choice === '1') {
-        var emoji = prompt('Введи эмодзи для аватарки (например: 🐔, 📺, 🎬):', '📺');
-        if(emoji && emoji.trim()) {
-            localStorage.setItem('tildochka_channel_avatar', JSON.stringify({type:'emoji', value: emoji.trim()}));
-            updateChannelUI();
-            alert('✅ Аватарка изменена!');
-        }
-    } else if(choice === '2') {
-        var input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = function(e) {
-            var file = e.target.files[0];
-            if(file) {
-                var reader = new FileReader();
-                reader.onload = function(ev) {
-                    localStorage.setItem('tildochka_channel_avatar', JSON.stringify({type:'image', value: ev.target.result}));
-                    updateChannelUI();
-                    alert('✅ Аватарка загружена!');
-                };
-                reader.readAsDataURL(file);
-            }
-        };
-        input.click();
-    }
-}
-// ==================== FIREBASE ====================
+// ========== FIREBASE ==========
 firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
 var db=firebase.database();
 var currentGame=null,gameInterval=null,tamaInterval=null,reviewRating=10,gameRating=10,currentMovieId='',memeMedia=null,memeMediaType=null,shortMedia=null;
@@ -810,7 +844,6 @@ var lastSoundTime=0;
 var customCharacters = [];
 var activeCharacter = null;
 
-// Загрузка при старте
 (function initCharactersFromStorage() {
     var saved = localStorage.getItem('tildochka_characters');
     if(saved) {
@@ -818,22 +851,18 @@ var activeCharacter = null;
             customCharacters = JSON.parse(saved);
         } catch(e) { customCharacters = []; }
     }
-    
     var active = localStorage.getItem('tildochka_active_character');
     if(active) {
         try {
             activeCharacter = JSON.parse(active);
         } catch(e) { activeCharacter = null; }
     }
-    
-    // Если нет активного, ставим курицу по умолчанию
     if(!activeCharacter) {
         activeCharacter = { id: '🐔', name: 'Курица', price: 0, purchased: true };
         saveCustomCharacters();
     }
 })();
 
-// Загрузка купленных персонажей
 function loadCustomCharacters() {
     var saved = localStorage.getItem('tildochka_characters');
     if(saved) {
@@ -841,7 +870,6 @@ function loadCustomCharacters() {
             customCharacters = JSON.parse(saved);
         } catch(e) {}
     }
-    
     var active = localStorage.getItem('tildochka_active_character');
     if(active) {
         try {
@@ -850,7 +878,6 @@ function loadCustomCharacters() {
     }
 }
 
-// Сохранение персонажей
 function saveCustomCharacters() {
     localStorage.setItem('tildochka_characters', JSON.stringify(customCharacters));
     if(activeCharacter) {
@@ -858,24 +885,19 @@ function saveCustomCharacters() {
     }
 }
 
-// Покупка персонажа
 function buyCharacter(characterId, price) {
     if(myEggs < price) {
         alert('Не хватает яиц! Нужно ' + price + ' 🥚');
         return false;
     }
-    
     if(customCharacters.some(function(c) { return c.id === characterId; })) {
         alert('У тебя уже есть этот персонаж!');
         return false;
     }
-    
     myEggs -= price;
     localStorage.setItem('tildochka_eggs', myEggs);
     document.getElementById('headerEggs').textContent = myEggs;
     db.ref('users/' + myUid).update({ eggs: myEggs });
-    
-    // Находим имя персонажа
     var chars = [
         { id: '🐔', name: 'Курица' }, { id: '🐣', name: 'Цыплёнок' }, { id: '🐓', name: 'Петух' },
         { id: '🦅', name: 'Орёл' }, { id: '🦉', name: 'Сова' }, { id: '🐧', name: 'Пингвин' },
@@ -885,20 +907,17 @@ function buyCharacter(characterId, price) {
     for(var i = 0; i < chars.length; i++) {
         if(chars[i].id === characterId) { charName = chars[i].name; break; }
     }
-    
     customCharacters.push({
         id: characterId,
         name: charName,
         price: price,
         purchased: true
     });
-    
     saveCustomCharacters();
     alert('✅ Персонаж ' + charName + ' куплен! Теперь выбери его в магазине.');
     return true;
-                                                                  }
+}
 
-// Выбрать активного персонажа
 function selectCharacter(characterId) {
     var char = null;
     for(var i = 0; i < customCharacters.length; i++) {
@@ -907,30 +926,26 @@ function selectCharacter(characterId) {
             break;
         }
     }
-    
-    // Проверяем стандартного персонажа
     if(!char && characterId === '🐔') {
         char = { id: '🐔', name: 'Курица', price: 0, purchased: true };
     }
-    
     if(!char) {
         alert('Сначала купи этого персонажа в магазине!');
         return false;
     }
-    
     activeCharacter = char;
     saveCustomCharacters();
     alert('✅ Теперь ты играешь за ' + char.name + ' ' + char.id);
     return true;
 }
 
-// Получить текущего персонажа для игры
 function getCurrentGameCharacter() {
     if(activeCharacter) {
         return activeCharacter.name;
     }
-    return '🐔'; // Стандартный персонаж
+    return '🐔';
 }
+
 function getCurrentCharacterColor() {
     if(activeCharacter) {
         var colors = {
@@ -943,7 +958,6 @@ function getCurrentCharacterColor() {
     return '#ffd700';
 }
 
-// Магазин персонажей
 function openCharactersShop() {
     var charactersShop = [
         { id: '🐔', name: 'Курица', price: 0, default: true, color: '#ffd700' },
@@ -956,23 +970,17 @@ function openCharactersShop() {
         { id: '🦜', name: 'Попугай', price: 90, default: false, color: '#44ff44' },
         { id: '🐉', name: 'Дракон', price: 300, default: false, color: '#ff6600' }
     ];
-    
     var ownedIds = customCharacters.map(function(c) { return c.id; });
     var activeId = activeCharacter ? activeCharacter.id : '🐔';
-    
-    // Используем обычный div с фиксированной сеткой, а не shop-grid
     var html = '<h3>🐔 Кастомные персонажи для игр</h3><p>🥚 У тебя: ' + myEggs + '</p>';
     html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:10px 0;">';
-    
     for(var i = 0; i < charactersShop.length; i++) {
         var char = charactersShop[i];
         var owned = char.default || ownedIds.includes(char.id);
         var isActive = (activeId === char.id);
-        
         html += '<div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:12px;text-align:center;border:1px solid rgba(255,215,0,0.2);">';
         html += '<div style="font-size:48px;margin-bottom:5px;">' + char.id + '</div>';
         html += '<div style="font-size:14px;font-weight:bold;margin-bottom:8px;">' + char.name + '</div>';
-        
         if(char.price > 0 && !owned) {
             html += '<div style="font-size:12px;color:#ffd700;margin:5px 0;">Цена: ' + char.price + '🥚</div>';
             html += '<button onclick="buyCharacter(\'' + char.id + '\',' + char.price + '); setTimeout(openCharactersShop, 500)" style="font-size:12px;padding:6px 12px;background:#ffd700;color:#000;border:none;border-radius:8px;cursor:pointer;width:100%;">Купить</button>';
@@ -988,9 +996,7 @@ function openCharactersShop() {
         }
         html += '</div>';
     }
-    
     html += '</div><button onclick="closeModal(\'charactersModal\')" style="margin-top:15px;padding:10px 25px;background:#444;color:#fff;border:none;border-radius:8px;cursor:pointer;">Закрыть</button>';
-    
     var modal = document.getElementById('charactersModal');
     if(!modal) {
         modal = document.createElement('div');
@@ -1043,6 +1049,7 @@ var loadingJokes = [
     "Что общего у наших шуток и почты России?\nНе до всех доходит.",
     "Знаете, как зовут собаку, которая утонула?\nБульдог."
 ];
+
 // ==================== ЗВУК ====================
 function initAudio() {
     if (audioCtx) return;
@@ -1182,14 +1189,12 @@ function suggestJoke() {
         alert('Шутка слишком короткая (минимум 10 символов)');
         return;
     }
-    
     db.ref('jokes').push({
         text: text,
         suggestedBy: myName,
         approved: false,
         ts: Date.now()
     });
-    
     alert('✅ Спасибо! Шутка отправлена на модерацию. Она появится после одобрения.');
     progressQuest('suggestJoke', 1);
 }
@@ -1200,7 +1205,17 @@ if(isAdmin) {
         updateAdminBadge();
     }, 1000);
 }
-// ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
+
+var isAdmin = localStorage.getItem('tildochka_admin') === 'true';
+function updateAdminBadge() {
+    if(isAdmin) {
+        var headerName = document.getElementById('headerName');
+        if(headerName && !headerName.innerHTML.includes('👑')) {
+            headerName.innerHTML = '👑 ' + headerName.innerHTML;
+        }
+    }
+}
+
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 function loadAllData() {
     var loadingDiv = document.getElementById('customLoading');
@@ -1208,10 +1223,7 @@ function loadAllData() {
         loadingDiv.style.display = 'flex';
         loadingDiv.style.opacity = '1';
     }
-    
     document.getElementById('loading').style.display = 'none';
-    
-    // Запускаем анекдоты (будут крутиться до конца загрузки)
     var jokeInterval = setInterval(function() {
         var jokeSpan = document.getElementById('loadingJoke');
         if(jokeSpan && window.loadingJokes && window.loadingJokes.length > 0) {
@@ -1219,24 +1231,17 @@ function loadAllData() {
             jokeSpan.innerHTML = '🐔 ' + randomJoke;
         }
     }, 5000);
-    
     function setProgress(percent) {
         var fill = document.getElementById('loadingFill');
         var percentSpan = document.getElementById('loadingPercent');
         if(fill) fill.style.width = percent + '%';
         if(percentSpan) percentSpan.textContent = percent + '%';
     }
-    
     setProgress(5);
-    
-    // Загружаем профиль
     loadProfile();
-    loadCustomCharacters();  // ← добавить эту строку
+    loadCustomCharacters();
     setupOnline();
-    
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
-    
-    // Основная загрузка - ждем данные пользователя
     db.ref('users/'+myUid).once('value', function(s) {
         var userData = s.val() || {};
         myEggs = (userData.eggs !== undefined) ? userData.eggs : savedEggs;
@@ -1246,27 +1251,19 @@ function loadAllData() {
         }
         document.getElementById('headerEggs').textContent = myEggs;
         setProgress(25);
-        
         boughtAvatars = userData.boughtAvatars || [];
         setProgress(40);
-        
         document.getElementById('app').style.display = 'block';
         showScreen('home');
         setProgress(50);
-        
-        // Собираем все промисы для параллельной загрузки остальных данных
         var allPromises = [];
-        
-        // Чат
         var chatPromise = new Promise(function(resolve) {
             db.ref('chat').limitToLast(50).once('value', function() {
-                loadChatMessages(); // подписываемся на изменения
+                loadChatMessages();
                 resolve();
             });
         });
         allPromises.push(chatPromise);
-        
-        // Мемы
         var memesPromise = new Promise(function(resolve) {
             db.ref('memes').limitToLast(30).once('value', function() {
                 loadMemes();
@@ -1274,8 +1271,6 @@ function loadAllData() {
             });
         });
         allPromises.push(memesPromise);
-        
-        // Идеи
         var ideasPromise = new Promise(function(resolve) {
             db.ref('ideas').limitToLast(30).once('value', function() {
                 loadIdeas();
@@ -1283,22 +1278,16 @@ function loadAllData() {
             });
         });
         allPromises.push(ideasPromise);
-        
-        // Шортсы
         var shortsPromise = new Promise(function(resolve) {
             db.ref('shorts').once('value', function() {
                 loadShorts();
-              // После loadShorts() добавьте:
                 updateChannelUI();
                 resolve();
             });
         });
         allPromises.push(shortsPromise);
-        
-        // Рейтинги фильмов
         var ratingsPromise = new Promise(function(resolve) {
             loadAllRatings();
-            // Ждем загрузки всех рейтингов фильмов
             var movieIds = Object.keys(moviesData);
             var loadedMovies = 0;
             movieIds.forEach(function(mid) {
@@ -1309,26 +1298,20 @@ function loadAllData() {
             });
         });
         allPromises.push(ratingsPromise);
-        
-        // Лидерборды игр
-        // Загрузка рейтингов игр
-var gamesLeaderboardPromise = new Promise(function(resolve) {
-    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-    var loadedGames = 0;
-    games.forEach(function(g) {
-        db.ref('gameRatings/'+g).once('value', function() {
-            loadLeaderboard(g);
-            loadedGames++;
-            if(loadedGames === games.length) {
-                // Дополнительно вызываем загрузку рейтингов для отображения звезд
-                resolve();
-            }
+        var gamesLeaderboardPromise = new Promise(function(resolve) {
+            var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+            var loadedGames = 0;
+            games.forEach(function(g) {
+                db.ref('gameRatings/'+g).once('value', function() {
+                    loadLeaderboard(g);
+                    loadedGames++;
+                    if(loadedGames === games.length) {
+                        resolve();
+                    }
+                });
+            });
         });
-    });
-});
-allPromises.push(gamesLeaderboardPromise);
-        
-        // Цитаты
+        allPromises.push(gamesLeaderboardPromise);
         var quotesPromise = new Promise(function(resolve) {
             try { 
                 initQuotes(); 
@@ -1338,29 +1321,21 @@ allPromises.push(gamesLeaderboardPromise);
             } catch(e) { resolve(); }
         });
         allPromises.push(quotesPromise);
-        
-        // Подарки
         var giftsPromise = new Promise(function(resolve) {
             loadGifts();
-            setTimeout(resolve, 500); // небольшой таймаут только для подарков, они не критичны
+            setTimeout(resolve, 500);
         });
         allPromises.push(giftsPromise);
-        
-        // Задания
         var questsPromise = new Promise(function(resolve) {
             generateDailyQuests(false);
             resolve();
         });
         allPromises.push(questsPromise);
-        
-        // Друзья
         var friendsPromise = new Promise(function(resolve) {
             setupFriendNotifications();
             resolve();
         });
         allPromises.push(friendsPromise);
-        
-        // МАГИЧЕСКИЙ ШАР (новая коллекция)
         var magicPromise = new Promise(function(resolve) {
             db.ref('magicChat').once('value', function() {
                 loadMagicMessages();
@@ -1368,10 +1343,7 @@ allPromises.push(gamesLeaderboardPromise);
             });
         });
         allPromises.push(magicPromise);
-        
         setProgress(60);
-        
-        // Ждем ВСЕ загрузки
         Promise.all(allPromises).then(function() {
             setProgress(100);
             clearInterval(jokeInterval);
@@ -1382,21 +1354,275 @@ allPromises.push(gamesLeaderboardPromise);
                 }, 300);
             }
             console.log('✅ ВСЕ ДАННЫЕ ЗАГРУЖЕНЫ!');
-            // Применяем ежедневное событие (праздник) после полной загрузки
             applyDailyEvent();
             initStickerButtons();
+            initDrawingCanvas(); // Инициализация рисовалки
         });
     });
-    
     setInterval(syncOnlineProfile, 5000);
-  // В КОНЦЕ ФУНКЦИИ loadAllData(), ПЕРЕД ЗАКРЫВАЮЩЕЙ СКОБКОЙ, ДОБАВЬТЕ:
-
-ensureInviteListener();
-console.log('✅ Слушатель приглашений активирован');
+    ensureInviteListener();
+    console.log('✅ Слушатель приглашений активирован');
 }
-// Добавь эту функцию для обновления интерфейса на телефоне
+
+// Инициализация совместной рисовалки
+function initDrawingCanvas() {
+    const canvas = document.getElementById('drawCanvas');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = 800;
+    canvas.height = 500;
+    
+    let drawing = false;
+    let currentColor = '#000000';
+    let brushSize = 5;
+    let strokes = [];
+    let currentStrokePoints = [];
+    
+    // Загрузка из localStorage
+    function loadFromStorage() {
+        const saved = localStorage.getItem('shared_drawing');
+        if (saved) {
+            try {
+                strokes = JSON.parse(saved);
+                redrawCanvas();
+            } catch(e) { console.log('Ошибка загрузки рисунка'); }
+        }
+    }
+    
+    function saveToStorage() {
+        localStorage.setItem('shared_drawing', JSON.stringify(strokes));
+    }
+    
+    function redrawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        for (let stroke of strokes) {
+            ctx.beginPath();
+            ctx.strokeStyle = stroke.color;
+            ctx.lineWidth = stroke.size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            if (stroke.points.length > 0) {
+                ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                for (let i = 1; i < stroke.points.length; i++) {
+                    ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                }
+                ctx.stroke();
+            }
+        }
+    }
+    
+    function addStroke(points, color, size) {
+        strokes.push({
+            points: points.map(p => ({ x: p.x, y: p.y })),
+            color: color,
+            size: size,
+            timestamp: Date.now()
+        });
+        redrawCanvas();
+        saveToStorage();
+        syncDrawingWithServer();
+    }
+    
+    function addPointToCurrentStroke(points) {
+        if (strokes.length === 0) return;
+        strokes[strokes.length - 1].points.push({ x: points.x, y: points.y });
+        redrawCanvas();
+        saveToStorage();
+        syncDrawingWithServer();
+    }
+    
+    // Синхронизация через BroadcastChannel
+    const channel = new BroadcastChannel('drawing_sync');
+    function syncDrawingWithServer() {
+        channel.postMessage({
+            type: 'sync',
+            strokes: strokes
+        });
+    }
+    channel.onmessage = (event) => {
+        if (event.data.type === 'sync') {
+            strokes = event.data.strokes;
+            redrawCanvas();
+            updateDrawingOnlineCount();
+        }
+    };
+    
+    // Онлайн-счётчик
+    let onlineDrawingUsers = new Set();
+    const drawingUserId = 'drawing_user_' + Math.random().toString(36).substr(2, 8);
+    function updateDrawingOnlineCount() {
+        const countSpan = document.getElementById('drawingOnlineCount');
+        if(countSpan) countSpan.innerText = onlineDrawingUsers.size;
+    }
+    function initDrawingOnlineTracking() {
+        let users = localStorage.getItem('drawing_users');
+        if (users) {
+            try {
+                const parsed = JSON.parse(users);
+                onlineDrawingUsers = new Set(parsed);
+            } catch(e) {}
+        }
+        onlineDrawingUsers.add(drawingUserId);
+        saveDrawingOnlineUsers();
+        setInterval(() => {
+            onlineDrawingUsers.add(drawingUserId);
+            saveDrawingOnlineUsers();
+        }, 30000);
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'drawing_users') {
+                const newUsers = JSON.parse(e.newValue || '[]');
+                onlineDrawingUsers = new Set(newUsers);
+                updateDrawingOnlineCount();
+            }
+            if (e.key === 'shared_drawing') {
+                const newDrawing = localStorage.getItem('shared_drawing');
+                if (newDrawing) {
+                    strokes = JSON.parse(newDrawing);
+                    redrawCanvas();
+                }
+            }
+        });
+        updateDrawingOnlineCount();
+    }
+    function saveDrawingOnlineUsers() {
+        localStorage.setItem('drawing_users', JSON.stringify([...onlineDrawingUsers]));
+        updateDrawingOnlineCount();
+    }
+    
+    // Рисование
+    function getCanvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        let x = (clientX - rect.left) * scaleX;
+        let y = (clientY - rect.top) * scaleY;
+        x = Math.min(Math.max(0, x), canvas.width);
+        y = Math.min(Math.max(0, y), canvas.height);
+        return { x, y };
+    }
+    
+    function startDrawing(e) {
+        e.preventDefault();
+        drawing = true;
+        currentStrokePoints = [];
+        const coords = getCanvasCoords(e);
+        currentStrokePoints.push(coords);
+        strokes.push({
+            points: [{ x: coords.x, y: coords.y }],
+            color: currentColor,
+            size: brushSize,
+            timestamp: Date.now()
+        });
+        redrawCanvas();
+    }
+    
+    function draw(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        const coords = getCanvasCoords(e);
+        const lastPoint = currentStrokePoints[currentStrokePoints.length - 1];
+        if (lastPoint) {
+            ctx.beginPath();
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.moveTo(lastPoint.x, lastPoint.y);
+            ctx.lineTo(coords.x, coords.y);
+            ctx.stroke();
+        }
+        currentStrokePoints.push(coords);
+        if (strokes.length > 0) {
+            strokes[strokes.length - 1].points = [...currentStrokePoints];
+        }
+        saveToStorage();
+        syncDrawingWithServer();
+    }
+    
+    function stopDrawing(e) {
+        if (!drawing) return;
+        e.preventDefault();
+        drawing = false;
+        syncDrawingWithServer();
+    }
+    
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchcancel', stopDrawing);
+    
+    // Цвета
+    document.querySelectorAll('.drawing-color-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.drawing-color-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentColor = btn.dataset.color;
+        });
+        if (btn.dataset.color === '#000000') {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Размер кисти
+    const sizeSlider = document.getElementById('drawingBrushSize');
+    const sizePreview = document.getElementById('drawingSizePreview');
+    if(sizeSlider) {
+        sizeSlider.addEventListener('input', (e) => {
+            brushSize = parseInt(e.target.value);
+            if(sizePreview) {
+                sizePreview.style.width = brushSize + 'px';
+                sizePreview.style.height = brushSize + 'px';
+            }
+        });
+    }
+    if(sizePreview) {
+        sizePreview.style.width = brushSize + 'px';
+        sizePreview.style.height = brushSize + 'px';
+    }
+    
+    // Очистка
+    const clearBtn = document.getElementById('drawingClearBtn');
+    if(clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            if (confirm('🗑️ Очистить весь рисунок? Это увидят все пользователи!')) {
+                strokes = [];
+                redrawCanvas();
+                saveToStorage();
+                syncDrawingWithServer();
+            }
+        });
+    }
+    
+    // Сохранение
+    const saveBtn = document.getElementById('drawingSaveBtn');
+    if(saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'drawing.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+    
+    loadFromStorage();
+    initDrawingOnlineTracking();
+}
+
 function refreshUI() {
-    // Принудительно перерисовываем экран
     var activeScreen = document.querySelector('.screen.active');
     if(activeScreen) {
         activeScreen.style.display = 'none';
@@ -1404,7 +1630,6 @@ function refreshUI() {
             activeScreen.style.display = 'block';
         }, 10);
     }
-    // Проверяем, что кнопки работают
     console.log("UI обновлён для телефона");
 }
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
@@ -1435,10 +1660,8 @@ function generateDailyQuests(force) {
         localStorage.removeItem('tildochka_quests_' + new Date().toDateString());
         localStorage.removeItem('tildochka_qp');
     }
-    
     var today = new Date().toDateString();
     var saved = localStorage.getItem('tildochka_quests_' + today);
-    
     if(saved && !force) {
         dailyQuests = JSON.parse(saved);
     } else {
@@ -1446,7 +1669,7 @@ function generateDailyQuests(force) {
         var shuffled = [...questTemplates].sort(() => Math.random() - 0.5);
         for(var i = 0; i < 5; i++) {
             dailyQuests.push({
-                uid: Date.now() + '_' + i + '_' + Math.random(), // УНИКАЛЬНЫЙ ID
+                uid: Date.now() + '_' + i + '_' + Math.random(),
                 id: i,
                 text: shuffled[i].text,
                 type: shuffled[i].type,
@@ -1458,13 +1681,11 @@ function generateDailyQuests(force) {
         }
         localStorage.setItem('tildochka_quests_' + today, JSON.stringify(dailyQuests));
     }
-    
     var qp = JSON.parse(localStorage.getItem('tildochka_qp') || '{}');
     dailyQuests.forEach(function(q) {
         if(qp[q.uid]) q.progress = qp[q.uid];
         if(q.progress >= q.target) q.completed = true;
     });
-    
     renderQuests();
 }
 
@@ -1491,7 +1712,6 @@ function progressQuest(type, amount) {
         if(type === 'play' && (q.type === 'playSnake' || q.type === 'playTetris' || q.type === 'playRunner' || q.type === 'playFlappy' || q.type === 'playMemory' || q.type === 'playChickenRain' || q.type === 'playShooter')) matched = true;
         if(type === 'score50' && q.type === 'score50' && !q.completed && amount >= 50) matched = true;
         if(type === 'score100' && q.type === 'score100' && !q.completed && amount >= 100) matched = true;
-        
         if(matched) {
             q.progress = Math.min(q.target, q.progress + amount);
             if(q.progress >= q.target) q.completed = true;
@@ -1507,7 +1727,6 @@ function progressQuest(type, amount) {
 
 function claimQuest(uid) {
     if(!dailyQuests) return;
-    
     var questIndex = -1;
     for(var i = 0; i < dailyQuests.length; i++) {
         if(dailyQuests[i].uid === uid) {
@@ -1515,31 +1734,19 @@ function claimQuest(uid) {
             break;
         }
     }
-    
     if(questIndex === -1) return;
-    
     var q = dailyQuests[questIndex];
     if(!q || !q.completed) return;
-    
     addEggs(q.reward, 'Задание выполнено! +' + q.reward + '🥚');
-    
-    // Удаляем задание
     dailyQuests.splice(questIndex, 1);
-    
-    // Сохраняем
     var today = new Date().toDateString();
     localStorage.setItem('tildochka_quests_' + today, JSON.stringify(dailyQuests));
-    
-    // Удаляем прогресс для этого задания
     var qp = JSON.parse(localStorage.getItem('tildochka_qp') || '{}');
     delete qp[uid];
     localStorage.setItem('tildochka_qp', JSON.stringify(qp));
-    
     renderQuests();
 }
 
-
-  
 function showScreen(id){
     document.querySelectorAll('.screen').forEach(function(s){
         s.classList.remove('active');
@@ -1548,7 +1755,6 @@ function showScreen(id){
     if(t) {
         t.classList.add('active');
     } else {
-        // Если экран не найден, пробуем без суффикса
         t = document.getElementById(id);
         if(t) t.classList.add('active');
     }
@@ -1559,13 +1765,43 @@ function showScreen(id){
     if(id === 'chickentube') loadShorts();
     if(id === 'friends') loadFriends();
     if(id === 'games-all') {
-        // Загружаем игры каждый раз при открытии
         setTimeout(function() {
             renderAllGames();
         }, 50);
     }
     if(id === 'magicball') {
         loadMagicMessages();
+    }
+    if(id === 'drawing') {
+        // При открытии рисовалки обновляем canvas
+        setTimeout(function() {
+            const canvas = document.getElementById('drawCanvas');
+            if(canvas && canvas.getContext) {
+                // Просто перерисовываем
+                const ctx = canvas.getContext('2d');
+                const saved = localStorage.getItem('shared_drawing');
+                if(saved) {
+                    const strokes = JSON.parse(saved);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    for (let stroke of strokes) {
+                        ctx.beginPath();
+                        ctx.strokeStyle = stroke.color;
+                        ctx.lineWidth = stroke.size;
+                        ctx.lineCap = 'round';
+                        ctx.lineJoin = 'round';
+                        if (stroke.points.length > 0) {
+                            ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                            for (let i = 1; i < stroke.points.length; i++) {
+                                ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                            }
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+        }, 100);
     }
 }
 function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
@@ -1585,16 +1821,12 @@ function sendChatMessage() {
         alert('Напишите сообщение!');
         return;
     }
-    
     var btn = document.getElementById('chatSendBtn');
     if(btn) {
         btn.disabled = true;
         btn.innerHTML = '⏳...';
     }
-    
-    // Получаем текущую аватарку пользователя
     var avatarData = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
-    
     db.ref('chat').push({
         name: myName,
         text: text,
@@ -1604,7 +1836,6 @@ function sendChatMessage() {
     }).then(function() {
         input.value = '';
         progressQuest('chat', 1);
-        
         setTimeout(function() {
             if(btn) {
                 btn.disabled = false;
@@ -1634,32 +1865,24 @@ function loadChatMessages() {
             });
         });
         messages.sort((a, b) => a.ts - b.ts);
-        
         const container = document.getElementById('chatMessagesLive');
         if(!container) return;
-        
         const wasAtBottom = container.scrollHeight - container.scrollTop < 100;
         container.innerHTML = '';
-        
         messages.forEach(msg => {
             const div = document.createElement('div');
             div.className = 'message';
-            
-            // Аватарка
             let avatarHtml = '';
             if(msg.avatarType === 'emoji') {
                 avatarHtml = '<span class="message-avatar" style="font-size:16px;">' + escapeHtml(msg.avatarValue) + '</span>';
             } else {
                 avatarHtml = '<span class="message-avatar"><img src="' + msg.avatarValue + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover"></span>';
             }
-            
-            // Время
             let timeStr = '';
             if(msg.ts) {
                 const date = new Date(msg.ts);
                 timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
-            
             div.innerHTML = `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     ${avatarHtml}
@@ -1670,7 +1893,6 @@ function loadChatMessages() {
             `;
             container.appendChild(div);
         });
-        
         if(wasAtBottom) {
             container.scrollTop = container.scrollHeight;
         }
@@ -1684,7 +1906,6 @@ function postMeme() {
         alert('Напиши подпись или добавь медиа!');
         return;
     }
-    
     db.ref('memes').push({
         author: myName,
         caption: caption,
@@ -1720,16 +1941,13 @@ function loadMemes() {
             });
         });
         memes.sort((a, b) => b.ts - a.ts);
-        
         const container = document.getElementById('memesList');
         if(!container) return;
-        
         lastCounts.memes = memes.length;
         if(memes.length === 0) {
             container.innerHTML = '<p style="color:#888">Нет мемов. Будь первым!</p>';
             return;
         }
-        
         container.innerHTML = '';
         memes.forEach(m => {
             let mediaHtml = '';
@@ -1759,7 +1977,6 @@ function addIdea() {
         alert('Введи текст идеи!');
         return;
     }
-    
     db.ref('ideas').push({
         author: myName,
         text: text,
@@ -1786,16 +2003,13 @@ function loadIdeas() {
             });
         });
         ideas.sort((a, b) => b.ts - a.ts);
-        
         const container = document.getElementById('ideasList');
         if(!container) return;
-        
         lastCounts.ideas = ideas.length;
         if(ideas.length === 0) {
             container.innerHTML = '<p style="color:#888">Нет идей. Предложи первую!</p>';
             return;
         }
-        
         container.innerHTML = '';
         ideas.forEach(i => {
             container.innerHTML += `
@@ -1826,9 +2040,7 @@ function postShort(){
         alert('Создай канал!');
         return;
     }
-    
     var avatar = JSON.parse(localStorage.getItem('tildochka_channel_avatar') || '{"type":"emoji","value":"📺"}');
-    
     db.ref('shorts').push({
         channel: myChannel,
         channelAvatar: avatar,
@@ -1857,7 +2069,6 @@ function previewShortMedia(type) {
     var input = document.getElementById(type === 'image' ? 'shortImage' : 'shortVideo');
     var file = input.files[0];
     if(!file) return;
-    
     var reader = new FileReader();
     reader.onload = function(e) {
         shortMedia = e.target.result;
@@ -1889,35 +2100,29 @@ function loadShorts() {
             });
         });
         shorts.sort(function(a, b) { return b.ts - a.ts; });
-        
         const container = document.getElementById('shortsList');
         if(!container) return;
-        
         if(shorts.length === 0) {
             container.innerHTML = '<p style="color:#888;text-align:center">📺 Нет постов. Создай канал и выложи первый пост!</p>';
             return;
         }
-        
         container.innerHTML = '';
         for(var i = 0; i < shorts.length; i++) {
             var sh = shorts[i];
-            
             var avatarHtml = '';
             if(sh.channelAvatar.type === 'emoji') {
                 avatarHtml = '<span style="font-size:28px;">' + sh.channelAvatar.value + '</span>';
             } else {
                 avatarHtml = '<img src="'+sh.channelAvatar.value+'" style="width:40px;height:40px;border-radius:50%;object-fit:cover">';
             }
-            
             var mediaHtml = '';
             if(sh.media) {
                 if(sh.mediaType === 'image') {
                     mediaHtml = '<img src="'+sh.media+'" style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px">';
                 } else if(sh.mediaType === 'video') {
-    mediaHtml = '<video src="'+sh.media+'" class="short-video" controls playsinline style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px" preload="auto"></video>';
-}
+                    mediaHtml = '<video src="'+sh.media+'" class="short-video" controls playsinline style="max-width:100%;max-height:300px;border-radius:10px;margin-top:10px" preload="auto"></video>';
+                }
             }
-            
             var commentsHtml = '';
             if(sh.comments) {
                 var commentKeys = Object.keys(sh.comments);
@@ -1926,13 +2131,10 @@ function loadShorts() {
                     commentsHtml += '<div class="short-comment"><b>' + escapeHtml(sh.comments[key].name) + ':</b> ' + escapeHtml(sh.comments[key].text) + '</div>';
                 }
             }
-            
-            // Кнопка удаления только для админов
             var deleteBtn = '';
             if(isAdmin) {
                 deleteBtn = '<button class="delete-btn" onclick="deleteShort(\''+sh.id+'\')">🗑️ Удалить</button>';
             }
-            
             container.innerHTML += `
                 <div class="short-card">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -1973,7 +2175,6 @@ function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(s){var
 function updateMovieRating(mid,revs){if(!revs.length){var el=document.getElementById('rating-'+mid);if(el)el.textContent='—';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';}
 // ==================== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ВСЕХ РЕЙТИНГОВ ====================
 function loadAllRatings() {
-    // Рейтинги фильмов
     Object.keys(moviesData).forEach(function(mid) {
         db.ref('reviews/'+mid).on('value', function(snap) {
             var revs = [];
@@ -1990,8 +2191,6 @@ function loadAllRatings() {
             }
         });
     });
-    
-    // Рейтинги игр - ДОБАВЛЯЕМ!
     var games = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter'];
     games.forEach(function(game) {
         db.ref('gameRatings/' + game).on('value', function(snapshot) {
@@ -1999,7 +2198,6 @@ function loadAllRatings() {
             snapshot.forEach(function(child) {
                 ratings.push(child.val());
             });
-            
             var ratingEl = document.getElementById('rating-' + game);
             if(ratingEl) {
                 if(ratings.length > 0) {
@@ -2017,7 +2215,6 @@ function loadAllRatings() {
     });
 }
 function showGame(type){
-    // Останавливаем все текущие игры
     if(gameInterval) {
         clearInterval(gameInterval);
         gameInterval = null;
@@ -2026,10 +2223,8 @@ function showGame(type){
         clearInterval(tamaInterval);
         tamaInterval = null;
     }
-    
     currentGame = type;
     showScreen('game');
-    
     var titles = {
         snake: '🐍 Змейка',
         tetris: '🧱 Тетрис',
@@ -2040,36 +2235,307 @@ function showGame(type){
         tamagotchi: '🐣 Тамагочи',
         guess: '🔢 Угадай число',
         rps: '✂️ Камень-ножницы',
-        shooter: '🎯 Птичий тир'
+        shooter: '🎯 Птичий тир',
+        drawing: '🎨 Совместная рисовалка'
     };
-    
     document.getElementById('gameTitle').textContent = titles[type] || type;
     document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameRatingArea').innerHTML = '';
     document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
     
-    // Запускаем игру с небольшой задержкой для перерисовки экрана
     setTimeout(function() {
         if(type === 'snake') {
             initSnake();
             progressQuest('playSnake', 1);
         }
-        if(type === 'tetris') {
+        else if(type === 'tetris') {
             initTetris();
             progressQuest('playTetris', 1);
         }
-        if(type === 'runner') {
+        else if(type === 'runner') {
             initRunner();
             progressQuest('playRunner', 1);
         }
-        if(type === 'chickenrain') initChickenRain();
-        if(type === 'flappy') initFlappy();
-        if(type === 'memory') initMemory();
-        if(type === 'tamagotchi') initTamagotchi();
-        if(type === 'guess') initGuess();
-        if(type === 'rps') initRPS();
-        if(type === 'shooter') initShooter();
-        
+        else if(type === 'chickenrain') initChickenRain();
+        else if(type === 'flappy') initFlappy();
+        else if(type === 'memory') initMemory();
+        else if(type === 'tamagotchi') initTamagotchi();
+        else if(type === 'guess') initGuess();
+        else if(type === 'rps') initRPS();
+        else if(type === 'shooter') initShooter();
+        else if(type === 'drawing') {
+            // Показываем рисовалку
+            document.getElementById('gameContent').innerHTML = '<div class="drawing-container" style="max-width:900px;margin:0 auto;padding:20px">' +
+                '<canvas id="drawGameCanvas" width="800" height="500" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/500; background:white; border-radius:20px"></canvas>' +
+                '<div class="drawing-toolbar" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center">' +
+                '<div class="drawing-color-picker" id="drawingGameColorPicker" style="display:flex;gap:8px;flex-wrap:wrap;background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:50px">' +
+                '<div class="drawing-color-btn" style="background:#000000" data-color="#000000"></div>' +
+                '<div class="drawing-color-btn" style="background:#ff0000" data-color="#ff0000"></div>' +
+                '<div class="drawing-color-btn" style="background:#00ff00" data-color="#00ff00"></div>' +
+                '<div class="drawing-color-btn" style="background:#0000ff" data-color="#0000ff"></div>' +
+                '<div class="drawing-color-btn" style="background:#ffff00" data-color="#ffff00"></div>' +
+                '<div class="drawing-color-btn" style="background:#ff00ff" data-color="#ff00ff"></div>' +
+                '<div class="drawing-color-btn" style="background:#00ffff" data-color="#00ffff"></div>' +
+                '<div class="drawing-color-btn" style="background:#ff8800" data-color="#ff8800"></div>' +
+                '<div class="drawing-color-btn" style="background:#ffffff" data-color="#ffffff"></div></div>' +
+                '<div class="drawing-size-control" style="background:rgba(0,0,0,0.5);padding:8px 15px;border-radius:50px;display:flex;align-items:center;gap:12px">' +
+                '<span style="color:white">✏️</span><input type="range" id="drawingGameBrushSize" min="1" max="40" value="5">' +
+                '<div class="drawing-size-preview" id="drawingGameSizePreview" style="width:5px;height:5px;background:white;border-radius:50%;border:2px solid #ffd700"></div></div>' +
+                '<button id="drawingGameClearBtn" style="background:linear-gradient(135deg, #ff4444, #cc0000);border:none;padding:10px 20px;border-radius:40px;color:white;cursor:pointer">🗑️ ОЧИСТИТЬ</button>' +
+                '<button id="drawingGameSaveBtn" style="background:linear-gradient(135deg, #ff6b6b, #ee5a24);border:none;padding:10px 20px;border-radius:40px;color:white;cursor:pointer">💾 СОХРАНИТЬ</button></div>' +
+                '<div class="drawing-status" style="margin-top:15px;text-align:center;color:#aaa;font-size:12px;display:flex;justify-content:center;gap:20px">' +
+                '<div>🟢 ОНЛАЙН: <span id="drawingGameOnlineCount">1</span></div>' +
+                '<div>💡 РИСУЙТЕ ВМЕСТЕ — ВСЕ ВИДЯТ ИЗМЕНЕНИЯ</div></div></div>';
+            
+            // Инициализируем рисовалку внутри игры
+            setTimeout(function() {
+                const gameCanvas = document.getElementById('drawGameCanvas');
+                if(!gameCanvas) return;
+                const gameCtx = gameCanvas.getContext('2d');
+                gameCanvas.width = 800;
+                gameCanvas.height = 500;
+                
+                let gameDrawing = false;
+                let gameCurrentColor = '#000000';
+                let gameBrushSize = 5;
+                let gameStrokes = [];
+                let gameCurrentStrokePoints = [];
+                
+                function gameLoadFromStorage() {
+                    const saved = localStorage.getItem('shared_drawing');
+                    if (saved) {
+                        try {
+                            gameStrokes = JSON.parse(saved);
+                            gameRedrawCanvas();
+                        } catch(e) { console.log('Ошибка загрузки рисунка'); }
+                    }
+                }
+                function gameSaveToStorage() {
+                    localStorage.setItem('shared_drawing', JSON.stringify(gameStrokes));
+                }
+                function gameRedrawCanvas() {
+                    gameCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+                    gameCtx.fillStyle = '#ffffff';
+                    gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+                    for (let stroke of gameStrokes) {
+                        gameCtx.beginPath();
+                        gameCtx.strokeStyle = stroke.color;
+                        gameCtx.lineWidth = stroke.size;
+                        gameCtx.lineCap = 'round';
+                        gameCtx.lineJoin = 'round';
+                        if (stroke.points.length > 0) {
+                            gameCtx.moveTo(stroke.points[0].x, stroke.points[0].y);
+                            for (let i = 1; i < stroke.points.length; i++) {
+                                gameCtx.lineTo(stroke.points[i].x, stroke.points[i].y);
+                            }
+                            gameCtx.stroke();
+                        }
+                    }
+                }
+                function gameAddStroke(points, color, size) {
+                    gameStrokes.push({
+                        points: points.map(p => ({ x: p.x, y: p.y })),
+                        color: color,
+                        size: size,
+                        timestamp: Date.now()
+                    });
+                    gameRedrawCanvas();
+                    gameSaveToStorage();
+                    gameSyncDrawing();
+                }
+                function gameAddPointToCurrentStroke(points) {
+                    if (gameStrokes.length === 0) return;
+                    gameStrokes[gameStrokes.length - 1].points.push({ x: points.x, y: points.y });
+                    gameRedrawCanvas();
+                    gameSaveToStorage();
+                    gameSyncDrawing();
+                }
+                
+                const gameChannel = new BroadcastChannel('drawing_sync');
+                function gameSyncDrawing() {
+                    gameChannel.postMessage({
+                        type: 'sync',
+                        strokes: gameStrokes
+                    });
+                }
+                gameChannel.onmessage = (event) => {
+                    if (event.data.type === 'sync') {
+                        gameStrokes = event.data.strokes;
+                        gameRedrawCanvas();
+                        const countSpan = document.getElementById('drawingGameOnlineCount');
+                        if(countSpan) {
+                            let users = localStorage.getItem('drawing_users');
+                            if(users) {
+                                try {
+                                    const parsed = JSON.parse(users);
+                                    countSpan.innerText = parsed.length;
+                                } catch(e) {}
+                            }
+                        }
+                    }
+                };
+                
+                let gameOnlineUsers = new Set();
+                const gameUserId = 'drawing_user_' + Math.random().toString(36).substr(2, 8);
+                function gameUpdateOnlineCount() {
+                    const countSpan = document.getElementById('drawingGameOnlineCount');
+                    if(countSpan) countSpan.innerText = gameOnlineUsers.size;
+                }
+                function gameInitOnlineTracking() {
+                    let users = localStorage.getItem('drawing_users');
+                    if (users) {
+                        try {
+                            const parsed = JSON.parse(users);
+                            gameOnlineUsers = new Set(parsed);
+                        } catch(e) {}
+                    }
+                    gameOnlineUsers.add(gameUserId);
+                    localStorage.setItem('drawing_users', JSON.stringify([...gameOnlineUsers]));
+                    gameUpdateOnlineCount();
+                    setInterval(() => {
+                        gameOnlineUsers.add(gameUserId);
+                        localStorage.setItem('drawing_users', JSON.stringify([...gameOnlineUsers]));
+                        gameUpdateOnlineCount();
+                    }, 30000);
+                    window.addEventListener('storage', (e) => {
+                        if (e.key === 'drawing_users') {
+                            const newUsers = JSON.parse(e.newValue || '[]');
+                            gameOnlineUsers = new Set(newUsers);
+                            gameUpdateOnlineCount();
+                        }
+                        if (e.key === 'shared_drawing') {
+                            const newDrawing = localStorage.getItem('shared_drawing');
+                            if (newDrawing) {
+                                gameStrokes = JSON.parse(newDrawing);
+                                gameRedrawCanvas();
+                            }
+                        }
+                    });
+                    gameUpdateOnlineCount();
+                }
+                
+                function gameGetCoords(e) {
+                    const rect = gameCanvas.getBoundingClientRect();
+                    const scaleX = gameCanvas.width / rect.width;
+                    const scaleY = gameCanvas.height / rect.height;
+                    let clientX, clientY;
+                    if (e.touches) {
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    let x = (clientX - rect.left) * scaleX;
+                    let y = (clientY - rect.top) * scaleY;
+                    x = Math.min(Math.max(0, x), gameCanvas.width);
+                    y = Math.min(Math.max(0, y), gameCanvas.height);
+                    return { x, y };
+                }
+                
+                function gameStartDrawing(e) {
+                    e.preventDefault();
+                    gameDrawing = true;
+                    gameCurrentStrokePoints = [];
+                    const coords = gameGetCoords(e);
+                    gameCurrentStrokePoints.push(coords);
+                    gameStrokes.push({
+                        points: [{ x: coords.x, y: coords.y }],
+                        color: gameCurrentColor,
+                        size: gameBrushSize,
+                        timestamp: Date.now()
+                    });
+                    gameRedrawCanvas();
+                }
+                function gameDraw(e) {
+                    if (!gameDrawing) return;
+                    e.preventDefault();
+                    const coords = gameGetCoords(e);
+                    const lastPoint = gameCurrentStrokePoints[gameCurrentStrokePoints.length - 1];
+                    if (lastPoint) {
+                        gameCtx.beginPath();
+                        gameCtx.strokeStyle = gameCurrentColor;
+                        gameCtx.lineWidth = gameBrushSize;
+                        gameCtx.lineCap = 'round';
+                        gameCtx.lineJoin = 'round';
+                        gameCtx.moveTo(lastPoint.x, lastPoint.y);
+                        gameCtx.lineTo(coords.x, coords.y);
+                        gameCtx.stroke();
+                    }
+                    gameCurrentStrokePoints.push(coords);
+                    if (gameStrokes.length > 0) {
+                        gameStrokes[gameStrokes.length - 1].points = [...gameCurrentStrokePoints];
+                    }
+                    gameSaveToStorage();
+                    gameSyncDrawing();
+                }
+                function gameStopDrawing(e) {
+                    if (!gameDrawing) return;
+                    e.preventDefault();
+                    gameDrawing = false;
+                    gameSyncDrawing();
+                }
+                
+                gameCanvas.addEventListener('mousedown', gameStartDrawing);
+                gameCanvas.addEventListener('mousemove', gameDraw);
+                gameCanvas.addEventListener('mouseup', gameStopDrawing);
+                gameCanvas.addEventListener('mouseleave', gameStopDrawing);
+                gameCanvas.addEventListener('touchstart', gameStartDrawing);
+                gameCanvas.addEventListener('touchmove', gameDraw);
+                gameCanvas.addEventListener('touchend', gameStopDrawing);
+                gameCanvas.addEventListener('touchcancel', gameStopDrawing);
+                
+                document.querySelectorAll('#drawingGameColorPicker .drawing-color-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('#drawingGameColorPicker .drawing-color-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        gameCurrentColor = btn.dataset.color;
+                    });
+                    if (btn.dataset.color === '#000000') btn.classList.add('active');
+                });
+                
+                const gameSizeSlider = document.getElementById('drawingGameBrushSize');
+                const gameSizePreview = document.getElementById('drawingGameSizePreview');
+                if(gameSizeSlider) {
+                    gameSizeSlider.addEventListener('input', (e) => {
+                        gameBrushSize = parseInt(e.target.value);
+                        if(gameSizePreview) {
+                            gameSizePreview.style.width = gameBrushSize + 'px';
+                            gameSizePreview.style.height = gameBrushSize + 'px';
+                        }
+                    });
+                }
+                if(gameSizePreview) {
+                    gameSizePreview.style.width = gameBrushSize + 'px';
+                    gameSizePreview.style.height = gameBrushSize + 'px';
+                }
+                
+                const gameClearBtn = document.getElementById('drawingGameClearBtn');
+                if(gameClearBtn) {
+                    gameClearBtn.addEventListener('click', () => {
+                        if (confirm('🗑️ Очистить весь рисунок? Это увидят все пользователи!')) {
+                            gameStrokes = [];
+                            gameRedrawCanvas();
+                            gameSaveToStorage();
+                            gameSyncDrawing();
+                        }
+                    });
+                }
+                
+                const gameSaveBtn = document.getElementById('drawingGameSaveBtn');
+                if(gameSaveBtn) {
+                    gameSaveBtn.addEventListener('click', () => {
+                        const link = document.createElement('a');
+                        link.download = 'drawing.png';
+                        link.href = gameCanvas.toDataURL();
+                        link.click();
+                    });
+                }
+                
+                gameLoadFromStorage();
+                gameInitOnlineTracking();
+            }, 100);
+        }
         progressQuest('play', 1);
         loadLeaderboard(type);
     }, 50);
@@ -2092,11 +2558,9 @@ var pets={
 '🐶':{name:'Щенок',hr:4,pr:3,er:3,type:'active',desc:'Очень активный! Нужно много гулять и играть.',hint:'Энергичный',growthAge:25,images:{baby:'🐶',adult:'🐕',elder:'🐕‍🦺'}}
 };
 
-// ========== ФРАЗЫ ДЛЯ ЧАТА С ТАМАГОЧИ ==========
 function getTamagotchiPhrase() {
     var t = tamagotchiData;
     if(!t || !t.isAlive) return '💀 ...';
-    
     if(t.hunger < 20) return '🍗 Покорми меня тварь! Я голоден!';
     if(t.hunger < 45) return '🍽️ Не соизволите ли меня покормить?';
     if(t.energy < 20) return '😴 Я очень хочу спать...';
@@ -2106,18 +2570,10 @@ function getTamagotchiPhrase() {
     if(t.happy > 85) return '❤️ Я тебя очень убью!';
     if(t.hunger > 80 && t.happy > 80) return '😊 Мне так хорошо без тебя!';
     if(t.age > 40) return '👴 Я уже старый, но все ещё не счастливый,потому что ты меня не выпускаешь на волю!';
-    
-    var phrases = [
-        '🐔 Куд-куда?',
-        '🥚 Дай яичко!',
-        '🐓 Кукареку!',
-        '🌟 Ты мой лучший друг!',
-        '💕 Спасибо, что заботишься!'
-    ];
+    var phrases = ['🐔 Куд-куда?','🥚 Дай яичко!','🐓 Кукареку!','🌟 Ты мой лучший друг!','💕 Спасибо, что заботишься!'];
     return phrases[Math.floor(Math.random() * phrases.length)];
 }
 
-// ========== ЭМОЦИИ (ЛЕТЯТ ВВЕРХ ПО ВОЛНЕ) ==========
 function showEmotion(emotion, x, y) {
     var id = Date.now() + Math.random();
     activeEmotions.push({
@@ -2138,7 +2594,6 @@ function showEmotion(emotion, x, y) {
     }, 1800);
 }
 
-// ========== МЫСЛИ (ПОЯВЛЯЮТСЯ КАК ОБЛАЧКО И МЕДЛЕННО ИСЧЕЗАЮТ) ==========
 function showThought(emotion, x, y) {
     var id = Date.now() + Math.random();
     activeThoughts.push({
@@ -2185,10 +2640,8 @@ var t=tamagotchiData;
 if(!t||!t.isAlive){
     var deadName=t?t.name:'Питомец';
     var ageValue = t ? t.age : 0;
-    
-    // ОТПРАВКА РЕЙТИНГА (счёт = возраст питомца)
     if(t && t.age > 0) {
-        var rating = Math.min(10, Math.floor(t.age / 5) + 1); // рейтинг от 1 до 10
+        var rating = Math.min(10, Math.floor(t.age / 5) + 1);
         db.ref('gameRatings/tamagotchi').push({
             name: myName,
             rating: rating,
@@ -2197,15 +2650,10 @@ if(!t||!t.isAlive){
         });
         addEggs(Math.floor(t.age / 10), 'Тамагочи прожил ' + t.age + ' дней!');
     }
-    
     document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+ageValue+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div><div id="gameRatingArea"></div>';
-    
-    // Показываем звёзды для оценки после смерти
-    
     if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
     return;
 }
-
 var petClass='tamagotchi-pet';
 if(t.isFat)petClass+=' fat';
 if(t.isTired)petClass+=' tired';
@@ -2213,7 +2661,6 @@ var currentEmoji=t.emoji;
 if(t.age>=50){currentEmoji=t.images.elder;t.stage='elder';}
 else if(t.age>=25){currentEmoji=t.images.adult;t.stage='adult';}
 else{currentEmoji=t.images.baby;t.stage='baby';}
-
 var h='<div class="tamagotchi-room" id="tamagotchiRoom" style="position:relative;cursor:pointer"><div class="'+petClass+'" id="petAvatar" style="font-size:65px;text-align:center;line-height:200px">'+currentEmoji+'</div>';
 if(t.poops && t.poops.length>0){
 t.poops.forEach(function(p,i){h+='<div class="poop" style="left:'+p.x+'px;top:'+p.y+'px;position:absolute" onclick="event.stopPropagation();cleanPoop('+i+')">💩</div>';});
@@ -2227,8 +2674,6 @@ h+='<div id="gameRatingArea" style="margin-top:15px"></div>';
 document.getElementById('gameContent').innerHTML=h;
 document.getElementById('gameScoreDisplay').textContent='Возраст: '+t.age;
 localStorage.setItem('tildochka_tamagotchi',JSON.stringify(t));
-
-// СОЗДАЁМ КАНВАС ДЛЯ ЭМОЦИЙ И МЫСЛЕЙ
 var roomEl = document.getElementById('tamagotchiRoom');
 if(roomEl) {
     var oldCanvas = roomEl.querySelector('.emotion-canvas');
@@ -2245,7 +2690,6 @@ if(roomEl) {
     canvas.height = 280;
     roomEl.appendChild(canvas);
     var ctx = canvas.getContext('2d');
-    
     function animateEmotions() {
         if(!tamagotchiData || !tamagotchiData.isAlive) {
             requestAnimationFrame(animateEmotions);
@@ -2253,8 +2697,6 @@ if(roomEl) {
         }
         if(!document.getElementById('tamagotchiRoom')) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // РИСУЕМ ЭМОЦИИ (летят вверх по волне)
         for(var i=0; i<activeEmotions.length; i++) {
             var e = activeEmotions[i];
             var progress = 1 - e.life;
@@ -2263,79 +2705,48 @@ if(roomEl) {
             var y = e.startY - progress * 70;
             var alpha = e.life > 0.5 ? 1 : e.life * 2;
             var size = 26 * (0.7 + (1 - progress) * 0.5);
-            
             ctx.font = size + 'px Arial';
             ctx.fillStyle = 'rgba(0,0,0,' + alpha + ')';
             ctx.fillText(e.emotion, x - 15, y - 10);
             e.life -= 0.012;
         }
-        
-        // РИСУЕМ МЫСЛИ (просто стоят на месте и медленно исчезают)
         for(var i=0; i<activeThoughts.length; i++) {
             var th = activeThoughts[i];
             var alpha = th.life > 0.6 ? 1 : th.life / 0.6;
             if(alpha < 0) alpha = 0;
             var size = 22 * (0.8 + th.life * 0.3);
-            
             ctx.font = size + 'px Arial';
             ctx.fillStyle = 'rgba(100,100,100,' + alpha * 0.8 + ')';
             ctx.fillText(th.emotion, th.x, th.y);
             th.life -= 0.008;
         }
-        
-        // Удаляем мёртвые мысли
         for(var i=0; i<activeThoughts.length; i++) {
             if(activeThoughts[i].life <= 0) {
                 activeThoughts.splice(i,1);
                 i--;
             }
         }
-        
         requestAnimationFrame(animateEmotions);
     }
     animateEmotions();
-    
-    // МЫСЛИ ПИТОМЦА (что он хочет) - каждые 6 секунд
     setInterval(function() {
         if(!tamagotchiData || !tamagotchiData.isAlive) return;
         var centerX = canvas.width/2;
         var centerY = canvas.height/2 - 20;
-        
-        if(tamagotchiData.hunger < 35) {
-            showThought('🍗', centerX, centerY);
-        }
-        else if(tamagotchiData.energy < 30) {
-            showThought('😴', centerX, centerY);
-        }
-        else if(tamagotchiData.happy < 50) {
-            showThought('🎾', centerX, centerY);
-        }
-        else if(tamagotchiData.happy > 85 && Math.random() < 0.3) {
-            showThought('❤️', centerX, centerY);
-        }
+        if(tamagotchiData.hunger < 35) showThought('🍗', centerX, centerY);
+        else if(tamagotchiData.energy < 30) showThought('😴', centerX, centerY);
+        else if(tamagotchiData.happy < 50) showThought('🎾', centerX, centerY);
+        else if(tamagotchiData.happy > 85 && Math.random() < 0.3) showThought('❤️', centerX, centerY);
     }, 6000);
-    
-    // СЛУЧАЙНЫЕ ЭМОЦИИ ПО СОСТОЯНИЮ
     setInterval(function() {
         if(!tamagotchiData || !tamagotchiData.isAlive) return;
         var centerX = canvas.width/2;
         var centerY = canvas.height/2 - 20;
-        
-        if(tamagotchiData.happy > 80 && Math.random() < 0.12) {
-            showEmotion('❤️', centerX, centerY);
-        }
-        if(tamagotchiData.hunger < 30 && Math.random() < 0.12) {
-            showEmotion('🍗', centerX, centerY);
-        }
-        if(tamagotchiData.energy < 25 && Math.random() < 0.12) {
-            showEmotion('😴', centerX, centerY);
-        }
-        if(tamagotchiData.happy < 40 && Math.random() < 0.12) {
-            showEmotion('😢', centerX, centerY);
-        }
+        if(tamagotchiData.happy > 80 && Math.random() < 0.12) showEmotion('❤️', centerX, centerY);
+        if(tamagotchiData.hunger < 30 && Math.random() < 0.12) showEmotion('🍗', centerX, centerY);
+        if(tamagotchiData.energy < 25 && Math.random() < 0.12) showEmotion('😴', centerX, centerY);
+        if(tamagotchiData.happy < 40 && Math.random() < 0.12) showEmotion('😢', centerX, centerY);
     }, 4000);
-    
-    // ========== ДОБАВЛЯЕМ ФРАЗУ ПОД ИМЕНЕМ ПИТОМЦА ==========
     setTimeout(function() {
         var nameH3 = document.querySelector('#gameContent h3');
         if(nameH3 && !document.querySelector('.tamagotchi-phrase')) {
@@ -2360,29 +2771,23 @@ renderTamagotchi();
 window.feedPet = function(){
 var t = tamagotchiData;
 if(!t || !t.isAlive) return;
-
 var roomEl = document.getElementById('tamagotchiRoom');
 var canvas = roomEl ? roomEl.querySelector('.emotion-canvas') : null;
 var centerX = canvas ? canvas.width/2 : 140;
 var centerY = canvas ? canvas.height/2 - 20 : 100;
-
 if(t.isVomiting){
     alert(t.name + ' сейчас тошнит, подожди!');
     showEmotion('🤢', centerX, centerY);
     return;
 }
-
 t.hunger = Math.min(100, t.hunger + 25);
 t.energy = Math.max(0, t.energy - 5);
 playSound("eat");
-
 showEmotion('❤️', centerX, centerY);
-
 if(t.hunger > 95 && !t.isFat){
     t.isFat = true;
     t.energy = Math.max(0, t.energy - 15);
 }
-
 if(t.hunger > 98){
     t.isVomiting = true;
     playSound("vomit");
@@ -2395,12 +2800,10 @@ if(t.hunger > 98){
         renderTamagotchi();
     }, 2000);
 }
-
 if(Math.random() < 0.5 && (!t.poops || t.poops.length < 4)){
     if(!t.poops) t.poops = [];
     t.poops.push({x: Math.floor(Math.random() * 240) + 20, y: Math.floor(Math.random() * 240) + 20});
 }
-
 var petEl = document.getElementById('petAvatar');
 if(petEl){
     petEl.classList.add('happy-anim');
@@ -2411,18 +2814,15 @@ renderTamagotchi();
 
 window.playWithPet=function(){
 var t=tamagotchiData;if(!t||!t.isAlive)return;
-
 var roomEl = document.getElementById('tamagotchiRoom');
 var canvas = roomEl ? roomEl.querySelector('.emotion-canvas') : null;
 var centerX = canvas ? canvas.width/2 : 140;
 var centerY = canvas ? canvas.height/2 - 20 : 100;
-
 if(t.energy < 15){
     alert(t.name + ' слишком устал(а)! Сначала отдохни.');
     showThought('😴', centerX, centerY);
     return;
 }
-
 t.happy=Math.min(100,t.happy+22);
 showEmotion('🎾', centerX, centerY);
 t.hunger=Math.max(0,t.hunger-12);
@@ -2430,7 +2830,6 @@ t.energy=Math.max(0,t.energy-22);
 t.isFat=false;
 if(t.energy<10)t.isTired=true;
 playSound("jump");
-
 if(Math.random()<0.3 && (!t.poops || t.poops.length<4)){
     if(!t.poops) t.poops=[];
     t.poops.push({x:Math.floor(Math.random()*240)+20,y:Math.floor(Math.random()*240)+20});
@@ -2445,18 +2844,15 @@ renderTamagotchi();
 
 window.sleepPet=function(){
 var t=tamagotchiData;if(!t||!t.isAlive)return;
-
 var roomEl = document.getElementById('tamagotchiRoom');
 var canvas = roomEl ? roomEl.querySelector('.emotion-canvas') : null;
 var centerX = canvas ? canvas.width/2 : 140;
 var centerY = canvas ? canvas.height/2 - 20 : 100;
-
 t.energy=Math.min(100,t.energy+38);
 t.hunger=Math.max(0,t.hunger-6);
 t.isTired=false;
 playSound("jump");
 showEmotion('😴', centerX, centerY);
-
 if(t.type==='sleepy'){t.hunger=Math.max(0,t.hunger-5);t.energy=Math.min(100,t.energy+15);}
 renderTamagotchi();
 };
@@ -2497,38 +2893,28 @@ if(t.energy<18)t.isTired=true;
 else if(t.energy>55)t.isTired=false;
 renderTamagotchi();
 },3000);
-     }
+}
 
 // ==================== ОНЛАЙН-ИГРЫ ====================
-// ==================== ИСПРАВЛЕННЫЙ КОД ДЛЯ ПРИГЛАШЕНИЙ ====================
-
-// ==================== ИСПРАВЛЕННЫЙ КОД ДЛЯ ОНЛАЙН-ИГР ====================
-
 function showOnlineGame(type){
     var users = Object.keys(onlineUsers);
     if(users.length === 0){
         alert('Нет никого онлайн!');
         return;
     }
-    
-    var maxScore = 10; // значение по умолчанию
-    
-    // ТОЛЬКО для пинг-понга спрашиваем до скольки очков
+    var maxScore = 10;
     if(type === 'pong') {
         var scoreInput = prompt('🏓 До скольки очков играем?\n\nВведите число (например: 5, 10, 20)\nИли 0 для бесконечной игры', '10');
-        if(scoreInput === null) return; // отмена
-        
+        if(scoreInput === null) return;
         maxScore = parseInt(scoreInput);
         if(isNaN(maxScore)) {
             alert('Введите число!');
             return;
         }
     }
-    
     var scoreText = (maxScore === 0) ? '∞ бесконечно' : maxScore;
     var gameName = (type === 'pong') ? 'Пинг-понг' : (type === 'xo' ? 'Крестики-нолики' : 'Морской бой');
     var extraText = (type === 'pong') ? ' (до ' + scoreText + ')' : '';
-    
     var h = '<p>Выбери соперника для игры <b>' + gameName + '</b>' + extraText + ':</p>';
     users.forEach(function(u){
         h += '<button onclick="sendInvite(\''+u+'\',\''+type+'\', '+maxScore+')" style="display:block;width:100%;margin:4px 0;background:#444">'+onlineUsers[u].name+'</button>';
@@ -2541,8 +2927,6 @@ function showOnlineGame(type){
 function sendInvite(uid, game, maxScore){
     document.getElementById('inviteModal').classList.remove('show');
     var rid = myUid + '_' + uid + '_' + game + '_' + Date.now();
-    
-    // Сохраняем инвайт в Firebase
     var inviteData = {
         from: myUid,
         fromName: myName,
@@ -2551,18 +2935,11 @@ function sendInvite(uid, game, maxScore){
         status: 'pending',
         ts: Date.now()
     };
-    
-    // Только для пинг-понга добавляем maxScore
     if(game === 'pong') {
         inviteData.maxScore = maxScore;
     }
-    
     db.ref('game_invites/' + rid).set(inviteData);
-    
-    // Показываем ожидание
     showWaiting('Ожидаем ' + (onlineUsers[uid] ? onlineUsers[uid].name : 'соперника') + '...', 30000);
-    
-    // Слушаем ответ
     var statusRef = db.ref('game_invites/' + rid + '/status');
     var timeoutId = setTimeout(function() {
         statusRef.off();
@@ -2570,7 +2947,6 @@ function sendInvite(uid, game, maxScore){
         hideWaiting();
         alert('⏰ Время ожидания истекло. Соперник не ответил.');
     }, 30000);
-    
     statusRef.on('value', function(snap){
         var status = snap.val();
         if(status === 'accepted'){
@@ -2578,7 +2954,6 @@ function sendInvite(uid, game, maxScore){
             clearTimeout(timeoutId);
             db.ref('game_invites/' + rid).remove();
             hideWaiting();
-            
             if(game === 'battleship') startBattleshipSetup(uid, rid);
             if(game === 'pong') initOnlinePong(uid, rid, maxScore || 10);
             if(game === 'xo') initOnlineXO(uid, rid);
@@ -2592,20 +2967,15 @@ function sendInvite(uid, game, maxScore){
     });
 }
 
-// Слушаем ВСЕ приглашения
 function setupInviteListener() {
     db.ref('game_invites').on('child_added', function(snap){
         var inv = snap.val();
         if(!inv) return;
-        
-        // Проверяем, что приглашение адресовано нам и ещё не обработано
         if(inv.to === myUid && inv.status === 'pending') {
-            // Проверяем, не слишком ли старое (старше 30 секунд)
             if(inv.ts < Date.now() - 30000) {
-                snap.ref.remove(); // удаляем старые
+                snap.ref.remove();
                 return;
             }
-            
             pendingInvite = {
                 id: snap.key,
                 from: inv.from,
@@ -2613,21 +2983,13 @@ function setupInviteListener() {
                 game: inv.game,
                 maxScore: inv.maxScore || 10
             };
-            
             var gameName = (pendingInvite.game === 'pong') ? 'Пинг-понг' : (pendingInvite.game === 'xo' ? 'Крестики-нолики' : 'Морской бой');
             var extraText = (pendingInvite.game === 'pong') ? ' (до ' + (pendingInvite.maxScore === 0 ? '∞' : pendingInvite.maxScore) + ')' : '';
-            
             document.getElementById('inviteContent').innerHTML = '<p>' + escapeHtml(inv.fromName) + ' зовёт в <b>' + gameName + '</b>' + extraText + '!</p>';
             document.getElementById('inviteActions').innerHTML = '<button onclick="acceptInvite()" style="background:#4f4;padding:10px 20px">✅ Принять</button> <button onclick="declineInvite()" style="background:#f44;padding:10px 20px">❌ Отклонить</button>';
             document.getElementById('inviteTitle').textContent = '📨 Приглашение в игру!';
             document.getElementById('inviteModal').classList.add('show');
-            
-            // Вибрируем на телефоне, если возможно
-            if(window.navigator && window.navigator.vibrate) {
-                window.navigator.vibrate(200);
-            }
-            
-            // Воспроизводим звук уведомления
+            if(window.navigator && window.navigator.vibrate) window.navigator.vibrate(200);
             playSound("jump");
         }
     });
@@ -2637,22 +2999,12 @@ function acceptInvite(){
     if(!pendingInvite) return;
     document.getElementById('inviteModal').classList.remove('show');
     var inv = pendingInvite;
-    
-    // Отправляем подтверждение
     db.ref('game_invites/' + inv.id + '/status').set('accepted');
-    
     setTimeout(function() {
-        if(inv.game === 'battleship') {
-            startBattleshipSetup(inv.from, inv.id);
-        }
-        if(inv.game === 'pong') {
-            initOnlinePong(inv.from, inv.id, inv.maxScore || 10);
-        }
-        if(inv.game === 'xo') {
-            initOnlineXO(inv.from, inv.id);
-        }
+        if(inv.game === 'battleship') startBattleshipSetup(inv.from, inv.id);
+        if(inv.game === 'pong') initOnlinePong(inv.from, inv.id, inv.maxScore || 10);
+        if(inv.game === 'xo') initOnlineXO(inv.from, inv.id);
     }, 300);
-    
     pendingInvite = null;
 }
 
@@ -2660,12 +3012,9 @@ function declineInvite(){
     if(!pendingInvite) return;
     document.getElementById('inviteModal').classList.remove('show');
     db.ref('game_invites/' + pendingInvite.id + '/status').set('declined');
-    
-    // Небольшая задержка перед удалением, чтобы другой игрок успел прочитать статус
     setTimeout(function() {
         db.ref('game_invites/' + pendingInvite.id).remove();
     }, 1000);
-    
     pendingInvite = null;
 }
 
@@ -2678,21 +3027,6 @@ function ensureInviteListener() {
     }
 }
 
-// ========== ДОБАВИТЬ ЭТО В loadAllData() ==========
-// В конце функции loadAllData() добавьте:
-// setupInviteListener();
-
-// Также добавьте проверку на повторный вызов
-var inviteListenerSetup = false;
-function ensureInviteListener() {
-    if(!inviteListenerSetup) {
-        inviteListenerSetup = true;
-        setupInviteListener();
-        console.log('✅ Слушатель приглашений установлен');
-    }
-}
-
-// Вызвать ensureInviteListener() после загрузки данных
 function showWaiting(msg,dur){var w=document.getElementById('waitingModal');if(!w){w=document.createElement('div');w.className='modal-overlay';w.id='waitingModal';w.innerHTML='<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';document.body.appendChild(w);}document.getElementById('waitingContent').textContent='⏳ '+msg;w.classList.add('show');if(window._wt)clearTimeout(window._wt);window._wt=setTimeout(function(){w.classList.remove('show');},dur);}
 function hideWaiting(){var w=document.getElementById('waitingModal');if(w){w.classList.remove('show');if(window._wt)clearTimeout(window._wt);}}
 
@@ -2729,15 +3063,12 @@ function initOnlineXO(opp,rid){currentGame='onlinexo';showScreen('game');documen
 
 function initOnlinePong(opp, rid, maxScoreToWin){
     if(maxScoreToWin === undefined) maxScoreToWin = 10;
-    
     currentGame='onlinepong';
     window.currentGameRid = rid;
     showScreen('game');
-    
     var scoreLimitText = (maxScoreToWin === 0) ? '∞' : maxScoreToWin;
     document.getElementById('gameTitle').textContent = '🏓 vs '+(onlineUsers[opp]?onlineUsers[opp].name:'?') + ' (до ' + scoreLimitText + ')';
     document.getElementById('gameContent').innerHTML='<canvas id="pc" width="500" height="300" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="pu">↑</button><div></div><button class="ds4-btn" id="pl">←</button><div></div><button class="ds4-btn" id="pr">→</button><div></div><button class="ds4-btn" id="pd">↓</button><div></div></div>';
-    
     var c=document.getElementById('pc'),ctx=c.getContext('2d'),pad={};
     pad[myUid]={y:120};
     pad[opp]={y:120};
@@ -2748,8 +3079,6 @@ function initOnlinePong(opp, rid, maxScoreToWin){
     var go=false;
     var lastUpdate = Date.now();
     var surrenderRequest = false;
-    
-    // Кнопка сдаться
     var surrenderBtn = document.createElement('button');
     surrenderBtn.textContent = '🏳️ Сдаться';
     surrenderBtn.style.cssText = 'background:#f44;margin-top:5px;padding:5px 15px';
@@ -2757,12 +3086,10 @@ function initOnlinePong(opp, rid, maxScoreToWin){
         if(go) return;
         if(confirm('Точно сдаться? Соперник получит победу!')) {
             if(maxScoreToWin !== 0) {
-                // Если игра до счета, засчитываем победу сопернику
                 sc[opp] = maxScoreToWin;
                 db.ref('og/'+rid+'/score/'+opp).set(sc[opp]);
                 db.ref('og/'+rid+'/score/'+myUid).set(sc[myUid]);
             } else {
-                // Бесконечная игра - просто сообщаем о сдаче
                 db.ref('og/'+rid+'/surrender').set(myUid);
             }
             go = true;
@@ -2770,7 +3097,6 @@ function initOnlinePong(opp, rid, maxScoreToWin){
         }
     };
     document.getElementById('gameContent').appendChild(surrenderBtn);
-    
     function mvPaddle(dir){
         if(go)return;
         if(dir==='up')pad[myUid].y=Math.max(0,pad[myUid].y-20);
@@ -2778,12 +3104,10 @@ function initOnlinePong(opp, rid, maxScoreToWin){
         db.ref('og/'+rid+'/p'+myUid).set(pad[myUid]);
         playSound("jump");
     }
-    
     document.getElementById('pu').onclick=function(){mvPaddle('up');};
     document.getElementById('pd').onclick=function(){mvPaddle('down');};
     document.getElementById('pl').onclick=function(){mvPaddle('up');};
     document.getElementById('pr').onclick=function(){mvPaddle('down');};
-    
     document.onkeydown = function(e) {
         if(go) return;
         if(e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'w' || e.key === 's') {
@@ -2798,28 +3122,22 @@ function initOnlinePong(opp, rid, maxScoreToWin){
             playSound("jump");
         }
     };
-    
     db.ref('og/'+rid+'/p'+opp).on('value',function(s){
         if(s.val()) pad[opp]=s.val();
     });
-    
     db.ref('og/'+rid+'/ball').on('value',function(s){
         if(s.val()) ball=s.val();
     });
-    
     db.ref('og/'+rid+'/score/'+myUid).on('value',function(s){
         if(s.val() !== null) sc[myUid]=s.val();
         updateScoreDisplay();
         checkWin();
     });
-    
     db.ref('og/'+rid+'/score/'+opp).on('value',function(s){
         if(s.val() !== null) sc[opp]=s.val();
         updateScoreDisplay();
         checkWin();
     });
-    
-    // Слушаем сдачу соперника
     db.ref('og/'+rid+'/surrender').on('value',function(s){
         if(s.val() === opp && !go){
             go = true;
@@ -2828,14 +3146,11 @@ function initOnlinePong(opp, rid, maxScoreToWin){
             clearInterval(gameInterval);
         }
     });
-    
     function updateScoreDisplay() {
         document.getElementById('gameScoreDisplay').textContent = 'Ты: '+sc[myUid]+' | Соперник: '+sc[opp];
     }
-    
     function checkWin() {
-        if(maxScoreToWin === 0) return; // бесконечная игра
-        
+        if(maxScoreToWin === 0) return;
         if(sc[myUid] >= maxScoreToWin) {
             go = true;
             alert('🎉 ПОБЕДА! Вы выиграли до ' + maxScoreToWin + '!');
@@ -2847,25 +3162,19 @@ function initOnlinePong(opp, rid, maxScoreToWin){
             clearInterval(gameInterval);
         }
     }
-    
     function loop(){
         if(go){
             clearInterval(gameInterval);
             return;
         }
-        
         ctx.clearRect(0,0,500,300);
-        
         ctx.fillStyle='#4f4';
         ctx.fillRect(3,pad[myUid].y,8,60);
         ctx.fillStyle='#f44';
         ctx.fillRect(489,pad[opp].y,8,60);
-        
         ball.x+=ball.vx;
         ball.y+=ball.vy;
-        
         if(ball.y<=0||ball.y>=290) ball.vy*=-1;
-        
         if(ball.x<=15 && ball.y>pad[myUid].y-5 && ball.y<pad[myUid].y+65){
             ball.vx=Math.abs(ball.vx);
             playSound("jump");
@@ -2874,7 +3183,6 @@ function initOnlinePong(opp, rid, maxScoreToWin){
             ball.vx=-Math.abs(ball.vx);
             playSound("jump");
         }
-        
         if(ball.x<0){
             sc[opp]++;
             db.ref('og/'+rid+'/score/'+opp).set(sc[opp]);
@@ -2887,19 +3195,16 @@ function initOnlinePong(opp, rid, maxScoreToWin){
             ball={x:250,y:150,vx:-4,vy:3};
             playSound("coin");
         }
-        
         ctx.beginPath();
         ctx.arc(ball.x,ball.y,8,0,Math.PI*2);
         ctx.fillStyle='#ffd700';
         ctx.fill();
-        
         var now = Date.now();
         if(now - lastUpdate > 30){
             lastUpdate = now;
             db.ref('og/'+rid+'/ball').set(ball);
         }
     }
-    
     gameInterval=setInterval(loop,20);
 }
 // ==================== MEMORY ====================
@@ -2961,12 +3266,10 @@ rM();
 // ==================== FLAPPY КУРИЦА ====================
 function initFlappy(){
     document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p><button id="flappySkinBtn" style="margin:5px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
-    
     document.getElementById('flappySkinBtn').onclick = function() {
         var currentSkin = getCurrentGameSkin('flappy');
         openGameSkinShop('flappy', currentSkin, 'restartCurrentGame()');
     };
-    
     createGameRating();
     var c=document.getElementById('fc'),ctx=c.getContext('2d'),bird={x:80,y:250},pipes=[],sc=0,ov=false,vy=0;
     function sp(){var gap=130,top=Math.random()*250+50;return{x:400,top:top,bottom:top+gap};}
@@ -2975,17 +3278,14 @@ function initFlappy(){
     c.onclick=jump;
     c.addEventListener('touchstart',function(e){e.preventDefault();jump();});
     pipes.push(sp());
-    
     function gameLoop(){
         if(ov)return;
         ctx.clearRect(0,0,400,500);
-        
         var grad=ctx.createLinearGradient(0,0,0,500);
         grad.addColorStop(0,'#4a90d9');
         grad.addColorStop(1,'#87CEEB');
         ctx.fillStyle=grad;
         ctx.fillRect(0,0,400,500);
-        
         ctx.fillStyle='rgba(255,255,255,0.7)';
         ctx.beginPath();
         ctx.ellipse(50+(Date.now()*0.02)%400, 60, 35, 25, 0, 0, Math.PI*2);
@@ -2996,7 +3296,6 @@ function initFlappy(){
         ctx.ellipse(300-(Date.now()*0.015)%400, 100, 40, 28, 0, 0, Math.PI*2);
         ctx.ellipse(340-(Date.now()*0.015)%400, 95, 32, 24, 0, 0, Math.PI*2);
         ctx.fill();
-        
         for(var i=pipes.length-1;i>=0;i--){
             pipes[i].x-=2;
             ctx.fillStyle='#2d5a1e';
@@ -3009,26 +3308,21 @@ function initFlappy(){
             if(bird.x+15>pipes[i].x&&bird.x-15<pipes[i].x+45&&(bird.y-15<pipes[i].top||bird.y+15>pipes[i].bottom))endGame();
         }
         if(pipes.length===0||pipes[pipes.length-1].x<250)pipes.push(sp());
-        
         vy+=0.5;
         bird.y+=vy;
         if(bird.y>480||bird.y<0)endGame();
-        
         var flappySkin = getCurrentGameSkin('flappy');
         var birdColor = flappySkin.color || '#FFD700';
         var birdEmoji = flappySkin.emoji || '🐔';
-        
         ctx.fillStyle = birdColor;
         ctx.beginPath();
         ctx.arc(bird.x, bird.y, 14, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = '#cc8800';
         var wingAngle = vy > 0 ? 0.8 : -0.3;
         ctx.beginPath();
         ctx.ellipse(bird.x - 12, bird.y - 2 + (vy * 0.5), 9, 6, wingAngle, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(bird.x + 6, bird.y - 4, 5, 0, Math.PI * 2);
@@ -3037,19 +3331,16 @@ function initFlappy(){
         ctx.beginPath();
         ctx.arc(bird.x + 7, bird.y - 5, 2.5, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(bird.x + 8, bird.y - 6, 1, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.fillStyle = '#ff6600';
         ctx.beginPath();
         ctx.moveTo(bird.x + 12, bird.y - 4);
         ctx.lineTo(bird.x + 19, bird.y - 6);
         ctx.lineTo(bird.x + 13, bird.y + 1);
         ctx.fill();
-        
         ctx.fillStyle = birdColor;
         ctx.beginPath();
         ctx.moveTo(bird.x - 3, bird.y - 13);
@@ -3066,39 +3357,30 @@ function initFlappy(){
         ctx.lineTo(bird.x - 8, bird.y - 20);
         ctx.lineTo(bird.x - 3, bird.y - 12);
         ctx.fill();
-        
         ctx.fillStyle = 'rgba(255,100,100,0.5)';
         ctx.beginPath();
         ctx.arc(bird.x + 10, bird.y + 2, 3, 0, Math.PI * 2);
         ctx.fill();
-        
         ctx.font = '18px Arial';
         ctx.fillStyle = '#000';
         ctx.shadowBlur = 2;
         ctx.fillText(birdEmoji, bird.x - 8, bird.y - 10);
         ctx.shadowBlur = 0;
-        
         ctx.fillStyle = '#000';
         ctx.font = 'bold 24px Arial';
         ctx.fillText(''+sc, 350, 50);
         ctx.fillStyle = '#ffd700';
         ctx.fillText(''+sc, 348, 48);
     }
-    
     function endGame(){
         ov=true;
         clearInterval(gameInterval);
         playSound("hit");
-        
-        // Удаляем старый оверлей если есть
         var existingOverlay = document.querySelector('#gameContent .game-overlay');
         if(existingOverlay) existingOverlay.remove();
-        
-        // Создаём оверлей поверх существующего контента
         var overlay = document.createElement('div');
         overlay.className = 'game-overlay';
         overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + sc + '</div><button id="restartFlappyBtn">🔄 Заново</button>';
-        
         var restartBtn = overlay.querySelector('#restartFlappyBtn');
         restartBtn.onclick = function(e){
             e.stopPropagation();
@@ -3106,16 +3388,13 @@ function initFlappy(){
             document.getElementById('gameContent').innerHTML = '';
             initFlappy();
         };
-        
         document.getElementById('gameContent').appendChild(overlay);
     }
-    
     gameInterval = setInterval(gameLoop, 20);
 }
-// ==================== КУРИНЫЙ ДОЖДЬ (БЕЗ БЕЛЫХ ПОЛОСОК - ВИДНО ТРИ ПОЛОСКИ) ====================
+// ==================== КУРИНЫЙ ДОЖДЬ ====================
 function initChickenRain(){
     document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
-    
     var skinBtn = document.getElementById('chickenRainSkinBtn');
     if(skinBtn) {
         skinBtn.onclick = function() {
@@ -3123,7 +3402,6 @@ function initChickenRain(){
             openGameSkinShop('chickenrain', currentSkin, 'restartCurrentGame()');
         };
     }
-    
     createGameRating();
     var c=document.getElementById('cr'),ctx=c.getContext('2d');
     c.width=400;c.height=500;
@@ -3132,7 +3410,6 @@ function initChickenRain(){
     var score=0;
     var ov=false;
     var particles=[];
-    
     function spawnEgg(){
         if(Math.random()<0.008){
             eggs.push({
@@ -3143,7 +3420,6 @@ function initChickenRain(){
             });
         }
     }
-    
     function addParticle(x,y){
         for(var i=0;i<5;i++){
             particles.push({
@@ -3153,7 +3429,6 @@ function initChickenRain(){
             });
         }
     }
-    
     document.onkeydown=function(e){
         if(e.key==='ArrowLeft') animalX=Math.max(10, animalX-30);
         if(e.key==='ArrowRight') animalX=Math.min(360, animalX+30);
@@ -3161,20 +3436,16 @@ function initChickenRain(){
     };
     document.getElementById('crl').onclick=function(){animalX=Math.max(10, animalX-30); playSound("jump");};
     document.getElementById('crr').onclick=function(){animalX=Math.min(360, animalX+30); playSound("jump");};
-    
     function endGame(){
         ov=true;
         playSound("hit");
         if(score >= 50) progressQuest('score50', score);
         if(score >= 100) progressQuest('score100', score);
-        
         var existingOverlay = document.querySelector('#gameContent .game-overlay');
         if(existingOverlay) existingOverlay.remove();
-        
         var overlay = document.createElement('div');
         overlay.className = 'game-overlay';
         overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + score + '</div><button id="restartChickenBtn">🔄 Заново</button>';
-        
         var restartBtn = overlay.querySelector('#restartChickenBtn');
         restartBtn.onclick = function(e){
             e.stopPropagation();
@@ -3182,24 +3453,18 @@ function initChickenRain(){
             document.getElementById('gameContent').innerHTML = '';
             initChickenRain();
         };
-        
         document.getElementById('gameContent').appendChild(overlay);
     }
-    
     function update(){
         if(ov) return;
-        
         var rainSkin = getCurrentGameSkin('chickenrain');
         var animalEmoji = rainSkin.emoji || '🐩';
-        
         ctx.fillStyle='#2a5a8a';
         ctx.fillRect(0,0,400,500);
-        
         ctx.fillStyle='#4a8a3a';
         ctx.fillRect(0,460,400,40);
         ctx.fillStyle='#6aae5a';
         for(var i=0;i<10;i++) ctx.fillRect(i*40,460,38,10);
-        
         ctx.font = '54px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -3208,16 +3473,13 @@ function initChickenRain(){
         ctx.fillStyle = '#000';
         ctx.fillText(animalEmoji, animalX + 20, 455);
         ctx.shadowBlur = 0;
-        
         for(var i=eggs.length-1;i>=0;i--){
             var e=eggs[i];
             e.y += e.speed;
-            
             if(e.type==='gold') ctx.fillStyle='#FFD700';
             else ctx.fillStyle='#FFF8DC';
             ctx.font='32px Arial';
             ctx.fillText('🥚', e.x, e.y);
-            
             if(e.y+30 > 440 && e.y < 480 && Math.abs(e.x+15 - animalX-20) < 40){
                 eggs.splice(i,1);
                 score += (e.type==='gold' ? 3 : 1);
@@ -3233,25 +3495,21 @@ function initChickenRain(){
                 }
             }
         }
-        
         for(var i=particles.length-1;i>=0;i--){
             particles[i].life -= 0.05;
             ctx.fillStyle='rgba(255,200,0,'+particles[i].life+')';
             ctx.fillRect(particles[i].x, particles[i].y, 4, 4);
             if(particles[i].life <= 0) particles.splice(i,1);
         }
-        
         spawnEgg();
         requestAnimationFrame(update);
     }
-    
     update();
     gameInterval=setInterval(function(){},1000);
 }
-// ==================== РАННЕР С ЖИВОТНЫМИ (высоко, без дрожания) ====================
+// ==================== РАННЕР ====================
 function initRunner(){
     document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p><button id="runnerSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
-    
     var skinBtn = document.getElementById('runnerSkinBtn');
     if(skinBtn) {
         skinBtn.onclick = function() {
@@ -3259,7 +3517,6 @@ function initRunner(){
             openGameSkinShop('runner', currentSkin, 'restartCurrentGame()');
         };
     }
-    
     createGameRating();
     var c = document.getElementById('rc');
     var ctx = c.getContext('2d');
@@ -3269,7 +3526,6 @@ function initRunner(){
     var bgX = 0;
     var cloudOffset = 0;
     var legSwing = 0;
-
     function runnerJump(){
         if(y >= groundY - 10 && !ov){
             vy = -11;
@@ -3277,35 +3533,28 @@ function initRunner(){
         }
     }
     window.runnerJump = runnerJump;
-
     setInterval(function() {
         if(!ov) legSwing = (legSwing + 0.3) % (Math.PI * 2);
     }, 50);
-
     document.onkeydown = function(e){
         if(e.key === ' ' || e.key === 'Space') {
             e.preventDefault();
             runnerJump();
         }
     };
-    
     c.onclick = runnerJump;
     c.addEventListener('touchstart', function(e){
         runnerJump();
     }, {passive: true});
-
     function endGame(){
         ov=true;
         clearInterval(gameInterval);
         playSound("hit");
-        
         var existingOverlay = document.querySelector('#gameContent .game-overlay');
         if(existingOverlay) existingOverlay.remove();
-        
         var overlay = document.createElement('div');
         overlay.className = 'game-overlay';
         overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + score + '</div><button id="restartRunnerBtn">🔄 Заново</button>';
-        
         var restartBtn = overlay.querySelector('#restartRunnerBtn');
         restartBtn.onclick = function(e){
             e.stopPropagation();
@@ -3313,19 +3562,14 @@ function initRunner(){
             document.getElementById('gameContent').innerHTML = '';
             initRunner();
         };
-        
         document.getElementById('gameContent').appendChild(overlay);
     }
-
     function update(){
         if(ov) return;
-
         bgX = (bgX - 2) % 600;
         cloudOffset = (cloudOffset + 0.5) % 600;
-
         ctx.fillStyle = '#87CEEB';
         ctx.fillRect(0, 0, 600, 200);
-
         ctx.fillStyle = 'rgba(255,255,255,0.8)';
         ctx.beginPath();
         ctx.ellipse(100 + cloudOffset, 40, 35, 25, 0, 0, Math.PI * 2);
@@ -3341,21 +3585,17 @@ function initRunner(){
         ctx.ellipse(550 + cloudOffset * 0.3, 25, 30, 22, 0, 0, Math.PI * 2);
         ctx.ellipse(580 + cloudOffset * 0.3, 22, 25, 18, 0, 0, Math.PI * 2);
         ctx.fill();
-
         ctx.fillStyle = '#4CAF50';
         ctx.fillRect(0, groundY, 600, 40);
         ctx.fillStyle = '#388E3C';
         for(var i = 0; i < 10; i++) {
             ctx.fillRect(i * 60, groundY + 5, 30, 5);
         }
-
         var runnerSkin = getCurrentGameSkin('runner');
         var animalEmoji = runnerSkin.emoji || '🦍';
-        
         ctx.font = '52px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
         ctx.save();
         ctx.translate(55, y + 15);
         ctx.fillStyle = '#000';
@@ -3364,21 +3604,17 @@ function initRunner(){
         ctx.fillText(animalEmoji, 0, 0);
         ctx.shadowBlur = 0;
         ctx.restore();
-
         if(Math.random() < 0.025 && obstacles.length < 2){
             obstacles.push({x: 600, y: groundY - 18, width: 28, height: 28});
         }
-
         for(var i = 0; i < obstacles.length; i++){
             ctx.font = '32px Arial';
             ctx.fillStyle = '#888';
             ctx.fillText('🪨', obstacles[i].x, obstacles[i].y + 25);
             obstacles[i].x -= 8;
-
             if(obstacles[i].x < 58 && obstacles[i].x + 25 > 52 && y + 32 > obstacles[i].y + 5 && y + 15 < obstacles[i].y + 25){
                 endGame();
             }
-
             if(obstacles[i].x + 28 < 0){
                 obstacles.splice(i, 1);
                 score++;
@@ -3387,7 +3623,6 @@ function initRunner(){
                 i--;
             }
         }
-
         vy += 0.8;
         y += vy;
         if(y >= groundY - 10){
@@ -3398,46 +3633,38 @@ function initRunner(){
             y = 0;
             vy = 0;
         }
-
         ctx.fillStyle = '#000';
         ctx.font = 'bold 18px Arial';
         ctx.fillText('Счёт: ' + score, 500, 30);
         requestAnimationFrame(update);
     }
-    
     update();
     gameInterval = setInterval(function(){}, 1000);
 }
 // ==================== ЗМЕЙКА, ТЕТРИС, УГАДАЙ ЧИСЛО, КАМЕНЬ-НОЖНИЦЫ ====================
 function initSnake(){
     document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div><button id="snakeSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
-    
     document.getElementById('snakeSkinBtn').onclick = function() {
         var currentSkin = getCurrentGameSkin('snake');
         openGameSkinShop('snake', currentSkin, 'restartCurrentGame()');
     };
-    
     createGameRating();
     var c=document.getElementById('sc'),ctx=c.getContext('2d'),sn=[{x:200,y:200}],food=rf(),dir={x:20,y:0},sc=0,ov=false;
-    
     function rf(){
         var maxCells = 20;
         var cellX = Math.floor(Math.random() * maxCells);
         var cellY = Math.floor(Math.random() * maxCells);
         return {x: cellX * 20, y: cellY * 20};
     }
-    
     function cd(nd){
         if(ov||(nd.x===-dir.x&&nd.y===-dir.y)||(nd.x!==0&&dir.x!==0)||(nd.y!==0&&dir.y!==0))return;
         dir=nd;
         playSound("jump");
     }
-    
     document.getElementById('su').onclick=function(){cd({x:0,y:-20});};
     document.getElementById('sd').onclick=function(){cd({x:0,y:20});};
     document.getElementById('sl').onclick=function(){cd({x:-20,y:0});};
     document.getElementById('sr').onclick=function(){cd({x:20,y:0});};
-    
     document.onkeydown=function(e){
         if(e.key==='ArrowLeft')cd({x:-20,y:0});
         if(e.key==='ArrowRight')cd({x:20,y:0});
@@ -3445,19 +3672,15 @@ function initSnake(){
         if(e.key==='ArrowDown')cd({x:0,y:20});
         e.preventDefault();
     };
-    
     function endGame(){
         ov=true;
         clearInterval(gameInterval);
         playSound("hit");
-        
         var existingOverlay = document.querySelector('#gameContent .game-overlay');
         if(existingOverlay) existingOverlay.remove();
-        
         var overlay = document.createElement('div');
         overlay.className = 'game-overlay';
         overlay.innerHTML = '<div style="font-size:24px; color:#ffd700; margin-bottom:15px">🏆 Счёт: ' + sc + '</div><button id="restartSnakeBtn">🔄 Заново</button>';
-        
         var restartBtn = overlay.querySelector('#restartSnakeBtn');
         restartBtn.onclick = function(e){
             e.stopPropagation();
@@ -3465,10 +3688,8 @@ function initSnake(){
             document.getElementById('gameContent').innerHTML = '';
             initSnake();
         };
-        
         document.getElementById('gameContent').appendChild(overlay);
     }
-    
     function gameLoop(){
         if(ov)return;
         var h={x:sn[0].x+dir.x,y:sn[0].y+dir.y};
@@ -3489,14 +3710,11 @@ function initSnake(){
             }
             food = newFood;
         }else sn.pop();
-        
         var snakeSkin = getCurrentGameSkin('snake');
         var snakeColor = snakeSkin.color || '#4CAF50';
         var snakeEmoji = snakeSkin.emoji || '🐍';
-        
         ctx.fillStyle = '#0a0a0a';
         ctx.fillRect(0, 0, 400, 400);
-        
         ctx.fillStyle = '#ff3333';
         ctx.beginPath();
         ctx.arc(food.x + 10, food.y + 10, 9, 0, Math.PI * 2);
@@ -3513,12 +3731,10 @@ function initSnake(){
         ctx.beginPath();
         ctx.ellipse(food.x + 15, food.y + 4, 4, 6, -0.5, 0, Math.PI * 2);
         ctx.fill();
-        
         for(var i = 0; i < sn.length; i++) {
             if(i === 0) {
                 ctx.fillStyle = snakeColor;
                 ctx.fillRect(sn[i].x, sn[i].y, 18, 18);
-                
                 ctx.fillStyle = '#fff';
                 if(dir.x === 20) {
                     ctx.fillRect(sn[i].x + 13, sn[i].y + 4, 4, 4);
@@ -3545,35 +3761,29 @@ function initSnake(){
                     ctx.fillRect(sn[i].x + 5, sn[i].y + 14, 2, 2);
                     ctx.fillRect(sn[i].x + 12, sn[i].y + 14, 2, 2);
                 }
-                
                 ctx.fillStyle = '#ff4444';
                 if(dir.x === 20) ctx.fillRect(sn[i].x + 18, sn[i].y + 7, 4, 3);
                 else if(dir.x === -20) ctx.fillRect(sn[i].x - 2, sn[i].y + 7, 4, 3);
                 else if(dir.y === -20) ctx.fillRect(sn[i].x + 7, sn[i].y - 2, 3, 4);
                 else ctx.fillRect(sn[i].x + 7, sn[i].y + 18, 3, 4);
-                
                 ctx.font = '12px Arial';
                 ctx.fillStyle = '#000';
                 ctx.fillText(snakeEmoji, sn[i].x + 4, sn[i].y + 14);
-                
             } else {
                 var gradient = ctx.createLinearGradient(sn[i].x, sn[i].y, sn[i].x+18, sn[i].y+18);
                 gradient.addColorStop(0, snakeColor);
                 gradient.addColorStop(1, '#aa8800');
                 ctx.fillStyle = gradient;
                 ctx.fillRect(sn[i].x, sn[i].y, 18, 18);
-                
                 ctx.fillStyle = 'rgba(0,0,0,0.2)';
                 ctx.fillRect(sn[i].x + 5, sn[i].y + 5, 3, 3);
                 ctx.fillRect(sn[i].x + 12, sn[i].y + 12, 3, 3);
             }
         }
-        
         ctx.strokeStyle = '#aa6600';
         ctx.lineWidth = 1;
         ctx.strokeRect(sn[0].x, sn[0].y, 18, 18);
     }
-    
     gameInterval = setInterval(gameLoop, 100);
 }
 function initTetris(){document.getElementById('gameContent').innerHTML='<canvas id="tc" width="300" height="480" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="tu">↑</button><div></div><button class="ds4-btn" id="tl">←</button><div></div><button class="ds4-btn" id="tr">→</button><div></div><button class="ds4-btn" id="td">↓</button><div></div></div>';createGameRating();var c=document.getElementById('tc'),ctx=c.getContext('2d'),COLS=10,ROWS=15,BLOCK=30;c.width=COLS*BLOCK;c.height=ROWS*BLOCK;var board=Array(ROWS).fill().map(function(){return Array(COLS).fill(0);});var shapes=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,0,0],[1,1,1]]];var piece=newPiece(),sc=0,ov=false,last=Date.now();function newPiece(){var s=shapes[Math.floor(Math.random()*shapes.length)];return{shape:s,x:Math.floor(COLS/2)-Math.floor(s[0].length/2),y:0};}function collide(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){if(piece.y+y>=ROWS||piece.x+x<0||piece.x+x>=COLS)return true;if(piece.y+y>=0&&board[piece.y+y][piece.x+x])return true;}return false;}function merge(){for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x])board[piece.y+y][piece.x+x]=1;}function rotate(){var rot=piece.shape[0].map(function(_,i){return piece.shape.map(function(r){return r[i];}).reverse();});var prev=piece.shape;piece.shape=rot;if(collide())piece.shape=prev;else playSound("jump");}function clearLines(){for(var y=ROWS-1;y>=0;y--){if(board[y].every(function(c){return c;})){board.splice(y,1);board.unshift(Array(COLS).fill(0));sc+=100;playSound("coin");y++;}}document.getElementById('gameScoreDisplay').textContent='Счёт: '+sc;}function drop(){piece.y++;if(collide()){piece.y--;merge();clearLines();piece=newPiece();if(collide())end();playSound("hit");}last=Date.now();}function ml(){piece.x--;if(collide())piece.x++;else playSound("jump");}function mr(){piece.x++;if(collide())piece.x--;else playSound("jump");}
@@ -3586,21 +3796,16 @@ function end(){
     ov=true;
     clearInterval(gameInterval);
     playSound("hit");
-    
-    // Создаём центрированный контейнер
     var container = document.createElement('div');
     container.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; background:rgba(0,0,0,0.85); padding:25px 35px; border-radius:20px; border:2px solid #ffd700; z-index:100; min-width:200px;';
-    
     var scoreText = document.createElement('p');
     scoreText.textContent = '🏆 Счёт: ' + sc;
     scoreText.style.cssText = 'font-size:24px; color:#ffd700; margin-bottom:15px;';
-    
     var button = document.createElement('button');
     button.textContent = '🔄 Заново';
     button.style.cssText = 'background:#ffd700; color:#000; font-size:18px; padding:10px 30px; border:none; border-radius:40px; cursor:pointer; font-weight:bold; margin-top:10px;';
     button.onclick = function(){
         document.getElementById('gameContent').innerHTML = '';
-        // Вызываем инициализацию нужной игры
         if(currentGame === 'snake') initSnake();
         else if(currentGame === 'tetris') initTetris();
         else if(currentGame === 'runner') initRunner();
@@ -3608,25 +3813,17 @@ function end(){
         else if(currentGame === 'chickenrain') initChickenRain();
         else if(currentGame === 'memory') initMemory();
         else if(currentGame === 'shooter') initShooter();
-        // ... добавьте другие игры
     };
-    
     container.appendChild(scoreText);
     container.appendChild(button);
-    
-    // Очищаем контент и добавляем центрированную кнопку
     document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameContent').style.position = 'relative';
     document.getElementById('gameContent').style.minHeight = '400px';
     document.getElementById('gameContent').appendChild(container);
-    
-    // Убираем alert, чтобы не мешал
-    // alert('Счёт: '+sc); // можно закомментировать или оставить
 }
 requestAnimationFrame(loop);}
 function initGuess(){createGameRating();var n=Math.floor(Math.random()*100)+1,a=0;document.getElementById('gameContent').innerHTML='<p>Угадай число 1-100!</p><input id="gi" type="number"><br><button onclick="guessClick()">Угадать</button><p id="gh"></p>';window.guessClick=function(){var g=parseInt(document.getElementById('gi').value);if(!g)return;a++;playSound("jump");if(g===n){alert('Победа! '+a+' попыток!');addEggs(5,'Победа!');}else document.getElementById('gh').textContent=g<n?'🔺 Больше!':'🔻 Меньше!';document.getElementById('gameScoreDisplay').textContent='Попыток: '+a;};}
 function initRPS(){createGameRating();var sc={p:0,b:0};document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center"><button onclick="rpsClick(0)" style="font-size:22px;padding:18px">🪨</button><button onclick="rpsClick(1)" style="font-size:22px;padding:18px">📄</button><button onclick="rpsClick(2)" style="font-size:22px;padding:18px">✂️</button></div><p id="rr"></p>';window.rpsClick=function(p){var bot=Math.floor(Math.random()*3);playSound("jump");if(p===bot)document.getElementById('rr').textContent='Ничья!';else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){sc.p++;document.getElementById('rr').textContent='Ты победил!';addEggs(2,'Победа!');}else{sc.b++;document.getElementById('rr').textContent='Бот победил!';}document.getElementById('gameScoreDisplay').textContent='Ты: '+sc.p+' | Бот: '+sc.b;};}
-
 
 var savedTama=localStorage.getItem('tildochka_tamagotchi');
 if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamagotchiData.isAlive)startTamagotchiLoop();}catch(e){}}
@@ -3639,17 +3836,14 @@ var myFriends = [];
 var friendRequests = [];
 
 function loadFriends() {
-    // Загружаем список друзей
     db.ref('users/' + myUid + '/friends').on('value', function(snap) {
         myFriends = snap.val() || [];
         var container = document.getElementById('friendsList');
         if(!container) return;
-        
         if(myFriends.length === 0) {
             container.innerHTML = '<p style="color:#888">У тебя пока нет друзей. Добавь кого-нибудь!</p>';
             return;
         }
-        
         var html = '';
         for(var i = 0; i < myFriends.length; i++) {
             var friend = myFriends[i];
@@ -3661,9 +3855,7 @@ function loadFriends() {
         }
         container.innerHTML = html;
     });
-    
-    // Загружаем заявки в друзья (ТОЛЬКО ОДИН РАЗ)
-    db.ref('users/' + myUid + '/friendRequests').off(); // Отключаем старые
+    db.ref('users/' + myUid + '/friendRequests').off();
     db.ref('users/' + myUid + '/friendRequests').on('value', function(snap) {
         var requests = [];
         snap.forEach(function(child) {
@@ -3675,15 +3867,12 @@ function loadFriends() {
             });
         });
         friendRequests = requests;
-        
         var container = document.getElementById('friendRequests');
         if(!container) return;
-        
         if(requests.length === 0) {
             container.innerHTML = '<p style="color:#888">Нет заявок</p>';
             return;
         }
-        
         var html = '';
         for(var i = 0; i < requests.length; i++) {
             var req = requests[i];
@@ -3699,7 +3888,6 @@ function loadFriends() {
     });
 }
 
-// Добавить друга
 function addFriend() {
     var friendName = document.getElementById('friendNameInput').value.trim();
     if(!friendName) {
@@ -3710,19 +3898,14 @@ function addFriend() {
         alert('Нельзя добавить самого себя');
         return;
     }
-    
-    // Показываем, что идёт поиск
     var btn = document.querySelector('#friends-screen button');
     if(btn) btn.disabled = true;
-    
     db.ref('users').orderByChild('name').equalTo(friendName).once('value', function(snap) {
         var found = false;
         snap.forEach(function(child) {
             found = true;
             var friendUid = child.key;
             var friendData = child.val();
-            
-            // Проверяем, не отправляли ли уже заявку
             db.ref('users/' + friendUid + '/friendRequests').once('value', function(reqSnap) {
                 var alreadySent = false;
                 reqSnap.forEach(function(reqChild) {
@@ -3735,8 +3918,6 @@ function addFriend() {
                     if(btn) btn.disabled = false;
                     return;
                 }
-                
-                // Отправляем заявку
                 db.ref('users/' + friendUid + '/friendRequests').push({
                     uid: myUid,
                     name: myName,
@@ -3762,19 +3943,13 @@ function addFriend() {
     });
 }
 
-// Принять заявку
 function acceptFriend(uid, requestId) {
-    // Получаем данные пользователя
     db.ref('users/' + uid).once('value', function(snap) {
         var userData = snap.val();
         if(!userData) return;
-        
-        // Добавляем друга в свой список
         var newFriend = { uid: uid, name: userData.name };
         var updatedFriends = myFriends.concat([newFriend]);
         db.ref('users/' + myUid + '/friends').set(updatedFriends);
-        
-        // Добавляем себя в список друзей того пользователя
         db.ref('users/' + uid + '/friends').once('value', function(friendSnap) {
             var theirFriends = friendSnap.val() || [];
             var alreadyFriend = theirFriends.some(f => f.uid === myUid);
@@ -3783,48 +3958,39 @@ function acceptFriend(uid, requestId) {
                 db.ref('users/' + uid + '/friends').set(theirFriends);
             }
         });
-        
-        // Удаляем заявку
         db.ref('users/' + myUid + '/friendRequests/' + requestId).remove();
-        
         alert('🎉 Ты и ' + userData.name + ' теперь друзья!');
-        loadFriends(); // Обновляем список
+        loadFriends();
     });
 }
 
-// Отклонить заявку
 function declineFriend(requestId) {
     db.ref('users/' + myUid + '/friendRequests/' + requestId).remove();
     alert('❌ Заявка отклонена');
     loadFriends();
 }
 
-// Отправить подарок
 function sendGift(friendUid, friendName) {
     var amount = parseInt(prompt('Сколько яиц отправить? (от 1 до ' + myEggs + ')', '5'));
     if(isNaN(amount) || amount < 1 || amount > myEggs) {
         alert('Некорректное количество');
         return;
     }
-    
     if(confirm('Отправить ' + amount + ' яиц пользователю ' + friendName + '?')) {
         myEggs -= amount;
         localStorage.setItem('tildochka_eggs', myEggs);
         document.getElementById('headerEggs').textContent = myEggs;
         db.ref('users/' + myUid).update({ eggs: myEggs });
-        
         db.ref('users/' + friendUid + '/gifts').push({
             from: myName,
             amount: amount,
             ts: Date.now()
         });
-        
         alert('🎁 Подарок отправлен!');
         progressQuest('sendGift', 1);
     }
 }
 
-// Получить подарки
 function loadGifts() {
     db.ref('users/' + myUid + '/gifts').on('child_added', function(snap) {
         var gift = snap.val();
@@ -3842,15 +4008,12 @@ function loadGifts() {
     });
 }
 
-// Уведомление о новых заявках
 function setupFriendNotifications() {
     db.ref('users/' + myUid + '/friendRequests').on('child_added', function(snap) {
         var req = snap.val();
         if(req && req.name && req.uid !== myUid) {
-            // Показываем уведомление
             setTimeout(function() {
                 alert('📨 Новая заявка в друзья от ' + req.name + '!');
-                // Если экран друзей открыт, обновляем
                 if(document.getElementById('friends-screen') && document.getElementById('friends-screen').classList.contains('active')) {
                     loadFriends();
                 }
@@ -3859,19 +4022,16 @@ function setupFriendNotifications() {
     });
 }
 
-// Функция для показа экрана друзей
 function showFriendsScreen() {
     showScreen('friends');
     loadFriends();
-                 }
+}
 // ==================== ЛИДЕРЫ ПО ИГРАМ ====================
 function loadGameLeaders() {
     var game = document.getElementById('gameSelect').value;
     var container = document.getElementById('gameLeadersList');
     if(!container) return;
-    
     container.innerHTML = '<p style="text-align:center">⏳ Загрузка...</p>';
-    
     db.ref('gameRatings/' + game).orderByChild('score').limitToLast(10).once('value', function(snap) {
         var leaders = [];
         snap.forEach(function(child) {
@@ -3881,19 +4041,14 @@ function loadGameLeaders() {
                 rating: child.val().rating || 0
             });
         });
-        
-        // Сортируем по убыванию счета
         leaders.sort(function(a, b) { return b.score - a.score; });
-        
         if(leaders.length === 0) {
             container.innerHTML = '<p style="color:#888;text-align:center">Нет результатов</p>';
             return;
         }
-        
         var html = '<div style="background:rgba(0,0,0,.3);border-radius:12px;overflow:hidden">';
         html += '<div style="display:grid;grid-template-columns:50px 1fr 80px 80px;background:#ffd700;color:#000;padding:10px;font-weight:bold">';
         html += '<div>#</div><div>Игрок</div><div>Счёт</div><div>⭐ Рейтинг</div></div>';
-        
         for(var i = 0; i < leaders.length; i++) {
             var l = leaders[i];
             var medal = '';
@@ -3912,7 +4067,6 @@ function loadGameLeaders() {
     });
 }
 
-// Функция для показа экрана лидеров по играм
 function showGamesLBScreen() {
     showScreen('gamesLB');
     loadGameLeaders();
@@ -3938,13 +4092,11 @@ function initShooter(){
         <p style="text-align:center;color:#ffd700;margin-top:8px">🎮 Стрелки на клавиатуре | Клик по цели = выстрел | +30 сек за 80 очков! | 10 промахов = проигрыш</p>
     `;
     createGameRating();
-    
     var canvas = document.getElementById('shooterCanvas');
     var ctx = canvas.getContext('2d');
     canvas.width = 900;
     canvas.height = 550;
-    
-    var gameScore = 0;      // ← ОСНОВНОЙ СЧЁТ (отображается в gameScoreDisplay)
+    var gameScore = 0;
     var shots = 0;
     var misses = 0;
     var maxMisses = 10;
@@ -3953,20 +4105,14 @@ function initShooter(){
     var timeLeft = 60;
     var timeBonusGiven = false;
     var timerInterval = null;
-    
-    // Обновляем ОСНОВНОЙ счёт (справа вверху, как в других играх)
     function updateMainScore() {
         document.getElementById('gameScoreDisplay').textContent = 'Счёт: ' + gameScore;
     }
-    
-    // Обновляем счётчики внутри игры
     function updateGameUI() {
         document.getElementById('shotsCount').textContent = shots;
         document.getElementById('missesCount').textContent = misses + '/' + maxMisses;
         document.getElementById('timerCount').textContent = timeLeft;
     }
-    
-    // Таймер
     function startTimer() {
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(function() {
@@ -3974,7 +4120,6 @@ function initShooter(){
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
                 gameActive = false;
-                // Там где игра окончена (победа или проигрыш), добавь:
                 if(gameScore >= 50) progressQuest('score50', gameScore);
                 if(gameScore >= 100) progressQuest('score100', gameScore);
                 alert('⏰ Время вышло! Игра окончена! Счёт: ' + gameScore);
@@ -3984,8 +4129,6 @@ function initShooter(){
             }
         }, 1000);
     }
-    
-    // Бонус за 80 очков
     function checkTimeBonus() {
         if(!timeBonusGiven && gameScore >= 80) {
             timeBonusGiven = true;
@@ -3998,8 +4141,6 @@ function initShooter(){
             }, 100);
         }
     }
-    
-    // Облака
     var clouds = [
         { x: 50, y: 60, speed: 0.3, size: 45 },
         { x: 250, y: 90, speed: 0.5, size: 55 },
@@ -4009,11 +4150,8 @@ function initShooter(){
         { x: 150, y: 130, speed: 0.6, size: 40 },
         { x: 550, y: 120, speed: 0.35, size: 48 }
     ];
-    
     var aimX = canvas.width/2;
     var aimY = canvas.height/2;
-    
-    // Мишени
     var targets = [];
     var shelvesData = [
         { x: 120, y: 250, shelfY: 270, target: { points: 15, x: 135, y: 235, hit: false, size: 45 } },
@@ -4022,8 +4160,6 @@ function initShooter(){
         { x: 720, y: 180, shelfY: 200, target: { points: 15, x: 735, y: 165, hit: false, size: 45 } },
         { x: 420, y: 400, shelfY: 420, target: { points: 20, x: 435, y: 385, hit: false, size: 48 } }
     ];
-    
-    // ЛЕТАЮЩИЕ ЖИВОТНЫЕ
     var flyingAnimals = [];
     var flyingAnimalTypes = [
         { emoji: '🦟', points: 5, speed: 3.2, size: 25, health: 1, chance: 0.1 },
@@ -4041,8 +4177,6 @@ function initShooter(){
         { emoji: '🦤', points: 35, speed: 1.3, size: 40, health: 3, chance: 0.04 },
         { emoji: '🐉', points: 50, speed: 2.0, size: 45, health: 4, chance: 0.02 }
     ];
-    
-    // НАЗЕМНЫЕ ЖИВОТНЫЕ
     var groundAnimals = [];
     var groundAnimalTypes = [
         { emoji: '🐁', points: 8, speed: 2.0, size: 30, health: 1, chance: 0.1 },
@@ -4060,9 +4194,7 @@ function initShooter(){
         { emoji: '🐅', points: 28, speed: 1.9, size: 40, health: 3, chance: 0.05 },
         { emoji: '🦍', points: 25, speed: 1.6, size: 42, health: 3, chance: 0.06 }
     ];
-    
     var explosions = [];
-    
     function initTargets() {
         targets = [];
         for(var i = 0; i < shelvesData.length; i++) {
@@ -4078,7 +4210,6 @@ function initShooter(){
             });
         }
     }
-    
     function spawnFlyingAnimal() {
         if(!gameActive) return;
         if(flyingAnimals.length >= 3) return;
@@ -4106,7 +4237,6 @@ function initShooter(){
             direction: Math.random() > 0.5 ? 1 : -1
         });
     }
-    
     function spawnGroundAnimal() {
         if(!gameActive) return;
         if(groundAnimals.length >= 3) return;
@@ -4133,13 +4263,10 @@ function initShooter(){
             direction: Math.random() > 0.5 ? 1 : -1
         });
     }
-    
     function shootAt(x, y) {
         if(!gameActive) return;
         shots++;
         var hitSomething = false;
-        
-        // Мишени
         for(var i = 0; i < targets.length; i++) {
             var t = targets[i];
             if(t.hit) continue;
@@ -4156,8 +4283,6 @@ function initShooter(){
                 break;
             }
         }
-        
-        // Летающие животные
         if(!hitSomething) {
             for(var i = 0; i < flyingAnimals.length; i++) {
                 var a = flyingAnimals[i];
@@ -4181,8 +4306,6 @@ function initShooter(){
                 }
             }
         }
-        
-        // Наземные животные
         if(!hitSomething) {
             for(var i = 0; i < groundAnimals.length; i++) {
                 var a = groundAnimals[i];
@@ -4206,40 +4329,34 @@ function initShooter(){
                 }
             }
         }
-        
         if(!hitSomething) {
             misses++;
             playSound("hit");
             createMissEffect(x, y);
             if(misses >= maxMisses) {
                 gameActive = false;
-if(timerInterval) clearInterval(timerInterval);
-
-// Центрированная панель окончания
-var endPanel = document.createElement('div');
-endPanel.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); padding:20px 30px; border-radius:20px; border:2px solid #ffd700; text-align:center; z-index:200;';
-endPanel.innerHTML = '<div style="font-size:28px; margin-bottom:10px">💀 ИГРА ОКОНЧЕНА</div><div style="font-size:22px; color:#ffd700; margin-bottom:15px">Счёт: ' + gameScore + '</div>';
-var restartBtn = document.createElement('button');
-restartBtn.textContent = '🔫 Новая игра';
-restartBtn.style.cssText = 'background:#ffd700; color:#000; font-size:16px; padding:8px 25px; border:none; border-radius:30px; cursor:pointer; font-weight:bold;';
-restartBtn.onclick = function() {
-    document.getElementById('gameContent').innerHTML = '';
-    initShooter();
-};
-endPanel.appendChild(restartBtn);
-document.getElementById('gameContent').appendChild(endPanel);
+                if(timerInterval) clearInterval(timerInterval);
+                var endPanel = document.createElement('div');
+                endPanel.style.cssText = 'position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.9); padding:20px 30px; border-radius:20px; border:2px solid #ffd700; text-align:center; z-index:200;';
+                endPanel.innerHTML = '<div style="font-size:28px; margin-bottom:10px">💀 ИГРА ОКОНЧЕНА</div><div style="font-size:22px; color:#ffd700; margin-bottom:15px">Счёт: ' + gameScore + '</div>';
+                var restartBtn = document.createElement('button');
+                restartBtn.textContent = '🔫 Новая игра';
+                restartBtn.style.cssText = 'background:#ffd700; color:#000; font-size:16px; padding:8px 25px; border:none; border-radius:30px; cursor:pointer; font-weight:bold;';
+                restartBtn.onclick = function() {
+                    document.getElementById('gameContent').innerHTML = '';
+                    initShooter();
+                };
+                endPanel.appendChild(restartBtn);
+                document.getElementById('gameContent').appendChild(endPanel);
             }
         }
-        
         updateGameUI();
     }
-    
     function checkWin() {
         var allTargetsHit = targets.every(t => t.hit);
         if(allTargetsHit && flyingAnimals.length === 0 && groundAnimals.length === 0 && gameActive) {
             gameActive = false;
             if(timerInterval) clearInterval(timerInterval);
-            // Там где игра окончена (победа или проигрыш), добавь:
             if(gameScore >= 50) progressQuest('score50', gameScore);
             if(gameScore >= 100) progressQuest('score100', gameScore);
             setTimeout(function() {
@@ -4247,7 +4364,6 @@ document.getElementById('gameContent').appendChild(endPanel);
             }, 100);
         }
     }
-    
     function createBonusEffect(text, x, y) {
         explosions.push({ x: x, y: y, text: text, type: 'bonus', life: 1.0 });
     }
@@ -4260,7 +4376,6 @@ document.getElementById('gameContent').appendChild(endPanel);
     function createMissEffect(x, y) {
         explosions.push({ x: x, y: y, type: 'miss', life: 0.4 });
     }
-    
     window.moveAimTir = function(dir) {
         if(!gameActive) return;
         var step = 20;
@@ -4269,12 +4384,10 @@ document.getElementById('gameContent').appendChild(endPanel);
         if(dir === 'up') aimY = Math.max(30, aimY - step);
         if(dir === 'down') aimY = Math.min(canvas.height - 30, aimY + step);
     };
-    
     window.shootNowTir = function() {
         if(!gameActive) return;
         shootAt(aimX, aimY);
     };
-    
     window.resetGameTir = function() {
         if(timerInterval) clearInterval(timerInterval);
         gameScore = 0;
@@ -4292,32 +4405,30 @@ document.getElementById('gameContent').appendChild(endPanel);
         startTimer();
         playSound("jump");
     };
-    
     var keyHandler = function(e) {
-    if(!gameActive) return;
-    if(e.key === 'ArrowLeft') {
-        e.preventDefault();
-        moveAimTir('left');
-    }
-    if(e.key === 'ArrowRight') {
-        e.preventDefault();
-        moveAimTir('right');
-    }
-    if(e.key === 'ArrowUp') {
-        e.preventDefault();
-        moveAimTir('up');
-    }
-    if(e.key === 'ArrowDown') {
-        e.preventDefault();
-        moveAimTir('down');
-    }
-    if(e.key === ' ' || e.key === 'Space') { 
-        e.preventDefault(); 
-        shootNowTir(); 
-    }
-};
+        if(!gameActive) return;
+        if(e.key === 'ArrowLeft') {
+            e.preventDefault();
+            moveAimTir('left');
+        }
+        if(e.key === 'ArrowRight') {
+            e.preventDefault();
+            moveAimTir('right');
+        }
+        if(e.key === 'ArrowUp') {
+            e.preventDefault();
+            moveAimTir('up');
+        }
+        if(e.key === 'ArrowDown') {
+            e.preventDefault();
+            moveAimTir('down');
+        }
+        if(e.key === ' ' || e.key === 'Space') { 
+            e.preventDefault(); 
+            shootNowTir(); 
+        }
+    };
     document.addEventListener('keydown', keyHandler);
-    
     canvas.onclick = function(e) {
         if(!gameActive) return;
         var rect = canvas.getBoundingClientRect();
@@ -4327,7 +4438,6 @@ document.getElementById('gameContent').appendChild(endPanel);
         var clickY = (e.clientY - rect.top) * scaleY;
         shootAt(clickX, clickY);
     };
-    
     canvas.ontouchstart = function(e) {
         e.preventDefault();
         var rect = canvas.getBoundingClientRect();
@@ -4338,19 +4448,16 @@ document.getElementById('gameContent').appendChild(endPanel);
         var touchY = (touch.clientY - rect.top) * scaleY;
         shootAt(touchX, touchY);
     };
-    
     setInterval(function() {
         if(gameActive && flyingAnimals.length < 3 && Math.random() < 0.35) {
             spawnFlyingAnimal();
         }
     }, 1500);
-    
     setInterval(function() {
         if(gameActive && groundAnimals.length < 3 && Math.random() < 0.3) {
             spawnGroundAnimal();
         }
     }, 2000);
-    
     setInterval(function() {
         if(!gameActive) return;
         for(var i = 0; i < flyingAnimals.length; i++) {
@@ -4373,21 +4480,17 @@ document.getElementById('gameContent').appendChild(endPanel);
             }
         }
     }, 35);
-    
     initTargets();
     startTimer();
     updateMainScore();
     updateGameUI();
-    
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         grad.addColorStop(0, '#2a6a8a');
         grad.addColorStop(1, '#6a9aaa');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
         for(var i = 0; i < clouds.length; i++) {
             var c = clouds[i];
             c.x += c.speed;
@@ -4399,25 +4502,21 @@ document.getElementById('gameContent').appendChild(endPanel);
             ctx.ellipse(c.x - c.size * 0.5, c.y + 5, c.size * 0.6, c.size * 0.5, 0, 0, Math.PI * 2);
             ctx.fill();
         }
-        
         ctx.fillStyle = '#3a6a2a';
         ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
         ctx.fillStyle = '#5a9a4a';
         for (var i = 0; i < canvas.width / 40; i++) {
             ctx.fillRect(i * 40, canvas.height - 83, 35, 6);
         }
-        
         for (var i = 0; i < shelvesData.length; i++) {
             var s = shelvesData[i];
             var target = targets[i];
-            
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(s.x - 8, s.shelfY, 16, canvas.height - s.shelfY);
             ctx.fillStyle = '#A0522D';
             ctx.fillRect(s.x - 35, s.shelfY - 8, 70, 12);
             ctx.fillStyle = '#CD853F';
             ctx.fillRect(s.x - 33, s.shelfY - 8, 66, 6);
-            
             if (!target.hit) {
                 for (var ring = 0; ring < 4; ring++) {
                     ctx.beginPath();
@@ -4441,7 +4540,6 @@ document.getElementById('gameContent').appendChild(endPanel);
                 ctx.fillText('💥', target.x - 18, target.y + 10);
             }
         }
-        
         for (var i = 0; i < flyingAnimals.length; i++) {
             var a = flyingAnimals[i];
             ctx.font = a.width + 'px Arial';
@@ -4459,7 +4557,6 @@ document.getElementById('gameContent').appendChild(endPanel);
             ctx.font = 'bold 12px Arial';
             ctx.fillText('+' + a.points, a.x + 5, a.y - 10);
         }
-        
         for (var i = 0; i < groundAnimals.length; i++) {
             var a = groundAnimals[i];
             ctx.font = a.width + 'px Arial';
@@ -4475,7 +4572,6 @@ document.getElementById('gameContent').appendChild(endPanel);
             ctx.font = 'bold 12px Arial';
             ctx.fillText('+' + a.points, a.x + 5, a.y - 10);
         }
-        
         for (var i = 0; i < explosions.length; i++) {
             var e = explosions[i];
             var alpha = e.life;
@@ -4506,7 +4602,6 @@ document.getElementById('gameContent').appendChild(endPanel);
                 i--;
             }
         }
-        
         ctx.beginPath();
         ctx.arc(aimX, aimY, 16, 0, Math.PI * 2);
         ctx.strokeStyle = 'rgba(255,0,0,0.9)';
@@ -4522,64 +4617,48 @@ document.getElementById('gameContent').appendChild(endPanel);
         ctx.moveTo(aimX, aimY + 28);
         ctx.lineTo(aimX, aimY + 10);
         ctx.stroke();
-        
         ctx.beginPath();
         ctx.arc(aimX, aimY, 5, 0, Math.PI * 2);
         ctx.fillStyle = 'rgba(255,0,0,0.6)';
         ctx.fill();
-        
         frame++;
         requestAnimationFrame(animate);
     }
-    
     animate();
-    
     var oldStop = stopGame;
     window.stopGame = function() {
         if(timerInterval) clearInterval(timerInterval);
         document.removeEventListener('keydown', keyHandler);
         if(oldStop) oldStop();
     };
-    
     gameInterval = setInterval(function(){}, 1000);
 }
 // ==================== ЦИТАТЫ ДНЯ (30+ штук) ====================
 var allBaseQuotes = [
-    // Приключения 4 куриц
     { text: 'Курица — это не птица, это образ жизни.', author: 'Курица №1', movie: 'Приключения 4 куриц' },
     { text: 'Я не умею летать, но я умею мечтать.', author: 'Курица №2', movie: 'Приключения 4 куриц' },
     { text: 'Четыре курицы — это уже стая!', author: 'Петух', movie: 'Приключения 4 куриц' },
     { text: 'Лучше быть курицей в стае, чем орлом в одиночестве.', author: 'Курица №4', movie: 'Приключения 4 куриц' },
     { text: 'Наш девиз: не клюём, а кусаем!', author: 'Курица №1', movie: 'Приключения 4 куриц' },
-    
-    // Расческа для лысых
     { text: 'Лысина — это не приговор, это аэродром для поцелуев.', author: 'Главный герой', movie: 'Расческа для лысых' },
     { text: 'У меня нет волос, зато есть совесть.', author: 'Главный герой', movie: 'Расческа для лысых' },
     { text: 'Расческа — это не инструмент, это символ надежды.', author: 'Парикмахер', movie: 'Расческа для лысых' },
     { text: 'Я лысый, но я счастливый!', author: 'Главный герой', movie: 'Расческа для лысых' },
     { text: 'Не имей сто волос, а имей одного друга.', author: 'Лысый мудрец', movie: 'Расческа для лысых' },
-    
-    // Пираты
     { text: 'Пираты не грабят школы. Только сокровища.', author: 'Капитан Крюк', movie: 'Пираты' },
     { text: 'Йо-хо-хо, и кусочек рома! А у меня компот.', author: 'Боцман', movie: 'Пираты' },
     { text: 'Самое страшное в море — это отсутствие интернета.', author: 'Юнга', movie: 'Пираты' },
     { text: 'Пират без ноги — ещё не пират. Пират без шляпы — никто.', author: 'Капитан', movie: 'Пираты' },
     { text: 'Карта сокровищ оказалась списком домашних заданий.', author: 'Повар', movie: 'Пираты' },
-    
-    // Американцы зло
     { text: 'Американец в России — как ёжик в тумане.', author: 'Друг', movie: 'Американцы зло' },
     { text: 'У них бургеры с кетчупом, у нас душа с правдой.', author: 'Главный герой', movie: 'Американцы зло' },
     { text: 'Я не злой, я просто не выспался.', author: 'Американец', movie: 'Американцы зло' },
     { text: 'Ватрушка — это наша филосовская категория.', author: 'Бабушка', movie: 'Американцы зло' },
-    
-    // Приключения ПТА
     { text: 'Татьяна Афанасьевна помнит даже динозавров.', author: 'Ученик', movie: 'Приключения ПТА' },
     { text: 'Она работала в школе ещё до изобретения мела.', author: 'Директор', movie: 'Приключения ПТА' },
     { text: 'Её первое родительское собрание было в пещере.', author: 'Историк', movie: 'Приключения ПТА' },
     { text: 'У неё дневники были на камнях.', author: 'Археолог', movie: 'Приключения ПТА' },
     { text: 'Татьяна Афанасьевна — учительница из легенды.', author: 'Голос за кадром', movie: 'Приключения ПТА' },
-    
-    // Общие смешные
     { text: 'Самое сложное домашнее задание — найти мотивацию.', author: 'Ленивый ученик', movie: 'Школа жизни' },
     { text: 'Мой кот умнее меня. Он хотя бы спит по ночам.', author: 'Студент', movie: 'Моя жизнь' },
     { text: 'Диплом — это просто бумажка. А яйца — это валюта!', author: 'Tildochka', movie: 'Tildochka' },
@@ -4587,7 +4666,6 @@ var allBaseQuotes = [
     { text: 'Жизнь слишком коротка, чтобы не стрелять по птицам в тире.', author: 'Снайпер', movie: 'Tildochka' }
 ];
 
-// Загружаем цитаты из Firebase
 function loadQuotesFromFirebase() {
     db.ref('quotes').on('value', function(snap) {
         var userQuotes = [];
@@ -4602,21 +4680,17 @@ function loadQuotesFromFirebase() {
                 suggestedBy: child.val().suggestedBy
             });
         });
-        
         var approvedUserQuotes = userQuotes.filter(q => q.approved === true);
         var allQuotes = [...allBaseQuotes, ...approvedUserQuotes];
-        
         window.quotesList = allQuotes.map((q, i) => ({
             id: 'q_' + i,
             text: q.text,
             author: q.author,
             movie: q.movie
         }));
-        
         setCurrentQuote();
     });
 }
-// Устанавливаем текущую цитату
 function setCurrentQuote() {
     if(!window.quotesList || window.quotesList.length === 0) {
         window.quotesList = allBaseQuotes.map(function(q, i) {
@@ -4628,13 +4702,10 @@ function setCurrentQuote() {
             };
         });
     }
-    
     var now = Date.now();
     var halfHour = 30 * 60 * 1000;
     var index = Math.floor(now / halfHour) % window.quotesList.length;
     var current = window.quotesList[index];
-    
-    // Используем НОВЫЙ id = quoteBox
     var quoteBox = document.getElementById('quoteBox');
     if(quoteBox) {
         quoteBox.innerHTML = `
@@ -4645,18 +4716,14 @@ function setCurrentQuote() {
     }
 }
 
-// Предложить цитату
 function suggestQuote() {
     var text = prompt('📝 Введите текст цитаты:');
     if(!text || text.length < 5) {
         alert('Цитата слишком короткая (минимум 5 символов)');
         return;
     }
-    
     var author = prompt('✍️ Автор цитаты:', 'Аноним');
     if(!author) author = 'Аноним';
-    
-    // Предлагаем выбрать фильм из списка
     var movieOptions = [
         'Приключения 4 куриц',
         'Расческа для лысых',
@@ -4666,10 +4733,8 @@ function suggestQuote() {
         'Tildochka',
         'Другое (введу сам)'
     ];
-    
     var movieChoice = prompt('🎬 Выбери фильм (введи номер):\n' + 
         movieOptions.map((m, i) => (i+1) + '. ' + m).join('\n'), '6');
-    
     var movie = '';
     if(movieChoice && !isNaN(movieChoice)) {
         var idx = parseInt(movieChoice) - 1;
@@ -4680,7 +4745,6 @@ function suggestQuote() {
         }
     }
     if(!movie) movie = 'Tildochka';
-    
     db.ref('quotes').push({
         text: text,
         author: author,
@@ -4689,18 +4753,15 @@ function suggestQuote() {
         approved: false,
         ts: Date.now()
     });
-    
     alert('✅ Спасибо! Цитата отправлена на модерацию. Она появится после одобрения.');
     progressQuest('suggestQuote', 1);
 }
 
-// Админ-панель цитат
 function showQuoteAdmin() {
     if(!isAdmin && myName !== 'admin' && myName !== 'Админ' && myName !== 'Артуровна😏') {
         alert('⛔ Доступ только для администратора. Введите код через "Стать админом"');
         return;
     }
-    
     db.ref('quotes').once('value', function(snap) {
         var all = [];
         snap.forEach(function(child) {
@@ -4713,8 +4774,6 @@ function showQuoteAdmin() {
                 suggestedBy: child.val().suggestedBy
             });
         });
-        
-        // Открываем в новом окне
         var win = window.open('', '_blank');
         win.document.write(`
             <html>
@@ -4735,7 +4794,6 @@ function showQuoteAdmin() {
                     <strong>Предложенных: ${all.filter(q => !q.approved).length} на модерации</strong><br>
                     <strong>Одобренных: ${all.filter(q => q.approved).length}</strong>
                 </div>
-                
                 <h3>⏳ Ожидают одобрения:</h3>
                 ${all.filter(q => !q.approved).map(q => `
                     <div class="quote-item">
@@ -4746,7 +4804,6 @@ function showQuoteAdmin() {
                         <button class="delete" onclick="window.opener.postMessage({type:'deleteQuote', id:'${q.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет новых предложений</p>'}
-                
                 <h3>✅ Одобренные пользовательские цитаты:</h3>
                 ${all.filter(q => q.approved).map(q => `
                     <div class="quote-item">
@@ -4756,7 +4813,6 @@ function showQuoteAdmin() {
                         <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${q.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских цитат</p>'}
-                
                 <hr>
                 <h3>📜 Базовые цитаты (${allBaseQuotes.length} шт.):</h3>
                 ${allBaseQuotes.map(q => `
@@ -4765,22 +4821,18 @@ function showQuoteAdmin() {
                         <div>— ${q.author} (${q.movie})</div>
                     </div>
                 `).join('')}
-                
                 <button onclick="window.close()">Закрыть</button>
             </body>
             </html>
         `);
     });
 }
-// ========== ПРОСТЫЕ МГНОВЕННЫЕ ФУНКЦИИ ==========
-
 function approveQuote(id) {
     if(!isAdmin) return;
     var ref = db.ref('quotes/' + id);
     ref.update({ approved: true });
     alert('✅ Одобрено! Закройте окно и откройте заново');
 }
-
 function deleteQuote(id) {
     if(!isAdmin) return;
     if(!confirm('Удалить?')) return;
@@ -4788,14 +4840,12 @@ function deleteQuote(id) {
     ref.remove();
     alert('🗑️ Удалено!');
 }
-
 function approveJoke(id) {
     if(!isAdmin) return;
     var ref = db.ref('jokes/' + id);
     ref.update({ approved: true });
     alert('✅ Одобрено!');
 }
-
 function deleteJoke(id) {
     if(!isAdmin) return;
     if(!confirm('Удалить?')) return;
@@ -4803,13 +4853,8 @@ function deleteJoke(id) {
     ref.remove();
     alert('🗑️ Удалено!');
 }
-
-// Показываем цитату при загрузке
 function initQuotes() {
-    // Сначала показываем базовые цитаты (чтобы сразу было видно)
     setCurrentQuote();
-    
-    // Потом загружаем из Firebase и обновляем
     db.ref('quotes').on('value', function(snap) {
         var userQuotes = [];
         snap.forEach(function(child) {
@@ -4823,12 +4868,8 @@ function initQuotes() {
                 suggestedBy: child.val().suggestedBy
             });
         });
-        
-        var approvedUserQuotes = userQuotes.filter(function(q) { 
-            return q.approved === true; 
-        });
+        var approvedUserQuotes = userQuotes.filter(function(q) { return q.approved === true; });
         var allQuotes = allBaseQuotes.concat(approvedUserQuotes);
-        
         window.quotesList = allQuotes.map(function(q, i) {
             return {
                 id: 'q_' + i,
@@ -4837,21 +4878,14 @@ function initQuotes() {
                 movie: q.movie
             };
         });
-        
         setCurrentQuote();
     });
-    
-    // ОБНОВЛЯЕМ КАЖДЫЕ ПОЛЧАСА (даже если Firebase не обновился)
     setInterval(function() {
         setCurrentQuote();
-    }, 30 * 60 * 1000); // 30 минут
+    }, 30 * 60 * 1000);
 }
-
-// Запускаем
 setTimeout(initQuotes, 2000);
 // ==================== АДМИН ПАНЕЛЬ ====================
-var isAdmin = localStorage.getItem('tildochka_admin') === 'true';
-
 function showAdminLogin() {
     var code = prompt('🔐 Введите код администратора:');
     if(code === 'трактор') {
@@ -4859,29 +4893,20 @@ function showAdminLogin() {
         isAdmin = true;
         alert('✅ Добро пожаловать, администратор! Теперь вам доступны скрытые функции.');
         updateAdminBadge()
-        
-        // Обновляем меню — добавляем админ-кнопки, если их нет
         addAdminButtonsToMenu();
     } else if(code !== null) {
         alert('❌ Неверный код!');
     }
 }
-
 function addAdminButtonsToMenu() {
     var menu = document.getElementById('menuDropdown');
     if(!menu) return;
-    
-    // Проверяем, есть ли уже кнопки админа
     if(document.getElementById('adminQuoteBtn')) return;
-    
-    // Кнопка управления цитатами
     var quoteBtn = document.createElement('a');
     quoteBtn.id = 'adminQuoteBtn';
     quoteBtn.innerHTML = '📝 Управление цитатами';
     quoteBtn.onclick = function() { showQuoteAdmin(); closeMenu(); };
     menu.appendChild(quoteBtn);
-    
-    // Кнопка управления шутками
     var jokeBtn = document.createElement('a');
     jokeBtn.id = 'adminJokeBtn';
     jokeBtn.innerHTML = '😂 Управление шутками';
@@ -4893,7 +4918,6 @@ function showJokeAdmin() {
         alert('⛔ Доступ только для администратора. Введите код через "Стать админом"');
         return;
     }
-    
     db.ref('jokes').once('value', function(snap) {
         var all = [];
         snap.forEach(function(child) {
@@ -4904,7 +4928,6 @@ function showJokeAdmin() {
                 suggestedBy: child.val().suggestedBy
             });
         });
-        
         var win = window.open('', '_blank');
         win.document.write(`
             <html>
@@ -4925,7 +4948,6 @@ function showJokeAdmin() {
                     <strong>Предложенных: ${all.filter(j => !j.approved).length} на модерации</strong><br>
                     <strong>Одобренных: ${all.filter(j => j.approved).length}</strong>
                 </div>
-                
                 <h3>⏳ Ожидают одобрения:</h3>
                 ${all.filter(j => !j.approved).map(j => `
                     <div class="joke-item">
@@ -4935,7 +4957,6 @@ function showJokeAdmin() {
                         <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${j.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет новых предложений</p>'}
-                
                 <h3>✅ Одобренные пользовательские шутки:</h3>
                 ${all.filter(j => j.approved).map(j => `
                     <div class="joke-item">
@@ -4944,7 +4965,6 @@ function showJokeAdmin() {
                         <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${j.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских шуток</p>'}
-                
                 <hr>
                 <h3>📜 Базовые шутки (${baseJokes.length} шт.):</h3>
                 ${baseJokes.map(j => `
@@ -4952,16 +4972,12 @@ function showJokeAdmin() {
                         <div>${j.replace(/\n/g, '<br>').replace(/'/g, "\\'")}</div>
                     </div>
                 `).join('')}
-                
                 <button onclick="window.close()">Закрыть</button>
             </body>
             </html>
         `);
     });
 }
-
-
-// При загрузке страницы проверяем админа и добавляем кнопки
 if(isAdmin) {
     setTimeout(addAdminButtonsToMenu, 1000);
 }
@@ -4972,8 +4988,6 @@ function renderAllGames() {
         console.error('Контейнер allGamesGrid не найден!');
         return;
     }
-    
-    // Все игры
     var allGames = [
         { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
         { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
@@ -4987,17 +5001,13 @@ function renderAllGames() {
         { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
         { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
         { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
-        { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false }
+        { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
+        { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false }
     ];
-    
-    // Очищаем контейнер
     container.innerHTML = '';
-    
-    // Создаём карточки игр
     for(var i = 0; i < allGames.length; i++) {
         var game = allGames[i];
         var playFunc = game.online ? 'showOnlineGame' : 'showGame';
-        
         var card = document.createElement('div');
         card.className = 'game-card';
         card.setAttribute('onclick', playFunc + "('" + game.id + "')");
@@ -5009,31 +5019,20 @@ function renderAllGames() {
         `;
         container.appendChild(card);
     }
-    
-    // Загружаем рейтинги для всех игр
     for(var i = 0; i < allGames.length; i++) {
         loadLeaderboard(allGames[i].id);
     }
-    
     console.log('✅ Игры отрисованы, найдено:', allGames.length);
 }
-
-// Функция showAllGames (вызывается по клику на квадратик)
 function showAllGames() {
     console.log('showAllGames вызвана');
-    
-    // Сначала показываем экран
     showScreen('games-all');
-    
-    // Функция для отрисовки игр
     function renderGames() {
         var container = document.getElementById('allGamesGrid');
         if(!container) {
             console.error('Контейнер allGamesGrid не найден!');
             return false;
         }
-        
-        // Все игры
         var allGames = [
             { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
             { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
@@ -5047,17 +5046,13 @@ function showAllGames() {
             { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
             { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
             { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
-            { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false }
+            { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
+            { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false }
         ];
-        
-        // Очищаем контейнер
         container.innerHTML = '';
-        
-        // Создаём карточки игр
         for(var i = 0; i < allGames.length; i++) {
             var game = allGames[i];
             var playFunc = game.online ? 'showOnlineGame' : 'showGame';
-            
             var card = document.createElement('div');
             card.className = 'game-card';
             card.setAttribute('onclick', playFunc + "('" + game.id + "')");
@@ -5069,41 +5064,29 @@ function showAllGames() {
             `;
             container.appendChild(card);
         }
-        
         console.log('✅ Игры отрисованы, найдено:', allGames.length);
         return true;
     }
-    
-    // Пробуем отрисовать сразу
     if(!renderGames()) {
-        // Если не получилось, ждём когда DOM загрузится
         setTimeout(function() {
             renderGames();
         }, 100);
     }
-    
-    // Загружаем рейтинги для игр
     setTimeout(function() {
-        var allGames = [
-            'snake', 'tetris', 'runner', 'chickenrain', 'flappy', 
-            'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter'
-        ];
+        var allGames = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter', 'drawing'];
         for(var i = 0; i < allGames.length; i++) {
             loadLeaderboard(allGames[i]);
         }
     }, 200);
 }
-// Слушаем сообщения из админ-окна (МГНОВЕННО)
 window.addEventListener('message', function(event) {
     var data = event.data;
     if(typeof data === 'string') return;
-    
     if(data.type === 'approveJoke') approveJoke(data.id);
     else if(data.type === 'deleteJoke') deleteJoke(data.id);
     else if(data.type === 'approveQuote') approveQuote(data.id);
     else if(data.type === 'deleteQuote') deleteQuote(data.id);
 });
-// ========== ФИКС: ГЛОБАЛЬНАЯ ФУНКЦИЯ stopGame ==========
 window.stopGame = function() {
     console.log('stopGame вызван');
     if(gameInterval) {
@@ -5114,28 +5097,20 @@ window.stopGame = function() {
         clearInterval(tamaInterval);
         tamaInterval = null;
     }
-    // Также останавливаем таймер в тире, если он есть
     if(window.shooterTimerInterval) {
         clearInterval(window.shooterTimerInterval);
         window.shooterTimerInterval = null;
     }
     showScreen('home');
 };
-
-// ========== ФИКС: НЕ МЕШАЕМ ВВОДУ В ПОЛЯ ==========
-// Этот обработчик вообще ничего не блокирует, просто лог для отладки
 document.addEventListener('keydown', function(e) {
-    // Ничего не блокируем, просто логируем если нужно
     if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         console.log('Печатаем в поле:', e.key);
     }
 });
-// ========== ФИКС: КНОПКА НАЗАД В ИГРАХ (ДОБАВЛЯЕМ ОБРАБОТЧИК) ==========
-// Переопределяем кнопку "← На главную" в game-screen, когда она появляется
 function fixBackButton() {
     var backBtn = document.querySelector('#game-screen button');
     if(backBtn && backBtn.textContent.includes('На главную')) {
-        // Удаляем старый onclick, если он есть, и вешаем новый
         backBtn.removeAttribute('onclick');
         backBtn.onclick = function() {
             console.log('Кнопка На главную нажата');
@@ -5151,8 +5126,6 @@ function fixBackButton() {
         };
     }
 }
-
-// Наблюдатель за изменениями в DOM, чтобы поймать момент появления кнопки
 var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if(mutation.type === 'childList') {
@@ -5161,12 +5134,7 @@ var observer = new MutationObserver(function(mutations) {
     });
 });
 observer.observe(document.getElementById('game-screen'), { childList: true, subtree: true });
-
-// Вызываем сразу при загрузке
 setTimeout(fixBackButton, 100);
-
-// ========== ФИКС: ENTER В ЧАТЕ ==========
-// Добавляем отправку по Enter в поле ввода чата
 document.addEventListener('DOMContentLoaded', function() {
     var chatInput = document.getElementById('chatMessageLive');
     if(chatInput) {
@@ -5177,8 +5145,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Также фикс для идеи
     var ideaInput = document.getElementById('ideaText');
     if(ideaInput) {
         ideaInput.addEventListener('keypress', function(e) {
@@ -5188,8 +5154,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Фикс для магического чата
     var magicInput = document.getElementById('magicMessageInput');
     if(magicInput) {
         magicInput.addEventListener('keypress', function(e) {
@@ -5200,14 +5164,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
-
-// ========== ФИКС: ИСПРАВЛЕНИЕ showScreen ДЛЯ КОРРЕКТНОЙ РАБОТЫ ==========
-// Сохраняем оригинальную функцию
 var originalShowScreen = window.showScreen;
 window.showScreen = function(id) {
     console.log('showScreen вызван с id:', id);
-    
-    // Останавливаем игры при выходе с игрового экрана
     var currentScreen = document.querySelector('.screen.active');
     if(currentScreen && currentScreen.id === 'game-screen' && id !== 'game') {
         if(window.gameInterval) {
@@ -5219,18 +5178,10 @@ window.showScreen = function(id) {
             window.tamaInterval = null;
         }
     }
-    
-    // Вызываем оригинальную функцию
     originalShowScreen(id);
 };
-
-// ========== ДОПОЛНИТЕЛЬНЫЙ ФИКС ДЛЯ ТЕЛЕФОНА ==========
-// Убеждаемся, что все кликабельные элементы имеют правильные обработчики
 document.addEventListener('DOMContentLoaded', function() {
-    // Исправляем кнопку "На главную" в game-screen, если она уже есть
     fixBackButton();
-    
-    // Добавляем явные обработчики для всех game-card
     var gameCards = document.querySelectorAll('.game-card');
     gameCards.forEach(function(card) {
         card.addEventListener('click', function(e) {
@@ -5240,11 +5191,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
     console.log('✅ Все фиксы применены');
 });
-
-
 function closeModal(modalId) {
     var modal = document.getElementById(modalId);
     if(modal) modal.classList.remove('show');
@@ -5268,7 +5216,7 @@ function rateTamagotchiNow() {
     alert('⭐ Спасибо за оценку!');
     addEggs(2, 'Оценка игры!');
 }
-// ==================== СКИНЫ ДЛЯ ИГР (ПЕРСОНАЛИЗИРОВАННЫЕ МАГАЗИНЫ) ====================
+// ==================== СКИНЫ ДЛЯ ИГР ====================
 var gameSkins = {
     snake: {
         default: { id: 'snake_default', name: '🐍 Классическая', emoji: '🐍', color: '#4CAF50', price: 0, icon: '🐍' },
@@ -5289,30 +5237,30 @@ var gameSkins = {
         ]
     },
     chickenrain: {
-    default: { id: 'chicken_default', name: '🐩 Пудель', emoji: '🐩', color: '#FFF', price: 0, icon: '🐩', preview: '🐩' },
-    skins: [
-        { id: 'chicken_rooster', name: '🐓 Петух', emoji: '🐓', color: '#FF4500', price: 30, icon: '🐓', preview: '🐓' },
-        { id: 'chicken_turkey', name: '🦃 Индюк', emoji: '🦃', color: '#8B4513', price: 35, icon: '🦃', preview: '🦃' },
-        { id: 'chicken_badger', name: '🦡 Барсук', emoji: '🦡', color: '#696969', price: 40, icon: '🦡', preview: '🦡' },
-        { id: 'chicken_kangaroo', name: '🦘 Кенгуру', emoji: '🦘', color: '#CD853F', price: 45, icon: '🦘', preview: '🦘' },
-        { id: 'chicken_beaver', name: '🦫 Бобр', emoji: '🦫', color: '#8B5A2B', price: 40, icon: '🦫', preview: '🦫' },
-        { id: 'chicken_ape', name: '🦧 Орангутан', emoji: '🦧', color: '#A0522D', price: 50, icon: '🦧', preview: '🦧' },
-        { id: 'chicken_eagle', name: '🦅 Орёл', emoji: '🦅', color: '#8B4513', price: 55, icon: '🦅', preview: '🦅' },
-        { id: 'chicken_goose', name: '🪿 Гусь', emoji: '🪿', color: '#FFF', price: 35, icon: '🪿', preview: '🪿' }
-    ]
+        default: { id: 'chicken_default', name: '🐩 Пудель', emoji: '🐩', color: '#FFF', price: 0, icon: '🐩', preview: '🐩' },
+        skins: [
+            { id: 'chicken_rooster', name: '🐓 Петух', emoji: '🐓', color: '#FF4500', price: 30, icon: '🐓', preview: '🐓' },
+            { id: 'chicken_turkey', name: '🦃 Индюк', emoji: '🦃', color: '#8B4513', price: 35, icon: '🦃', preview: '🦃' },
+            { id: 'chicken_badger', name: '🦡 Барсук', emoji: '🦡', color: '#696969', price: 40, icon: '🦡', preview: '🦡' },
+            { id: 'chicken_kangaroo', name: '🦘 Кенгуру', emoji: '🦘', color: '#CD853F', price: 45, icon: '🦘', preview: '🦘' },
+            { id: 'chicken_beaver', name: '🦫 Бобр', emoji: '🦫', color: '#8B5A2B', price: 40, icon: '🦫', preview: '🦫' },
+            { id: 'chicken_ape', name: '🦧 Орангутан', emoji: '🦧', color: '#A0522D', price: 50, icon: '🦧', preview: '🦧' },
+            { id: 'chicken_eagle', name: '🦅 Орёл', emoji: '🦅', color: '#8B4513', price: 55, icon: '🦅', preview: '🦅' },
+            { id: 'chicken_goose', name: '🪿 Гусь', emoji: '🪿', color: '#FFF', price: 35, icon: '🪿', preview: '🪿' }
+        ]
     },
     runner: {
-    default: { id: 'runner_default', name: '🦍 Горилла', emoji: '🦍', color: '#4a4a4a', price: 0, icon: '🦍', preview: '🦍' },
-    skins: [
-        { id: 'runner_monkey', name: '🐒 Обезьяна', emoji: '🐒', color: '#8B5A2B', price: 30, icon: '🐒', preview: '🐒' },
-        { id: 'runner_dog', name: '🐕 Собака', emoji: '🐕', color: '#CD853F', price: 35, icon: '🐕', preview: '🐕' },
-        { id: 'runner_cat', name: '🐈‍⬛ Чёрный кот', emoji: '🐈‍⬛', color: '#2F2F2F', price: 40, icon: '🐈‍⬛', preview: '🐈‍⬛' },
-        { id: 'runner_tiger', name: '🐅 Тигр', emoji: '🐅', color: '#FF8C00', price: 50, icon: '🐅', preview: '🐅' },
-        { id: 'runner_buffalo', name: '🦬 Буйвол', emoji: '🦬', color: '#5C4033', price: 45, icon: '🦬', preview: '🦬' },
-        { id: 'runner_elephant', name: '🐘 Слон', emoji: '🐘', color: '#808080', price: 55, icon: '🐘', preview: '🐘' },
-        { id: 'runner_rabbit', name: '🐇 Кролик', emoji: '🐇', color: '#FFB6C1', price: 25, icon: '🐇', preview: '🐇' }
-    ]
-},
+        default: { id: 'runner_default', name: '🦍 Горилла', emoji: '🦍', color: '#4a4a4a', price: 0, icon: '🦍', preview: '🦍' },
+        skins: [
+            { id: 'runner_monkey', name: '🐒 Обезьяна', emoji: '🐒', color: '#8B5A2B', price: 30, icon: '🐒', preview: '🐒' },
+            { id: 'runner_dog', name: '🐕 Собака', emoji: '🐕', color: '#CD853F', price: 35, icon: '🐕', preview: '🐕' },
+            { id: 'runner_cat', name: '🐈‍⬛ Чёрный кот', emoji: '🐈‍⬛', color: '#2F2F2F', price: 40, icon: '🐈‍⬛', preview: '🐈‍⬛' },
+            { id: 'runner_tiger', name: '🐅 Тигр', emoji: '🐅', color: '#FF8C00', price: 50, icon: '🐅', preview: '🐅' },
+            { id: 'runner_buffalo', name: '🦬 Буйвол', emoji: '🦬', color: '#5C4033', price: 45, icon: '🦬', preview: '🦬' },
+            { id: 'runner_elephant', name: '🐘 Слон', emoji: '🐘', color: '#808080', price: 55, icon: '🐘', preview: '🐘' },
+            { id: 'runner_rabbit', name: '🐇 Кролик', emoji: '🐇', color: '#FFB6C1', price: 25, icon: '🐇', preview: '🐇' }
+        ]
+    },
     tetris: {
         default: { id: 'tetris_default', name: '🧱 Классический', emoji: '🧱', color: '#FFD700', price: 0, icon: '🧱' },
         skins: [
@@ -5320,8 +5268,6 @@ var gameSkins = {
         ]
     }
 };
-
-// Загрузка купленных скинов для игр
 function loadBoughtGameSkins() {
     var saved = localStorage.getItem('tildochka_game_skins');
     if(saved) {
@@ -5331,12 +5277,9 @@ function loadBoughtGameSkins() {
     }
     return {};
 }
-
 function saveBoughtGameSkins(bought) {
     localStorage.setItem('tildochka_game_skins', JSON.stringify(bought));
 }
-
-// Получить текущий скин для игры
 function getCurrentGameSkin(gameId) {
     var saved = localStorage.getItem('tildochka_skin_' + gameId);
     if(saved) {
@@ -5344,63 +5287,47 @@ function getCurrentGameSkin(gameId) {
             return JSON.parse(saved);
         } catch(e) {}
     }
-    // Возвращаем дефолтный скин
     if(gameSkins[gameId]) {
         return gameSkins[gameId].default;
     }
     return { id: 'default', name: 'Стандартный', emoji: '🐔', color: '#FFD700' };
 }
-
-// Установить скин для игры
 function setCurrentGameSkin(gameId, skin) {
     localStorage.setItem('tildochka_skin_' + gameId, JSON.stringify(skin));
 }
-
-// Покупка скина для игры
 function buyGameSkin(gameId, skin, price) {
     if(myEggs < price) {
         alert('❌ Не хватает яиц! Нужно ' + price + ' 🥚');
         return false;
     }
-    
     var bought = loadBoughtGameSkins();
     if(!bought[gameId]) bought[gameId] = [];
-    
     if(bought[gameId].includes(skin.id)) {
         alert('У тебя уже есть этот скин!');
         return false;
     }
-    
     myEggs -= price;
     localStorage.setItem('tildochka_eggs', myEggs);
     document.getElementById('headerEggs').textContent = myEggs;
     db.ref('users/' + myUid).update({ eggs: myEggs });
-    
     bought[gameId].push(skin.id);
     saveBoughtGameSkins(bought);
-    
     alert('✅ Скин "' + skin.name + '" куплен! Теперь выбери его в магазине игры.');
     return true;
 }
-
-// Проверить, куплен ли скин
 function isSkinBought(gameId, skinId) {
     var bought = loadBoughtGameSkins();
     return bought[gameId] && bought[gameId].includes(skinId);
 }
-// Открыть магазин скинов для конкретной игры с предпросмотром
 function openGameSkinShop(gameId, currentSkin, onSelectCallback) {
     if(!gameSkins[gameId]) {
         alert('Магазин для этой игры пока не готов');
         return;
     }
-    
     var gameData = gameSkins[gameId];
     var allSkins = [gameData.default, ...gameData.skins];
     var boughtSkins = loadBoughtGameSkins();
     var boughtIds = boughtSkins[gameId] || [];
-    
-    // Создаём модальное окно
     var modal = document.getElementById('gameSkinModal');
     if(!modal) {
         modal = document.createElement('div');
@@ -5409,30 +5336,22 @@ function openGameSkinShop(gameId, currentSkin, onSelectCallback) {
         modal.innerHTML = '<div class="modal-box" id="gameSkinModalBox" style="max-width:600px;"></div>';
         document.body.appendChild(modal);
     }
-    
-    // HTML магазина с предпросмотром
     var html = '<h3>🎨 Магазин скинов для ' + getGameName(gameId) + '</h3>';
     html += '<p>🥚 У тебя: <span style="color:#ffd700;font-weight:bold">' + myEggs + '</span> яиц</p>';
-    
-    // ПРЕДПРОСМОТР текущего персонажа
     html += '<div style="background:rgba(0,0,0,0.5);border-radius:15px;padding:15px;margin:10px 0;text-align:center">';
     html += '<div style="font-size:14px;color:#aaa;margin-bottom:5px">🎮 Твой текущий персонаж:</div>';
     html += '<div style="font-size:48px;margin:10px 0" id="skinPreviewEmoji">' + (currentSkin.emoji || '🐔') + '</div>';
     html += '<div style="font-size:16px;font-weight:bold;color:#ffd700" id="skinPreviewName">' + (currentSkin.name || 'Стандартный') + '</div>';
     html += '<div style="font-size:12px;margin-top:5px" id="skinPreviewColor">🎨 ' + (currentSkin.color || '#FFD700') + '</div>';
     html += '</div>';
-    
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:15px 0;max-height:300px;overflow-y:auto;">';
-    
     for(var i = 0; i < allSkins.length; i++) {
         var skin = allSkins[i];
         var isOwned = skin.price === 0 || boughtIds.includes(skin.id);
         var isActive = currentSkin.id === skin.id;
-        
         html += '<div style="background:rgba(0,0,0,0.3);border-radius:12px;padding:10px;text-align:center;border:1px solid ' + (isActive ? '#ffd700' : 'rgba(255,215,0,0.2)') + '">';
         html += '<div style="font-size:42px;margin-bottom:5px;">' + (skin.preview || skin.emoji || '🐔') + '</div>';
         html += '<div style="font-size:13px;font-weight:bold;">' + skin.name + '</div>';
-        
         if(skin.price > 0 && !isOwned) {
             html += '<div style="font-size:11px;color:#ffd700;margin:5px 0;">Цена: ' + skin.price + '🥚</div>';
             html += '<button onclick="buyAndSelectSkin(\'' + gameId + '\', \'' + skin.id + '\', ' + skin.price + ')" style="font-size:11px;padding:5px 10px;background:#ffd700;color:#000;border:none;border-radius:8px;cursor:pointer;width:100%;">Купить</button>';
@@ -5444,15 +5363,11 @@ function openGameSkinShop(gameId, currentSkin, onSelectCallback) {
         }
         html += '</div>';
     }
-    
     html += '</div>';
     html += '<button onclick="closeModal(\'gameSkinModal\')" style="margin-top:10px;background:#444;color:#fff;padding:8px 20px;border:none;border-radius:8px;cursor:pointer;">Закрыть</button>';
-    
     document.getElementById('gameSkinModalBox').innerHTML = html;
     modal.classList.add('show');
 }
-
-// Вспомогательная функция для получения названия игры
 function getGameName(gameId) {
     var names = {
         snake: '🐍 Змейки',
@@ -5463,42 +5378,31 @@ function getGameName(gameId) {
     };
     return names[gameId] || 'игры';
 }
-
-// Выбрать скин и закрыть магазин
 function selectGameSkin(gameId, skinId) {
     var gameData = gameSkins[gameId];
     if(!gameData) return;
-    
     var allSkins = [gameData.default, ...gameData.skins];
     var selectedSkin = allSkins.find(function(s) { return s.id === skinId; });
-    
     if(selectedSkin) {
         setCurrentGameSkin(gameId, selectedSkin);
         closeModal('gameSkinModal');
         alert('✅ Скин "' + selectedSkin.name + '" выбран для игры!');
     }
 }
-
-// Купить и сразу выбрать скин
 function buyAndSelectSkin(gameId, skinId, price) {
     var gameData = gameSkins[gameId];
     if(!gameData) return;
-    
     var allSkins = [gameData.default, ...gameData.skins];
     var skin = allSkins.find(function(s) { return s.id === skinId; });
-    
     if(skin && buyGameSkin(gameId, skin, price)) {
         setCurrentGameSkin(gameId, skin);
         closeModal('gameSkinModal');
         alert('✅ Скин "' + skin.name + '" куплен и выбран!');
-        // Перезапускаем игру если она активна
         if(currentGame === gameId) {
             restartCurrentGame();
         }
     }
 }
-
-// Перезапуск текущей игры (для применения скина)
 function restartCurrentGame() {
     if(currentGame) {
         var gameType = currentGame;
@@ -5509,11 +5413,8 @@ function restartCurrentGame() {
     }
 }
 // ==================== ЕЖЕДНЕВНЫЕ ПРАЗДНИКИ И СОБЫТИЯ (366 дней) ====================
-// Функция для генерации массива на 366 дней
 function generateAllYearEvents() {
     const events = {};
-    
-    // Январь
     events['01-01'] = { name: '🎄 Новый год!', desc: 'Ёлка, мандарины и подарки! С новым счастьем!', type: 'newyear', reward: 50, bg: 'newyear', quest: 'Отправь 10 🎄 в чате', character: { emoji: '🎄', name: 'Дед Мороз' } };
     events['01-02'] = { name: '🥂 День похмелья', desc: 'Отдыхай и восстанавливай силы после праздника!', type: 'funny', reward: 15, quest: 'Выпей стакан воды в реале' };
     events['01-03'] = { name: '✨ День волшебства', desc: 'Поверь в чудо!', type: 'funny', reward: 10, quest: 'Загадай желание в чате' };
@@ -5545,8 +5446,6 @@ function generateAllYearEvents() {
     events['01-29'] = { name: '🃏 День фокусов', desc: 'Удиви всех!', type: 'funny', quest: 'Отправь 🃏' };
     events['01-30'] = { name: '☕ День кофе', desc: 'Бодрость и энергия', type: 'funny', quest: 'Отправь ☕' };
     events['01-31'] = { name: '🥳 Последний день января', desc: 'Почти весна!', type: 'funny', reward: 10, quest: 'Напиши "Ура, скоро весна!"' };
-    
-    // Февраль (29 дней для високосного, но добавим 29 для простоты)
     events['02-01'] = { name: '🍪 День выпечки', desc: 'Пеки печеньки!', type: 'funny', quest: 'Отправь 🍪' };
     events['02-02'] = { name: '🦫 День сурка', desc: 'Снова и снова...', type: 'funny', quest: 'Сыграй в любую игру 2 раза' };
     events['02-03'] = { name: '📖 День чтения', desc: 'Почитай книгу', type: 'funny', quest: 'Расскажи о любимой книге в чате' };
@@ -5576,8 +5475,6 @@ function generateAllYearEvents() {
     events['02-27'] = { name: '🐻‍❄️ День белого медведя', desc: 'Холодный друг', type: 'funny', quest: 'Отправь 🐻‍❄️' };
     events['02-28'] = { name: '🌸 День цветов', desc: 'Весна близко!', type: 'funny', quest: 'Отправь 🌸' };
     events['02-29'] = { name: '🔄 Високосный день!', desc: 'Раз в 4 года!', type: 'special', reward: 50, quest: 'Сыграй во все игры' };
-    
-    // Март (1-31)
     events['03-01'] = { name: '🐱 День кошек', desc: 'Мяу!', type: 'funny', quest: 'Отправь 🐱' };
     events['03-02'] = { name: '📚 День чтения', desc: 'Почитай книгу', type: 'funny', quest: 'Расскажи о книге' };
     events['03-03'] = { name: '👂 День слуха', desc: 'Слушай внимательно', type: 'funny', quest: 'Отправь 👂' };
@@ -5609,8 +5506,6 @@ function generateAllYearEvents() {
     events['03-29'] = { name: '🐣 День цыплёнка', desc: 'Пи-пи-пи!', type: 'funny', quest: 'Покорми тамагочи' };
     events['03-30'] = { name: '✏️ День карандаша', desc: 'Рисуй и пиши', type: 'funny', quest: 'Отправь ✏️' };
     events['03-31'] = { name: '🪞 День зеркала', desc: 'Посмотри на себя', type: 'funny', quest: 'Отправь 🪞' };
-    
-    // Апрель (1-30)
     events['04-01'] = { name: '🤡 День дурака!', desc: 'Сегодня можно шутить и веселиться!', type: 'april', bg: 'april', reward: 25, quest: 'Разошли 3 смешных мема', character: { emoji: '🤡', name: 'Клоун' } };
     events['04-02'] = { name: '📚 День детской книги', desc: 'Читай детям', type: 'funny', quest: 'Отправь 📚' };
     events['04-03'] = { name: '🐸 День лягушки', desc: 'Ква-ква!', type: 'funny', quest: 'Нарисуй лягушку' };
@@ -5641,8 +5536,6 @@ function generateAllYearEvents() {
     events['04-28'] = { name: '💻 День программиста', desc: 'Код и баги', type: 'funny', quest: 'Напиши console.log' };
     events['04-29'] = { name: '🐺 День волка', desc: 'Ночной охотник', type: 'funny', quest: 'Отправь 🐺' };
     events['04-30'] = { name: '🎶 День джаза', desc: 'Музыкальный праздник', type: 'funny', quest: 'Отправь 🎶' };
-    
-    // Май (1-31)
     events['05-01'] = { name: '🌿 Праздник весны и труда', desc: 'Май, шашлыки, отдых!', type: 'special', reward: 15, quest: 'Отдохни в чате 10 минут' };
     events['05-02'] = { name: '🐟 День рыбы', desc: 'Подводный мир', type: 'funny', quest: 'Отправь 🐟' };
     events['05-03'] = { name: '☀️ День солнца', desc: 'Светит ярко!', type: 'funny', quest: 'Отправь солнце ☀️' };
@@ -5674,8 +5567,6 @@ function generateAllYearEvents() {
     events['05-29'] = { name: '👖 День джинсов', desc: 'Модный день', type: 'funny', quest: 'Отправь 👖' };
     events['05-30'] = { name: '🐈 День кота', desc: 'Мяу!', type: 'funny', quest: 'Отправь 🐈' };
     events['05-31'] = { name: '🚭 День без табака', desc: 'Здоровый образ жизни', type: 'funny', quest: 'Отправь 🚭' };
-    
-    // Июнь (1-30)
     events['06-01'] = { name: '🧸 День защиты детей', desc: 'Все мы дети в душе!', type: 'special', reward: 20, quest: 'Нарисуй мелового человечка' };
     events['06-02'] = { name: '🍕 День пиццы', desc: 'Итальянская классика', type: 'funny', quest: 'Отправь 🍕' };
     events['06-03'] = { name: '🐣 День яйца', desc: 'Куриный праздник!', type: 'funny', quest: 'Сыграй в Куриный дождь' };
@@ -5706,10 +5597,6 @@ function generateAllYearEvents() {
     events['06-28'] = { name: '🌯 День буррито', desc: 'Мексиканский праздник', type: 'funny', quest: 'Отправь 🌯' };
     events['06-29'] = { name: '🪐 День астероида', desc: 'Космическая угроза', type: 'funny', quest: 'Отправь 🪐' };
     events['06-30'] = { name: '📸 День фото', desc: 'Снимай моменты', type: 'funny', quest: 'Отправь 📸' };
-    
-    // Продолжение для июля-декабря...
-    // (Из-за ограничения по длине, я сокращу остальные месяцы, но в финальном коде они будут полными)
-    // Добавим ключевые даты
     events['07-01'] = { name: '🎆 День архитектуры', desc: 'Строй красиво', type: 'funny', quest: 'Отправь 🎆' };
     events['07-02'] = { name: '🌞 День солнца', desc: 'Летний зной', type: 'funny', quest: 'Отправь 🌞' };
     events['07-03'] = { name: '🍉 День арбуза', desc: 'Сладкая ягода', type: 'funny', quest: 'Отправь 🍉' };
@@ -5741,8 +5628,6 @@ function generateAllYearEvents() {
     events['07-29'] = { name: '🦁 День льва', desc: 'Царь зверей', type: 'funny', quest: 'Отправь 🦁' };
     events['07-30'] = { name: '🍑 День персика', desc: 'Сочный фрукт', type: 'funny', quest: 'Отправь 🍑' };
     events['07-31'] = { name: '🎨 День рисования', desc: 'Твори!', type: 'funny', quest: 'Отправь 🎨' };
-    
-    // Август
     events['08-01'] = { name: '🦦 День выдры', desc: 'Милый зверёк', type: 'funny', quest: 'Отправь 🦦' };
     events['08-02'] = { name: '🪂 День ВДВ', desc: 'Никто, кроме нас!', type: 'special', quest: 'Сыграй в игру "Прыжок"' };
     events['08-03'] = { name: '🍉 День арбуза', desc: 'Сладкий летний день', type: 'funny', quest: 'Отправь 🍉' };
@@ -5774,8 +5659,6 @@ function generateAllYearEvents() {
     events['08-29'] = { name: '🌿 День трав', desc: 'Зелень', type: 'funny', quest: 'Отправь 🌿' };
     events['08-30'] = { name: '🎒 День знаний (скоро)', desc: 'Школа', type: 'funny', quest: 'Отправь 🎒' };
     events['08-31'] = { name: '🦇 День летучей мыши', desc: 'Ночь', type: 'funny', quest: 'Отправь 🦇' };
-    
-    // Сентябрь
     events['09-01'] = { name: '📚 День знаний', desc: 'Школа, парты и знания!', type: 'special', reward: 20, quest: 'Реши пример 2+2 в чате' };
     events['09-02'] = { name: '🍂 День осени', desc: 'Листопад', type: 'funny', quest: 'Отправь 🍂' };
     events['09-03'] = { name: '💪 День спорта', desc: 'Будь активным', type: 'funny', quest: 'Сыграй в Раннер' };
@@ -5806,8 +5689,6 @@ function generateAllYearEvents() {
     events['09-28'] = { name: '🦊 День лисы', desc: 'Хитрая', type: 'funny', quest: 'Отправь 🦊' };
     events['09-29'] = { name: '🍲 День супа', desc: 'Горячее', type: 'funny', quest: 'Отправь 🍲' };
     events['09-30'] = { name: '🗣️ День переводчика', desc: 'Языки', type: 'funny', quest: 'Переведи слово "Hello" на русский' };
-    
-    // Октябрь
     events['10-01'] = { name: '👴 День пожилых людей', desc: 'Уважение', type: 'special', reward: 15, quest: 'Скажи "Спасибо" старшим' };
     events['10-02'] = { name: '🐋 День кита', desc: 'Море', type: 'funny', quest: 'Отправь 🐋' };
     events['10-03'] = { name: '🦷 День стоматолога', desc: 'Улыбка', type: 'funny', quest: 'Отправь 🦷' };
@@ -5839,8 +5720,6 @@ function generateAllYearEvents() {
     events['10-29'] = { name: '🐈‍⬛ День чёрной кошки', desc: 'Мистика', type: 'funny', quest: 'Отправь 🐈‍⬛' };
     events['10-30'] = { name: '🍭 День сладостей', desc: 'Конфеты', type: 'funny', quest: 'Отправь 🍭' };
     events['10-31'] = { name: '🎃 Хеллоуин!', desc: 'Тыквы, сладости и страшилки! 👻', type: 'halloween', bg: 'halloween', reward: 50, quest: 'Отправь страшный мем', character: { emoji: '🎃', name: 'Хеллоуинский монстр' } };
-    
-    // Ноябрь
     events['11-01'] = { name: '🕯️ День всех святых', desc: 'Память', type: 'funny', quest: 'Отправь 🕯️' };
     events['11-02'] = { name: '🥗 День здорового питания', desc: 'Правильная еда', type: 'funny', quest: 'Отправь 🥗' };
     events['11-03'] = { name: '🦘 День кенгуру', desc: 'Австралия', type: 'funny', quest: 'Отправь 🦘' };
@@ -5871,8 +5750,6 @@ function generateAllYearEvents() {
     events['11-28'] = { name: '🍪 День печенья', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍪' };
     events['11-29'] = { name: '🦌 День оленя', desc: 'Север', type: 'funny', quest: 'Отправь 🦌' };
     events['11-30'] = { name: '❄️ День снега', desc: 'Зима', type: 'funny', quest: 'Отправь ❄️' };
-    
-    // Декабрь
     events['12-01'] = { name: '🎗️ День борьбы со СПИДом', desc: 'Здоровье', type: 'special', quest: 'Отправь 🎗️' };
     events['12-02'] = { name: '🐧 День пингвина', desc: 'Холод', type: 'funny', quest: 'Отправь 🐧' };
     events['12-03'] = { name: '🦷 День стоматолога', desc: 'Улыбка', type: 'funny', quest: 'Отправь 🦷' };
@@ -5904,32 +5781,22 @@ function generateAllYearEvents() {
     events['12-29'] = { name: '🤝 День дружбы', desc: 'Друзья', type: 'funny', quest: 'Добавь друга' };
     events['12-30'] = { name: '🎇 День фейерверков', desc: 'Салют', type: 'funny', quest: 'Отправь 🎇' };
     events['12-31'] = { name: '🎆 Канун Нового года!', desc: 'Скоро Новый год! Загадай желание', type: 'newyear', bg: 'newyear', reward: 50, quest: 'Напиши "С наступающим!" в чате' };
-    
     return events;
 }
-
-// Получаем события
 const dailyEvents = generateAllYearEvents();
-
 function getTodayEvent() {
     const now = new Date();
     const month = ('0' + (now.getMonth() + 1)).slice(-2);
     const day = ('0' + now.getDate()).slice(-2);
     const dateKey = month + '-' + day;
-    
     if(dailyEvents[dateKey]) {
         return dailyEvents[dateKey];
     }
-    // На всякий случай возвращаем дефолтное событие (хотя все дни заполнены)
     return { name: '🎉 Обычный день', desc: 'Сегодня нет особого праздника, но день всё равно отличный!', type: 'normal', reward: 5, quest: 'Просто зайди на сайт и играй!' };
 }
-
-// Применить ежедневное событие (фон, задание, персонаж, поздравление)
 function applyDailyEvent() {
     var event = getTodayEvent();
     if(!event) return;
-    
-    // 1. Изменяем фон
     var body = document.body;
     body.classList.remove('halloween-bg', 'newyear-bg', 'birthday-bg', 'april-bg');
     if(event.bg === 'halloween') {
@@ -5941,18 +5808,14 @@ function applyDailyEvent() {
     } else if(event.bg === 'april') {
         body.classList.add('april-bg');
     }
-    
-    // 2. Отображаем блок на главной
     var block = document.getElementById('dailyEventBlock');
     if(block) {
         block.style.display = 'block';
         var titleEl = document.getElementById('dailyEventText');
         var descEl = document.getElementById('dailyEventDesc');
         var actionEl = document.getElementById('dailyEventAction');
-        
         if(titleEl) titleEl.innerHTML = '🎉 ' + event.name + ' 🎉';
         if(descEl) descEl.innerHTML = event.desc;
-        
         if(actionEl) {
             if(event.quest) {
                 actionEl.innerHTML = '<button onclick="progressQuest(\'dailyEvent\', 1)" style="background:#ffd700;color:#000;border:none;padding:6px 15px;border-radius:20px;margin-top:8px;font-size:12px;">✅ Выполнить задание: ' + event.quest + '</button>';
@@ -5962,8 +5825,6 @@ function applyDailyEvent() {
             }
         }
     }
-    
-    // 3. Специальный персонаж на день
     if(event.character) {
         var alreadyHas = customCharacters.some(function(c) { return c.id === event.character.emoji; });
         if(!alreadyHas) {
@@ -5982,8 +5843,6 @@ function applyDailyEvent() {
             }, 1000);
         }
     }
-    
-    // 4. Специальное ежедневное задание
     if(event.quest) {
         var questExists = dailyQuests.some(function(q) { return q.text === event.quest; });
         if(!questExists && dailyQuests.length < 5) {
@@ -5999,8 +5858,6 @@ function applyDailyEvent() {
             renderQuests();
         }
     }
-    
-    // 5. Поздравление с днём рождения
     if(event.specialFor && (myName === event.specialFor || myName.includes(event.specialFor))) {
         setTimeout(function() {
             alert('🎉 С ДНЁМ РОЖДЕНИЯ, ' + myName + '! 🎉\n\nСегодня тебе особый подарок: +' + (event.reward || 100) + ' яиц!');
@@ -6008,19 +5865,9 @@ function applyDailyEvent() {
         }, 1500);
     }
 }
-
 // ========== НОВЫЙ ЧАТ: МАГИЧЕСКИЙ ШАР ==========
-// Список ответов магического шара
-const magicAnswers = [
-    "Да", "Нет", "Возможно", "Скорее не", "Спроси у звезд", 
-    "Боже упаси", "Удочери меня", "Мой третий глаз видит, что.... ты лохушка", 
-    "Тильдочка", "А как ты считаешь кто разумнее, Кира или одноклеточная молекула без разума?", 
-    "Квэдрэт, сасать ёпта, эээ сикс севен..., чики бамбони, эпштейн"
-];
-
-// Стикеры (модные картинки)
+const magicAnswers = ["Да", "Нет", "Возможно", "Скорее не", "Спроси у звезд", "Боже упаси", "Удочери меня", "Мой третий глаз видит, что.... ты лохушка", "Тильдочка", "А как ты считаешь кто разумнее, Кира или одноклеточная молекула без разума?", "Квэдрэт, сасать ёпта, эээ сикс севен..., чики бамбони, эпштейн"];
 const stickers = ["🗿", "🤨", "🐧", "🤡", "💀", "👽", "🔥", "✨"];
-
 function initStickerButtons() {
     const container = document.getElementById('stickerButtons');
     if(!container) return;
@@ -6033,11 +5880,9 @@ function initStickerButtons() {
         container.appendChild(btn);
     });
 }
-
 function sendSticker(sticker) {
     sendMagicMessageText(sticker);
 }
-
 function sendMagicMessage() {
     const input = document.getElementById('magicMessageInput');
     const text = input.value.trim();
@@ -6045,10 +5890,8 @@ function sendMagicMessage() {
     sendMagicMessageText(text);
     input.value = '';
 }
-
 function sendMagicMessageText(text) {
     const avatarData = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
-    
     db.ref('magicChat').push({
         name: myName,
         text: text,
@@ -6056,8 +5899,6 @@ function sendMagicMessageText(text) {
         avatarType: avatarData.type,
         avatarValue: avatarData.value
     }).catch(err => console.error("Ошибка отправки в магический чат:", err));
-    
-    // Если сообщение начинается с "?" - отвечаем магическим шаром
     if(text.startsWith('?')) {
         const answer = magicAnswers[Math.floor(Math.random() * magicAnswers.length)];
         setTimeout(() => {
@@ -6071,7 +5912,6 @@ function sendMagicMessageText(text) {
         }, 500);
     }
 }
-
 function loadMagicMessages() {
     db.ref('magicChat').limitToLast(50).on('value', (snapshot) => {
         const messages = [];
@@ -6086,31 +5926,25 @@ function loadMagicMessages() {
             });
         });
         messages.sort((a, b) => a.ts - b.ts);
-        
         const container = document.getElementById('magicMessagesList');
         if(!container) return;
-        
         const wasAtBottom = container.scrollHeight - container.scrollTop < 100;
         container.innerHTML = '';
-        
         messages.forEach(msg => {
             const div = document.createElement('div');
             div.className = 'magic-message';
             if(msg.name === "🔮 MagicBallBot") div.classList.add('magic-message-bot');
-            
             let avatarHtml = '';
             if(msg.avatarType === 'emoji') {
                 avatarHtml = '<span class="message-avatar" style="font-size:16px;">' + escapeHtml(msg.avatarValue) + '</span>';
             } else {
                 avatarHtml = '<span class="message-avatar"><img src="' + msg.avatarValue + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover"></span>';
             }
-            
             let timeStr = '';
             if(msg.ts) {
                 const date = new Date(msg.ts);
                 timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
-            
             div.innerHTML = `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     ${avatarHtml}
@@ -6121,15 +5955,11 @@ function loadMagicMessages() {
             `;
             container.appendChild(div);
         });
-        
         if(wasAtBottom) {
             container.scrollTop = container.scrollHeight;
         }
     });
 }
-
-// ========== ЗАПУСК ВСЕГО ==========
-// Дополнительно: обновляем событие при смене дня (каждые 24 часа)
 setInterval(function() {
     var now = new Date();
     var lastCheck = localStorage.getItem('tildochka_last_date_check');
@@ -6139,9 +5969,7 @@ setInterval(function() {
         applyDailyEvent();
         generateDailyQuests(false);
     }
-}, 3600000); // Проверка каждый час
-
-      </script>
-
+}, 3600000);
+</script>
 </body>
-                  </html>
+                                                                                                </html>
