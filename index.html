@@ -1219,14 +1219,9 @@ function updateAdminBadge() {
 // ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
 function loadAllData() {
     var loadingDiv = document.getElementById('customLoading');
-    if(loadingDiv) {
-        loadingDiv.style.display = 'flex';
-        loadingDiv.style.opacity = '1';
-    }
-    
+    if(loadingDiv) loadingDiv.style.display = 'flex';
     document.getElementById('loading').style.display = 'none';
     
-    // Запускаем анекдоты (будут крутиться до конца загрузки)
     var jokeInterval = setInterval(function() {
         var jokeSpan = document.getElementById('loadingJoke');
         if(jokeSpan && window.loadingJokes && window.loadingJokes.length > 0) {
@@ -1242,171 +1237,71 @@ function loadAllData() {
         if(percentSpan) percentSpan.textContent = percent + '%';
     }
     
-    setProgress(5);
+    function finishLoading() {
+        clearInterval(jokeInterval);
+        if(loadingDiv) {
+            loadingDiv.style.opacity = '0';
+            setTimeout(function(){ loadingDiv.style.display = 'none'; }, 300);
+        }
+        document.getElementById('app').style.display = 'block';
+        showScreen('home');
+        applyDailyEvent();
+        initStickerButtons();
+    }
     
-    // Загружаем профиль
+    setProgress(5);
     loadProfile();
     setupOnline();
     
     var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
+    myEggs = savedEggs;
+    document.getElementById('headerEggs').textContent = myEggs;
+    setProgress(15);
     
-    // Основная загрузка - ждем данные пользователя
-    db.ref('users/'+myUid).once('value', function(s) {
+    if(typeof loadCustomCharacters === 'function') loadCustomCharacters();
+    setProgress(20);
+    
+    db.ref('users/' + myUid).once('value').then(function(s) {
         var userData = s.val() || {};
-        myEggs = (userData.eggs !== undefined) ? userData.eggs : savedEggs;
-        if(myEggs < savedEggs) {
-            myEggs = savedEggs;
-            db.ref('users/'+myUid).update({eggs: myEggs});
-        }
+        if(userData.eggs !== undefined) myEggs = userData.eggs;
+        if(myEggs < savedEggs) myEggs = savedEggs;
+        localStorage.setItem('tildochka_eggs', myEggs);
         document.getElementById('headerEggs').textContent = myEggs;
-        setProgress(25);
-        
         boughtAvatars = userData.boughtAvatars || [];
-        setProgress(40);
+        setProgress(35);
         
-        document.getElementById('app').style.display = 'block';
-        showScreen('home');
-        setProgress(50);
-        
-        // Собираем все промисы для параллельной загрузки остальных данных
-        var allPromises = [];
-        
-        // Чат
-        var chatPromise = new Promise(function(resolve) {
-            db.ref('chat').limitToLast(50).once('value', function() {
-                loadChatMessages(); // подписываемся на изменения
-                resolve();
-            });
+        return Promise.all([
+            db.ref('chat').limitToLast(50).once('value').then(function() { loadChatMessages(); }).catch(function(e){}),
+            db.ref('memes').limitToLast(30).once('value').then(function() { loadMemes(); }).catch(function(e){}),
+            db.ref('ideas').limitToLast(30).once('value').then(function() { loadIdeas(); }).catch(function(e){}),
+            db.ref('shorts').once('value').then(function() { loadShorts(); updateChannelUI(); }).catch(function(e){}),
+            db.ref('magicChat').once('value').then(function() { loadMagicMessages(); }).catch(function(e){}),
+            db.ref('quotes').once('value').then(function() { initQuotes(); }).catch(function(e){}),
+            new Promise(function(resolve) { loadGifts(); resolve(); })
+        ]);
+    }).then(function() {
+        setProgress(70);
+        var movieIds = Object.keys(moviesData);
+        var promises = movieIds.map(function(mid) {
+            return db.ref('reviews/' + mid).once('value').catch(function(){ return null; });
         });
-        allPromises.push(chatPromise);
-        
-        // Мемы
-        var memesPromise = new Promise(function(resolve) {
-            db.ref('memes').limitToLast(30).once('value', function() {
-                loadMemes();
-                resolve();
-            });
+        var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+        games.forEach(function(g) {
+            promises.push(db.ref('gameRatings/' + g).once('value').then(function() { loadLeaderboard(g); }).catch(function(){}));
         });
-        allPromises.push(memesPromise);
-        
-        // Идеи
-        var ideasPromise = new Promise(function(resolve) {
-            db.ref('ideas').limitToLast(30).once('value', function() {
-                loadIdeas();
-                resolve();
-            });
-        });
-        allPromises.push(ideasPromise);
-        
-        // Шортсы
-        var shortsPromise = new Promise(function(resolve) {
-            db.ref('shorts').once('value', function() {
-                loadShorts();
-              // После loadShorts() добавьте:
-                updateChannelUI();
-                resolve();
-            });
-        });
-        allPromises.push(shortsPromise);
-        
-        // Рейтинги фильмов
-        var ratingsPromise = new Promise(function(resolve) {
-            loadAllRatings();
-            // Ждем загрузки всех рейтингов фильмов
-            var movieIds = Object.keys(moviesData);
-            var loadedMovies = 0;
-            movieIds.forEach(function(mid) {
-                db.ref('reviews/'+mid).once('value', function() {
-                    loadedMovies++;
-                    if(loadedMovies === movieIds.length) resolve();
-                });
-            });
-        });
-        allPromises.push(ratingsPromise);
-        
-        // Лидерборды игр
-        // Загрузка рейтингов игр
-var gamesLeaderboardPromise = new Promise(function(resolve) {
-    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-    var loadedGames = 0;
-    games.forEach(function(g) {
-        db.ref('gameRatings/'+g).once('value', function() {
-            loadLeaderboard(g);
-            loadedGames++;
-            if(loadedGames === games.length) {
-                // Дополнительно вызываем загрузку рейтингов для отображения звезд
-                resolve();
-            }
-        });
+        return Promise.all(promises);
+    }).then(function() {
+        setProgress(85);
+        generateDailyQuests(false);
+        setupFriendNotifications();
+        ensureInviteListener();
+        setProgress(100);
+        finishLoading();
+    }).catch(function(err) {
+        console.error('Ошибка:', err);
+        setProgress(100);
+        finishLoading();
     });
-});
-allPromises.push(gamesLeaderboardPromise);
-        
-        // Цитаты
-        var quotesPromise = new Promise(function(resolve) {
-            try { 
-                initQuotes(); 
-                db.ref('quotes').once('value', function() {
-                    resolve();
-                });
-            } catch(e) { resolve(); }
-        });
-        allPromises.push(quotesPromise);
-        
-        // Подарки
-        var giftsPromise = new Promise(function(resolve) {
-            loadGifts();
-            setTimeout(resolve, 500); // небольшой таймаут только для подарков, они не критичны
-        });
-        allPromises.push(giftsPromise);
-        
-        // Задания
-        var questsPromise = new Promise(function(resolve) {
-            generateDailyQuests(false);
-            resolve();
-        });
-        allPromises.push(questsPromise);
-        
-        // Друзья
-        var friendsPromise = new Promise(function(resolve) {
-            setupFriendNotifications();
-            resolve();
-        });
-        allPromises.push(friendsPromise);
-        
-        // МАГИЧЕСКИЙ ШАР (новая коллекция)
-        var magicPromise = new Promise(function(resolve) {
-            db.ref('magicChat').once('value', function() {
-                loadMagicMessages();
-                resolve();
-            });
-        });
-        allPromises.push(magicPromise);
-        
-        setProgress(60);
-        
-        // Ждем ВСЕ загрузки
-        Promise.all(allPromises).then(function() {
-            setProgress(100);
-            clearInterval(jokeInterval);
-            if(loadingDiv) {
-                loadingDiv.style.opacity = '0';
-                setTimeout(function(){
-                    loadingDiv.style.display = 'none';
-                }, 300);
-            }
-            console.log('✅ ВСЕ ДАННЫЕ ЗАГРУЖЕНЫ!');
-            // Применяем ежедневное событие (праздник) после полной загрузки
-            applyDailyEvent();
-            initStickerButtons();
-        });
-    });
-    
-    setInterval(syncOnlineProfile, 5000);
-  // В КОНЦЕ ФУНКЦИИ loadAllData(), ПЕРЕД ЗАКРЫВАЮЩЕЙ СКОБКОЙ, ДОБАВЬТЕ:
-
-ensureInviteListener();
-console.log('✅ Слушатель приглашений активирован');
 }
 
 // Инициализация совместной рисовалки
