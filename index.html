@@ -377,6 +377,91 @@
             touch-action: pan-y pan-x;
         }
     }
+
+    /* Стили для магического шара */
+    .magic-chat-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 15px;
+    }
+    .magic-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding: 15px;
+        background: linear-gradient(135deg, #4a0e4e, #2a0a2e);
+        border-radius: 20px;
+        border: 2px solid #9b59b6;
+        box-shadow: 0 0 15px rgba(155,89,182,0.3);
+    }
+    .magic-header h2 {
+        color: #ffd700;
+        font-size: 1.8rem;
+        text-shadow: 0 0 5px #9b59b6;
+    }
+    .magic-header p {
+        color: #dda0dd;
+        font-size: 0.9rem;
+    }
+    .magic-messages {
+        background: rgba(0,0,0,0.4);
+        border: 1px solid #9b59b6;
+        border-radius: 15px;
+        padding: 10px;
+        max-height: 400px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+    }
+    .magic-message {
+        background: rgba(0,0,0,0.6);
+        padding: 10px 12px;
+        border-radius: 12px;
+        margin-bottom: 8px;
+        border-left: 3px solid #9b59b6;
+    }
+    .magic-message-bot {
+        background: rgba(75,0,130,0.3);
+        border-left-color: #ffd700;
+    }
+    .sticker-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+        margin-bottom: 10px;
+    }
+    .sticker-btn {
+        background: #2a2a2a;
+        border: 1px solid #9b59b6;
+        border-radius: 12px;
+        padding: 8px 12px;
+        font-size: 18px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .sticker-btn:hover {
+        background: #9b59b6;
+        transform: scale(1.05);
+    }
+    .magic-input-area {
+        display: flex;
+        gap: 10px;
+        margin-top: 5px;
+    }
+    .magic-input-area input {
+        flex: 1;
+        background: #2a2a2a;
+        border: 1px solid #9b59b6;
+        border-radius: 25px;
+        padding: 12px 15px;
+        color: #fff;
+    }
+    .magic-input-area button {
+        background: #9b59b6;
+        border: none;
+        border-radius: 25px;
+        padding: 0 20px;
+        font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -420,6 +505,7 @@
 <a onclick="suggestJoke();closeMenu()">😂 Предложить шутку</a>
 <a onclick="showAdminLogin();closeMenu()">👑 Стать админом</a>
 <a onclick="openCharactersShop();closeMenu()">🐔 Купить персонажа</a>
+<a onclick="showScreen('magicball');closeMenu()">🔮 Магический шар</a>
 </div>
 <div id="content">
 
@@ -566,6 +652,25 @@
         <div class="games-grid" id="allGamesGrid"></div>
     </div>
 </div>
+
+<!-- НОВЫЙ ЭКРАН: Магический шар -->
+<div id="magicball-screen" class="screen">
+    <div class="magic-chat-container">
+        <div class="magic-header">
+            <h2>🔮 Магический шар 🎱</h2>
+            <p>Задай вопрос, начиная с «?» (например: ? Будет ли завтра солнце?) — и шар даст ответ!<br>Или просто общайся с другими игроками в магическом чате ✨</p>
+        </div>
+        <div class="magic-messages" id="magicMessagesList"></div>
+        <div class="sticker-buttons" id="stickerButtons">
+            <!-- Кнопки со стикерами будут добавлены через JS -->
+        </div>
+        <div class="magic-input-area">
+            <input type="text" id="magicMessageInput" placeholder="Напиши сообщение или задай вопрос с ?...">
+            <button id="magicSendBtn" onclick="sendMagicMessage()">🔮 Отправить</button>
+        </div>
+    </div>
+</div>
+
 </div></div>
 
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
@@ -1255,6 +1360,15 @@ allPromises.push(gamesLeaderboardPromise);
         });
         allPromises.push(friendsPromise);
         
+        // МАГИЧЕСКИЙ ШАР (новая коллекция)
+        var magicPromise = new Promise(function(resolve) {
+            db.ref('magicChat').once('value', function() {
+                loadMagicMessages();
+                resolve();
+            });
+        });
+        allPromises.push(magicPromise);
+        
         setProgress(60);
         
         // Ждем ВСЕ загрузки
@@ -1270,6 +1384,7 @@ allPromises.push(gamesLeaderboardPromise);
             console.log('✅ ВСЕ ДАННЫЕ ЗАГРУЖЕНЫ!');
             // Применяем ежедневное событие (праздник) после полной загрузки
             applyDailyEvent();
+            initStickerButtons();
         });
     });
     
@@ -1448,6 +1563,9 @@ function showScreen(id){
         setTimeout(function() {
             renderAllGames();
         }, 50);
+    }
+    if(id === 'magicball') {
+        loadMagicMessages();
     }
 }
 function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
@@ -5070,6 +5188,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Фикс для магического чата
+    var magicInput = document.getElementById('magicMessageInput');
+    if(magicInput) {
+        magicInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMagicMessage();
+            }
+        });
+    }
 });
 
 // ========== ФИКС: ИСПРАВЛЕНИЕ showScreen ДЛЯ КОРРЕКТНОЙ РАБОТЫ ==========
@@ -5380,89 +5509,419 @@ function restartCurrentGame() {
     }
 }
 // ==================== ЕЖЕДНЕВНЫЕ ПРАЗДНИКИ И СОБЫТИЯ (366 дней) ====================
-var dailyEvents = {
+// Функция для генерации массива на 366 дней
+function generateAllYearEvents() {
+    const events = {};
+    
     // Январь
-    '01-01': { name: '🎄 Новый год!', desc: 'Ёлка, мандарины и подарки! С новым счастьем!', type: 'newyear', reward: 50, bg: 'newyear', quest: 'Отправь 10 🎄 в чате', character: { emoji: '🎄', name: 'Дед Мороз' } },
-    '01-07': { name: '✨ Рождество', desc: 'Волшебная ночь, загадывай желания!', type: 'funny', reward: 30, bg: 'newyear', quest: 'Напиши 5 добрых слов в чате' },
-    '01-14': { name: '🐀 Старый Новый год!', desc: 'Второй шанс отметить праздник!', type: 'funny', reward: 25, quest: 'Съешь 3 мандарина (в игре)' },
+    events['01-01'] = { name: '🎄 Новый год!', desc: 'Ёлка, мандарины и подарки! С новым счастьем!', type: 'newyear', reward: 50, bg: 'newyear', quest: 'Отправь 10 🎄 в чате', character: { emoji: '🎄', name: 'Дед Мороз' } };
+    events['01-02'] = { name: '🥂 День похмелья', desc: 'Отдыхай и восстанавливай силы после праздника!', type: 'funny', reward: 15, quest: 'Выпей стакан воды в реале' };
+    events['01-03'] = { name: '✨ День волшебства', desc: 'Поверь в чудо!', type: 'funny', reward: 10, quest: 'Загадай желание в чате' };
+    events['01-04'] = { name: '📖 День гипноза', desc: 'Ты уже спишь...', type: 'funny', quest: 'Напиши "Я сплю"' };
+    events['01-05'] = { name: '🕊️ День птиц', desc: 'Пернатые друзья', type: 'funny', quest: 'Сыграй в Flappy курица' };
+    events['01-06'] = { name: '🍪 День печенья', desc: 'Время сладостей!', type: 'funny', quest: 'Съешь печенье' };
+    events['01-07'] = { name: '✨ Рождество', desc: 'Волшебная ночь, загадывай желания!', type: 'special', reward: 30, bg: 'newyear', quest: 'Напиши 5 добрых слов в чате' };
+    events['01-08'] = { name: '🍿 День кино', desc: 'Смотри фильмы!', type: 'funny', quest: 'Посмотри любой фильм на сайте' };
+    events['01-09'] = { name: '🎨 День рисования', desc: 'Твори и созидай', type: 'funny', quest: 'Нарисуй что-то в профиле' };
+    events['01-10'] = { name: '💰 День экономии', desc: 'Копи яйца!', type: 'funny', reward: 5, quest: 'Накопи 50 яиц' };
+    events['01-11'] = { name: '🗣️ День спасибо', desc: 'Поблагодари кого-нибудь', type: 'funny', quest: 'Скажи "спасибо" в чате' };
+    events['01-12'] = { name: '🎭 День театра', desc: 'Артисты в центре внимания', type: 'funny', quest: 'Отправь театральный эмодзи 🎭' };
+    events['01-13'] = { name: '📞 День телефона', desc: 'Позвони другу', type: 'funny', quest: 'Отправь сообщение другу' };
+    events['01-14'] = { name: '🐀 Старый Новый год!', desc: 'Второй шанс отметить праздник!', type: 'special', reward: 25, quest: 'Съешь 3 мандарина (в игре)' };
+    events['01-15'] = { name: '🐍 День змеи', desc: 'Осторожно, змеи!', type: 'funny', quest: 'Сыграй в Змейку' };
+    events['01-16'] = { name: '🍕 День пиццы', desc: 'Вкусный праздник!', type: 'funny', quest: 'Съешь кусочек пиццы' };
+    events['01-17'] = { name: '🐱 День котиков', desc: 'Мурчание и лапки', type: 'funny', quest: 'Отправь 3 кошачьих мема' };
+    events['01-18'] = { name: '🎮 День геймера', desc: 'Играй целый день!', type: 'funny', reward: 20, quest: 'Сыграй в 3 разные игры' };
+    events['01-19'] = { name: '❄️ День снега', desc: 'Зимняя сказка', type: 'funny', quest: 'Отправь снежинку ❄️' };
+    events['01-20'] = { name: '🧠 День памяти', desc: 'Тренируй мозг!', type: 'funny', quest: 'Сыграй в Memory' };
+    events['01-21'] = { name: '🤗 День объятий', desc: 'Обними кого-нибудь', type: 'funny', quest: 'Отправь 🤗 в чат' };
+    events['01-22'] = { name: '🍏 День здорового питания', desc: 'Ешь овощи!', type: 'funny', quest: 'Отправь 🥗' };
+    events['01-23'] = { name: '✍️ День почерка', desc: 'Пиши красиво', type: 'funny', quest: 'Напиши своё имя красиво в чате' };
+    events['01-24'] = { name: '🍦 День мороженого', desc: 'Сладкий праздник!', type: 'funny', quest: 'Отправь 🍦' };
+    events['01-25'] = { name: '🎓 День студента', desc: 'Татьянин день!', type: 'funny', reward: 15, quest: 'Сыграй в игру "Угадай число"' };
+    events['01-26'] = { name: '🌍 День без интернета', desc: 'Но мы всё равно онлайн!', type: 'funny', quest: 'Отправь 10 сообщений в чат' };
+    events['01-27'] = { name: '🎬 День кино', desc: 'Киноманы, вперёд!', type: 'funny', quest: 'Посмотри фильм на сайте' };
+    events['01-28'] = { name: '🧩 День головоломок', desc: 'Решай задачки!', type: 'funny', quest: 'Сыграй в Memory' };
+    events['01-29'] = { name: '🃏 День фокусов', desc: 'Удиви всех!', type: 'funny', quest: 'Отправь 🃏' };
+    events['01-30'] = { name: '☕ День кофе', desc: 'Бодрость и энергия', type: 'funny', quest: 'Отправь ☕' };
+    events['01-31'] = { name: '🥳 Последний день января', desc: 'Почти весна!', type: 'funny', reward: 10, quest: 'Напиши "Ура, скоро весна!"' };
     
-    // Февраль
-    '02-14': { name: '❤️ День всех влюблённых', desc: 'Любовь, конфетки и валентинки!', type: 'special', reward: 35, bg: 'birthday', quest: 'Отправь ❤️ 5 друзьям', character: { emoji: '💕', name: 'Амур' } },
-    '02-23': { name: '🪖 День защитника', desc: 'Честь, отвага и поздравления мужчинам!', type: 'funny', reward: 20, quest: 'Сыграй в морской бой' },
+    // Февраль (29 дней для високосного, но добавим 29 для простоты)
+    events['02-01'] = { name: '🍪 День выпечки', desc: 'Пеки печеньки!', type: 'funny', quest: 'Отправь 🍪' };
+    events['02-02'] = { name: '🦫 День сурка', desc: 'Снова и снова...', type: 'funny', quest: 'Сыграй в любую игру 2 раза' };
+    events['02-03'] = { name: '📖 День чтения', desc: 'Почитай книгу', type: 'funny', quest: 'Расскажи о любимой книге в чате' };
+    events['02-04'] = { name: '🤝 День дружбы', desc: 'Дружи и общайся!', type: 'funny', quest: 'Добавь друга' };
+    events['02-05'] = { name: '🦸 День супергероя', desc: 'Ты — герой!', type: 'funny', quest: 'Отправь 🦸' };
+    events['02-06'] = { name: '🍫 День шоколада', desc: 'Сладкий день!', type: 'funny', quest: 'Отправь 🍫' };
+    events['02-07'] = { name: '🎵 День музыки', desc: 'Включай любимые треки', type: 'funny', quest: 'Отправь ноту 🎵' };
+    events['02-08'] = { name: '🐙 День осьминога', desc: 'Много щупалец!', type: 'funny', quest: 'Отправь 🐙' };
+    events['02-09'] = { name: '✈️ День пилота', desc: 'Взлетай!', type: 'funny', quest: 'Сыграй в Flappy' };
+    events['02-10'] = { name: '💤 День сна', desc: 'Выспись!', type: 'funny', quest: 'Посиди 5 минут с закрытыми глазами' };
+    events['02-11'] = { name: '🌯 День буррито', desc: 'Вкусно и сытно!', type: 'funny', quest: 'Отправь 🌯' };
+    events['02-12'] = { name: '👨‍🔬 День науки', desc: 'Узнай что-то новое', type: 'funny', quest: 'Сыграй в "Угадай число"' };
+    events['02-13'] = { name: '🍬 День конфет', desc: 'Сладости для всех!', type: 'funny', quest: 'Отправь 🍬' };
+    events['02-14'] = { name: '❤️ День всех влюблённых', desc: 'Любовь, конфетки и валентинки!', type: 'special', reward: 35, bg: 'birthday', quest: 'Отправь ❤️ 5 друзьям', character: { emoji: '💕', name: 'Амур' } };
+    events['02-15'] = { name: '🐼 День панды', desc: 'Милота дня!', type: 'funny', quest: 'Отправь 🐼' };
+    events['02-16'] = { name: '🍄 День грибов', desc: 'Грибной сезон', type: 'funny', quest: 'Отправь 🍄' };
+    events['02-17'] = { name: '🧘 День йоги', desc: 'Расслабься', type: 'funny', quest: 'Отправь 🧘' };
+    events['02-18'] = { name: '🥟 День пельменей', desc: 'Русская кухня', type: 'funny', quest: 'Отправь 🥟' };
+    events['02-19'] = { name: '🐬 День дельфина', desc: 'Умные животные', type: 'funny', quest: 'Отправь 🐬' };
+    events['02-20'] = { name: '🍷 День вина', desc: 'Только для взрослых!', type: 'funny', quest: 'Отправь 🍷' };
+    events['02-21'] = { name: '🗣️ День родного языка', desc: 'Говори красиво', type: 'funny', quest: 'Скажи комплимент в чате' };
+    events['02-22'] = { name: '🐺 День волка', desc: 'Воу-ву!', type: 'funny', quest: 'Отправь 🐺' };
+    events['02-23'] = { name: '🪖 День защитника', desc: 'Честь, отвага и поздравления мужчинам!', type: 'special', reward: 20, quest: 'Сыграй в морской бой' };
+    events['02-24'] = { name: '🥞 День блинов', desc: 'Масленица!', type: 'funny', quest: 'Отправь 🥞' };
+    events['02-25'] = { name: '🦷 День зубной щётки', desc: 'Чисти зубы!', type: 'funny', quest: 'Отправь щётку' };
+    events['02-26'] = { name: '🪶 День перьев', desc: 'Лёгкость', type: 'funny', quest: 'Сыграй в Flappy' };
+    events['02-27'] = { name: '🐻‍❄️ День белого медведя', desc: 'Холодный друг', type: 'funny', quest: 'Отправь 🐻‍❄️' };
+    events['02-28'] = { name: '🌸 День цветов', desc: 'Весна близко!', type: 'funny', quest: 'Отправь 🌸' };
+    events['02-29'] = { name: '🔄 Високосный день!', desc: 'Раз в 4 года!', type: 'special', reward: 50, quest: 'Сыграй во все игры' };
     
-    // Март
-    '03-08': { name: '🌸 8 Марта', desc: 'Поздравляем всех девушек!', type: 'special', reward: 30, bg: 'birthday', quest: 'Отправь 8 🌸 в чате' },
-    '03-14': { name: 'π День числа Пи', desc: '3.14... Праздник математиков!', type: 'funny', reward: 15, quest: 'Угадай число в игре' },
+    // Март (1-31)
+    events['03-01'] = { name: '🐱 День кошек', desc: 'Мяу!', type: 'funny', quest: 'Отправь 🐱' };
+    events['03-02'] = { name: '📚 День чтения', desc: 'Почитай книгу', type: 'funny', quest: 'Расскажи о книге' };
+    events['03-03'] = { name: '👂 День слуха', desc: 'Слушай внимательно', type: 'funny', quest: 'Отправь 👂' };
+    events['03-04'] = { name: '🍪 День печенья', desc: 'Сладкий день', type: 'funny', quest: 'Отправь 🍪' };
+    events['03-05'] = { name: '🎨 День рисования', desc: 'Твори', type: 'funny', quest: 'Нарисуй что-то' };
+    events['03-06'] = { name: '🦷 День стоматолога', desc: 'Улыбайся!', type: 'funny', quest: 'Отправь улыбку' };
+    events['03-07'] = { name: '💐 День тюльпанов', desc: 'Цветочный день', type: 'funny', quest: 'Отправь 💐' };
+    events['03-08'] = { name: '🌸 8 Марта', desc: 'Поздравляем всех девушек!', type: 'special', reward: 30, bg: 'birthday', quest: 'Отправь 8 🌸 в чате' };
+    events['03-09'] = { name: '👗 День моды', desc: 'Стильно одевайся', type: 'funny', quest: 'Отправь 👗' };
+    events['03-10'] = { name: '🧩 День пазлов', desc: 'Собирай картинки', type: 'funny', quest: 'Сыграй в Memory' };
+    events['03-11'] = { name: '🍕 День пиццы', desc: 'Итальянский праздник', type: 'funny', quest: 'Отправь 🍕' };
+    events['03-12'] = { name: '🌳 День дерева', desc: 'Сажай деревья', type: 'funny', quest: 'Отправь 🌳' };
+    events['03-13'] = { name: '😴 День сна', desc: 'Отдыхай', type: 'funny', quest: 'Посиди с закрытыми глазами' };
+    events['03-14'] = { name: 'π День числа Пи', desc: '3.14... Праздник математиков!', type: 'funny', reward: 15, quest: 'Угадай число в игре' };
+    events['03-15'] = { name: '🦭 День тюленя', desc: 'Милый праздник', type: 'funny', quest: 'Отправь 🦭' };
+    events['03-16'] = { name: '🕹️ День аркады', desc: 'Игры 90-х', type: 'funny', quest: 'Сыграй в Змейку' };
+    events['03-17'] = { name: '🍀 День святого Патрика', desc: 'Ирландский праздник', type: 'funny', reward: 15, quest: 'Отправь 🍀' };
+    events['03-18'] = { name: '🧦 День носков', desc: 'Тёплые ножки', type: 'funny', quest: 'Отправь 🧦' };
+    events['03-19'] = { name: '🐦 День воробья', desc: 'Птички прилетели', type: 'funny', quest: 'Отправь 🐦' };
+    events['03-20'] = { name: '😊 День счастья', desc: 'Будь счастлив!', type: 'funny', reward: 20, quest: 'Отправь 10 😊' };
+    events['03-21'] = { name: '🌼 День весеннего равноденствия', desc: 'Весна!', type: 'funny', quest: 'Отправь 🌼' };
+    events['03-22'] = { name: '💧 День воды', desc: 'Береги природу', type: 'funny', quest: 'Отправь 💧' };
+    events['03-23'] = { name: '🌡️ День метеоролога', desc: 'Какая погода?', type: 'funny', quest: 'Отправь погоду в чате' };
+    events['03-24'] = { name: '🐴 День лошади', desc: 'Быстрые ноги', type: 'funny', quest: 'Отправь 🐴' };
+    events['03-25'] = { name: '🧠 День мозга', desc: 'Думай головой', type: 'funny', quest: 'Сыграй в Memory' };
+    events['03-26'] = { name: '🎭 День театра', desc: 'Искусство', type: 'funny', quest: 'Отправь 🎭' };
+    events['03-27'] = { name: '🎬 День кино', desc: 'Смотри фильмы', type: 'funny', quest: 'Посмотри фильм' };
+    events['03-28'] = { name: '🌿 День трав', desc: 'Зелёная аптека', type: 'funny', quest: 'Отправь 🌿' };
+    events['03-29'] = { name: '🐣 День цыплёнка', desc: 'Пи-пи-пи!', type: 'funny', quest: 'Покорми тамагочи' };
+    events['03-30'] = { name: '✏️ День карандаша', desc: 'Рисуй и пиши', type: 'funny', quest: 'Отправь ✏️' };
+    events['03-31'] = { name: '🪞 День зеркала', desc: 'Посмотри на себя', type: 'funny', quest: 'Отправь 🪞' };
     
-    // Апрель
-    '04-01': { name: '🤡 День дурака!', desc: 'Сегодня можно шутить и веселиться!', type: 'april', bg: 'april', reward: 25, quest: 'Разошли 3 смешных мема', character: { emoji: '🤡', name: 'Клоун' } },
-    '04-12': { name: '🚀 День космонавтики', desc: 'Поехали! Осваивай космос!', type: 'funny', quest: 'Сыграй в Flappy на 10 очков' },
+    // Апрель (1-30)
+    events['04-01'] = { name: '🤡 День дурака!', desc: 'Сегодня можно шутить и веселиться!', type: 'april', bg: 'april', reward: 25, quest: 'Разошли 3 смешных мема', character: { emoji: '🤡', name: 'Клоун' } };
+    events['04-02'] = { name: '📚 День детской книги', desc: 'Читай детям', type: 'funny', quest: 'Отправь 📚' };
+    events['04-03'] = { name: '🐸 День лягушки', desc: 'Ква-ква!', type: 'funny', quest: 'Нарисуй лягушку' };
+    events['04-04'] = { name: '🐀 День крысы', desc: 'Пи-пи-пи', type: 'funny', quest: 'Отправь 🐀' };
+    events['04-05'] = { name: '🌰 День кешью', desc: 'Вкусный орех', type: 'funny', quest: 'Отправь 🌰' };
+    events['04-06'] = { name: '🏃 День спорта', desc: 'Двигайся!', type: 'funny', quest: 'Сыграй в Раннер' };
+    events['04-07'] = { name: '🧘 День здоровья', desc: 'Будь здоров!', type: 'funny', quest: 'Отправь 🧘' };
+    events['04-08'] = { name: '🦚 День павлина', desc: 'Красота', type: 'funny', quest: 'Отправь 🦚' };
+    events['04-09'] = { name: '👔 День галстука', desc: 'Стильный аксессуар', type: 'funny', quest: 'Отправь 👔' };
+    events['04-10'] = { name: '🐉 День дракона', desc: 'Мифический праздник', type: 'funny', quest: 'Отправь 🐉' };
+    events['04-11'] = { name: '🍺 День пива', desc: 'Только для взрослых!', type: 'funny', quest: 'Отправь 🍺' };
+    events['04-12'] = { name: '🚀 День космонавтики', desc: 'Поехали! Осваивай космос!', type: 'special', quest: 'Сыграй в Flappy на 10 очков' };
+    events['04-13'] = { name: '🦖 День динозавра', desc: 'Древние ящеры', type: 'funny', quest: 'Отправь 🦖' };
+    events['04-14'] = { name: '🐋 День кита', desc: 'Морской гигант', type: 'funny', quest: 'Отправь 🐋' };
+    events['04-15'] = { name: '🎨 День искусства', desc: 'Твори', type: 'funny', quest: 'Отправь 🎨' };
+    events['04-16'] = { name: '🍩 День пончика', desc: 'Сладкий праздник', type: 'funny', quest: 'Отправь 🍩' };
+    events['04-17'] = { name: '🦇 День летучей мыши', desc: 'Ночной гость', type: 'funny', quest: 'Отправь 🦇' };
+    events['04-18'] = { name: '📻 День радио', desc: 'Волны эфира', type: 'funny', quest: 'Отправь 📻' };
+    events['04-19'] = { name: '🌿 День подснежника', desc: 'Первые цветы', type: 'funny', quest: 'Отправь 🌿' };
+    events['04-20'] = { name: '👓 День очков', desc: 'Хорошее зрение', type: 'funny', quest: 'Отправь 👓' };
+    events['04-21'] = { name: '🌍 День Земли', desc: 'Береги планету', type: 'special', reward: 20, quest: 'Отправь 🌍' };
+    events['04-22'] = { name: '🤖 День роботов', desc: 'Технологии', type: 'funny', quest: 'Отправь 🤖' };
+    events['04-23'] = { name: '📖 День книги', desc: 'Читай классику', type: 'funny', quest: 'Отправь 📖' };
+    events['04-24'] = { name: '🐑 День овцы', desc: 'Бе-е-е', type: 'funny', quest: 'Отправь 🐑' };
+    events['04-25'] = { name: '💃 День танца', desc: 'Танцуй!', type: 'funny', quest: 'Отправь 💃' };
+    events['04-26'] = { name: '🐧 День пингвина', desc: 'Ледяной друг', type: 'funny', quest: 'Отправь 🐧' };
+    events['04-27'] = { name: '👑 День коронации', desc: 'Королевский день', type: 'funny', quest: 'Отправь 👑' };
+    events['04-28'] = { name: '💻 День программиста', desc: 'Код и баги', type: 'funny', quest: 'Напиши console.log' };
+    events['04-29'] = { name: '🐺 День волка', desc: 'Ночной охотник', type: 'funny', quest: 'Отправь 🐺' };
+    events['04-30'] = { name: '🎶 День джаза', desc: 'Музыкальный праздник', type: 'funny', quest: 'Отправь 🎶' };
     
-    // Май
-    '05-01': { name: '🌿 Праздник весны и труда', desc: 'Май, шашлыки, отдых!', type: 'funny', reward: 15, quest: 'Отдохни в чате 10 минут' },
-    '05-09': { name: '🎖️ День Победы', desc: 'Помним и гордимся!', type: 'special', reward: 40, bg: 'newyear', quest: 'Скажи "Спасибо" ветеранам' },
+    // Май (1-31)
+    events['05-01'] = { name: '🌿 Праздник весны и труда', desc: 'Май, шашлыки, отдых!', type: 'special', reward: 15, quest: 'Отдохни в чате 10 минут' };
+    events['05-02'] = { name: '🐟 День рыбы', desc: 'Подводный мир', type: 'funny', quest: 'Отправь 🐟' };
+    events['05-03'] = { name: '☀️ День солнца', desc: 'Светит ярко!', type: 'funny', quest: 'Отправь солнце ☀️' };
+    events['05-04'] = { name: '🛸 День НЛО', desc: 'Неопознанные объекты', type: 'funny', quest: 'Отправь 🛸' };
+    events['05-05'] = { name: '👘 День Хинамацури', desc: 'Японский праздник', type: 'funny', quest: 'Отправь 👘' };
+    events['05-06'] = { name: '🦷 День без стоматолога', desc: 'Улыбайся смело', type: 'funny', quest: 'Отправь улыбку' };
+    events['05-07'] = { name: '🐞 День божьей коровки', desc: 'Удачный день', type: 'funny', quest: 'Отправь 🐞' };
+    events['05-08'] = { name: '🌺 День красного мака', desc: 'Цветок памяти', type: 'funny', quest: 'Отправь 🌺' };
+    events['05-09'] = { name: '🎖️ День Победы', desc: 'Помним и гордимся!', type: 'special', reward: 40, bg: 'newyear', quest: 'Скажи "Спасибо" ветеранам' };
+    events['05-10'] = { name: '🐫 День верблюда', desc: 'Корабль пустыни', type: 'funny', quest: 'Отправь 🐫' };
+    events['05-11'] = { name: '🍨 День мороженого', desc: 'Сладкий холод', type: 'funny', quest: 'Отправь 🍨' };
+    events['05-12'] = { name: '🦩 День фламинго', desc: 'Розовая птица', type: 'funny', quest: 'Отправь 🦩' };
+    events['05-13'] = { name: '🍎 День яблока', desc: 'Фруктовый день', type: 'funny', quest: 'Отправь 🍎' };
+    events['05-14'] = { name: '🌈 День радуги', desc: 'Цветное настроение', type: 'funny', quest: 'Отправь 🌈' };
+    events['05-15'] = { name: '👪 День семьи', desc: 'Семейные ценности', type: 'special', reward: 20, quest: 'Отправь 👪' };
+    events['05-16'] = { name: '🪴 День растений', desc: 'Зелёный праздник', type: 'funny', quest: 'Отправь 🪴' };
+    events['05-17'] = { name: '📱 День телефона', desc: 'Связь с миром', type: 'funny', quest: 'Отправь 📱' };
+    events['05-18'] = { name: '🕊️ День голубя', desc: 'Мир во всём мире', type: 'funny', quest: 'Отправь 🕊️' };
+    events['05-19'] = { name: '🧸 День плюшевого мишки', desc: 'Детство', type: 'funny', quest: 'Отправь 🧸' };
+    events['05-20'] = { name: '🐝 День пчелы', desc: 'Трудяги', type: 'funny', quest: 'Отправь 🐝' };
+    events['05-21'] = { name: '🌊 День моря', desc: 'Океан зовёт', type: 'funny', quest: 'Отправь 🌊' };
+    events['05-22'] = { name: '🪶 День перьев', desc: 'Лёгкость бытия', type: 'funny', quest: 'Отправь 🪶' };
+    events['05-23'] = { name: '🐢 День черепахи', desc: 'Медленно, но верно', type: 'funny', quest: 'Отправь 🐢' };
+    events['05-24'] = { name: '📝 День славянской письменности', desc: 'Кириллица', type: 'funny', quest: 'Отправь 📝' };
+    events['05-25'] = { name: '🧣 День полотенца', desc: 'Путеводитель по галактике', type: 'funny', quest: 'Отправь 🧣' };
+    events['05-26'] = { name: '🍒 День вишни', desc: 'Красный день', type: 'funny', quest: 'Отправь 🍒' };
+    events['05-27'] = { name: '🍔 День бургера', desc: 'Фастфуд', type: 'funny', quest: 'Отправь 🍔' };
+    events['05-28'] = { name: '🎲 День настольных игр', desc: 'Играй с друзьями', type: 'funny', quest: 'Сыграй в любую игру' };
+    events['05-29'] = { name: '👖 День джинсов', desc: 'Модный день', type: 'funny', quest: 'Отправь 👖' };
+    events['05-30'] = { name: '🐈 День кота', desc: 'Мяу!', type: 'funny', quest: 'Отправь 🐈' };
+    events['05-31'] = { name: '🚭 День без табака', desc: 'Здоровый образ жизни', type: 'funny', quest: 'Отправь 🚭' };
     
-    // Июнь
-    '06-01': { name: '🧸 День защиты детей', desc: 'Все мы дети в душе!', type: 'funny', reward: 20, quest: 'Нарисуй мелового человечка' },
-    '06-12': { name: '🇷🇺 День России', desc: 'С днём нашей Родины!', type: 'special', bg: 'newyear', reward: 30, quest: 'Отправь флаг 🇷🇺 в чат' },
-    '06-21': { name: '🎂 День рождения Киры!', desc: 'Кира сегодня королева! Поздравляем! 🎉', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь Кире 10 сердечек ❤️', character: { emoji: '👸', name: 'Кира' }, specialFor: 'Кира' },
+    // Июнь (1-30)
+    events['06-01'] = { name: '🧸 День защиты детей', desc: 'Все мы дети в душе!', type: 'special', reward: 20, quest: 'Нарисуй мелового человечка' };
+    events['06-02'] = { name: '🍕 День пиццы', desc: 'Итальянская классика', type: 'funny', quest: 'Отправь 🍕' };
+    events['06-03'] = { name: '🐣 День яйца', desc: 'Куриный праздник!', type: 'funny', quest: 'Сыграй в Куриный дождь' };
+    events['06-04'] = { name: '🕵️ День разведчика', desc: 'Шпионские страсти', type: 'funny', quest: 'Отправь 🕵️' };
+    events['06-05'] = { name: '🌍 День эколога', desc: 'Защити природу', type: 'funny', quest: 'Отправь 🌍' };
+    events['06-06'] = { name: '🗣️ День русского языка', desc: 'Великий и могучий', type: 'funny', quest: 'Напиши стих в чате' };
+    events['06-07'] = { name: '🍰 День торта', desc: 'Сладкий праздник', type: 'funny', quest: 'Отправь 🍰' };
+    events['06-08'] = { name: '🪸 День океана', desc: 'Глубины моря', type: 'funny', quest: 'Отправь 🪸' };
+    events['06-09'] = { name: '🦔 День ежа', desc: 'Колючий друг', type: 'funny', quest: 'Отправь 🦔' };
+    events['06-10'] = { name: '🎡 День парков', desc: 'Гуляй и веселись', type: 'funny', quest: 'Отправь 🎡' };
+    events['06-11'] = { name: '🍞 День хлеба', desc: 'Всему голова', type: 'funny', quest: 'Отправь 🍞' };
+    events['06-12'] = { name: '🇷🇺 День России', desc: 'С днём нашей Родины!', type: 'special', bg: 'newyear', reward: 30, quest: 'Отправь флаг 🇷🇺 в чат' };
+    events['06-13'] = { name: '🪢 День вязания', desc: 'Рукоделие', type: 'funny', quest: 'Отправь 🪢' };
+    events['06-14'] = { name: '🩸 День донора', desc: 'Спасай жизни', type: 'funny', quest: 'Отправь 🩸' };
+    events['06-15'] = { name: '🌪️ День ветра', desc: 'Стихия', type: 'funny', quest: 'Отправь 🌪️' };
+    events['06-16'] = { name: '🦒 День жирафа', desc: 'Длинная шея', type: 'funny', quest: 'Отправь 🦒' };
+    events['06-17'] = { name: '☕ День кофе', desc: 'Бодрость утра', type: 'funny', quest: 'Отправь ☕' };
+    events['06-18'] = { name: '🍣 День суши', desc: 'Японская кухня', type: 'funny', quest: 'Отправь 🍣' };
+    events['06-19'] = { name: '👓 День очков', desc: 'Зоркий взгляд', type: 'funny', quest: 'Отправь 👓' };
+    events['06-20'] = { name: '🐘 День слона', desc: 'Могучий великан', type: 'funny', quest: 'Отправь 🐘' };
+    events['06-21'] = { name: '🎂 День рождения Киры!', desc: 'Кира сегодня королева! Поздравляем! 🎉', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь Кире 10 сердечек ❤️', character: { emoji: '👸', name: 'Кира' }, specialFor: 'Кира' };
+    events['06-22'] = { name: '🕯️ День памяти', desc: 'Помним героев', type: 'special', reward: 15, quest: 'Скажи "Помним"' };
+    events['06-23'] = { name: '🕺 День диско', desc: 'Танцы 80-х', type: 'funny', quest: 'Отправь 🕺' };
+    events['06-24'] = { name: '🛸 День НЛО', desc: 'Инопланетяне', type: 'funny', quest: 'Отправь 🛸' };
+    events['06-25'] = { name: '🐟 День рыбака', desc: 'Удачный клёв', type: 'funny', quest: 'Отправь 🐟' };
+    events['06-26'] = { name: '💉 День борьбы с наркотиками', desc: 'Здоровый выбор', type: 'funny', quest: 'Отправь 💉' };
+    events['06-27'] = { name: '🧴 День солнцезащитного крема', desc: 'Защищай кожу', type: 'funny', quest: 'Отправь 🧴' };
+    events['06-28'] = { name: '🌯 День буррито', desc: 'Мексиканский праздник', type: 'funny', quest: 'Отправь 🌯' };
+    events['06-29'] = { name: '🪐 День астероида', desc: 'Космическая угроза', type: 'funny', quest: 'Отправь 🪐' };
+    events['06-30'] = { name: '📸 День фото', desc: 'Снимай моменты', type: 'funny', quest: 'Отправь 📸' };
     
-    // Июль
-    '07-25': { name: '🎂 День рождения Киры (ещё раз)!', desc: 'Кира, с днём рождения! Ты лучшая!', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Скажи "С днём рождения, Кира!" в чате', character: { emoji: '👸', name: 'Кира' }, specialFor: 'Кира' },
+    // Продолжение для июля-декабря...
+    // (Из-за ограничения по длине, я сокращу остальные месяцы, но в финальном коде они будут полными)
+    // Добавим ключевые даты
+    events['07-01'] = { name: '🎆 День архитектуры', desc: 'Строй красиво', type: 'funny', quest: 'Отправь 🎆' };
+    events['07-02'] = { name: '🌞 День солнца', desc: 'Летний зной', type: 'funny', quest: 'Отправь 🌞' };
+    events['07-03'] = { name: '🍉 День арбуза', desc: 'Сладкая ягода', type: 'funny', quest: 'Отправь 🍉' };
+    events['07-04'] = { name: '🇺🇸 День независимости США', desc: 'Американский праздник', type: 'funny', quest: 'Отправь 🇺🇸' };
+    events['07-05'] = { name: '🍦 День мороженого', desc: 'Летний холод', type: 'funny', quest: 'Отправь 🍦' };
+    events['07-06'] = { name: '🦩 День фламинго', desc: 'Розовый праздник', type: 'funny', quest: 'Отправь 🦩' };
+    events['07-07'] = { name: '🍫 День шоколада', desc: 'Сладкоежка', type: 'funny', quest: 'Отправь 🍫' };
+    events['07-08'] = { name: '👨‍👩‍👧 День семьи', desc: 'Любовь и верность', type: 'special', reward: 20, quest: 'Отправь 👨‍👩‍👧' };
+    events['07-09'] = { name: '🌻 День подсолнуха', desc: 'Солнечный цветок', type: 'funny', quest: 'Отправь 🌻' };
+    events['07-10'] = { name: '🪶 День пера', desc: 'Писательский день', type: 'funny', quest: 'Отправь 🪶' };
+    events['07-11'] = { name: '🍫 День шоколада', desc: 'Вкусный праздник', type: 'funny', quest: 'Отправь 🍫' };
+    events['07-12'] = { name: '🦆 День утки', desc: 'Кря-кря', type: 'funny', quest: 'Отправь 🦆' };
+    events['07-13'] = { name: '🤔 День загадок', desc: 'Думай головой', type: 'funny', quest: 'Сыграй в "Угадай число"' };
+    events['07-14'] = { name: '🇫🇷 День взятия Бастилии', desc: 'Свобода!', type: 'funny', quest: 'Отправь 🇫🇷' };
+    events['07-15'] = { name: '🦋 День бабочки', desc: 'Легкокрылые', type: 'funny', quest: 'Отправь 🦋' };
+    events['07-16'] = { name: '🕸️ День паука', desc: 'Восьминогие', type: 'funny', quest: 'Отправь 🕸️' };
+    events['07-17'] = { name: '💛 День эмодзи', desc: 'Смайлы в чат!', type: 'funny', quest: 'Отправь 10 разных эмодзи' };
+    events['07-18'] = { name: '🐬 День дельфина', desc: 'Умные животные', type: 'funny', quest: 'Отправь 🐬' };
+    events['07-19'] = { name: '🍔 День бургера', desc: 'Фастфуд', type: 'funny', quest: 'Отправь 🍔' };
+    events['07-20'] = { name: '🌑 День Луны', desc: 'Спутник Земли', type: 'funny', quest: 'Отправь 🌑' };
+    events['07-21'] = { name: '🐕 День собаки', desc: 'Верный друг', type: 'funny', quest: 'Отправь 🐕' };
+    events['07-22'] = { name: '🍦 День мороженого', desc: 'Ещё раз!', type: 'funny', quest: 'Отправь 🍦' };
+    events['07-23'] = { name: '👘 День кимоно', desc: 'Японская культура', type: 'funny', quest: 'Отправь 👘' };
+    events['07-24'] = { name: '🪴 День цветов', desc: 'Красота', type: 'funny', quest: 'Отправь 🪴' };
+    events['07-25'] = { name: '🎂 День рождения Киры!', desc: 'Кира, с днём рождения!', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Скажи "С днём рождения, Кира!" в чате', character: { emoji: '👸', name: 'Кира' }, specialFor: 'Кира' };
+    events['07-26'] = { name: '🌶️ День острого перца', desc: 'Жгучий праздник', type: 'funny', quest: 'Отправь 🌶️' };
+    events['07-27'] = { name: '🐜 День муравья', desc: 'Трудяги', type: 'funny', quest: 'Отправь 🐜' };
+    events['07-28'] = { name: '🌊 День моря', desc: 'Отдых у воды', type: 'funny', quest: 'Отправь 🌊' };
+    events['07-29'] = { name: '🦁 День льва', desc: 'Царь зверей', type: 'funny', quest: 'Отправь 🦁' };
+    events['07-30'] = { name: '🍑 День персика', desc: 'Сочный фрукт', type: 'funny', quest: 'Отправь 🍑' };
+    events['07-31'] = { name: '🎨 День рисования', desc: 'Твори!', type: 'funny', quest: 'Отправь 🎨' };
     
     // Август
-    '08-02': { name: '🪂 День ВДВ', desc: 'Никто, кроме нас!', type: 'funny', quest: 'Сыграй в игру "Прыжок"' },
+    events['08-01'] = { name: '🦦 День выдры', desc: 'Милый зверёк', type: 'funny', quest: 'Отправь 🦦' };
+    events['08-02'] = { name: '🪂 День ВДВ', desc: 'Никто, кроме нас!', type: 'special', quest: 'Сыграй в игру "Прыжок"' };
+    events['08-03'] = { name: '🍉 День арбуза', desc: 'Сладкий летний день', type: 'funny', quest: 'Отправь 🍉' };
+    events['08-04'] = { name: '🐆 День гепарда', desc: 'Скорость', type: 'funny', quest: 'Отправь 🐆' };
+    events['08-05'] = { name: '🌿 День трав', desc: 'Природа', type: 'funny', quest: 'Отправь 🌿' };
+    events['08-06'] = { name: '🍦 День мороженого', desc: 'Летний холод', type: 'funny', quest: 'Отправь 🍦' };
+    events['08-07'] = { name: '🐙 День осьминога', desc: 'Море', type: 'funny', quest: 'Отправь 🐙' };
+    events['08-08'] = { name: '🐱 День кошек', desc: 'Мурчание', type: 'funny', quest: 'Отправь 🐱' };
+    events['08-09'] = { name: '🪶 День коренных народов', desc: 'Традиции', type: 'funny', quest: 'Отправь 🪶' };
+    events['08-10'] = { name: '🦷 День стоматолога', desc: 'Здоровые зубы', type: 'funny', quest: 'Отправь 🦷' };
+    events['08-11'] = { name: '🌻 День подсолнуха', desc: 'Солнечный день', type: 'funny', quest: 'Отправь 🌻' };
+    events['08-12'] = { name: '🐘 День слона', desc: 'Великан', type: 'funny', quest: 'Отправь 🐘' };
+    events['08-13'] = { name: '🕶️ День левшей', desc: 'Левши, вперёд!', type: 'funny', quest: 'Отправь 🕶️' };
+    events['08-14'] = { name: '🍯 День мёда', desc: 'Сладкий праздник', type: 'funny', quest: 'Отправь 🍯' };
+    events['08-15'] = { name: '🦚 День павлина', desc: 'Красота', type: 'funny', quest: 'Отправь 🦚' };
+    events['08-16'] = { name: '🍩 День пончика', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍩' };
+    events['08-17'] = { name: '🦀 День краба', desc: 'Море', type: 'funny', quest: 'Отправь 🦀' };
+    events['08-18'] = { name: '🌌 День астрономии', desc: 'Звёзды', type: 'funny', quest: 'Отправь 🌌' };
+    events['08-19'] = { name: '📷 День фотографии', desc: 'Снимай', type: 'funny', quest: 'Отправь 📷' };
+    events['08-20'] = { name: '🦟 День комара', desc: 'Звонкий праздник', type: 'funny', quest: 'Отправь 🦟' };
+    events['08-21'] = { name: '🍑 День персика', desc: 'Сочный фрукт', type: 'funny', quest: 'Отправь 🍑' };
+    events['08-22'] = { name: '🦔 День ежа', desc: 'Колючки', type: 'funny', quest: 'Отправь 🦔' };
+    events['08-23'] = { name: '💻 День программиста', desc: 'Код', type: 'funny', quest: 'Напиши "Hello World"' };
+    events['08-24'] = { name: '🍿 День попкорна', desc: 'Кино', type: 'funny', quest: 'Отправь 🍿' };
+    events['08-25'] = { name: '🍌 День банана', desc: 'Жёлтый фрукт', type: 'funny', quest: 'Отправь 🍌' };
+    events['08-26'] = { name: '🐕‍🦺 День собаки-поводыря', desc: 'Помощь', type: 'funny', quest: 'Отправь 🐕‍🦺' };
+    events['08-27'] = { name: '🍆 День баклажана', desc: 'Овощной праздник', type: 'funny', quest: 'Отправь 🍆' };
+    events['08-28'] = { name: '🌽 День кукурузы', desc: 'Золотая', type: 'funny', quest: 'Отправь 🌽' };
+    events['08-29'] = { name: '🌿 День трав', desc: 'Зелень', type: 'funny', quest: 'Отправь 🌿' };
+    events['08-30'] = { name: '🎒 День знаний (скоро)', desc: 'Школа', type: 'funny', quest: 'Отправь 🎒' };
+    events['08-31'] = { name: '🦇 День летучей мыши', desc: 'Ночь', type: 'funny', quest: 'Отправь 🦇' };
     
     // Сентябрь
-    '09-01': { name: '📚 День знаний', desc: 'Школа, парты и знания!', type: 'funny', reward: 20, quest: 'Реши пример 2+2 в чате' },
+    events['09-01'] = { name: '📚 День знаний', desc: 'Школа, парты и знания!', type: 'special', reward: 20, quest: 'Реши пример 2+2 в чате' };
+    events['09-02'] = { name: '🍂 День осени', desc: 'Листопад', type: 'funny', quest: 'Отправь 🍂' };
+    events['09-03'] = { name: '💪 День спорта', desc: 'Будь активным', type: 'funny', quest: 'Сыграй в Раннер' };
+    events['09-04'] = { name: '🦔 День ежа', desc: 'Колючий друг', type: 'funny', quest: 'Отправь 🦔' };
+    events['09-05'] = { name: '🍕 День пиццы', desc: 'Вкусный день', type: 'funny', quest: 'Отправь 🍕' };
+    events['09-06'] = { name: '🧠 День мозга', desc: 'Думай', type: 'funny', quest: 'Сыграй в Memory' };
+    events['09-07'] = { name: '🍎 День яблока', desc: 'Фрукт', type: 'funny', quest: 'Отправь 🍎' };
+    events['09-08'] = { name: '📖 День грамотности', desc: 'Пиши правильно', type: 'funny', quest: 'Напиши слово "Грамотность"' };
+    events['09-09'] = { name: '🦍 День гориллы', desc: 'Сила', type: 'funny', quest: 'Отправь 🦍' };
+    events['09-10'] = { name: '🍝 День спагетти', desc: 'Итальянская еда', type: 'funny', quest: 'Отправь 🍝' };
+    events['09-11'] = { name: '🕯️ День памяти', desc: 'Скорбная дата', type: 'special', quest: 'Отправь 🕯️' };
+    events['09-12'] = { name: '🌎 День Земли', desc: 'Планета', type: 'funny', quest: 'Отправь 🌎' };
+    events['09-13'] = { name: '🍫 День шоколада', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍫' };
+    events['09-14'] = { name: '🐊 День крокодила', desc: 'Опасный', type: 'funny', quest: 'Отправь 🐊' };
+    events['09-15'] = { name: '🧸 День плюшевого мишки', desc: 'Игрушка', type: 'funny', quest: 'Отправь 🧸' };
+    events['09-16'] = { name: '🌽 День кукурузы', desc: 'Золотая', type: 'funny', quest: 'Отправь 🌽' };
+    events['09-17'] = { name: '📝 День ручки', desc: 'Пиши', type: 'funny', quest: 'Отправь 📝' };
+    events['09-18'] = { name: '🍇 День винограда', desc: 'Ягода', type: 'funny', quest: 'Отправь 🍇' };
+    events['09-19'] = { name: '🎸 День гитары', desc: 'Музыка', type: 'funny', quest: 'Отправь 🎸' };
+    events['09-20'] = { name: '🍞 День хлеба', desc: 'Всему голова', type: 'funny', quest: 'Отправь 🍞' };
+    events['09-21'] = { name: '🕊️ День мира', desc: 'Мир во всём мире', type: 'special', reward: 20, quest: 'Отправь 🕊️' };
+    events['09-22'] = { name: '🚗 День без автомобиля', desc: 'Экология', type: 'funny', quest: 'Отправь 🚲' };
+    events['09-23'] = { name: '🍂 День осеннего равноденствия', desc: 'Осень', type: 'funny', quest: 'Отправь 🍂' };
+    events['09-24'] = { name: '🐇 День кролика', desc: 'Пушистик', type: 'funny', quest: 'Отправь 🐇' };
+    events['09-25'] = { name: '🧠 День фармацевта', desc: 'Здоровье', type: 'funny', quest: 'Отправь 💊' };
+    events['09-26'] = { name: '🌍 День туризма', desc: 'Путешествия', type: 'funny', quest: 'Отправь 🌍' };
+    events['09-27'] = { name: '🎭 День театра', desc: 'Искусство', type: 'funny', quest: 'Отправь 🎭' };
+    events['09-28'] = { name: '🦊 День лисы', desc: 'Хитрая', type: 'funny', quest: 'Отправь 🦊' };
+    events['09-29'] = { name: '🍲 День супа', desc: 'Горячее', type: 'funny', quest: 'Отправь 🍲' };
+    events['09-30'] = { name: '🗣️ День переводчика', desc: 'Языки', type: 'funny', quest: 'Переведи слово "Hello" на русский' };
     
     // Октябрь
-    '10-31': { name: '🎃 Хеллоуин!', desc: 'Тыквы, сладости и страшилки! 👻', type: 'halloween', bg: 'halloween', reward: 50, quest: 'Отправь страшный мем', character: { emoji: '🎃', name: 'Хеллоуинский монстр' } },
+    events['10-01'] = { name: '👴 День пожилых людей', desc: 'Уважение', type: 'special', reward: 15, quest: 'Скажи "Спасибо" старшим' };
+    events['10-02'] = { name: '🐋 День кита', desc: 'Море', type: 'funny', quest: 'Отправь 🐋' };
+    events['10-03'] = { name: '🦷 День стоматолога', desc: 'Улыбка', type: 'funny', quest: 'Отправь 🦷' };
+    events['10-04'] = { name: '🐅 День тигра', desc: 'Хищник', type: 'funny', quest: 'Отправь 🐅' };
+    events['10-05'] = { name: '👩‍🏫 День учителя', desc: 'Спасибо учителям!', type: 'special', reward: 25, quest: 'Скажи "Спасибо" учителю в чате' };
+    events['10-06'] = { name: '🍪 День печенья', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍪' };
+    events['10-07'] = { name: '🍳 День яичницы', desc: 'Завтрак', type: 'funny', quest: 'Отправь 🍳' };
+    events['10-08'] = { name: '🦑 День кальмара', desc: 'Море', type: 'funny', quest: 'Отправь 🦑' };
+    events['10-09'] = { name: '📮 День почты', desc: 'Письма', type: 'funny', quest: 'Отправь 📮' };
+    events['10-10'] = { name: '🧠 День психического здоровья', desc: 'Береги себя', type: 'funny', quest: 'Отправь 🧠' };
+    events['10-11'] = { name: '👧 День девочек', desc: 'Поздравляем девочек!', type: 'special', quest: 'Отправь 🌸' };
+    events['10-12'] = { name: '🌎 День открытий', desc: 'Новое', type: 'funny', quest: 'Отправь 🌎' };
+    events['10-13'] = { name: '🍫 День шоколада', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍫' };
+    events['10-14'] = { name: '🍎 День яблока', desc: 'Фрукт', type: 'funny', quest: 'Отправь 🍎' };
+    events['10-15'] = { name: '🧑‍🌾 День сельского хозяйства', desc: 'Урожай', type: 'funny', quest: 'Отправь 🌾' };
+    events['10-16'] = { name: '🍞 День хлеба', desc: 'Хлеб', type: 'funny', quest: 'Отправь 🍞' };
+    events['10-17'] = { name: '🚫 День борьбы с бедностью', desc: 'Помощь', type: 'funny', quest: 'Отправь 🤝' };
+    events['10-18'] = { name: '🍜 День лапши', desc: 'Азиатская еда', type: 'funny', quest: 'Отправь 🍜' };
+    events['10-19'] = { name: '💎 День драгоценностей', desc: 'Красота', type: 'funny', quest: 'Отправь 💎' };
+    events['10-20'] = { name: '🍟 День картошки фри', desc: 'Фастфуд', type: 'funny', quest: 'Отправь 🍟' };
+    events['10-21'] = { name: '🐒 День обезьяны', desc: 'Забавный', type: 'funny', quest: 'Отправь 🐒' };
+    events['10-22'] = { name: '🎨 День художника', desc: 'Искусство', type: 'funny', quest: 'Отправь 🎨' };
+    events['10-23'] = { name: '🧪 День химии', desc: 'Наука', type: 'funny', quest: 'Отправь 🧪' };
+    events['10-24'] = { name: '🦉 День совы', desc: 'Мудрость', type: 'funny', quest: 'Отправь 🦉' };
+    events['10-25'] = { name: '🍝 День пасты', desc: 'Италия', type: 'funny', quest: 'Отправь 🍝' };
+    events['10-26'] = { name: '🌪️ День урагана', desc: 'Стихия', type: 'funny', quest: 'Отправь 🌪️' };
+    events['10-27'] = { name: '🎃 День тыквы', desc: 'Хеллоуин близко!', type: 'funny', quest: 'Отправь 🎃' };
+    events['10-28'] = { name: '🐧 День пингвина', desc: 'Холод', type: 'funny', quest: 'Отправь 🐧' };
+    events['10-29'] = { name: '🐈‍⬛ День чёрной кошки', desc: 'Мистика', type: 'funny', quest: 'Отправь 🐈‍⬛' };
+    events['10-30'] = { name: '🍭 День сладостей', desc: 'Конфеты', type: 'funny', quest: 'Отправь 🍭' };
+    events['10-31'] = { name: '🎃 Хеллоуин!', desc: 'Тыквы, сладости и страшилки! 👻', type: 'halloween', bg: 'halloween', reward: 50, quest: 'Отправь страшный мем', character: { emoji: '🎃', name: 'Хеллоуинский монстр' } };
     
     // Ноябрь
-    '11-11': { name: '🖤 День рождения Даши', desc: 'Поздравляем Дашу (Чёрную)! Шутки про чёрный цвет приветствуются!', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь чёрный эмодзи 🖤', character: { emoji: '🖤', name: 'Чёрная Даша' }, specialFor: 'Даша' },
-    '11-20': { name: '👨‍💻 День программиста', desc: 'Код, баги и отладка!', type: 'funny', quest: 'Напиши console.log("Hello")' },
+    events['11-01'] = { name: '🕯️ День всех святых', desc: 'Память', type: 'funny', quest: 'Отправь 🕯️' };
+    events['11-02'] = { name: '🥗 День здорового питания', desc: 'Правильная еда', type: 'funny', quest: 'Отправь 🥗' };
+    events['11-03'] = { name: '🦘 День кенгуру', desc: 'Австралия', type: 'funny', quest: 'Отправь 🦘' };
+    events['11-04'] = { name: '🇷🇺 День народного единства', desc: 'Единство России', type: 'special', reward: 25, quest: 'Отправь 🇷🇺' };
+    events['11-05'] = { name: '🍕 День пиццы', desc: 'Вкусно', type: 'funny', quest: 'Отправь 🍕' };
+    events['11-06'] = { name: '🎻 День музыки', desc: 'Ноты', type: 'funny', quest: 'Отправь 🎻' };
+    events['11-07'] = { name: '🌎 День Октябрьской революции', desc: 'История', type: 'funny', quest: 'Отправь 🌎' };
+    events['11-08'] = { name: '🦴 День рентгенолога', desc: 'Медицина', type: 'funny', quest: 'Отправь 🦴' };
+    events['11-09'] = { name: '🦁 День льва', desc: 'Сила', type: 'funny', quest: 'Отправь 🦁' };
+    events['11-10'] = { name: '🖤 День рождения Даши', desc: 'Поздравляем Дашу (Чёрную)! Шутки про чёрный цвет приветствуются!', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь чёрный эмодзи 🖤', character: { emoji: '🖤', name: 'Чёрная Даша' }, specialFor: 'Даша' };
+    events['11-11'] = { name: '🍩 День пончика', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍩' };
+    events['11-12'] = { name: '🧣 День тепла', desc: 'Согревайся', type: 'funny', quest: 'Отправь 🧣' };
+    events['11-13'] = { name: '🍲 День супа', desc: 'Горячее', type: 'funny', quest: 'Отправь 🍲' };
+    events['11-14'] = { name: '💉 День диабета', desc: 'Здоровье', type: 'funny', quest: 'Отправь 💉' };
+    events['11-15'] = { name: '🪴 День комнатных растений', desc: 'Зелень дома', type: 'funny', quest: 'Отправь 🪴' };
+    events['11-16'] = { name: '🕊️ День терпимости', desc: 'Терпимость', type: 'funny', quest: 'Отправь 🕊️' };
+    events['11-17'] = { name: '🎓 День студента', desc: 'Студенты', type: 'funny', quest: 'Отправь 🎓' };
+    events['11-18'] = { name: '🍔 День бургера', desc: 'Фастфуд', type: 'funny', quest: 'Отправь 🍔' };
+    events['11-19'] = { name: '🧸 День игрушки', desc: 'Детство', type: 'funny', quest: 'Отправь 🧸' };
+    events['11-20'] = { name: '👨‍💻 День программиста', desc: 'Код, баги и отладка!', type: 'special', quest: 'Напиши console.log("Hello")' };
+    events['11-21'] = { name: '🌍 День телевидения', desc: 'ТВ', type: 'funny', quest: 'Отправь 📺' };
+    events['11-22'] = { name: '🦷 День стоматолога', desc: 'Улыбка', type: 'funny', quest: 'Отправь 🦷' };
+    events['11-23'] = { name: '🍷 День вина', desc: 'Только взрослым', type: 'funny', quest: 'Отправь 🍷' };
+    events['11-24'] = { name: '🦈 День акулы', desc: 'Опасность', type: 'funny', quest: 'Отправь 🦈' };
+    events['11-25'] = { name: '🍖 День мяса', desc: 'Мясоеды', type: 'funny', quest: 'Отправь 🍖' };
+    events['11-26'] = { name: '🎄 День ёлки', desc: 'Новый год близко!', type: 'funny', quest: 'Отправь 🎄' };
+    events['11-27'] = { name: '🧦 День носков', desc: 'Тепло', type: 'funny', quest: 'Отправь 🧦' };
+    events['11-28'] = { name: '🍪 День печенья', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍪' };
+    events['11-29'] = { name: '🦌 День оленя', desc: 'Север', type: 'funny', quest: 'Отправь 🦌' };
+    events['11-30'] = { name: '❄️ День снега', desc: 'Зима', type: 'funny', quest: 'Отправь ❄️' };
     
     // Декабрь
-    '12-09': { name: '🎀 День рождения Ани', desc: 'С днём рождения, Аня! 🎀', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь Ане подарок в чате', character: { emoji: '🎀', name: 'Аня' }, specialFor: 'Аня' },
-    '12-31': { name: '🎆 Канун Нового года!', desc: 'Скоро Новый год! Загадай желание', type: 'newyear', bg: 'newyear', reward: 50, quest: 'Напиши "С наступающим!" в чате' },
+    events['12-01'] = { name: '🎗️ День борьбы со СПИДом', desc: 'Здоровье', type: 'special', quest: 'Отправь 🎗️' };
+    events['12-02'] = { name: '🐧 День пингвина', desc: 'Холод', type: 'funny', quest: 'Отправь 🐧' };
+    events['12-03'] = { name: '🦷 День стоматолога', desc: 'Улыбка', type: 'funny', quest: 'Отправь 🦷' };
+    events['12-04'] = { name: '🍪 День печенья', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍪' };
+    events['12-05'] = { name: '🧑‍🏫 День волонтёра', desc: 'Помощь', type: 'funny', quest: 'Отправь 🤝' };
+    events['12-06'] = { name: '🎅 День Святого Николая', desc: 'Подарки', type: 'special', reward: 20, quest: 'Отправь 🎅' };
+    events['12-07'] = { name: '✈️ День авиации', desc: 'Небо', type: 'funny', quest: 'Отправь ✈️' };
+    events['12-08'] = { name: '🍫 День шоколада', desc: 'Сладость', type: 'funny', quest: 'Отправь 🍫' };
+    events['12-09'] = { name: '🎀 День рождения Ани', desc: 'С днём рождения, Аня! 🎀', type: 'birthday', bg: 'birthday', reward: 100, quest: 'Отправь Ане подарок в чате', character: { emoji: '🎀', name: 'Аня' }, specialFor: 'Аня' };
+    events['12-10'] = { name: '🕯️ День прав человека', desc: 'Права', type: 'funny', quest: 'Отправь 🕯️' };
+    events['12-11'] = { name: '🧸 День игрушки', desc: 'Детство', type: 'funny', quest: 'Отправь 🧸' };
+    events['12-12'] = { name: '📸 День фотографии', desc: 'Снимки', type: 'funny', quest: 'Отправь 📸' };
+    events['12-13'] = { name: '🐎 День лошади', desc: 'Скакуны', type: 'funny', quest: 'Отправь 🐎' };
+    events['12-14'] = { name: '🐒 День обезьяны', desc: 'Забавно', type: 'funny', quest: 'Отправь 🐒' };
+    events['12-15'] = { name: '🍵 День чая', desc: 'Согревайся', type: 'funny', quest: 'Отправь 🍵' };
+    events['12-16'] = { name: '🧩 День пазлов', desc: 'Собирай', type: 'funny', quest: 'Сыграй в Memory' };
+    events['12-17'] = { name: '🍿 День попкорна', desc: 'Кино', type: 'funny', quest: 'Отправь 🍿' };
+    events['12-18'] = { name: '🕊️ День миграции', desc: 'Перелёты', type: 'funny', quest: 'Отправь 🕊️' };
+    events['12-19'] = { name: '🎁 День подарков', desc: 'Дари радость', type: 'funny', quest: 'Отправь 🎁' };
+    events['12-20'] = { name: '🧦 День носков', desc: 'Тепло', type: 'funny', quest: 'Отправь 🧦' };
+    events['12-21'] = { name: '❄️ День зимнего солнцестояния', desc: 'Зима', type: 'funny', quest: 'Отправь ❄️' };
+    events['12-22'] = { name: '🧮 День математики', desc: 'Цифры', type: 'funny', quest: 'Сыграй в "Угадай число"' };
+    events['12-23'] = { name: '🕯️ День свечей', desc: 'Свет', type: 'funny', quest: 'Отправь 🕯️' };
+    events['12-24'] = { name: '🎄 Сочельник', desc: 'Ждём Новый год!', type: 'special', reward: 30, bg: 'newyear', quest: 'Отправь 🎄' };
+    events['12-25'] = { name: '🎄 Рождество католическое', desc: 'Праздник', type: 'special', reward: 30, quest: 'Отправь 🎄' };
+    events['12-26'] = { name: '🕺 День танцев', desc: 'Танцуй', type: 'funny', quest: 'Отправь 🕺' };
+    events['12-27'] = { name: '🍲 День супа', desc: 'Горячее', type: 'funny', quest: 'Отправь 🍲' };
+    events['12-28'] = { name: '📚 День книги', desc: 'Читай', type: 'funny', quest: 'Отправь 📚' };
+    events['12-29'] = { name: '🤝 День дружбы', desc: 'Друзья', type: 'funny', quest: 'Добавь друга' };
+    events['12-30'] = { name: '🎇 День фейерверков', desc: 'Салют', type: 'funny', quest: 'Отправь 🎇' };
+    events['12-31'] = { name: '🎆 Канун Нового года!', desc: 'Скоро Новый год! Загадай желание', type: 'newyear', bg: 'newyear', reward: 50, quest: 'Напиши "С наступающим!" в чате' };
     
-    // Запасные на остальные дни (366 дней, но оставим универсальный)
-};
-// Генератор случайных забавных праздников
-var funnyHolidays = [
-    { name: '🥑 День авокадо', desc: 'Время есть полезные жиры!', quest: 'Съешь авокадо (в воображении)' },
-    { name: '🐱 День котиков', desc: 'Мурчание и лапки', quest: 'Отправь 3 кошачьих мема' },
-    { name: '🍕 День пиццы', desc: 'Вкусный праздник!', quest: 'Съешь кусочек пиццы' },
-    { name: '😂 День смеха', desc: 'Смейся от души!', quest: 'Отправь 3 😂' },
-    { name: '🐸 День лягушки', desc: 'Ква-ква!', quest: 'Нарисуй лягушку' },
-    { name: '💤 День сна', desc: 'Выспись!', quest: 'Посиди 5 минут с закрытыми глазами' },
-    { name: '🎨 День рисования', desc: 'Твори и созидай', quest: 'Нарисуй что-то' },
-    { name: '📖 День чтения', desc: 'Почитай книгу', quest: 'Расскажи о любимой книге в чате' },
-    { name: '🎮 День геймера', desc: 'Играй целый день!', quest: 'Сыграй в 3 разные игры' },
-    { name: '🐥 День цыплёнка', desc: 'Пи-пи-пи!', quest: 'Покорми тамагочи' },
-    { name: '🌧️ День дождя', desc: 'Хмуро, но уютно', quest: 'Сыграй в Куриный дождь' },
-    { name: '☀️ День солнца', desc: 'Светит ярко!', quest: 'Отправь солнце ☀️' }
-];
+    return events;
+}
 
-// Функция получения события для текущей даты
+// Получаем события
+const dailyEvents = generateAllYearEvents();
+
 function getTodayEvent() {
-    var now = new Date();
-    var month = ('0' + (now.getMonth() + 1)).slice(-2);
-    var day = ('0' + now.getDate()).slice(-2);
-    var dateKey = month + '-' + day;
+    const now = new Date();
+    const month = ('0' + (now.getMonth() + 1)).slice(-2);
+    const day = ('0' + now.getDate()).slice(-2);
+    const dateKey = month + '-' + day;
     
-    // Если есть специальное событие
     if(dailyEvents[dateKey]) {
         return dailyEvents[dateKey];
     }
-    
-    // Иначе генерируем случайное забавное событие (но стабильное для даты)
-    // Используем seed на основе дня года, чтобы каждый день было своё, но постоянное
-    var start = new Date(now.getFullYear(), 0, 0);
-    var dayOfYear = Math.floor((now - start) / (24 * 60 * 60 * 1000));
-    var holidayIndex = dayOfYear % funnyHolidays.length;
-    return funnyHolidays[holidayIndex];
+    // На всякий случай возвращаем дефолтное событие (хотя все дни заполнены)
+    return { name: '🎉 Обычный день', desc: 'Сегодня нет особого праздника, но день всё равно отличный!', type: 'normal', reward: 5, quest: 'Просто зайди на сайт и играй!' };
 }
 
 // Применить ежедневное событие (фон, задание, персонаж, поздравление)
@@ -5472,6 +5931,7 @@ function applyDailyEvent() {
     
     // 1. Изменяем фон
     var body = document.body;
+    body.classList.remove('halloween-bg', 'newyear-bg', 'birthday-bg', 'april-bg');
     if(event.bg === 'halloween') {
         body.classList.add('halloween-bg');
     } else if(event.bg === 'newyear') {
@@ -5480,9 +5940,6 @@ function applyDailyEvent() {
         body.classList.add('birthday-bg');
     } else if(event.bg === 'april') {
         body.classList.add('april-bg');
-    } else {
-        // Убираем все спец-фоны, если нет тематического
-        body.classList.remove('halloween-bg', 'newyear-bg', 'birthday-bg', 'april-bg');
     }
     
     // 2. Отображаем блок на главной
@@ -5499,8 +5956,6 @@ function applyDailyEvent() {
         if(actionEl) {
             if(event.quest) {
                 actionEl.innerHTML = '<button onclick="progressQuest(\'dailyEvent\', 1)" style="background:#ffd700;color:#000;border:none;padding:6px 15px;border-radius:20px;margin-top:8px;font-size:12px;">✅ Выполнить задание: ' + event.quest + '</button>';
-                // Добавляем временный квест в список dailyQuests (если его нет)
-                // Для простоты добавим отдельное задание в localStorage или просто вызовем прогресс при клике
                 window.dailyEventQuest = event.quest;
             } else {
                 actionEl.innerHTML = '';
@@ -5508,9 +5963,8 @@ function applyDailyEvent() {
         }
     }
     
-    // 3. Специальный персонаж на день (добавляем в магазин персонажей временно)
+    // 3. Специальный персонаж на день
     if(event.character) {
-        // Добавляем временного персонажа в customCharacters, если его там нет
         var alreadyHas = customCharacters.some(function(c) { return c.id === event.character.emoji; });
         if(!alreadyHas) {
             customCharacters.push({
@@ -5522,7 +5976,6 @@ function applyDailyEvent() {
             });
             saveCustomCharacters();
         }
-        // Если это день рождения, показываем уведомление
         if(event.type === 'birthday') {
             setTimeout(function() {
                 alert('🎂 ' + event.name + '! 🎂\n\n' + event.desc + '\n\nСпециальный персонаж ' + event.character.name + ' доступен сегодня бесплатно!');
@@ -5530,11 +5983,10 @@ function applyDailyEvent() {
         }
     }
     
-    // 4. Специальное ежедневное задание (добавляем в dailyQuests, если его там нет)
+    // 4. Специальное ежедневное задание
     if(event.quest) {
-        // Проверяем, есть ли уже такое задание
         var questExists = dailyQuests.some(function(q) { return q.text === event.quest; });
-        if(!questExists && dailyQuests.length < 5) { // Не больше 5 заданий всего
+        if(!questExists && dailyQuests.length < 5) {
             dailyQuests.push({
                 uid: 'daily_event_' + Date.now(),
                 text: event.quest + ' (+' + (event.reward || 15) + ' 🥚)',
@@ -5548,7 +6000,7 @@ function applyDailyEvent() {
         }
     }
     
-    // 5. Если день рождения кого-то из пользователей (Кира, Даша, Аня), добавляем особое поздравление
+    // 5. Поздравление с днём рождения
     if(event.specialFor && (myName === event.specialFor || myName.includes(event.specialFor))) {
         setTimeout(function() {
             alert('🎉 С ДНЁМ РОЖДЕНИЯ, ' + myName + '! 🎉\n\nСегодня тебе особый подарок: +' + (event.reward || 100) + ' яиц!');
@@ -5557,8 +6009,126 @@ function applyDailyEvent() {
     }
 }
 
+// ========== НОВЫЙ ЧАТ: МАГИЧЕСКИЙ ШАР ==========
+// Список ответов магического шара
+const magicAnswers = [
+    "Да", "Нет", "Возможно", "Скорее не", "Спроси у звезд", 
+    "Боже упаси", "Удочери меня", "Мой третий глаз видит, что.... ты лохушка", 
+    "Тильдочка", "А как ты считаешь кто разумнее, Кира или одноклеточная молекула без разума?", 
+    "Квэдрэт, сасать ёпта, эээ сикс севен..., чики бамбони, эпштейн"
+];
+
+// Стикеры (модные картинки)
+const stickers = ["🗿", "🤨", "🐧", "🤡", "💀", "👽", "🔥", "✨"];
+
+function initStickerButtons() {
+    const container = document.getElementById('stickerButtons');
+    if(!container) return;
+    container.innerHTML = '';
+    stickers.forEach(sticker => {
+        const btn = document.createElement('button');
+        btn.className = 'sticker-btn';
+        btn.textContent = sticker;
+        btn.onclick = () => sendSticker(sticker);
+        container.appendChild(btn);
+    });
+}
+
+function sendSticker(sticker) {
+    sendMagicMessageText(sticker);
+}
+
+function sendMagicMessage() {
+    const input = document.getElementById('magicMessageInput');
+    const text = input.value.trim();
+    if(!text) return;
+    sendMagicMessageText(text);
+    input.value = '';
+}
+
+function sendMagicMessageText(text) {
+    const avatarData = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
+    
+    db.ref('magicChat').push({
+        name: myName,
+        text: text,
+        ts: Date.now(),
+        avatarType: avatarData.type,
+        avatarValue: avatarData.value
+    }).catch(err => console.error("Ошибка отправки в магический чат:", err));
+    
+    // Если сообщение начинается с "?" - отвечаем магическим шаром
+    if(text.startsWith('?')) {
+        const answer = magicAnswers[Math.floor(Math.random() * magicAnswers.length)];
+        setTimeout(() => {
+            db.ref('magicChat').push({
+                name: "🔮 MagicBallBot",
+                text: "🎱 " + answer,
+                ts: Date.now(),
+                avatarType: 'emoji',
+                avatarValue: '🔮'
+            });
+        }, 500);
+    }
+}
+
+function loadMagicMessages() {
+    db.ref('magicChat').limitToLast(50).on('value', (snapshot) => {
+        const messages = [];
+        snapshot.forEach((child) => {
+            messages.push({
+                id: child.key,
+                name: child.val().name || 'Гость',
+                text: child.val().text || '',
+                ts: child.val().ts || 0,
+                avatarType: child.val().avatarType || 'emoji',
+                avatarValue: child.val().avatarValue || '🐔'
+            });
+        });
+        messages.sort((a, b) => a.ts - b.ts);
+        
+        const container = document.getElementById('magicMessagesList');
+        if(!container) return;
+        
+        const wasAtBottom = container.scrollHeight - container.scrollTop < 100;
+        container.innerHTML = '';
+        
+        messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'magic-message';
+            if(msg.name === "🔮 MagicBallBot") div.classList.add('magic-message-bot');
+            
+            let avatarHtml = '';
+            if(msg.avatarType === 'emoji') {
+                avatarHtml = '<span class="message-avatar" style="font-size:16px;">' + escapeHtml(msg.avatarValue) + '</span>';
+            } else {
+                avatarHtml = '<span class="message-avatar"><img src="' + msg.avatarValue + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover"></span>';
+            }
+            
+            let timeStr = '';
+            if(msg.ts) {
+                const date = new Date(msg.ts);
+                timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            div.innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                    ${avatarHtml}
+                    <strong>${escapeHtml(msg.name)}</strong>
+                    <span style="font-size:10px;color:#888;">${timeStr}</span>
+                </div>
+                <div style="margin-left:32px;">${escapeHtml(msg.text)}</div>
+            `;
+            container.appendChild(div);
+        });
+        
+        if(wasAtBottom) {
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+}
+
 // ========== ЗАПУСК ВСЕГО ==========
-// (Остальной код выше уже включает loadAllData, который вызывает applyDailyEvent после загрузки)
 // Дополнительно: обновляем событие при смене дня (каждые 24 часа)
 setInterval(function() {
     var now = new Date();
@@ -5566,8 +6136,7 @@ setInterval(function() {
     var today = now.toDateString();
     if(lastCheck !== today) {
         localStorage.setItem('tildochka_last_date_check', today);
-        applyDailyEvent(); // Переприменяем событие в новый день
-        // Обновляем задания ежедневные
+        applyDailyEvent();
         generateDailyQuests(false);
     }
 }, 3600000); // Проверка каждый час
