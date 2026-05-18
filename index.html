@@ -1284,7 +1284,7 @@ function loadAllData() {
         totalTasks++;
         var chatPromise = new Promise(function(resolve) {
             db.ref('chat').limitToLast(50).once('value', function() {
-                loadChatMessages();
+                loadChatMessages(); // эта функция подписывается на изменения, но не блокирует
                 taskCompleted();
                 resolve();
             }).catch(function() { taskCompleted(); resolve(); });
@@ -1295,7 +1295,7 @@ function loadAllData() {
         totalTasks++;
         var memesPromise = new Promise(function(resolve) {
             db.ref('memes').limitToLast(30).once('value', function() {
-                loadMemes();
+                loadMemes(); // эта функция подписывается на изменения
                 taskCompleted();
                 resolve();
             }).catch(function() { taskCompleted(); resolve(); });
@@ -1306,7 +1306,7 @@ function loadAllData() {
         totalTasks++;
         var ideasPromise = new Promise(function(resolve) {
             db.ref('ideas').limitToLast(30).once('value', function() {
-                loadIdeas();
+                loadIdeas(); // эта функция подписывается на изменения
                 taskCompleted();
                 resolve();
             }).catch(function() { taskCompleted(); resolve(); });
@@ -1317,7 +1317,7 @@ function loadAllData() {
         totalTasks++;
         var shortsPromise = new Promise(function(resolve) {
             db.ref('shorts').once('value', function() {
-                loadShorts();
+                loadShorts(); // эта функция подписывается на изменения
                 updateChannelUI();
                 taskCompleted();
                 resolve();
@@ -1325,18 +1325,30 @@ function loadAllData() {
         });
         allPromises.push(shortsPromise);
         
-        // Рейтинги фильмов
+        // Рейтинги фильмов (ИСПРАВЛЕНО: используем once вместо on)
         totalTasks++;
         var ratingsPromise = new Promise(function(resolve) {
-            loadAllRatings();
             var movieIds = Object.keys(moviesData);
             var loadedMovies = 0;
             if(movieIds.length === 0) {
                 taskCompleted();
                 resolve();
+                return;
             }
             movieIds.forEach(function(mid) {
-                db.ref('reviews/'+mid).once('value', function() {
+                db.ref('reviews/'+mid).once('value', function(snap) {
+                    var revs = [];
+                    snap.forEach(function(c) {
+                        revs.push(c.val());
+                    });
+                    var el = document.getElementById('rating-'+mid);
+                    if(el && revs.length > 0) {
+                        var sum = 0;
+                        revs.forEach(function(r) {
+                            sum += (r.rating || 0);
+                        });
+                        el.textContent = '⭐ ' + (sum/revs.length).toFixed(1) + '/10';
+                    }
                     loadedMovies++;
                     if(loadedMovies === movieIds.length) {
                         taskCompleted();
@@ -1353,7 +1365,7 @@ function loadAllData() {
         });
         allPromises.push(ratingsPromise);
         
-        // Лидерборды игр
+        // Лидерборды игр (ИСПРАВЛЕНО: используем once вместо on)
         totalTasks++;
         var gamesLeaderboardPromise = new Promise(function(resolve) {
             var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
@@ -1361,10 +1373,27 @@ function loadAllData() {
             if(games.length === 0) {
                 taskCompleted();
                 resolve();
+                return;
             }
             games.forEach(function(g) {
-                db.ref('gameRatings/'+g).once('value', function() {
-                    loadLeaderboard(g);
+                db.ref('gameRatings/'+g).once('value', function(snapshot) {
+                    var ratings = [];
+                    snapshot.forEach(function(child) {
+                        ratings.push(child.val());
+                    });
+                    var ratingEl = document.getElementById('rating-' + g);
+                    if(ratingEl) {
+                        if(ratings.length > 0) {
+                            var sum = 0;
+                            ratings.forEach(function(r) {
+                                sum += (r.rating || 0);
+                            });
+                            var avg = (sum / ratings.length).toFixed(1);
+                            ratingEl.textContent = '⭐ ' + avg + '/10 (' + ratings.length + ')';
+                        } else {
+                            ratingEl.textContent = '⭐ 0/10';
+                        }
+                    }
                     loadedGames++;
                     if(loadedGames === games.length) {
                         taskCompleted();
@@ -1469,7 +1498,7 @@ function loadAllData() {
     setInterval(syncOnlineProfile, 5000);
     ensureInviteListener();
     console.log('✅ Слушатель приглашений активирован');
-  }
+}
 
 // Инициализация совместной рисовалки
 function initDrawingCanvas() {
