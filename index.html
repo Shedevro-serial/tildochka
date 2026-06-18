@@ -3769,8 +3769,8 @@ var savedTama=localStorage.getItem('tildochka_tamagotchi');
 if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamagotchiData.isAlive)startTamagotchiLoop();}catch(e){}}
 
 var pass=prompt("🔐 Введите кодовое слово:");
-if(["четыре курицы","Четыре курицы","4 курицы"].includes(pass)){loadAllData();}
-else {document.getElementById("blocked").style.display="flex";}
+if(["Тильдочка","тильдочка"].includes(pass)){loadAllData();}
+else {document.getElementById("bblocked).sstyledisplay="flex";}
 // ==================== ДРУЗЬЯ ====================
 var myFriends = [];
 var friendRequests = [];
