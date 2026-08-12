@@ -1953,12 +1953,13 @@ function loadChatMessages() {
         });
         messages.sort((a, b) => a.ts - b.ts);
         const container = document.getElementById('chatMessagesLive');
-        if(!container) return;
+        if (!container) return;
         const wasAtBottom = container.scrollHeight - container.scrollTop < 100;
         container.innerHTML = '';
+
         messages.forEach(msg => {
+            // Если сообщение удалено – показываем заглушку
             if (msg.deleted) {
-                // Показываем, что сообщение удалено
                 const div = document.createElement('div');
                 div.className = 'message';
                 div.style.opacity = '0.5';
@@ -1967,28 +1968,41 @@ function loadChatMessages() {
                 container.appendChild(div);
                 return;
             }
+
             const div = document.createElement('div');
             div.className = 'message';
             div.setAttribute('data-id', msg.id);
             div.setAttribute('data-author', msg.name);
             div.setAttribute('data-text', msg.text);
-            
+
+            // Аватар
             let avatarHtml = '';
-            if(msg.avatarType === 'emoji') {
-                avatarHtml = '<span class="message-avatar" style="font-size:16px;">' + escapeHtml(msg.avatarValue) + '</span>';
+            if (msg.avatarType === 'emoji') {
+                avatarHtml = `<span class="message-avatar" style="font-size:16px;">${escapeHtml(msg.avatarValue)}</span>`;
             } else {
-                avatarHtml = '<span class="message-avatar"><img src="' + msg.avatarValue + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover"></span>';
+                avatarHtml = `<span class="message-avatar"><img src="${msg.avatarValue}" style="width:24px;height:24px;border-radius:50%;object-fit:cover"></span>`;
             }
+
+            // Время
             let timeStr = '';
-            if(msg.ts) {
+            if (msg.ts) {
                 const date = new Date(msg.ts);
                 timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
+
+            // Маркер "изменено"
             let editedMarker = msg.edited ? ' <span style="font-size:10px;color:#888;">(изменено)</span>' : '';
+
+            // Цитата при ответе
             let replyPreview = '';
-            if(msg.replyTo) {
-                replyPreview = `<div style="margin-left:32px; padding:4px 8px; background:rgba(255,215,0,0.1); border-radius:8px; font-size:12px; color:#aaa; border-left:2px solid #ffd700; margin-bottom:4px;">↪️ Ответ на сообщение от ${escapeHtml(msg.replyToName || 'пользователя')}</div>`;
+            if (msg.replyTo) {
+                replyPreview = `
+                    <div style="margin-left:32px; padding:4px 8px; background:rgba(255,215,0,0.1); border-radius:8px; font-size:12px; color:#aaa; border-left:2px solid #ffd700; margin-bottom:4px;">
+                        ↪️ Ответ на сообщение от ${escapeHtml(msg.replyToName || 'пользователя')}
+                    </div>
+                `;
             }
+
             div.innerHTML = `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     ${avatarHtml}
@@ -2000,7 +2014,7 @@ function loadChatMessages() {
                 <div style="margin-left:32px;" class="message-text">${escapeHtml(msg.text)}</div>
             `;
 
-            // Реакции
+            // === РЕАКЦИИ ===
             const reactionsDiv = document.createElement('div');
             reactionsDiv.style.cssText = 'margin-left: 32px; margin-top: 5px; display: flex; gap: 5px; flex-wrap: wrap;';
             const reactionEmojis = ['💩', '🫀', '😏', '🤌🏿', '💀', '🥹'];
@@ -2012,15 +2026,13 @@ function loadChatMessages() {
                 btn.onclick = (e) => {
                     e.stopPropagation();
                     const ref = db.ref('chat/' + msg.id + '/reactions/' + emoji);
-                    ref.transaction((current) => {
-                        return (current || 0) + 1;
-                    });
+                    ref.transaction((current) => (current || 0) + 1);
                 };
                 reactionsDiv.appendChild(btn);
             });
             div.appendChild(reactionsDiv);
 
-            // Кнопка "Ответить" (оставляем как есть)
+            // === КНОПКА "ОТВЕТИТЬ" ===
             const replyBtn = document.createElement('button');
             replyBtn.textContent = '💬 Ответить';
             replyBtn.style.cssText = 'background: none; border: none; color: #ffd700; cursor: pointer; font-size: 11px; margin-left: 32px; margin-top: 3px;';
@@ -2032,31 +2044,33 @@ function loadChatMessages() {
             };
             div.appendChild(replyBtn);
 
-            // === ОБРАБОТЧИКИ КОНТЕКСТНОГО МЕНЮ ===
-            // Правый клик
+            // === КОНТЕКСТНОЕ МЕНЮ (правый клик / долгое нажатие) ===
             div.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 showContextMenu(e, msg.id);
             });
-            // Долгое нажатие (телефон)
+
             let longPressTimer = null;
             div.addEventListener('touchstart', function(e) {
-                longPressTimer = setTimeout(function() {
+                longPressTimer = setTimeout(() => {
                     showContextMenu(e, msg.id);
                 }, 600);
             });
-            div.addEventListener('touchend', function(e) {
+            div.addEventListener('touchend', function() {
                 clearTimeout(longPressTimer);
             });
-            div.addEventListener('touchmove', function(e) {
+            div.addEventListener('touchmove', function() {
                 clearTimeout(longPressTimer);
             });
 
             container.appendChild(div);
         });
-        if(wasAtBottom) {
+
+        // Прокрутка вниз, если была внизу
+        if (wasAtBottom) {
             container.scrollTop = container.scrollHeight;
         }
+
         lastCounts.chat = messages.length;
         updateUnreadAll();
     });
