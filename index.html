@@ -911,14 +911,13 @@
 </div>
 
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
-<!-- Контекстное меню для чата -->
 <div id="chatContextMenu" style="display:none; position:fixed; background:#2a2a2a; border:1px solid #555; border-radius:12px; padding:8px 0; min-width:180px; z-index:9999; box-shadow:0 4px 20px rgba(0,0,0,0.8);">
     <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('💩')">💩</div>
-    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('🫀')">🫀</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('❤️')">❤️</div>
     <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('😏')">😏</div>
-    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('🤌🏿')">🤌🏿</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('😮')">😮</div>
     <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('💀')">💀</div>
-    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('🥹')">🥹</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('😢')">😢</div>
     <div style="padding:8px 16px; cursor:pointer; color:#ffd700; border-bottom:1px solid #444; font-size:14px;" id="ctxReply">💬 Ответить</div>
     <div style="padding:8px 16px; cursor:pointer; color:#ffd700; border-bottom:1px solid #444; font-size:14px;" id="ctxEdit">✏️ Редактировать</div>
     <div style="padding:8px 16px; cursor:pointer; color:#ff4444; font-size:14px;" id="ctxDelete">🗑️ Удалить</div>
@@ -2014,28 +2013,101 @@ function loadChatMessages() {
                 <div style="margin-left:32px;" class="message-text">${escapeHtml(msg.text)}</div>
             `;
 
-            // === РЕАКЦИИ ===
+            // === РЕАКЦИИ (только те, у которых есть голоса) ===
             const reactionsDiv = document.createElement('div');
             reactionsDiv.style.cssText = 'margin-left: 32px; margin-top: 5px; display: flex; gap: 5px; flex-wrap: wrap;';
-            const reactionEmojis = ['💩', '🫀', '😏', '🤌🏿', '💀', '🥹'];
+            
+            // Используем только универсальные эмодзи, которые точно отображаются в Chrome
+            const reactionEmojis = ['👍', '❤️', '😂', '😮', '😢', '🔥'];
             const currentReactions = msg.reactions || {};
+            
+            let hasReactions = false;
             reactionEmojis.forEach(emoji => {
-                const btn = document.createElement('button');
-                btn.textContent = `${emoji} ${currentReactions[emoji] || 0}`;
-                btn.style.cssText = 'background: rgba(255,255,255,0.1); border: none; border-radius: 12px; padding: 2px 8px; color: #fff; cursor: pointer; font-size: 12px;';
-                btn.onclick = (e) => {
-                    e.stopPropagation();
-                    const ref = db.ref('chat/' + msg.id + '/reactions/' + emoji);
-                    ref.transaction((current) => (current || 0) + 1);
-                };
-                reactionsDiv.appendChild(btn);
+                const count = currentReactions[emoji] || 0;
+                if (count > 0) {
+                    hasReactions = true;
+                    const btn = document.createElement('button');
+                    btn.textContent = `${emoji} ${count}`;
+                    btn.style.cssText = `
+                        background: rgba(255,255,255,0.08);
+                        border: 1px solid rgba(255,255,255,0.12);
+                        border-radius: 16px;
+                        padding: 2px 10px;
+                        color: #fff;
+                        cursor: pointer;
+                        font-size: 13px;
+                        transition: all 0.2s ease;
+                        font-family: inherit;
+                        line-height: 1.6;
+                    `;
+                    btn.onmouseenter = () => {
+                        btn.style.background = 'rgba(255,255,255,0.18)';
+                        btn.style.transform = 'scale(1.05)';
+                    };
+                    btn.onmouseleave = () => {
+                        btn.style.background = 'rgba(255,255,255,0.08)';
+                        btn.style.transform = 'scale(1)';
+                    };
+                    btn.onclick = (e) => {
+                        e.stopPropagation();
+                        const ref = db.ref('chat/' + msg.id + '/reactions/' + emoji);
+                        ref.transaction((current) => (current || 0) + 1);
+                    };
+                    reactionsDiv.appendChild(btn);
+                }
             });
-            div.appendChild(reactionsDiv);
+            
+            // Добавляем кнопку "+" для добавления реакции, если есть место
+            const addBtn = document.createElement('button');
+            addBtn.textContent = '+';
+            addBtn.style.cssText = `
+                background: rgba(255,255,255,0.05);
+                border: 1px dashed rgba(255,255,255,0.2);
+                border-radius: 16px;
+                padding: 2px 10px;
+                color: #888;
+                cursor: pointer;
+                font-size: 14px;
+                transition: all 0.2s ease;
+                font-family: inherit;
+                line-height: 1.6;
+            `;
+            addBtn.onmouseenter = () => {
+                addBtn.style.background = 'rgba(255,255,255,0.1)';
+                addBtn.style.color = '#fff';
+            };
+            addBtn.onmouseleave = () => {
+                addBtn.style.background = 'rgba(255,255,255,0.05)';
+                addBtn.style.color = '#888';
+            };
+            addBtn.onclick = (e) => {
+                e.stopPropagation();
+                showContextMenu(e, msg.id);
+            };
+            
+            // Если есть реакции или показываем кнопку "+"
+            if (hasReactions) {
+                reactionsDiv.appendChild(addBtn);
+                div.appendChild(reactionsDiv);
+            }
 
             // === КНОПКА "ОТВЕТИТЬ" ===
             const replyBtn = document.createElement('button');
             replyBtn.textContent = '💬 Ответить';
-            replyBtn.style.cssText = 'background: none; border: none; color: #ffd700; cursor: pointer; font-size: 11px; margin-left: 32px; margin-top: 3px;';
+            replyBtn.style.cssText = `
+                background: none;
+                border: none;
+                color: #ffd700;
+                cursor: pointer;
+                font-size: 11px;
+                margin-left: 32px;
+                margin-top: 3px;
+                opacity: 0.6;
+                transition: opacity 0.2s ease;
+                font-family: inherit;
+            `;
+            replyBtn.onmouseenter = () => { replyBtn.style.opacity = '1'; };
+            replyBtn.onmouseleave = () => { replyBtn.style.opacity = '0.6'; };
             replyBtn.onclick = () => {
                 const input = document.getElementById('chatMessageLive');
                 input.value = `> ${msg.name}: ${msg.text}\n\n`;
