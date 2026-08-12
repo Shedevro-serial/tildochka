@@ -1916,9 +1916,14 @@ function sendChatMessage() {
     delete input.dataset.replyToName;
     delete input.dataset.replyToText;
     
-    // Очищаем визуальный блок ответа (если есть)
-    const replyPreview = document.getElementById('replyPreview');
-    if(replyPreview) replyPreview.remove();
+    // Скрываем блок ответа
+    const previewContainer = document.getElementById('replyPreviewContainer');
+    if(previewContainer) {
+        previewContainer.style.display = 'none';
+    }
+    
+    // Восстанавливаем placeholder
+    input.placeholder = 'Сообщение...';
     
     db.ref('chat').push({
         name: myName,
@@ -1931,6 +1936,7 @@ function sendChatMessage() {
         replyToText: replyToText,
         reactions: {}
     }).then(function() {
+        // Очищаем поле ввода ПОСЛЕ отправки
         input.value = '';
         progressQuest('chat', 1);
         setTimeout(function() {
