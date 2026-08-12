@@ -6160,6 +6160,7 @@ function createPoll() {
         question: question,
         options: options,
         votes: {},
+        voters: {},          // ← НОВОЕ ПОЛЕ для хранения uid проголосовавших
         createdBy: myName,
         ts: Date.now()
     };
@@ -6172,7 +6173,6 @@ function createPoll() {
     alert('✅ Опрос создан!');
     loadPolls();
 }
-
 function loadPolls() {
     db.ref('polls').on('value', (snapshot) => {
         const polls = [];
@@ -6188,7 +6188,9 @@ function loadPolls() {
         }
         container.innerHTML = '';
         polls.forEach(poll => {
-            const totalVotes = Object.values(poll.votes).reduce((a, b) => a + b, 0);
+            const totalVotes = Object.values(poll.votes || {}).reduce((a, b) => a + b, 0);
+            const hasVoted = !!(poll.voters && poll.voters[myUid]);
+
             let optionsHtml = '';
             poll.options.forEach(opt => {
                 const votes = poll.votes[opt] || 0;
@@ -6202,7 +6204,11 @@ function loadPolls() {
                         <div style="background:#333;border-radius:10px;height:16px;overflow:hidden;">
                             <div style="background:linear-gradient(90deg,#ffd700,#ffaa00);height:100%;width:${percent}%;transition:width 0.3s;"></div>
                         </div>
-                        <button onclick="votePoll('${poll.id}','${opt}')" style="font-size:11px;padding:2px 10px;background:#444;border-radius:8px;margin-top:2px;">Голосовать</button>
+                        <button onclick="votePoll('${poll.id}','${opt}')" 
+                                style="font-size:11px;padding:2px 10px;background:${hasVoted ? '#555' : '#444'};border-radius:8px;margin-top:2px;${hasVoted ? 'opacity:0.6;cursor:default;' : ''}"
+                                ${hasVoted ? 'disabled' : ''}>
+                            ${hasVoted ? '✅ Вы проголосовали' : 'Голосовать'}
+                        </button>
                     </div>
                 `;
             });
@@ -6221,9 +6227,38 @@ function loadPolls() {
 }
 
 function votePoll(pollId, option) {
-    const ref = db.ref('polls/' + pollId + '/votes/' + option);
-    ref.transaction((current) => {
-        return (current || 0) + 1;
+    const pollRef = db.ref('polls/' + pollId);
+    pollRef.transaction((currentData) => {
+        if (currentData === null) return currentData;
+
+        // Если пользователь уже голосовал – отменяем транзакцию
+        if (currentData.voters && currentData.voters[myUid]) {
+            return; // undefined → транзакция не применится
+        }
+
+        // Инициализируем, если нужно
+        if (!currentData.voters) currentData.voters = {};
+        if (!currentData.votes) currentData.votes = {};
+
+        // Запоминаем пользователя
+        currentData.voters[myUid] = true;
+
+        // Увеличиваем счётчик за выбранный вариант
+        if (!currentData.votes[option]) currentData.votes[option] = 0;
+        currentData.votes[option]++;
+
+        return currentData;
+    }, (error, committed, snapshot) => {
+        if (error) {
+            alert('Ошибка голосования: ' + error.message);
+            return;
+        }
+        if (committed) {
+            alert('✅ Ваш голос учтён!');
+            loadPolls(); // обновляем список
+        } else {
+            alert('❌ Вы уже голосовали в этом опросе!');
+        }
     });
 }
 </script>
