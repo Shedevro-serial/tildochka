@@ -1378,37 +1378,40 @@ function loadAllData() {
         setProgress(35);
         
         return Promise.all([
-            db.ref('chat').limitToLast(50).once('value').then(function() { loadChatMessages(); }).catch(function(e){}),
-            db.ref('memes').limitToLast(30).once('value').then(function() { loadMemes(); }).catch(function(e){}),
-            db.ref('ideas').limitToLast(30).once('value').then(function() { loadIdeas(); }).catch(function(e){}),
-            db.ref('shorts').once('value').then(function() { loadShorts(); updateChannelUI(); }).catch(function(e){}),
-            db.ref('magicChat').once('value').then(function() { loadMagicMessages(); }).catch(function(e){}),
-            db.ref('quotes').once('value').then(function() { initQuotes(); }).catch(function(e){}),
-            new Promise(function(resolve) { loadGifts(); resolve(); })
-        ]);
+    db.ref('chat').limitToLast(50).once('value').then(function() { loadChatMessages(); }).catch(function(e){}),
+    db.ref('memes').limitToLast(30).once('value').then(function() { loadMemes(); }).catch(function(e){}),
+    db.ref('ideas').limitToLast(30).once('value').then(function() { loadIdeas(); }).catch(function(e){}),
+    db.ref('shorts').once('value').then(function() { loadShorts(); updateChannelUI(); }).catch(function(e){}),
+    db.ref('magicChat').once('value').then(function() { loadMagicMessages(); }).catch(function(e){}),
+    db.ref('quotes').once('value').then(function() { initQuotes(); }).catch(function(e){}),
+    new Promise(function(resolve) { loadGifts(); resolve(); }),
+    // 👇 НОВОЕ: дожидаемся загрузки опросов
+    db.ref('polls').once('value').then(function() { loadPolls(); }).catch(function(e){})
+]);
     }).then(function() {
-        setProgress(70);
-        var movieIds = Object.keys(moviesData);
-        var promises = movieIds.map(function(mid) {
-            return db.ref('reviews/' + mid).once('value').catch(function(){ return null; });
-        });
-        var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
-        games.forEach(function(g) {
-            promises.push(db.ref('gameRatings/' + g).once('value').then(function() { loadLeaderboard(g); }).catch(function(){}));
-        });
-        return Promise.all(promises);
-    }).then(function() {
-        setProgress(85);
-        generateDailyQuests(false);
-        setupFriendNotifications();
-        ensureInviteListener();
-        setProgress(100);
-        finishLoading();
-    }).catch(function(err) {
-        console.error('Ошибка:', err);
-        setProgress(100);
-        finishLoading();
+    setProgress(70);
+    // Сначала загружаем рейтинги фильмов
+    return loadAllRatings();
+}).then(function() {
+    setProgress(80);
+    // Потом загружаем рейтинги игр и прочее
+    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+    var gamePromises = games.map(function(g) {
+        return db.ref('gameRatings/' + g).once('value').then(function() { loadLeaderboard(g); }).catch(function(){});
     });
+    return Promise.all(gamePromises);
+}).then(function() {
+    setProgress(85);
+    generateDailyQuests(false);
+    setupFriendNotifications();
+    ensureInviteListener();
+    setProgress(100);
+    finishLoading();
+}).catch(function(err) {
+    console.error('Ошибка:', err);
+    setProgress(100);
+    finishLoading();
+});
 }
 
 // Инициализация совместной рисовалки
@@ -2332,44 +2335,43 @@ function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(s){var
 function updateMovieRating(mid,revs){if(!revs.length){var el=document.getElementById('rating-'+mid);if(el)el.textContent='—';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';}
 // ==================== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ВСЕХ РЕЙТИНГОВ ====================
 function loadAllRatings() {
-    Object.keys(moviesData).forEach(function(mid) {
-        db.ref('reviews/'+mid).on('value', function(snap) {
+    var movieIds = Object.keys(moviesData);
+    var promises = movieIds.map(function(mid) {
+        return db.ref('reviews/' + mid).once('value').then(function(snap) {
             var revs = [];
             snap.forEach(function(c) {
                 revs.push(c.val());
             });
-            var el = document.getElementById('rating-'+mid);
+            var el = document.getElementById('rating-' + mid);
             if(el && revs.length > 0) {
                 var sum = 0;
                 revs.forEach(function(r) {
                     sum += (r.rating || 0);
                 });
                 el.textContent = '⭐ ' + (sum/revs.length).toFixed(1) + '/10';
+            } else if(el) {
+                el.textContent = '⭐ 0/10';
             }
-        });
-    });
-    var games = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter'];
-    games.forEach(function(game) {
-        db.ref('gameRatings/' + game).on('value', function(snapshot) {
-            var ratings = [];
-            snapshot.forEach(function(child) {
-                ratings.push(child.val());
-            });
-            var ratingEl = document.getElementById('rating-' + game);
-            if(ratingEl) {
-                if(ratings.length > 0) {
-                    var sum = 0;
-                    ratings.forEach(function(r) {
-                        sum += (r.rating || 0);
+            // Подписываемся на обновления после первоначальной загрузки
+            db.ref('reviews/' + mid).on('value', function(snap2) {
+                var revs2 = [];
+                snap2.forEach(function(c) {
+                    revs2.push(c.val());
+                });
+                var el2 = document.getElementById('rating-' + mid);
+                if(el2 && revs2.length > 0) {
+                    var sum2 = 0;
+                    revs2.forEach(function(r) {
+                        sum2 += (r.rating || 0);
                     });
-                    var avg = (sum / ratings.length).toFixed(1);
-                    ratingEl.textContent = '⭐ ' + avg + '/10 (' + ratings.length + ')';
-                } else {
-                    ratingEl.textContent = '⭐ 0/10';
+                    el2.textContent = '⭐ ' + (sum2/revs2.length).toFixed(1) + '/10';
+                } else if(el2) {
+                    el2.textContent = '⭐ 0/10';
                 }
-            }
-        });
+            });
+        }).catch(function() {});
     });
+    return Promise.all(promises); // 👈 теперь возвращаем Promise
 }
 function showGame(type){
     if(gameInterval) {
