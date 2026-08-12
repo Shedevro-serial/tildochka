@@ -911,7 +911,19 @@
 </div>
 
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
-
+<!-- Контекстное меню для чата -->
+<div id="chatContextMenu" style="display:none; position:fixed; background:#2a2a2a; border:1px solid #555; border-radius:12px; padding:8px 0; min-width:180px; z-index:9999; box-shadow:0 4px 20px rgba(0,0,0,0.8);">
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('💩')">💩</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('🫀')">🫀</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('😏')">😏</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('🤌🏿')">🤌🏿</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('💀')">💀</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('🥹')">🥹</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#ffd700; border-bottom:1px solid #444; font-size:14px;" id="ctxReply">💬 Ответить</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#ffd700; border-bottom:1px solid #444; font-size:14px;" id="ctxEdit">✏️ Редактировать</div>
+    <div style="padding:8px 16px; cursor:pointer; color:#ff4444; font-size:14px;" id="ctxDelete">🗑️ Удалить</div>
+</div>
+  
 <script>
 // ========== ФИКС ДЛЯ ТЕЛЕФОНА ==========
 document.addEventListener('DOMContentLoaded', function() {
@@ -1931,7 +1943,12 @@ function loadChatMessages() {
                 text: child.val().text || '',
                 ts: child.val().ts || 0,
                 avatarType: child.val().avatarType || 'emoji',
-                avatarValue: child.val().avatarValue || '🐔'
+                avatarValue: child.val().avatarValue || '🐔',
+                replyTo: child.val().replyTo || null,
+                replyToName: child.val().replyToName || null,
+                reactions: child.val().reactions || {},
+                edited: child.val().edited || false,
+                deleted: child.val().deleted || false
             });
         });
         messages.sort((a, b) => a.ts - b.ts);
@@ -1940,8 +1957,22 @@ function loadChatMessages() {
         const wasAtBottom = container.scrollHeight - container.scrollTop < 100;
         container.innerHTML = '';
         messages.forEach(msg => {
+            if (msg.deleted) {
+                // Показываем, что сообщение удалено
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.style.opacity = '0.5';
+                div.style.fontStyle = 'italic';
+                div.innerHTML = `<span style="color:#888;">Сообщение удалено</span>`;
+                container.appendChild(div);
+                return;
+            }
             const div = document.createElement('div');
             div.className = 'message';
+            div.setAttribute('data-id', msg.id);
+            div.setAttribute('data-author', msg.name);
+            div.setAttribute('data-text', msg.text);
+            
             let avatarHtml = '';
             if(msg.avatarType === 'emoji') {
                 avatarHtml = '<span class="message-avatar" style="font-size:16px;">' + escapeHtml(msg.avatarValue) + '</span>';
@@ -1953,14 +1984,74 @@ function loadChatMessages() {
                 const date = new Date(msg.ts);
                 timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             }
+            let editedMarker = msg.edited ? ' <span style="font-size:10px;color:#888;">(изменено)</span>' : '';
+            let replyPreview = '';
+            if(msg.replyTo) {
+                replyPreview = `<div style="margin-left:32px; padding:4px 8px; background:rgba(255,215,0,0.1); border-radius:8px; font-size:12px; color:#aaa; border-left:2px solid #ffd700; margin-bottom:4px;">↪️ Ответ на сообщение от ${escapeHtml(msg.replyToName || 'пользователя')}</div>`;
+            }
             div.innerHTML = `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                     ${avatarHtml}
                     <strong>${escapeHtml(msg.name)}</strong>
                     <span style="font-size:10px;color:#888;">${timeStr}</span>
+                    ${editedMarker}
                 </div>
-                <div style="margin-left:32px;">${escapeHtml(msg.text)}</div>
+                ${replyPreview}
+                <div style="margin-left:32px;" class="message-text">${escapeHtml(msg.text)}</div>
             `;
+
+            // Реакции
+            const reactionsDiv = document.createElement('div');
+            reactionsDiv.style.cssText = 'margin-left: 32px; margin-top: 5px; display: flex; gap: 5px; flex-wrap: wrap;';
+            const reactionEmojis = ['💩', '🫀', '😏', '🤌🏿', '💀', '🥹'];
+            const currentReactions = msg.reactions || {};
+            reactionEmojis.forEach(emoji => {
+                const btn = document.createElement('button');
+                btn.textContent = `${emoji} ${currentReactions[emoji] || 0}`;
+                btn.style.cssText = 'background: rgba(255,255,255,0.1); border: none; border-radius: 12px; padding: 2px 8px; color: #fff; cursor: pointer; font-size: 12px;';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const ref = db.ref('chat/' + msg.id + '/reactions/' + emoji);
+                    ref.transaction((current) => {
+                        return (current || 0) + 1;
+                    });
+                };
+                reactionsDiv.appendChild(btn);
+            });
+            div.appendChild(reactionsDiv);
+
+            // Кнопка "Ответить" (оставляем как есть)
+            const replyBtn = document.createElement('button');
+            replyBtn.textContent = '💬 Ответить';
+            replyBtn.style.cssText = 'background: none; border: none; color: #ffd700; cursor: pointer; font-size: 11px; margin-left: 32px; margin-top: 3px;';
+            replyBtn.onclick = () => {
+                const input = document.getElementById('chatMessageLive');
+                input.value = `> ${msg.name}: ${msg.text}\n\n`;
+                input.focus();
+                input.dataset.replyTo = msg.id;
+            };
+            div.appendChild(replyBtn);
+
+            // === ОБРАБОТЧИКИ КОНТЕКСТНОГО МЕНЮ ===
+            // Правый клик
+            div.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showContextMenu(e, msg.id);
+            });
+            // Долгое нажатие (телефон)
+            let longPressTimer = null;
+            div.addEventListener('touchstart', function(e) {
+                longPressTimer = setTimeout(function() {
+                    showContextMenu(e, msg.id);
+                }, 600);
+            });
+            div.addEventListener('touchend', function(e) {
+                clearTimeout(longPressTimer);
+            });
+            div.addEventListener('touchmove', function(e) {
+                clearTimeout(longPressTimer);
+            });
+
             container.appendChild(div);
         });
         if(wasAtBottom) {
@@ -1968,28 +2059,171 @@ function loadChatMessages() {
         }
         lastCounts.chat = messages.length;
         updateUnreadAll();
-      // В функции loadChatMessages, внутри цикла messages.forEach
-// После добавления текста сообщения (div.innerHTML = ...), добавляем:
+    });
+}
+// === КОНТЕКСТНОЕ МЕНЮ ===
+let contextMenuTargetId = null;
 
-const reactionsDiv = document.createElement('div');
-reactionsDiv.style.cssText = 'margin-left: 32px; margin-top: 5px; display: flex; gap: 5px; flex-wrap: wrap;';
-const reactionEmojis = ['💩', '🫀', '😏', '🤌🏿', '💀', '🥹'];
-const currentReactions = msg.reactions || {};
+function showContextMenu(e, messageId) {
+    e.preventDefault();
+    const menu = document.getElementById('chatContextMenu');
+    if(!menu) return;
+    contextMenuTargetId = messageId;
+    // Позиционируем меню
+    let x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+    let y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+    // Корректировка, чтобы не выходило за экран
+    let menuWidth = 200;
+    let menuHeight = 300;
+    if(x + menuWidth > window.innerWidth) x = window.innerWidth - menuWidth - 10;
+    if(y + menuHeight > window.innerHeight) y = window.innerHeight - menuHeight - 10;
+    if(x < 10) x = 10;
+    if(y < 10) y = 10;
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    menu.style.display = 'block';
 
-reactionEmojis.forEach(emoji => {
-    const btn = document.createElement('button');
-    btn.textContent = `${emoji} ${currentReactions[emoji] || 0}`;
-    btn.style.cssText = 'background: rgba(255,255,255,0.1); border: none; border-radius: 12px; padding: 2px 8px; color: #fff; cursor: pointer; font-size: 12px;';
-    btn.onclick = (e) => {
-        e.stopPropagation();
-        const ref = db.ref('chat/' + msg.id + '/reactions/' + emoji);
-        ref.transaction((current) => {
-            return (current || 0) + 1;
-        });
+    // Настроим пункты меню в зависимости от автора
+    const deleteItem = document.getElementById('ctxDelete');
+    const editItem = document.getElementById('ctxEdit');
+    // Проверяем, является ли текущий пользователь автором
+    const msgDiv = document.querySelector(`.message[data-id="${messageId}"]`);
+    if(msgDiv) {
+        const author = msgDiv.getAttribute('data-author');
+        if(author === myName || isAdmin) {
+            deleteItem.style.display = 'block';
+            editItem.style.display = 'block';
+        } else {
+            deleteItem.style.display = 'none';
+            editItem.style.display = 'none';
+        }
+    } else {
+        deleteItem.style.display = 'none';
+        editItem.style.display = 'none';
+    }
+
+    // Назначаем действия для кнопок меню
+    document.getElementById('ctxReply').onclick = function() {
+        const msgDiv = document.querySelector(`.message[data-id="${contextMenuTargetId}"]`);
+        if(msgDiv) {
+            const name = msgDiv.getAttribute('data-author');
+            const text = msgDiv.getAttribute('data-text');
+            const input = document.getElementById('chatMessageLive');
+            input.value = `> ${name}: ${text}\n\n`;
+            input.focus();
+            input.dataset.replyTo = contextMenuTargetId;
+        }
+        hideContextMenu();
     };
-    reactionsDiv.appendChild(btn);
+    document.getElementById('ctxEdit').onclick = function() {
+        editMessage(contextMenuTargetId);
+        hideContextMenu();
+    };
+    document.getElementById('ctxDelete').onclick = function() {
+        deleteMessage(contextMenuTargetId);
+        hideContextMenu();
+    };
+}
+
+function hideContextMenu() {
+    const menu = document.getElementById('chatContextMenu');
+    if(menu) menu.style.display = 'none';
+    contextMenuTargetId = null;
+}
+
+// Клик вне меню скрывает его
+document.addEventListener('click', function(e) {
+    const menu = document.getElementById('chatContextMenu');
+    if(menu && !menu.contains(e.target)) {
+        hideContextMenu();
+    }
 });
 
+// === РЕДАКТИРОВАНИЕ СООБЩЕНИЯ ===
+function editMessage(messageId) {
+    const msgDiv = document.querySelector(`.message[data-id="${messageId}"]`);
+    if(!msgDiv) return;
+    const textDiv = msgDiv.querySelector('.message-text');
+    if(!textDiv) return;
+    const currentText = textDiv.textContent;
+    // Заменяем текст на поле ввода
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentText;
+    input.style.cssText = 'width: 100%; background: #333; color: #fff; border: 1px solid #ffd700; border-radius: 8px; padding: 5px;';
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = '💾 Сохранить';
+    saveBtn.style.cssText = 'margin-left: 8px; padding: 2px 10px; background: #ffd700; color: #000; border: none; border-radius: 8px; cursor: pointer;';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '❌ Отмена';
+    cancelBtn.style.cssText = 'margin-left: 4px; padding: 2px 10px; background: #555; color: #fff; border: none; border-radius: 8px; cursor: pointer;';
+    const container = document.createElement('div');
+    container.style.cssText = 'display: flex; align-items: center; gap: 5px; margin-top: 5px;';
+    container.appendChild(input);
+    container.appendChild(saveBtn);
+    container.appendChild(cancelBtn);
+    // Удаляем старый текст и вставляем редактор
+    textDiv.innerHTML = '';
+    textDiv.appendChild(container);
+
+    saveBtn.onclick = function() {
+        const newText = input.value.trim();
+        if(!newText) {
+            alert('Текст не может быть пустым');
+            return;
+        }
+        // Обновляем в Firebase
+        db.ref('chat/' + messageId).update({
+            text: newText,
+            edited: true
+        }).then(() => {
+            // Восстанавливаем отображение
+            textDiv.textContent = newText;
+            // Добавляем маркер "изменено"
+            const parent = msgDiv.querySelector('div:first-child');
+            if(!parent.querySelector('.edited-marker')) {
+                const marker = document.createElement('span');
+                marker.className = 'edited-marker';
+                marker.style.cssText = 'font-size:10px;color:#888;margin-left:4px;';
+                marker.textContent = '(изменено)';
+                parent.appendChild(marker);
+            }
+        }).catch(err => alert('Ошибка сохранения: ' + err.message));
+    };
+    cancelBtn.onclick = function() {
+        // Восстанавливаем старый текст
+        textDiv.textContent = currentText;
+    };
+    // Если пользователь нажал Enter
+    input.addEventListener('keypress', function(e) {
+        if(e.key === 'Enter') {
+            saveBtn.click();
+        }
+    });
+    input.focus();
+}
+
+// === УДАЛЕНИЕ СООБЩЕНИЯ ===
+function deleteMessage(messageId) {
+    if(!confirm('Удалить это сообщение?')) return;
+    // Помечаем как удалённое (или полностью удаляем)
+    db.ref('chat/' + messageId).update({
+        deleted: true,
+        text: '' // очищаем текст
+    }).then(() => {
+        // Можно сразу обновить локально, но загрузка перерисует
+    }).catch(err => alert('Ошибка удаления: ' + err.message));
+}
+
+// === БЫСТРАЯ РЕАКЦИЯ ИЗ МЕНЮ ===
+function addReactionFromMenu(emoji) {
+    if(!contextMenuTargetId) return;
+    const ref = db.ref('chat/' + contextMenuTargetId + '/reactions/' + emoji);
+    ref.transaction((current) => {
+        return (current || 0) + 1;
+    });
+    hideContextMenu();
+}
 container.appendChild(div);
 div.appendChild(reactionsDiv);
 
