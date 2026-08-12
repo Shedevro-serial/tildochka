@@ -6191,6 +6191,9 @@ function loadPolls() {
             const totalVotes = Object.values(poll.votes || {}).reduce((a, b) => a + b, 0);
             const hasVoted = !!(poll.voters && poll.voters[myUid]);
 
+            // Проверяем, может ли пользователь удалить этот опрос
+            const canDelete = (poll.createdBy === myName) || isAdmin;
+
             let optionsHtml = '';
             poll.options.forEach(opt => {
                 const votes = poll.votes[opt] || 0;
@@ -6212,17 +6215,51 @@ function loadPolls() {
                     </div>
                 `;
             });
+
+            // Добавляем кнопку удаления (если есть права)
+            const deleteButton = canDelete
+                ? `<button onclick="deletePoll('${poll.id}')" style="background:#f44;color:#fff;border:none;padding:4px 12px;border-radius:8px;font-size:12px;cursor:pointer;margin-left:10px;">🗑️ Удалить</button>`
+                : '';
+
             container.innerHTML += `
                 <div style="background:rgba(0,0,0,0.4);border-radius:12px;padding:15px;margin-bottom:15px;border:1px solid rgba(255,215,0,0.2);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                         <h4 style="color:#ffd700;">${poll.question}</h4>
-                        <span style="font-size:11px;color:#888;">👤 ${poll.createdBy}</span>
+                        <div>
+                            <span style="font-size:11px;color:#888;">👤 ${poll.createdBy}</span>
+                            ${deleteButton}
+                        </div>
                     </div>
                     ${optionsHtml}
                     <div style="font-size:11px;color:#888;margin-top:8px;">Всего голосов: ${totalVotes}</div>
                 </div>
             `;
         });
+    });
+}
+function deletePoll(pollId) {
+    // Проверяем права – сначала получаем данные опроса
+    db.ref('polls/' + pollId).once('value', (snapshot) => {
+        const poll = snapshot.val();
+        if (!poll) {
+            alert('Опрос не найден');
+            return;
+        }
+        // Проверяем, кто автор
+        if (poll.createdBy !== myName && !isAdmin) {
+            alert('⛔ У вас нет прав на удаление этого опроса');
+            return;
+        }
+        if (confirm('Удалить опрос "' + poll.question + '"?')) {
+            db.ref('polls/' + pollId).remove()
+                .then(() => {
+                    alert('🗑️ Опрос удалён');
+                    loadPolls(); // обновляем список
+                })
+                .catch((err) => {
+                    alert('Ошибка удаления: ' + err.message);
+                });
+        }
     });
 }
 
