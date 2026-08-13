@@ -6728,6 +6728,7 @@ function loadCustomStickers() {
         });
     });
 }
+
 // Открыть окно выбора стикеров
 function openStickerPicker() {
     const modal = document.getElementById('stickerPickerModal');
@@ -6736,9 +6737,8 @@ function openStickerPicker() {
     
     const pickerGrid = document.getElementById('stickerPickerGrid');
     if (!pickerGrid) return;
-    pickerGrid.innerHTML = '';
+    pickerGrid.innerHTML = '<p style="color:#888;text-align:center;grid-column:span 4;">⏳ Загрузка...</p>';
     
-    // Просто берём данные из Firebase и показываем в модалке
     db.ref('stickers').once('value', (snapshot) => {
         const stickers = [];
         snapshot.forEach(child => {
@@ -6753,10 +6753,11 @@ function openStickerPicker() {
         stickers.sort((a, b) => b.ts - a.ts);
         
         if (stickers.length === 0) {
-            pickerGrid.innerHTML = '<p style="color:#888;grid-column:span 4;">Нет стикеров. Загрузи первый!</p>';
+            pickerGrid.innerHTML = '<p style="color:#888;text-align:center;grid-column:span 4;">Нет стикеров. Загрузи первый!</p>';
             return;
         }
         
+        pickerGrid.innerHTML = '';
         stickers.forEach(sticker => {
             const stickerDiv = document.createElement('div');
             stickerDiv.style.cssText = 'width:100%; height:90px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:0.2s; background:rgba(0,0,0,0.2);';
@@ -6829,7 +6830,7 @@ function openStickerCreator() {
     modal.innerHTML = `
         <div class="modal-box" style="max-width:450px;">
             <h3>📤 Загрузить стикер</h3>
-            <p style="color:#aaa; font-size:13px;">Загрузи фото или короткое видео (до 2 МБ)</p>
+            <p style="color:#aaa; font-size:13px;">Загрузи фото или короткое видео (до 10 МБ)</p>
             
             <div style="margin:12px 0; border:2px dashed #444; border-radius:12px; padding:20px; text-align:center; cursor:pointer;" id="stickerDropZone" onclick="document.getElementById('stickerFileInput').click()">
                 <div style="font-size:48px;">📁</div>
@@ -6840,13 +6841,12 @@ function openStickerCreator() {
             
             <div id="stickerPreview" style="display:none; margin:10px auto; max-width:200px; border-radius:12px; overflow:hidden;"></div>
             
-            <button onclick="createCustomSticker()" style="background:#ffd700; color:#000; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">✅ Создать</button>
+            <button id="createStickerBtn" onclick="createCustomSticker()" style="background:#ffd700; color:#000; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">✅ Создать</button>
             <button onclick="this.closest('.modal-overlay').remove()" style="background:#444; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; margin-left:8px;">❌ Отмена</button>
         </div>
     `;
     document.body.appendChild(modal);
     
-    // Drag and Drop
     const dropZone = document.getElementById('stickerDropZone');
     if (dropZone) {
         dropZone.addEventListener('dragover', (e) => {
@@ -6872,21 +6872,19 @@ function openStickerCreator() {
 
 let selectedStickerFile = null;
 let selectedStickerType = null;
-let selectedStickerData = null;
 
 function handleStickerFile(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    if (file.size > 10 * 1024 * 1024) { // 10 МБ
+    if (file.size > 10 * 1024 * 1024) {
         alert('Файл слишком большой! Максимум 10 МБ');
         return;
     }
     
-    selectedStickerFile = file; // Сохраняем сам файл, а не base64
+    selectedStickerFile = file;
     selectedStickerType = file.type.startsWith('video') ? 'video' : 'image';
     
-    // Показываем превью (только для просмотра)
     const reader = new FileReader();
     reader.onload = function(e) {
         const preview = document.getElementById('stickerPreview');
@@ -6908,17 +6906,14 @@ function createCustomSticker() {
         return;
     }
     
-    // Проверяем, что storage существует
     if (typeof storage === 'undefined') {
         alert('❌ Ошибка: Firebase Storage не инициализирован. Обнови страницу.');
         return;
     }
     
-    // Показываем загрузку
-    const btn = document.querySelector('.modal-box button:first-of-type');
+    const btn = document.getElementById('createStickerBtn');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Загрузка...'; }
     
-    // Генерируем уникальное имя файла
     const fileName = 'stickers/' + Date.now() + '_' + Math.random().toString(36).substr(2, 6) + '_' + selectedStickerFile.name;
     const uploadTask = storage.ref(fileName).put(selectedStickerFile);
     
@@ -6942,7 +6937,6 @@ function createCustomSticker() {
                 }).then(() => {
                     alert('✅ Стикер создан!');
                     selectedStickerFile = null;
-                    selectedStickerData = null;
                     selectedStickerType = null;
                     const modal = document.querySelector('.modal-overlay');
                     if (modal) modal.remove();
