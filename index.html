@@ -1984,19 +1984,21 @@ function loadChatMessages() {
         const messages = [];
         snapshot.forEach((child) => {
             messages.push({
-                id: child.key,
-                name: child.val().name || 'Гость',
-                text: child.val().text || '',
-                ts: child.val().ts || 0,
-                avatarType: child.val().avatarType || 'emoji',
-                avatarValue: child.val().avatarValue || '🐔',
-                replyTo: child.val().replyTo || null,
-                replyToName: child.val().replyToName || null,
-                replyToText: child.val().replyToText || null,
-                reactions: child.val().reactions || {},
-                edited: child.val().edited || false,
-                deleted: child.val().deleted || false
-            });
+    id: child.key,
+    name: child.val().name || 'Гость',
+    text: child.val().text || '',
+    ts: child.val().ts || 0,
+    avatarType: child.val().avatarType || 'emoji',
+    avatarValue: child.val().avatarValue || '🐔',
+    replyTo: child.val().replyTo || null,
+    replyToName: child.val().replyToName || null,
+    replyToText: child.val().replyToText || null,
+    reactions: child.val().reactions || {},
+    edited: child.val().edited || false,
+    deleted: child.val().deleted || false,
+    isSticker: child.val().isSticker || false,  // 👈 ЭТУ СТРОЧКУ ДОБАВЬ
+    stickerData: child.val().stickerData || null // 👈 И ЭТУ ТОЖЕ
+});
         });
         messages.sort((a, b) => a.ts - b.ts);
         const container = document.getElementById('chatMessagesLive');
