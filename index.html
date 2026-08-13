@@ -6680,10 +6680,8 @@ function votePoll(pollId, option) {
 function loadCustomStickers() {
     db.ref('stickers').on('value', (snapshot) => {
         const container = document.getElementById('customStickersContainer');
-        const pickerGrid = document.getElementById('stickerPickerGrid');
         if (!container) return;
         container.innerHTML = '';
-        if (pickerGrid) pickerGrid.innerHTML = '';
         
         const stickers = [];
         snapshot.forEach(child => {
@@ -6727,29 +6725,73 @@ function loadCustomStickers() {
             
             stickerDiv.title = `Автор: ${sticker.author}`;
             container.appendChild(stickerDiv);
+        });
+    });
+}
+// Открыть окно выбора стикеров
+function openStickerPicker() {
+    const modal = document.getElementById('stickerPickerModal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    
+    // Заполняем грид стикерами
+    const pickerGrid = document.getElementById('stickerPickerGrid');
+    if (!pickerGrid) return;
+    pickerGrid.innerHTML = '';
+    
+    db.ref('stickers').once('value', (snapshot) => {
+        const stickers = [];
+        snapshot.forEach(child => {
+            stickers.push({
+                id: child.key,
+                type: child.val().type || 'image',
+                url: child.val().url || child.val().data,
+                author: child.val().author || 'Аноним',
+                ts: child.val().ts || 0
+            });
+        });
+        stickers.sort((a, b) => b.ts - a.ts);
+        
+        if (stickers.length === 0) {
+            pickerGrid.innerHTML = '<p style="color:#888;grid-column:span 4;">Нет стикеров. Загрузи первый!</p>';
+            return;
+        }
+        
+        stickers.forEach(sticker => {
+            const stickerDiv = document.createElement('div');
+            stickerDiv.style.cssText = 'width:100%; height:90px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:0.2s; background:rgba(0,0,0,0.2);';
+            stickerDiv.onmouseenter = () => { stickerDiv.style.border = '2px solid #ffd700'; };
+            stickerDiv.onmouseleave = () => { stickerDiv.style.border = '2px solid transparent'; };
+            stickerDiv.onclick = () => {
+                sendStickerFromChat(sticker.id);
+                closeStickerPicker();
+            };
             
-            if (pickerGrid) {
-                const pickerItem = stickerDiv.cloneNode(true);
-                pickerItem.style.width = '100%';
-                pickerItem.style.height = '90px';
-                pickerItem.onclick = () => {
-                    sendStickerFromChat(sticker.id);
-                    closeStickerPicker();
-                };
-                pickerGrid.appendChild(pickerItem);
+            if (sticker.type === 'video') {
+                const video = document.createElement('video');
+                video.src = sticker.url;
+                video.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+                video.muted = true;
+                video.loop = true;
+                video.autoplay = true;
+                video.playsInline = true;
+                stickerDiv.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = sticker.url;
+                img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+                stickerDiv.appendChild(img);
             }
+            
+            stickerDiv.title = `Автор: ${sticker.author}`;
+            pickerGrid.appendChild(stickerDiv);
         });
     });
 }
 
-// Открыть окно выбора стикеров
-function openStickerPicker() {
+function closeStickerPicker() {
     const modal = document.getElementById('stickerPickerModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        // Обновляем грид при открытии
-        loadCustomStickers();
-    }
+    if (modal) modal.style.display = 'none';
 }
 
 function closeStickerPicker() {
