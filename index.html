@@ -6671,6 +6671,241 @@ function votePoll(pollId, option) {
         }
     });
 }
+// ==================== СТИКЕРЫ (ФОТО/ВИДЕО) ====================
+
+// Загружаем стикеры из Firebase
+function loadCustomStickers() {
+    db.ref('stickers').on('value', (snapshot) => {
+        const container = document.getElementById('customStickersContainer');
+        const pickerGrid = document.getElementById('stickerPickerGrid');
+        if (!container) return;
+        container.innerHTML = '';
+        if (pickerGrid) pickerGrid.innerHTML = '';
+        
+        const stickers = [];
+        snapshot.forEach(child => {
+            stickers.push({
+                id: child.key,
+                type: child.val().type || 'image',
+                data: child.val().data || null,
+                emoji: child.val().emoji || null,
+                author: child.val().author || 'Аноним',
+                ts: child.val().ts || 0
+            });
+        });
+        stickers.sort((a, b) => b.ts - a.ts);
+        
+        // Если стикеров нет, показываем подсказку
+        if (stickers.length === 0) {
+            container.innerHTML = '<span style="color:#555; font-size:12px;">Нет стикеров. Загрузи первый!</span>';
+            return;
+        }
+        
+        stickers.forEach(sticker => {
+            // Создаём карточку стикера
+            const stickerDiv = document.createElement('div');
+            stickerDiv.style.cssText = 'position:relative; width:60px; height:60px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:0.2s; flex-shrink:0; background:rgba(0,0,0,0.2);';
+            stickerDiv.onmouseenter = () => { stickerDiv.style.border = '2px solid #ffd700'; };
+            stickerDiv.onmouseleave = () => { stickerDiv.style.border = '2px solid transparent'; };
+            stickerDiv.onclick = () => sendStickerFromChat(sticker.id);
+            
+            if (sticker.type === 'video') {
+                const video = document.createElement('video');
+                video.src = sticker.data;
+                video.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+                video.muted = true;
+                video.loop = true;
+                video.autoplay = true;
+                video.playsInline = true;
+                stickerDiv.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = sticker.data;
+                img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
+                stickerDiv.appendChild(img);
+            }
+            
+            // Подсказка с автором
+            stickerDiv.title = `Автор: ${sticker.author}`;
+            container.appendChild(stickerDiv);
+            
+            // Также добавляем в грид для выбора стикеров
+            if (pickerGrid) {
+                const pickerItem = stickerDiv.cloneNode(true);
+                pickerItem.style.width = '100%';
+                pickerItem.style.height = '90px';
+                pickerItem.onclick = () => {
+                    sendStickerFromChat(sticker.id);
+                    closeStickerPicker();
+                };
+                pickerGrid.appendChild(pickerItem);
+            }
+        });
+    });
+}
+
+// Открыть окно выбора стикеров
+function openStickerPicker() {
+    const modal = document.getElementById('stickerPickerModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Обновляем грид при открытии
+        loadCustomStickers();
+    }
+}
+
+function closeStickerPicker() {
+    const modal = document.getElementById('stickerPickerModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// Отправить стикер в чат
+function sendStickerFromChat(stickerId) {
+    // Получаем данные стикера
+    db.ref('stickers/' + stickerId).once('value', (snapshot) => {
+        const sticker = snapshot.val();
+        if (!sticker) {
+            alert('Стикер не найден');
+            return;
+        }
+        const avatarData = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
+        db.ref('chat').push({
+            name: myName,
+            text: '',
+            ts: Date.now(),
+            avatarType: avatarData.type,
+            avatarValue: avatarData.value,
+            isSticker: true,
+            stickerData: {
+                id: stickerId,
+                type: sticker.type || 'image',
+                data: sticker.data,
+                emoji: sticker.emoji || null
+            },
+            reactions: {}
+        });
+        closeStickerPicker();
+    });
+}
+
+// Открыть окно создания стикера (загрузка фото/видео)
+function openStickerCreator() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-box" style="max-width:450px;">
+            <h3>📤 Загрузить стикер</h3>
+            <p style="color:#aaa; font-size:13px;">Загрузи фото или короткое видео (до 2 МБ)</p>
+            
+            <div style="margin:12px 0; border:2px dashed #444; border-radius:12px; padding:20px; text-align:center; cursor:pointer;" id="stickerDropZone" onclick="document.getElementById('stickerFileInput').click()">
+                <div style="font-size:48px;">📁</div>
+                <div style="color:#888;">Нажми или перетащи файл</div>
+                <div style="color:#555; font-size:11px;">PNG, JPG, GIF, MP4</div>
+            </div>
+            <input type="file" id="stickerFileInput" accept="image/*,video/*" style="display:none;" onchange="handleStickerFile(event)">
+            
+            <div id="stickerPreview" style="display:none; margin:10px auto; max-width:200px; border-radius:12px; overflow:hidden;"></div>
+            
+            <button onclick="createCustomSticker()" style="background:#ffd700; color:#000; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">✅ Создать</button>
+            <button onclick="this.closest('.modal-overlay').remove()" style="background:#444; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; margin-left:8px;">❌ Отмена</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Drag and Drop
+    const dropZone = document.getElementById('stickerDropZone');
+    if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#ffd700';
+            dropZone.style.background = 'rgba(255,215,0,0.1)';
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#444';
+            dropZone.style.background = 'transparent';
+        });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#444';
+            dropZone.style.background = 'transparent';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleStickerFile({ target: { files: files } });
+            }
+        });
+    }
+}
+
+let selectedStickerFile = null;
+let selectedStickerType = null;
+let selectedStickerData = null;
+
+function handleStickerFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Проверка размера (макс 2 МБ)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Файл слишком большой! Максимум 2 МБ');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        selectedStickerData = e.target.result;
+        selectedStickerType = file.type.startsWith('video') ? 'video' : 'image';
+        selectedStickerFile = file;
+        
+        const preview = document.getElementById('stickerPreview');
+        if (preview) {
+            preview.style.display = 'block';
+            if (selectedStickerType === 'video') {
+                preview.innerHTML = `<video src="${e.target.result}" style="max-width:100%; max-height:180px; border-radius:12px;" controls muted playsinline></video>`;
+            } else {
+                preview.innerHTML = `<img src="${e.target.result}" style="max-width:100%; max-height:180px; border-radius:12px;">`;
+            }
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function createCustomSticker() {
+    if (!selectedStickerData) {
+        alert('Сначала загрузи фото или видео!');
+        return;
+    }
+    
+    db.ref('stickers').push({
+        type: selectedStickerType,
+        data: selectedStickerData,
+        author: myName,
+        ts: Date.now()
+    }).then(() => {
+        alert('✅ Стикер создан!');
+        selectedStickerData = null;
+        selectedStickerFile = null;
+        selectedStickerType = null;
+        const modal = document.querySelector('.modal-overlay');
+        if (modal) modal.remove();
+        loadCustomStickers();
+    }).catch(err => {
+        alert('Ошибка: ' + err.message);
+    });
+}
+
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    loadCustomStickers();
+});
+
+// Закрытие окна выбора стикеров по клику вне
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('stickerPickerModal');
+    if (modal && modal.style.display === 'flex' && e.target === modal) {
+        closeStickerPicker();
+    }
+});
 </script>
 </body>
                                                                                                 </html>
