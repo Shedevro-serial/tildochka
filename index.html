@@ -939,6 +939,22 @@
     <div style="padding:8px 16px; cursor:pointer; color:#ffd700; border-bottom:1px solid #444; font-size:14px;" id="ctxEdit">✏️ Редактировать</div>
     <div style="padding:8px 16px; cursor:pointer; color:#ff4444; font-size:14px;" id="ctxDelete">🗑️ Удалить</div>
 </div>
+<!-- Стикеры -->
+<div style="margin-bottom:8px;">
+    <div id="stickerContainer" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+        <button onclick="openStickerPicker()" style="background:rgba(255,215,0,0.15); border:1px solid #ffd700; border-radius:10px; padding:6px 14px; font-size:14px; cursor:pointer; color:#ffd700; font-weight:bold;">📂 Стикеры</button>
+        <button onclick="openStickerCreator()" style="background:rgba(255,215,0,0.15); border:1px dashed #ffd700; border-radius:10px; padding:6px 14px; font-size:14px; cursor:pointer; color:#ffd700;">➕ Загрузить</button>
+    </div>
+    <div id="customStickersContainer" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:4px;"></div>
+</div>
+<!-- Окно выбора стикеров -->
+<div id="stickerPickerModal" class="modal-overlay" style="display:none; z-index:500;">
+    <div class="modal-box" style="max-width:500px; max-height:80vh; overflow-y:auto;">
+        <h3>📂 Выбери стикер</h3>
+        <div id="stickerPickerGrid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0;"></div>
+        <button onclick="closeStickerPicker()" style="background:#444; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">Закрыть</button>
+    </div>
+</div>
   
 <script>
 // ========== ФИКС ДЛЯ ТЕЛЕФОНА ==========
@@ -2049,7 +2065,15 @@ function loadChatMessages() {
                     ${editedMarker}
                 </div>
                 ${replyPreview}
-                <div style="margin-left:32px;" class="message-text">${escapeHtml(msg.text)}</div>
+                <div style="margin-left:32px;" class="message-text">
+    ${msg.isSticker && msg.stickerData ? 
+        (msg.stickerData.type === 'video' ? 
+            `<video src="${msg.stickerData.data}" style="max-width:200px; max-height:200px; border-radius:12px; background:#000;" controls muted playsinline></video>` : 
+            `<img src="${msg.stickerData.data}" style="max-width:200px; max-height:200px; border-radius:12px; object-fit:contain; background:rgba(0,0,0,0.2);">`
+        ) : 
+        escapeHtml(msg.text)
+    }
+</div>
             `;
 
             // ======== РЕАКЦИИ (показываем только если есть голоса) ========
