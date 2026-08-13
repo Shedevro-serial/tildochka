@@ -6794,11 +6794,6 @@ function closeStickerPicker() {
     if (modal) modal.style.display = 'none';
 }
 
-function closeStickerPicker() {
-    const modal = document.getElementById('stickerPickerModal');
-    if (modal) modal.style.display = 'none';
-}
-
 // Отправить стикер в чат
 function sendStickerFromChat(stickerId) {
     db.ref('stickers/' + stickerId).once('value', (snapshot) => {
@@ -6913,6 +6908,12 @@ function createCustomSticker() {
         return;
     }
     
+    // Проверяем, что storage существует
+    if (typeof storage === 'undefined') {
+        alert('❌ Ошибка: Firebase Storage не инициализирован. Обнови страницу.');
+        return;
+    }
+    
     // Показываем загрузку
     const btn = document.querySelector('.modal-box button:first-of-type');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ Загрузка...'; }
@@ -6923,7 +6924,6 @@ function createCustomSticker() {
     
     uploadTask.on('state_changed',
         (snapshot) => {
-            // Прогресс загрузки
             const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
             if (btn) btn.textContent = '⏳ ' + progress + '%';
         },
@@ -6933,9 +6933,7 @@ function createCustomSticker() {
             if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
         },
         () => {
-            // Загрузка завершена - получаем URL
             uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                // Сохраняем в базу данных только URL
                 db.ref('stickers').push({
                     type: selectedStickerType,
                     url: downloadURL,
@@ -6954,6 +6952,9 @@ function createCustomSticker() {
                     alert('Ошибка: ' + err.message);
                     if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
                 });
+            }).catch(err => {
+                alert('Ошибка получения URL: ' + err.message);
+                if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
             });
         }
     );
