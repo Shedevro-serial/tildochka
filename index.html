@@ -6734,11 +6734,11 @@ function openStickerPicker() {
     if (!modal) return;
     modal.style.display = 'flex';
     
-    // Заполняем грид стикерами
     const pickerGrid = document.getElementById('stickerPickerGrid');
     if (!pickerGrid) return;
     pickerGrid.innerHTML = '';
     
+    // Просто берём данные из Firebase и показываем в модалке
     db.ref('stickers').once('value', (snapshot) => {
         const stickers = [];
         snapshot.forEach(child => {
