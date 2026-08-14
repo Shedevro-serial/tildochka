@@ -6681,55 +6681,7 @@ function votePoll(pollId, option) {
 // ==================== СТИКЕРЫ (ФОТО/ВИДЕО) ====================
 
 function loadCustomStickers() {
-    db.ref('stickers').on('value', (snapshot) => {
-        const container = document.getElementById('customStickersContainer');
-        if (!container) return;
-        container.innerHTML = '';
-        
-        const stickers = [];
-        snapshot.forEach(child => {
-            stickers.push({
-                id: child.key,
-                type: child.val().type || 'image',
-                data: child.val().data,
-                author: child.val().author || 'Аноним',
-                ts: child.val().ts || 0
-            });
-        });
-        stickers.sort((a, b) => b.ts - a.ts);
-        
-        if (stickers.length === 0) {
-            container.innerHTML = '<span style="color:#555; font-size:12px;">Нет стикеров. Загрузи первый!</span>';
-            return;
-        }
-        
-        stickers.forEach(sticker => {
-            const stickerDiv = document.createElement('div');
-            stickerDiv.style.cssText = 'position:relative; width:60px; height:60px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:0.2s; flex-shrink:0; background:rgba(0,0,0,0.2);';
-            stickerDiv.onmouseenter = () => { stickerDiv.style.border = '2px solid #ffd700'; };
-            stickerDiv.onmouseleave = () => { stickerDiv.style.border = '2px solid transparent'; };
-            stickerDiv.onclick = () => sendStickerFromChat(sticker.id);
-            
-            if (sticker.type === 'video') {
-                const video = document.createElement('video');
-                video.src = sticker.data;
-                video.style.cssText = 'width:100%; height:100%; object-fit:cover;';
-                video.muted = true;
-                video.loop = true;
-                video.autoplay = true;
-                video.playsInline = true;
-                stickerDiv.appendChild(video);
-            } else {
-                const img = document.createElement('img');
-                img.src = sticker.data;
-                img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
-                stickerDiv.appendChild(img);
-            }
-            
-            stickerDiv.title = `Автор: ${sticker.author}`;
-            container.appendChild(stickerDiv);
-        });
-    });
+    
 }
 
 function openStickerPicker() {
