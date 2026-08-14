@@ -2778,7 +2778,11 @@ function showGame(type){
         guess: '🔢 Угадай число',
         rps: '✂️ Камень-ножницы',
         shooter: '🎯 Птичий тир',
-        drawing: '🎨 Совместная рисовалка'
+        drawing: '🎨 Совместная рисовалка',
+        hangman: '🙃 Виселица',
+        minesweeper: '💣 Сапёр',
+        whoami: '🕵️ Кто я?',
+        roulette: '🎡 Рулетка'
     };
     document.getElementById('gameTitle').textContent = titles[type] || type;
     document.getElementById('gameContent').innerHTML = '';
@@ -2798,19 +2802,29 @@ function showGame(type){
             initRunner();
             progressQuest('playRunner', 1);
         }
-        else if(type === 'chickenrain') initChickenRain();
-        else if(type === 'flappy') initFlappy();
-        else if(type === 'memory') initMemory();
-        else if(type === 'tamagotchi') initTamagotchi();
-        else if(type === 'guess') initGuess();
-        else if(type === 'rps') initRPS();
-        else if(type === 'shooter') initShooter();
-        else if(type === 'drawing')
-        else if(type === 'hangman') { initHangman(); }
-        else if(type === 'minesweeper') { initMinesweeper(); }
-        else if(type === 'whoami') { initWhoAmI(); }
-        else if(type === 'roulette') { initRoulette(); }{
-            // Показываем рисовалку
+        else if(type === 'chickenrain') {
+            initChickenRain();
+        }
+        else if(type === 'flappy') {
+            initFlappy();
+        }
+        else if(type === 'memory') {
+            initMemory();
+        }
+        else if(type === 'tamagotchi') {
+            initTamagotchi();
+        }
+        else if(type === 'guess') {
+            initGuess();
+        }
+        else if(type === 'rps') {
+            initRPS();
+        }
+        else if(type === 'shooter') {
+            initShooter();
+        }
+        else if(type === 'drawing') {
+            // ===== ПОЛНЫЙ КОД РИСОВАЛКИ =====
             document.getElementById('gameContent').innerHTML = '<div class="drawing-container" style="max-width:900px;margin:0 auto;padding:20px">' +
                 '<canvas id="drawGameCanvas" width="800" height="500" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/500; background:white; border-radius:20px"></canvas>' +
                 '<div class="drawing-toolbar" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center">' +
@@ -2833,7 +2847,7 @@ function showGame(type){
                 '<div>🟢 ОНЛАЙН: <span id="drawingGameOnlineCount">1</span></div>' +
                 '<div>💡 РИСУЙТЕ ВМЕСТЕ — ВСЕ ВИДЯТ ИЗМЕНЕНИЯ</div></div></div>';
             
-            // Инициализируем рисовалку внутри игры
+            // ПОЛНАЯ ИНИЦИАЛИЗАЦИЯ РИСОВАЛКИ
             setTimeout(function() {
                 const gameCanvas = document.getElementById('drawGameCanvas');
                 if(!gameCanvas) return;
@@ -3082,6 +3096,20 @@ function showGame(type){
                 gameInitOnlineTracking();
             }, 100);
         }
+        // ===== НОВЫЕ ИГРЫ =====
+        else if(type === 'hangman') {
+            initHangman();
+        }
+        else if(type === 'minesweeper') {
+            initMinesweeper();
+        }
+        else if(type === 'whoami') {
+            initWhoAmI();
+        }
+        else if(type === 'roulette') {
+            initRoulette();
+        }
+        
         progressQuest('play', 1);
         loadLeaderboard(type);
     }, 50);
@@ -5538,21 +5566,25 @@ function renderAllGames() {
         return;
     }
     var allGames = [
-        { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
-        { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
-        { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
-        { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
-        { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
-        { name: 'Memory', icon: '🧠', id: 'memory', online: false },
-        { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
-        { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
-        { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
-        { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
-        { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
-        { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
-        { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
-        { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false }
-    ];
+    { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
+    { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
+    { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
+    { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
+    { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
+    { name: 'Memory', icon: '🧠', id: 'memory', online: false },
+    { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
+    { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
+    { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
+    { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
+    { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
+    { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
+    { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
+    { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false },
+    { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
+    { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
+    { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false },
+    { name: 'Рулетка', icon: '🎡', id: 'roulette', online: false }
+];
     container.innerHTML = '';
     for(var i = 0; i < allGames.length; i++) {
         var game = allGames[i];
@@ -5596,7 +5628,8 @@ function showAllGames() {
             { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
             { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
             { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
-            { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false }
+            { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false },
+            // 👇 НОВЫЕ ИГРЫ (запятые исправлены!)
             { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
             { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
             { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false },
@@ -5626,9 +5659,9 @@ function showAllGames() {
         }, 100);
     }
     setTimeout(function() {
-        var allGames = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter', 'drawing'];
-        for(var i = 0; i < allGames.length; i++) {
-            loadLeaderboard(allGames[i]);
+        var allGameIds = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter', 'drawing', 'hangman', 'minesweeper', 'whoami', 'roulette'];
+        for(var i = 0; i < allGameIds.length; i++) {
+            loadLeaderboard(allGameIds[i]);
         }
     }, 200);
 }
