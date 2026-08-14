@@ -764,6 +764,11 @@
     <div class="chat-container">
         <h2>💬 Чат</h2>
         <div class="chat-messages" id="chatMessagesLive"></div>
+
+        <div id="emojiPanel" style="display:none; margin-bottom:6px; background:rgba(0,0,0,0.4); border-radius:12px; padding:8px; display:flex; flex-wrap:wrap; gap:4px; max-height:120px; overflow-y:auto;">
+    <!-- Эмодзи будут добавлены через JS -->
+</div>
+<button id="emojiToggleBtn" onclick="toggleEmojiPanel()" style="background:rgba(255,215,0,0.15); border:1px solid #ffd700; border-radius:10px; padding:4px 12px; font-size:12px; cursor:pointer; color:#ffd700; margin-bottom:4px;">😊 Смайлы</button>
         
         <!-- Индикатор печати -->
         <div id="typingIndicator" style="display:none; color:#888; font-size:12px; padding:4px 8px; font-style:italic; min-height:20px;">
@@ -2800,7 +2805,11 @@ function showGame(type){
         else if(type === 'guess') initGuess();
         else if(type === 'rps') initRPS();
         else if(type === 'shooter') initShooter();
-        else if(type === 'drawing') {
+        else if(type === 'drawing')
+        else if(type === 'hangman') { initHangman(); }
+        else if(type === 'minesweeper') { initMinesweeper(); }
+        else if(type === 'whoami') { initWhoAmI(); }
+        else if(type === 'roulette') { initRoulette(); }{
             // Показываем рисовалку
             document.getElementById('gameContent').innerHTML = '<div class="drawing-container" style="max-width:900px;margin:0 auto;padding:20px">' +
                 '<canvas id="drawGameCanvas" width="800" height="500" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/500; background:white; border-radius:20px"></canvas>' +
@@ -5588,6 +5597,10 @@ function showAllGames() {
             { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
             { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
             { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false }
+            { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
+            { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
+            { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false },
+            { name: 'Рулетка', icon: '🎡', id: 'roulette', online: false }
         ];
         container.innerHTML = '';
         for(var i = 0; i < allGames.length; i++) {
@@ -6875,6 +6888,747 @@ function createCustomSticker() {
     }).catch(err => {
         alert('Ошибка: ' + err.message);
     });
+}
+// ==================== ЭМОДЗИ-ПАНЕЛЬ ====================
+const commonEmojis = ['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','🥰','😘','😗','😙','😚','🙂','🤗','🤩','🤔','🤨','😐','😑','😶','🙄','😏','😣','😥','😮','🤐','😯','😪','😫','😴','😌','😛','😜','😝','🤤','😒','😓','😔','😕','🙃','🤑','😲','☹️','🙁','😖','😞','😟','😤','😢','😭','😦','😧','😨','😩','🤯','😬','😰','😱','🥵','🥶','😳','🤪','😵','😡','😠','🤬','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','🎃','😺','😸','😻','😽','🙀','😿','😹','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','🉑','☢️','☣️','📴','📳','🈶','🈚','🈸','🈺','🈷️','✴️','🆚','💮','🉐','㊙️','㊗️','🈴','🈵','🈹','🈲','🅰️','🅱️','🆎','🆑','🅾️','🆘','❌','⭕','🛑','⛔','📛','🚫','💯','💢','♨️','🚷','🚯','🚳','🚱','🔞','📵','🚭','❗','❕','❓','❔','‼️','⁉️','🔅','🔆','〽️','⚠️','🚸','🔱','⚜️','🔰','♻️','✅','🈯️','💹','❇️','✳️','❎','🌐','💠','Ⓜ️','🌀','💤','🏧','🚾','♿','🅿️','🈳','🈂️','🛂','🛃','🛄','🛅','🚹','🚺','🚼','⚧️','🚻','🚮','🎦','📶','🈁','🔣','ℹ️','🔤','🔡','🔠','🆖','🆗','🆙','🆒','🆕','🆓','0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟','🔢','#️⃣','*️⃣','⏏️','▶️','⏸️','⏹️','⏺️','⏭️','⏮️','⏩','⏪','⏫','⏬','◀️','🔼','🔽','➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','🔄','↩️','↪️','⤴️','⤵️','🔀','🔁','🔂','🔄','🔃','🎵','🎶','➕','➖','➗','✖️','♾️','💲','💱','™️','©️','®️','👁️‍🗨️','🔚','🔙','🔛','🔝','🔜','🛐','⚕️'];
+
+let emojiPanelVisible = false;
+
+function toggleEmojiPanel() {
+    const panel = document.getElementById('emojiPanel');
+    if (!panel) return;
+    emojiPanelVisible = !emojiPanelVisible;
+    panel.style.display = emojiPanelVisible ? 'flex' : 'none';
+    if (emojiPanelVisible && panel.children.length === 0) {
+        commonEmojis.forEach(emoji => {
+            const span = document.createElement('span');
+            span.textContent = emoji;
+            span.style.cssText = 'font-size:22px; cursor:pointer; padding:2px 4px; border-radius:6px; transition:0.15s;';
+            span.onmouseenter = () => { span.style.background = 'rgba(255,215,0,0.2)'; };
+            span.onmouseleave = () => { span.style.background = 'transparent'; };
+            span.onclick = () => {
+                const input = document.getElementById('chatMessageLive');
+                if (input) {
+                    const start = input.selectionStart;
+                    const end = input.selectionEnd;
+                    const text = input.value;
+                    input.value = text.substring(0, start) + emoji + text.substring(end);
+                    input.selectionStart = input.selectionEnd = start + emoji.length;
+                    input.focus();
+                }
+                const panel = document.getElementById('emojiPanel');
+                if (panel) panel.style.display = 'none';
+                emojiPanelVisible = false;
+            };
+            panel.appendChild(span);
+        });
+    }
+}
+
+// ==================== ВИСЕЛИЦА ====================
+function initHangman() {
+    const words = [
+        'КУРИЦА', 'ПЕТУХ', 'ЯЙЦО', 'КРЫЛО', 'ХВОСТ', 'ГРЕБЕНЬ',
+        'ПЕРЬЯ', 'КЛЮВ', 'ЛАПЫ', 'НАСЕДКА', 'ЦЫПЛЕНОК', 'ДВОРЕЦ',
+        'КОРОЛЬ', 'КОРОЛЕВА', 'ПРИНЦ', 'ПРИНЦЕССА', 'РЫЦАРЬ', 'ДРАКОН',
+        'МАГИЯ', 'ВОЛШЕБСТВО', 'ЗВЕЗДА', 'ЛУНА', 'СОЛНЦЕ', 'ПЛАНЕТА',
+        'КОСМОС', 'ГАЛАКТИКА', 'АСТРОНАВТ', 'РАКЕТА', 'СПУТНИК'
+    ];
+    let word = words[Math.floor(Math.random() * words.length)];
+    let guesses = [];
+    let mistakes = 0;
+    const maxMistakes = 6;
+    let gameOver = false;
+
+    const hangmanParts = [
+        '', // 0
+        'голова', // 1
+        'туловище', // 2
+        'левая рука', // 3
+        'правая рука', // 4
+        'левая нога', // 5
+        'правая нога' // 6
+    ];
+
+    function render() {
+        const container = document.getElementById('gameContent');
+        if (!container) return;
+
+        let displayWord = '';
+        let allGuessed = true;
+        for (let i = 0; i < word.length; i++) {
+            if (guesses.includes(word[i])) {
+                displayWord += word[i] + ' ';
+            } else {
+                displayWord += '_ ';
+                allGuessed = false;
+            }
+        }
+
+        let hangmanDisplay = '';
+        for (let i = 0; i <= mistakes && i < hangmanParts.length; i++) {
+            hangmanDisplay += '🙃 '.repeat(Math.max(0, i)) + '\n';
+        }
+        // Визуализация виселицы (простая текстовая)
+        let hangmanVisual = '';
+        if (mistakes >= 0) hangmanVisual += '  ______\n';
+        if (mistakes >= 1) hangmanVisual += '  |/   |\n';
+        else hangmanVisual += '  |/\n';
+        if (mistakes >= 2) hangmanVisual += '  |    O\n';
+        else hangmanVisual += '  |\n';
+        if (mistakes >= 3) hangmanVisual += '  |   /|\\\n';
+        else if (mistakes >= 2) hangmanVisual += '  |    |\n';
+        else hangmanVisual += '  |\n';
+        if (mistakes >= 5) hangmanVisual += '  |   / \\\n';
+        else if (mistakes >= 4) hangmanVisual += '  |   /\n';
+        else hangmanVisual += '  |\n';
+        if (mistakes >= 6) hangmanVisual += '__|__\n';
+        else hangmanVisual += '  |\n';
+
+        container.innerHTML = `
+            <div style="text-align:center; max-width:500px; margin:0 auto;">
+                <h3>🙃 ВИСЕЛИЦА</h3>
+                <pre style="font-family:monospace; font-size:14px; background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; display:inline-block; text-align:left;">${hangmanVisual}</pre>
+                <div style="font-size:28px; letter-spacing:8px; margin:20px 0; font-weight:bold; color:#ffd700;">${displayWord}</div>
+                <div style="color:#aaa;">Ошибки: ${mistakes}/${maxMistakes} ${mistakes > 0 ? '❌'.repeat(mistakes) : ''}</div>
+                <div style="margin:15px 0;">
+                    <input id="hangmanLetter" type="text" maxlength="1" style="width:40px; text-align:center; font-size:24px; background:#222; border:2px solid #ffd700; border-radius:8px; color:#fff;" placeholder="Б">
+                    <button onclick="hangmanGuess()" style="background:#ffd700; color:#000; border:none; padding:8px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Угадать</button>
+                </div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+                    ${guesses.map(g => `<span style="background:rgba(255,215,0,0.2); padding:4px 12px; border-radius:12px;">${g}</span>`).join('')}
+                </div>
+                ${gameOver ? `<div style="margin-top:20px; font-size:20px; color:${mistakes >= maxMistakes ? '#f44' : '#4f4'};">
+                    ${mistakes >= maxMistakes ? '💀 Ты проиграл! Загаданное слово: ' + word : '🎉 ПОБЕДА! Слово: ' + word}
+                    <br><button onclick="initHangman()" style="background:#ffd700; color:#000; border:none; padding:10px 30px; border-radius:30px; margin-top:10px; font-weight:bold; cursor:pointer;">🔄 Новая игра</button>
+                </div>` : ''}
+            </div>
+        `;
+
+        document.getElementById('hangmanLetter')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') hangmanGuess();
+        });
+    }
+
+    window.hangmanGuess = function() {
+        if (gameOver) return;
+        const input = document.getElementById('hangmanLetter');
+        if (!input) return;
+        const letter = input.value.toUpperCase().trim();
+        input.value = '';
+        if (!letter || letter.length !== 1 || !/^[А-ЯA-Z]$/.test(letter)) {
+            alert('Введите одну букву!');
+            return;
+        }
+        if (guesses.includes(letter)) {
+            alert('Буква уже была!');
+            return;
+        }
+        guesses.push(letter);
+        if (!word.includes(letter)) {
+            mistakes++;
+            if (mistakes >= maxMistakes) {
+                gameOver = true;
+                addEggs(3, 'Виселица - поражение');
+            }
+        } else {
+            // Проверяем, все ли буквы угаданы
+            let allGuessed = true;
+            for (let i = 0; i < word.length; i++) {
+                if (!guesses.includes(word[i])) {
+                    allGuessed = false;
+                    break;
+                }
+            }
+            if (allGuessed) {
+                gameOver = true;
+                addEggs(10, 'Победа в виселице!');
+            }
+        }
+        render();
+    };
+
+    render();
+}
+
+// ==================== САПЁР ====================
+function initMinesweeper() {
+    const rows = 9;
+    const cols = 9;
+    const mines = 10;
+    let board = [];
+    let revealed = [];
+    let flagged = [];
+    let gameOver = false;
+    let firstClick = true;
+    let cellsToReveal = rows * cols - mines;
+
+    function createBoard() {
+        board = [];
+        for (let r = 0; r < rows; r++) {
+            board[r] = [];
+            for (let c = 0; c < cols; c++) {
+                board[r][c] = 0;
+            }
+        }
+        revealed = [];
+        flagged = [];
+        for (let r = 0; r < rows; r++) {
+            revealed[r] = [];
+            flagged[r] = [];
+            for (let c = 0; c < cols; c++) {
+                revealed[r][c] = false;
+                flagged[r][c] = false;
+            }
+        }
+        gameOver = false;
+        firstClick = true;
+        cellsToReveal = rows * cols - mines;
+    }
+
+    function placeMines(excludeRow, excludeCol) {
+        let placed = 0;
+        while (placed < mines) {
+            const r = Math.floor(Math.random() * rows);
+            const c = Math.floor(Math.random() * cols);
+            if (board[r][c] === -1) continue;
+            if (Math.abs(r - excludeRow) <= 1 && Math.abs(c - excludeCol) <= 1) continue;
+            board[r][c] = -1;
+            placed++;
+        }
+        // Подсчёт мин вокруг
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                if (board[r][c] === -1) continue;
+                let count = 0;
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        const nr = r + dr;
+                        const nc = c + dc;
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc] === -1) count++;
+                    }
+                }
+                board[r][c] = count;
+            }
+        }
+    }
+
+    function revealCell(r, c) {
+        if (gameOver) return;
+        if (revealed[r][c] || flagged[r][c]) return;
+
+        if (firstClick) {
+            firstClick = false;
+            placeMines(r, c);
+        }
+
+        if (board[r][c] === -1) {
+            // Взрыв!
+            gameOver = true;
+            renderBoard();
+            setTimeout(() => {
+                alert('💥 БАХ! Ты наступил на мину!');
+                addEggs(2, 'Сапёр - проигрыш');
+            }, 100);
+            return;
+        }
+
+        // Открываем клетку
+        const stack = [[r, c]];
+        while (stack.length > 0) {
+            const [cr, cc] = stack.pop();
+            if (revealed[cr][cc] || flagged[cr][cc]) continue;
+            revealed[cr][cc] = true;
+            cellsToReveal--;
+
+            if (board[cr][cc] === 0) {
+                for (let dr = -1; dr <= 1; dr++) {
+                    for (let dc = -1; dc <= 1; dc++) {
+                        const nr = cr + dr;
+                        const nc = cc + dc;
+                        if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !revealed[nr][nc] && !flagged[nr][nc]) {
+                            stack.push([nr, nc]);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (cellsToReveal === 0) {
+            gameOver = true;
+            renderBoard();
+            setTimeout(() => {
+                alert('🎉 ПОБЕДА! Ты открыл все безопасные клетки!');
+                addEggs(15, 'Победа в сапёре!');
+            }, 100);
+            return;
+        }
+
+        renderBoard();
+    }
+
+    function toggleFlag(r, c) {
+        if (gameOver) return;
+        if (revealed[r][c]) return;
+        flagged[r][c] = !flagged[r][c];
+        renderBoard();
+    }
+
+    function renderBoard() {
+        const container = document.getElementById('gameContent');
+        if (!container) return;
+
+        let html = `<div style="text-align:center; max-width:500px; margin:0 auto;">
+            <h3>💣 САПЁР</h3>
+            <div style="margin-bottom:10px; color:#aaa;">Мин: ${mines} | Осталось: ${cellsToReveal}</div>
+            <div style="display:grid; grid-template-columns:repeat(${cols}, 40px); gap:2px; justify-content:center;">`;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                let content = '';
+                let bg = '#333';
+                let clickHandler = '';
+                let rightClickHandler = '';
+
+                if (revealed[r][c]) {
+                    if (board[r][c] === -1) {
+                        content = '💣';
+                        bg = '#f44';
+                    } else if (board[r][c] > 0) {
+                        content = board[r][c];
+                        const colors = ['', '#4af', '#4f4', '#f44', '#44f', '#f4f', '#4ff', '#fff', '#888'];
+                        bg = 'rgba(0,0,0,0.5)';
+                        html += `<div style="width:40px;height:40px;background:${bg};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;color:${colors[board[r][c]] || '#ffd700'};">${content}</div>`;
+                        continue;
+                    } else {
+                        content = '';
+                        bg = '#2a2a2a';
+                    }
+                } else if (flagged[r][c]) {
+                    content = '🚩';
+                    bg = '#443';
+                } else {
+                    content = '';
+                    bg = '#444';
+                }
+
+                if (!gameOver && !revealed[r][c]) {
+                    clickHandler = `onclick="minesweeperClick(${r},${c})"`;
+                    rightClickHandler = `oncontextmenu="event.preventDefault();minesweeperFlag(${r},${c})"`;
+                }
+
+                html += `<div style="width:40px;height:40px;background:${bg};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:${!gameOver && !revealed[r][c] ? 'pointer' : 'default'};" ${clickHandler} ${rightClickHandler}>${content}</div>`;
+            }
+        }
+
+        html += `</div>
+            <div style="margin-top:15px; font-size:12px; color:#888;">🖱️ ЛКМ - открыть | ПКМ - флаг</div>
+            <button onclick="initMinesweeper()" style="background:#ffd700; color:#000; border:none; padding:8px 25px; border-radius:30px; margin-top:10px; font-weight:bold; cursor:pointer;">🔄 Новая игра</button>
+        </div>`;
+
+        container.innerHTML = html;
+    }
+
+    window.minesweeperClick = function(r, c) {
+        if (gameOver) return;
+        revealCell(r, c);
+    };
+
+    window.minesweeperFlag = function(r, c) {
+        if (gameOver) return;
+        toggleFlag(r, c);
+    };
+
+    createBoard();
+    renderBoard();
+}
+
+// ==================== ИГРА "КТО Я?" ====================
+function initWhoAmI() {
+    const container = document.getElementById('gameContent');
+    if (!container) return;
+
+    // Список персонажей
+    const characters = [
+        { name: 'Курица', emoji: '🐔', hints: ['Я несу яйца', 'У меня есть гребень', 'Я живу в курятнике'] },
+        { name: 'Петух', emoji: '🐓', hints: ['Я бужу всех утром', 'У меня красивый хвост', 'Я главный в курятнике'] },
+        { name: 'Цыплёнок', emoji: '🐣', hints: ['Я маленький и жёлтый', 'Я только вылупился', 'Я пищу "пи-пи"'] },
+        { name: 'Дракон', emoji: '🐉', hints: ['Я умею летать', 'Я извергаю огонь', 'Я живу в пещере'] },
+        { name: 'Единорог', emoji: '🦄', hints: ['У меня есть рог', 'Я белый и красивый', 'Я живу в волшебном лесу'] },
+        { name: 'Пират', emoji: '🏴‍☠️', hints: ['У меня есть шляпа', 'Я ищу сокровища', 'Я плаваю на корабле'] },
+        { name: 'Рыцарь', emoji: '🛡️', hints: ['Я ношу доспехи', 'У меня есть меч', 'Я защищаю принцесс'] },
+        { name: 'Принцесса', emoji: '👸', hints: ['Я ношу корону', 'Я живу в замке', 'Меня охраняют рыцари'] },
+        { name: 'Волшебник', emoji: '🧙', hints: ['Я ношу мантию', 'У меня есть волшебная палочка', 'Я умею колдовать'] },
+        { name: 'Космонавт', emoji: '🧑‍🚀', hints: ['Я летаю в космос', 'У меня есть скафандр', 'Я был на Луне'] },
+        { name: 'Робот', emoji: '🤖', hints: ['Я сделан из металла', 'Я говорю "бип-бип"', 'У меня есть кнопки'] },
+        { name: 'Фея', emoji: '🧚', hints: ['У меня есть крылья', 'Я исполняю желания', 'Я живу в цветке'] }
+    ];
+
+    let selectedChar = null;
+    let currentPlayer = 0;
+    let players = [];
+    let gameActive = false;
+    let questionCount = 0;
+    let maxQuestions = 20;
+
+    function renderSetup() {
+        container.innerHTML = `
+            <div style="text-align:center; max-width:500px; margin:0 auto;">
+                <h3>🕵️ Игра "Кто я?"</h3>
+                <p style="color:#aaa;">Сколько игроков? (2-6)</p>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
+                    ${[2,3,4,5,6].map(n => `
+                        <button onclick="whoAmISetPlayers(${n})" style="background:#444; color:#fff; border:1px solid #ffd700; padding:10px 20px; border-radius:12px; cursor:pointer; font-size:18px;">${n}</button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    window.whoAmISetPlayers = function(count) {
+        players = [];
+        for (let i = 0; i < count; i++) {
+            players.push({ name: `Игрок ${i+1}`, char: null, guessed: false });
+        }
+        currentPlayer = 0;
+        gameActive = true;
+        questionCount = 0;
+        selectedChar = characters[Math.floor(Math.random() * characters.length)];
+        // Первому игроку даём персонажа
+        players[0].char = selectedChar;
+        renderGame();
+    };
+
+    function renderGame() {
+        const current = players[currentPlayer];
+        const allGuessed = players.every(p => p.guessed);
+
+        if (allGuessed && gameActive) {
+            gameActive = false;
+            container.innerHTML = `
+                <div style="text-align:center; max-width:500px; margin:0 auto;">
+                    <h3>🎉 ВСЕ УГАДАЛИ!</h3>
+                    <div style="margin:15px 0;">
+                        ${players.map(p => `<div style="padding:8px; border-bottom:1px solid #333;">${p.name}: ${p.char ? p.char.emoji + ' ' + p.char.name : '❌'}</div>`).join('')}
+                    </div>
+                    <button onclick="initWhoAmI()" style="background:#ffd700; color:#000; border:none; padding:10px 30px; border-radius:30px; font-weight:bold; cursor:pointer;">🔄 Новая игра</button>
+                </div>
+            `;
+            return;
+        }
+
+        if (!current.char) {
+            // Выбираем персонажа для текущего игрока
+            const available = characters.filter(c => !players.some(p => p.char && p.char.name === c.name));
+            const randChar = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : characters[Math.floor(Math.random() * characters.length)];
+            players[currentPlayer].char = randChar;
+        }
+
+        const char = current.char;
+        const hint = char.hints[Math.floor(Math.random() * char.hints.length)];
+
+        container.innerHTML = `
+            <div style="text-align:center; max-width:500px; margin:0 auto;">
+                <h3>🕵️ Кто я?</h3>
+                <div style="background:rgba(255,215,0,0.1); border:2px solid #ffd700; border-radius:15px; padding:20px; margin:15px 0;">
+                    <div style="font-size:48px;">${char.emoji}</div>
+                    <div style="font-size:14px; color:#aaa;">Подсказка: ${hint}</div>
+                    <div style="margin-top:10px; font-size:12px; color:#888;">Вопрос ${questionCount}/${maxQuestions}</div>
+                </div>
+                <div style="color:#ffd700; font-size:18px;">Ход: ${current.name}</div>
+                <div style="margin:15px 0;">
+                    <input id="whoAmIGuess" type="text" placeholder="Кто я?" style="background:#222; border:2px solid #ffd700; border-radius:8px; padding:8px 15px; color:#fff; width:200px;">
+                    <button onclick="whoAmIGuess()" style="background:#ffd700; color:#000; border:none; padding:8px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">🤔 Угадать</button>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                    <button onclick="whoAmINext()" style="background:#444; color:#fff; border:1px solid #666; padding:8px 20px; border-radius:8px; cursor:pointer;">⏭️ Пропустить ход</button>
+                    <button onclick="whoAmIHint()" style="background:#555; color:#fff; border:1px solid #666; padding:8px 20px; border-radius:8px; cursor:pointer;">💡 Ещё подсказку</button>
+                </div>
+                <div style="margin-top:20px; border-top:1px solid #333; padding-top:15px; display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
+                    ${players.map((p, i) => `
+                        <div style="background:${i === currentPlayer ? 'rgba(255,215,0,0.2)' : 'rgba(0,0,0,0.3)'}; padding:8px 15px; border-radius:12px; border:1px solid ${i === currentPlayer ? '#ffd700' : 'transparent'};">
+                            ${p.name} ${p.guessed ? '✅' : '❓'}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('whoAmIGuess')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') whoAmIGuess();
+        });
+    }
+
+    window.whoAmIGuess = function() {
+        if (!gameActive) return;
+        const input = document.getElementById('whoAmIGuess');
+        if (!input) return;
+        const guess = input.value.trim();
+        input.value = '';
+        if (!guess) return;
+
+        const current = players[currentPlayer];
+        if (current.guessed) {
+            alert('Ты уже угадал!');
+            return;
+        }
+
+        questionCount++;
+        if (guess.toLowerCase() === current.char.name.toLowerCase()) {
+            current.guessed = true;
+            addEggs(5, 'Угадал персонажа!');
+            alert(`✅ ${current.name} угадал! Это был ${current.char.emoji} ${current.char.name}!`);
+            // Переход к следующему
+            let next = (currentPlayer + 1) % players.length;
+            while (players[next].guessed && next !== currentPlayer) {
+                next = (next + 1) % players.length;
+            }
+            if (players.every(p => p.guessed)) {
+                currentPlayer = next;
+                renderGame();
+                return;
+            }
+            currentPlayer = next;
+            // Выбираем персонажа для следующего
+            const available = characters.filter(c => !players.some(p => p.char && p.char.name === c.name));
+            if (available.length === 0) {
+                // Все персонажи использованы, даём рандомного
+                const randChar = characters[Math.floor(Math.random() * characters.length)];
+                players[currentPlayer].char = randChar;
+            } else {
+                const randChar = available[Math.floor(Math.random() * available.length)];
+                players[currentPlayer].char = randChar;
+            }
+            renderGame();
+        } else {
+            if (questionCount >= maxQuestions) {
+                alert(`⏰ Вопросы закончились! Это был ${current.char.emoji} ${current.char.name}`);
+                current.guessed = true;
+                let next = (currentPlayer + 1) % players.length;
+                while (players[next].guessed && next !== currentPlayer) {
+                    next = (next + 1) % players.length;
+                }
+                currentPlayer = next;
+                renderGame();
+            } else {
+                alert(`❌ Неправильно! Попробуй ещё. Осталось вопросов: ${maxQuestions - questionCount}`);
+                renderGame();
+            }
+        }
+    };
+
+    window.whoAmINext = function() {
+        if (!gameActive) return;
+        const current = players[currentPlayer];
+        if (current.guessed) {
+            let next = (currentPlayer + 1) % players.length;
+            while (players[next].guessed && next !== currentPlayer) {
+                next = (next + 1) % players.length;
+            }
+            currentPlayer = next;
+            renderGame();
+            return;
+        }
+        // Пропуск хода
+        let next = (currentPlayer + 1) % players.length;
+        while (players[next].guessed && next !== currentPlayer) {
+            next = (next + 1) % players.length;
+        }
+        currentPlayer = next;
+        renderGame();
+    };
+
+    window.whoAmIHint = function() {
+        if (!gameActive) return;
+        const current = players[currentPlayer];
+        if (current.guessed) return;
+        const hints = current.char.hints;
+        const usedHints = hints.slice(0, Math.min(hints.length, Math.floor(questionCount / 2) + 1));
+        const hintText = usedHints.join(' | ');
+        alert(`💡 Подсказки: ${hintText}`);
+    };
+
+    renderSetup();
+}
+
+// ==================== РУЛЕТКА ====================
+function initRoulette() {
+    const container = document.getElementById('gameContent');
+    if (!container) return;
+
+    const numbers = [
+        { num: 0, color: 'green' },
+        { num: 1, color: 'red' }, { num: 2, color: 'black' }, { num: 3, color: 'red' },
+        { num: 4, color: 'black' }, { num: 5, color: 'red' }, { num: 6, color: 'black' },
+        { num: 7, color: 'red' }, { num: 8, color: 'black' }, { num: 9, color: 'red' },
+        { num: 10, color: 'black' }, { num: 11, color: 'black' }, { num: 12, color: 'red' },
+        { num: 13, color: 'black' }, { num: 14, color: 'red' }, { num: 15, color: 'black' },
+        { num: 16, color: 'red' }, { num: 17, color: 'black' }, { num: 18, color: 'red' },
+        { num: 19, color: 'red' }, { num: 20, color: 'black' }, { num: 21, color: 'red' },
+        { num: 22, color: 'black' }, { num: 23, color: 'red' }, { num: 24, color: 'black' },
+        { num: 25, color: 'red' }, { num: 26, color: 'black' }, { num: 27, color: 'red' },
+        { num: 28, color: 'black' }, { num: 29, color: 'black' }, { num: 30, color: 'red' },
+        { num: 31, color: 'black' }, { num: 32, color: 'red' }, { num: 33, color: 'black' },
+        { num: 34, color: 'red' }, { num: 35, color: 'black' }, { num: 36, color: 'red' }
+    ];
+
+    let spinning = false;
+    let lastResult = null;
+    let betAmount = 0;
+    let betType = 'number';
+    let betValue = '0';
+
+    function render() {
+        const html = `
+            <div style="text-align:center; max-width:550px; margin:0 auto;">
+                <h3>🎡 РУЛЕТКА</h3>
+                <div style="background:linear-gradient(145deg, #1a3a1a, #0a1a0a); border-radius:50%; width:300px; height:300px; margin:15px auto; position:relative; border:8px solid #ffd700; box-shadow:0 0 30px rgba(255,215,0,0.3); overflow:hidden;">
+                    <div id="rouletteWheel" style="width:100%; height:100%; position:relative; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);">
+                        ${numbers.map((n, i) => `
+                            <div style="position:absolute; left:50%; top:50%; transform: translate(-50%, -50%) rotate(${i * (360/numbers.length)}deg) translateY(-130px); width:30px; height:55px; background:${n.color === 'red' ? '#f44' : n.color === 'black' ? '#222' : '#4f4'}; border:1px solid #fff; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:bold; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.5);">
+                                ${n.num}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="position:absolute; top:-8px; left:50%; transform:translateX(-50%); width:16px; height:24px; background:#ffd700; clip-path:polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+                </div>
+
+                ${lastResult !== null ? `<div style="font-size:24px; color:#ffd700; margin:10px 0;">Результат: ${lastResult.num} ${lastResult.color === 'red' ? '🔴' : lastResult.color === 'black' ? '⚫' : '🟢'}</div>` : ''}
+
+                <div style="background:rgba(0,0,0,0.4); border-radius:12px; padding:15px; margin:10px 0;">
+                    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-bottom:10px;">
+                        <label style="color:#aaa;">Ставка: 🥚</label>
+                        <input id="rouletteBet" type="number" min="1" max="${myEggs}" value="${Math.min(5, myEggs)}" style="background:#222; border:1px solid #ffd700; border-radius:8px; padding:5px 10px; color:#fff; width:80px;">
+                    </div>
+                    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+                        <button onclick="rouletteSetBet('number', '0')" style="background:${betType === 'number' && betValue === '0' ? '#ffd700' : '#333'}; color:${betType === 'number' && betValue === '0' ? '#000' : '#fff'}; border:1px solid #555; padding:6px 14px; border-radius:8px; cursor:pointer; font-size:12px;">0</button>
+                        ${numbers.filter(n => n.num !== 0).map(n => `
+                            <button onclick="rouletteSetBet('number', '${n.num}')" style="background:${betType === 'number' && parseInt(betValue) === n.num ? '#ffd700' : n.color === 'red' ? '#8f2a2a' : n.color === 'black' ? '#333' : '#2a4a2a'}; color:${betType === 'number' && parseInt(betValue) === n.num ? '#000' : '#fff'}; border:1px solid ${n.color === 'red' ? '#f44' : n.color === 'black' ? '#555' : '#4f4'}; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; min-width:32px;">${n.num}</button>
+                        `).join('')}
+                    </div>
+                    <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-top:8px;">
+                        <button onclick="rouletteSetBet('color', 'red')" style="background:${betType === 'color' && betValue === 'red' ? '#ffd700' : '#8f2a2a'}; color:${betType === 'color' && betValue === 'red' ? '#000' : '#fff'}; border:1px solid #f44; padding:6px 20px; border-radius:8px; cursor:pointer;">🔴 Красное</button>
+                        <button onclick="rouletteSetBet('color', 'black')" style="background:${betType === 'color' && betValue === 'black' ? '#ffd700' : '#333'}; color:${betType === 'color' && betValue === 'black' ? '#000' : '#fff'}; border:1px solid #555; padding:6px 20px; border-radius:8px; cursor:pointer;">⚫ Чёрное</button>
+                        <button onclick="rouletteSetBet('parity', 'even')" style="background:${betType === 'parity' && betValue === 'even' ? '#ffd700' : '#444'}; color:${betType === 'parity' && betValue === 'even' ? '#000' : '#fff'}; border:1px solid #555; padding:6px 20px; border-radius:8px; cursor:pointer;">Чёт</button>
+                        <button onclick="rouletteSetBet('parity', 'odd')" style="background:${betType === 'parity' && betValue === 'odd' ? '#ffd700' : '#444'}; color:${betType === 'parity' && betValue === 'odd' ? '#000' : '#fff'}; border:1px solid #555; padding:6px 20px; border-radius:8px; cursor:pointer;">Нечет</button>
+                    </div>
+                    <div style="margin-top:10px; font-size:12px; color:#aaa;">Выбрано: ${betType === 'number' ? 'Число ' + betValue : betType === 'color' ? (betValue === 'red' ? 'Красное' : 'Чёрное') : (betValue === 'even' ? 'Чётное' : 'Нечётное')}</div>
+                </div>
+
+                <button onclick="rouletteSpin()" style="background:linear-gradient(135deg,#ffd700,#ffaa00); color:#000; border:none; padding:12px 40px; border-radius:40px; font-size:20px; font-weight:bold; cursor:pointer; ${spinning ? 'opacity:0.5;' : ''}" ${spinning ? 'disabled' : ''}>
+                    ${spinning ? '🌀 Крутится...' : '🎡 КРУТИТЬ!'}
+                </button>
+
+                <div style="margin-top:15px; display:flex; gap:15px; justify-content:center; font-size:13px; color:#888;">
+                    <span>🥚 ${myEggs}</span>
+                    <span>|</span>
+                    <span>💎 Выигрыш x${betType === 'number' ? 35 : betType === 'color' ? 2 : 2}</span>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <button onclick="initRoulette()" style="background:#444; color:#fff; border:none; padding:6px 20px; border-radius:20px; cursor:pointer; font-size:12px;">🔄 Сброс</button>
+                </div>
+            </div>
+        `;
+        container.innerHTML = html;
+    }
+
+    window.rouletteSetBet = function(type, value) {
+        if (spinning) return;
+        betType = type;
+        betValue = value;
+        render();
+    };
+
+    window.rouletteSpin = function() {
+        if (spinning) return;
+        const betInput = document.getElementById('rouletteBet');
+        if (!betInput) return;
+        betAmount = parseInt(betInput.value);
+        if (isNaN(betAmount) || betAmount < 1) {
+            alert('Введите ставку от 1 яйца!');
+            return;
+        }
+        if (betAmount > myEggs) {
+            alert(`У вас только ${myEggs} яиц!`);
+            return;
+        }
+
+        spinning = true;
+        render();
+
+        const wheel = document.getElementById('rouletteWheel');
+        if (!wheel) return;
+
+        const resultIndex = Math.floor(Math.random() * numbers.length);
+        const result = numbers[resultIndex];
+        const spinAngle = 360 * (8 + Math.random() * 4) + (360 - (resultIndex * (360/numbers.length)));
+
+        wheel.style.transform = `rotate(${spinAngle}deg)`;
+
+        setTimeout(() => {
+            spinning = false;
+            lastResult = result;
+
+            let won = false;
+            let multiplier = 0;
+
+            if (betType === 'number' && parseInt(betValue) === result.num) {
+                won = true;
+                multiplier = 35;
+            } else if (betType === 'color' && betValue === result.color) {
+                won = true;
+                multiplier = 2;
+            } else if (betType === 'parity') {
+                const isEven = result.num !== 0 && result.num % 2 === 0;
+                if ((betValue === 'even' && isEven) || (betValue === 'odd' && !isEven && result.num !== 0)) {
+                    won = true;
+                    multiplier = 2;
+                }
+            }
+
+            if (result.num === 0 && betType === 'number' && parseInt(betValue) === 0) {
+                won = true;
+                multiplier = 35;
+            }
+
+            if (won) {
+                const winAmount = betAmount * multiplier;
+                myEggs += winAmount;
+                localStorage.setItem('tildochka_eggs', myEggs);
+                document.getElementById('headerEggs').textContent = myEggs;
+                db.ref('users/' + myUid).update({ eggs: myEggs });
+                addEggs(0, ''); // обновляем UI
+                alert(`🎉 ПОБЕДА! Вы выиграли ${winAmount} 🥚! (x${multiplier})`);
+                // Анимация победы
+                const emojis = ['🎉', '🎊', '✨', '💫', '⭐', '🌟'];
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const e = emojis[Math.floor(Math.random() * emojis.length)];
+                        const el = document.createElement('div');
+                        el.textContent = e;
+                        el.style.cssText = `position:fixed; font-size:${20 + Math.random()*40}px; left:${Math.random()*80+10}%; top:${Math.random()*80+10}%; pointer-events:none; z-index:9999; transition:all 1s; opacity:1;`;
+                        document.body.appendChild(el);
+                        setTimeout(() => {
+                            el.style.opacity = '0';
+                            el.style.transform = `translateY(-${50+Math.random()*100}px)`;
+                            setTimeout(() => el.remove(), 1000);
+                        }, 100);
+                    }, i * 100);
+                }
+            } else {
+                myEggs -= betAmount;
+                localStorage.setItem('tildochka_eggs', myEggs);
+                document.getElementById('headerEggs').textContent = myEggs;
+                db.ref('users/' + myUid).update({ eggs: myEggs });
+                alert(`😢 Проигрыш! Вы потеряли ${betAmount} 🥚. Выпало: ${result.num} ${result.color === 'red' ? '🔴' : result.color === 'black' ? '⚫' : '🟢'}`);
+            }
+
+            render();
+        }, 4200);
+    };
+
+    render();
 }
 </script>
 </body>
