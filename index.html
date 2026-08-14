@@ -696,33 +696,37 @@
 
 <div id="home-screen" class="screen active">
     <div class="catalog">
-        <!-- 6 БЫСТРЫХ КВАДРАТИКОВ -->
-        <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:20px">
-            <div class="quick-card" onclick="showAllGames()" style="background:linear-gradient(135deg,#4a90d9,#357abd);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-                <div style="font-size:24px">🎮</div>
-                <div style="font-size:11px;font-weight:bold">Игры</div>
-            </div>
-            <div class="quick-card" onclick="showScreen('chat')" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-                <div style="font-size:24px">💬</div>
-                <div style="font-size:11px;font-weight:bold">Чат</div>
-            </div>
-            <div class="quick-card" onclick="showScreen('memes')" style="background:linear-gradient(135deg,#e67e22,#d35400);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-                <div style="font-size:24px">😂</div>
-                <div style="font-size:11px;font-weight:bold">Мемы</div>
-            </div>
-            <div class="quick-card" onclick="showScreen('ideas')" style="background:linear-gradient(135deg,#1abc9c,#16a085);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-                <div style="font-size:24px">💡</div>
-                <div style="font-size:11px;font-weight:bold">Идеи</div>
-            </div>
-            <div class="quick-card" onclick="showScreen('chickentube')" style="background:linear-gradient(135deg,#e74c3c,#c0392b);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-                <div style="font-size:24px">🐔</div>
-                <div style="font-size:11px;font-weight:bold">Tube</div>
-            </div>
-            <div class="quick-card" onclick="showScreen('friends')" style="background:linear-gradient(135deg,#2ecc71,#27ae60);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
-                <div style="font-size:24px">👥</div>
-                <div style="font-size:11px;font-weight:bold">Друзья</div>
-            </div>
-        </div>
+       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px">
+    <div class="quick-card" onclick="showAllGames()" style="background:linear-gradient(135deg,#4a90d9,#357abd);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+        <div style="font-size:24px">🎮</div>
+        <div style="font-size:11px;font-weight:bold">Игры</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('chat')" style="background:linear-gradient(135deg,#9b59b6,#8e44ad);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+        <div style="font-size:24px">💬</div>
+        <div style="font-size:11px;font-weight:bold">Чат</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('memes')" style="background:linear-gradient(135deg,#e67e22,#d35400);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+        <div style="font-size:24px">😂</div>
+        <div style="font-size:11px;font-weight:bold">Мемы</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('ideas')" style="background:linear-gradient(135deg,#1abc9c,#16a085);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+        <div style="font-size:24px">💡</div>
+        <div style="font-size:11px;font-weight:bold">Идеи</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('chickentube')" style="background:linear-gradient(135deg,#e74c3c,#c0392b);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+        <div style="font-size:24px">🐔</div>
+        <div style="font-size:11px;font-weight:bold">Tube</div>
+    </div>
+    <div class="quick-card" onclick="showScreen('friends')" style="background:linear-gradient(135deg,#2ecc71,#27ae60);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+        <div style="font-size:24px">👥</div>
+        <div style="font-size:11px;font-weight:bold">Друзья</div>
+    </div>
+    <!-- 👇 НОВЫЙ КВАДРАТИК: КАЗИНО -->
+    <div class="quick-card" onclick="showScreen('casino')" style="background:linear-gradient(135deg,#f39c12,#e67e22);text-align:center;padding:8px 4px;border-radius:12px;cursor:pointer">
+        <div style="font-size:24px">🎰</div>
+        <div style="font-size:11px;font-weight:bold">Казино</div>
+    </div>
+</div>
 
         <h2>🎬 Сериалы</h2>
         <div class="movie-grid">
@@ -880,6 +884,32 @@
     <div class="catalog">
         <h2>🎮 Все игры</h2>
         <div class="games-grid" id="allGamesGrid"></div>
+    </div>
+</div>
+<!-- ===== КАЗИНО (НОВЫЙ ЭКРАН) ===== -->
+<div id="casino-screen" class="screen">
+    <div class="catalog">
+        <h2>🎰 КАЗИНО</h2>
+        <p style="color:#aaa; margin-bottom:20px;">Ставки на 🥚 яйца! Удачи! 🍀</p>
+        <div class="games-grid" id="casinoGamesGrid">
+            <!-- Игры казино будут добавлены через JS -->
+        </div>
+    </div>
+</div>
+
+<!-- ===== ВИСЕЛИЦА (НОВЫЙ ЭКРАН ДЛЯ ОНЛАЙН-ИГРЫ) ===== -->
+<div id="hangman-online-screen" class="screen">
+    <div class="chat-container">
+        <h2>🙃 ВИСЕЛИЦА (онлайн)</h2>
+        <div id="hangmanOnlineContent"></div>
+    </div>
+</div>
+
+<!-- ===== КТО Я? (НОВЫЙ ЭКРАН ДЛЯ ОНЛАЙН-ИГРЫ) ===== -->
+<div id="whoami-online-screen" class="screen">
+    <div class="chat-container">
+        <h2>🕵️ КТО Я? (онлайн)</h2>
+        <div id="whoamiOnlineContent"></div>
     </div>
 </div>
 
@@ -1456,7 +1486,7 @@ function loadAllData() {
 }).then(function() {
     setProgress(80);
     // Потом загружаем рейтинги игр и прочее
-    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter'];
+    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter','hangman','minesweeper','whoami','roulette','casino_slots','casino_blackjack','casino_dice','casino_roulette'];
     var gamePromises = games.map(function(g) {
         return db.ref('gameRatings/' + g).once('value').then(function() { loadLeaderboard(g); }).catch(function(){});
     });
@@ -3112,6 +3142,10 @@ function showGame(type){
         
         progressQuest('play', 1);
         loadLeaderboard(type);
+        loadGameReviews(type);
+        setTimeout(function() {
+            showGameReviewsForCurrent(type);
+        }, 100);
     }, 50);
 }
 function loadLeaderboard(type){db.ref('gameRatings/'+type).on('value',function(s){var rats=[];s.forEach(function(c){rats.push(c.val());});rats.sort(function(a,b){return(b.score||0)-(a.score||0);});var h='<h3>🏆 Лидеры</h3>';if(!rats.length)h+='<p>Нет игроков</p>';else{for(var i=0;i<Math.min(rats.length,10);i++)h+='<div class="leaderboard-item"><span>'+(i+1)+'. '+(rats[i].name||'—')+'</span><span>'+rats[i].score+' | ⭐'+rats[i].rating+'/10</span></div>';var sum=0;rats.forEach(function(r){sum+=r.rating||0;});var el=document.getElementById('rating-'+type);if(el)el.textContent='⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';}document.getElementById('leaderboard').innerHTML=h;});}
@@ -7662,6 +7696,621 @@ function initRoulette() {
     };
 
     render();
+}
+// ============================================================
+// ==================== КАЗИНО ================================
+// ============================================================
+
+function showCasino() {
+    showScreen('casino');
+    const container = document.getElementById('casinoGamesGrid');
+    if (!container) return;
+    
+    const casinoGames = [
+        { name: '🎡 Рулетка', icon: '🎡', id: 'roulette', desc: 'Ставь на число, цвет или чёт/нечет' },
+        { name: '🎰 Слоты', icon: '🎰', id: 'slots', desc: 'Крути барабаны и выигрывай!' },
+        { name: '🃏 Блэкджек', icon: '🃏', id: 'blackjack', desc: 'Набери 21, не переборщи!' },
+        { name: '🎲 Кости', icon: '🎲', id: 'dice', desc: 'Бросай кубики и угадывай сумму' }
+    ];
+    
+    container.innerHTML = '';
+    casinoGames.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.onclick = () => showCasinoGame(game.id);
+        card.innerHTML = `
+            <span class="game-icon">${game.icon}</span>
+            <h3>${game.name}</h3>
+            <div style="font-size:11px;color:#aaa;margin-top:4px;">${game.desc}</div>
+            <div class="game-rating" id="rating-casino-${game.id}">⭐ Загрузка...</div>
+        `;
+        container.appendChild(card);
+        loadLeaderboard('casino_' + game.id);
+    });
+}
+
+function showCasinoGame(type) {
+    currentGame = 'casino_' + type;
+    showScreen('game');
+    document.getElementById('gameTitle').textContent = '🎰 ' + type.charAt(0).toUpperCase() + type.slice(1);
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameRatingArea').innerHTML = '';
+    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+    
+    setTimeout(function() {
+        if (type === 'roulette') initRoulette();
+        else if (type === 'slots') initSlots();
+        else if (type === 'blackjack') initBlackjack();
+        else if (type === 'dice') initDice();
+        loadLeaderboard('casino_' + type);
+    }, 50);
+}
+// ---------- 🎰 СЛОТЫ ----------
+function initSlots() {
+    const container = document.getElementById('gameContent');
+    if (!container) return;
+    
+    const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎', '7️⃣', '⭐'];
+    let balance = parseInt(localStorage.getItem('tildochka_eggs')) || 0;
+    let bet = 5;
+    let spinning = false;
+    let reels = ['🍒', '🍒', '🍒'];
+    
+    function render() {
+        container.innerHTML = `
+            <div style="text-align:center; max-width:450px; margin:0 auto;">
+                <h3>🎰 СЛОТЫ</h3>
+                <div style="color:#ffd700; font-size:20px; margin:10px 0;">🥚 ${balance}</div>
+                <div style="background:linear-gradient(145deg, #1a3a1a, #0a1a0a); border-radius:20px; padding:30px; border:3px solid #ffd700; display:flex; gap:15px; justify-content:center; margin:15px 0;">
+                    ${reels.map((s, i) => `
+                        <div id="reel${i}" style="width:80px; height:100px; background:#222; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:50px; border:2px solid #444; transition: transform 0.1s;">
+                            ${s}
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
+                    <button onclick="slotsBet(-5)" style="background:#444; padding:5px 15px;">-5</button>
+                    <button onclick="slotsBet(-1)" style="background:#444; padding:5px 15px;">-1</button>
+                    <span style="color:#ffd700; font-size:18px;">💰 ${bet}</span>
+                    <button onclick="slotsBet(1)" style="background:#444; padding:5px 15px;">+1</button>
+                    <button onclick="slotsBet(5)" style="background:#444; padding:5px 15px;">+5</button>
+                </div>
+                <button onclick="slotsSpin()" style="background:linear-gradient(135deg,#ffd700,#ffaa00); color:#000; border:none; padding:12px 40px; border-radius:40px; font-size:20px; font-weight:bold; cursor:pointer; ${spinning ? 'opacity:0.5;' : ''}" ${spinning ? 'disabled' : ''}>
+                    ${spinning ? '🌀 Крутится...' : '🎰 КРУТИТЬ!'}
+                </button>
+                <div id="slotsResult" style="margin-top:10px; font-size:18px; color:#ffd700;"></div>
+                <div style="margin-top:10px;">
+                    <button onclick="initSlots()" style="background:#444; color:#fff; border:none; padding:6px 20px; border-radius:20px; cursor:pointer;">🔄 Обновить</button>
+                    <button onclick="submitGameRating()" style="background:#555; color:#fff; border:none; padding:6px 20px; border-radius:20px; cursor:pointer;">⭐ Оценить</button>
+                </div>
+                <div id="gameRatingArea" style="margin-top:10px;"></div>
+            </div>
+        `;
+        createGameRating();
+    }
+    
+    window.slotsBet = function(amount) {
+        if (spinning) return;
+        bet = Math.max(1, Math.min(balance, bet + amount));
+        render();
+    };
+    
+    window.slotsSpin = function() {
+        if (spinning) return;
+        if (bet > balance) {
+            alert('Не хватает яиц!');
+            return;
+        }
+        
+        spinning = true;
+        balance -= bet;
+        localStorage.setItem('tildochka_eggs', balance);
+        document.getElementById('headerEggs').textContent = balance;
+        db.ref('users/' + myUid).update({ eggs: balance });
+        render();
+        
+        const results = [];
+        for (let i = 0; i < 3; i++) {
+            results.push(symbols[Math.floor(Math.random() * symbols.length)]);
+        }
+        
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const reel = document.getElementById('reel' + i);
+                if (reel) {
+                    reel.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        reel.style.transform = 'scale(1)';
+                        reels[i] = results[i];
+                        reel.textContent = results[i];
+                    }, 200);
+                }
+            }, i * 600 + 300);
+        }
+        
+        setTimeout(() => {
+            spinning = false;
+            
+            let win = 0;
+            const resultDiv = document.getElementById('slotsResult');
+            
+            if (results[0] === results[1] && results[1] === results[2]) {
+                const multipliers = {
+                    '🍒': 5, '🍋': 8, '🍊': 10, '🍇': 12,
+                    '🔔': 20, '💎': 25, '7️⃣': 50, '⭐': 100
+                };
+                win = bet * (multipliers[results[0]] || 5);
+                resultDiv.textContent = `🎉 ТРИ ОДИНАКОВЫХ! +${win} 🥚!`;
+                playSound("coin");
+            } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                win = bet * 2;
+                resultDiv.textContent = `🎉 ПАРА! +${win} 🥚!`;
+                playSound("coin");
+            } else {
+                resultDiv.textContent = `😢 Проигрыш! -${bet} 🥚`;
+                playSound("hit");
+            }
+            
+            if (win > 0) {
+                balance += win;
+                localStorage.setItem('tildochka_eggs', balance);
+                document.getElementById('headerEggs').textContent = balance;
+                db.ref('users/' + myUid).update({ eggs: balance });
+                document.getElementById('gameScoreDisplay').textContent = `Счёт: ${win}`;
+            } else {
+                document.getElementById('gameScoreDisplay').textContent = `Счёт: 0`;
+            }
+            
+            render();
+        }, 2200);
+    };
+    
+    render();
+}
+
+// ---------- 🃏 БЛЭКДЖЕК ----------
+function initBlackjack() {
+    const container = document.getElementById('gameContent');
+    if (!container) return;
+    
+    let balance = parseInt(localStorage.getItem('tildochka_eggs')) || 0;
+    let bet = 5;
+    let deck = [];
+    let playerHand = [];
+    let dealerHand = [];
+    let gameOver = false;
+    
+    function createDeck() {
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        deck = [];
+        for (let s of suits) {
+            for (let v of values) {
+                deck.push({ suit: s, value: v });
+            }
+        }
+        shuffle(deck);
+    }
+    
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+    }
+    
+    function cardValue(card) {
+        if (card.value === 'A') return 11;
+        if (['J','Q','K'].includes(card.value)) return 10;
+        return parseInt(card.value);
+    }
+    
+    function handTotal(hand) {
+        let total = 0;
+        let aces = 0;
+        for (let card of hand) {
+            if (card.value === 'A') aces++;
+            total += cardValue(card);
+        }
+        while (total > 21 && aces > 0) {
+            total -= 10;
+            aces--;
+        }
+        return total;
+    }
+    
+    function cardDisplay(card) {
+        return `${card.value}${card.suit}`;
+    }
+    
+    function render() {
+        container.innerHTML = `
+            <div style="text-align:center; max-width:500px; margin:0 auto;">
+                <h3>🃏 БЛЭКДЖЕК (21)</h3>
+                <div style="color:#ffd700; font-size:20px; margin:10px 0;">🥚 ${balance}</div>
+                <div style="background:rgba(0,0,0,0.5); border-radius:15px; padding:15px; margin:10px 0;">
+                    <div style="color:#aaa; font-size:14px;">👨‍💼 Дилер: ${dealerHand.length > 0 ? (gameOver ? handTotal(dealerHand) : cardDisplay(dealerHand[0]) + ' ❓') : '...'}</div>
+                    <div style="font-size:28px; margin:5px 0;">${dealerHand.map(c => cardDisplay(c)).join('  ') || '—'}</div>
+                    <hr style="border-color:#444;">
+                    <div style="color:#ffd700; font-size:14px;">🧑 Вы: ${handTotal(playerHand)}</div>
+                    <div style="font-size:28px; margin:5px 0;">${playerHand.map(c => cardDisplay(c)).join('  ') || '—'}</div>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
+                    <button onclick="blackjackBet(-5)" style="background:#444; padding:5px 15px;">-5</button>
+                    <button onclick="blackjackBet(-1)" style="background:#444; padding:5px 15px;">-1</button>
+                    <span style="color:#ffd700; font-size:18px;">💰 ${bet}</span>
+                    <button onclick="blackjackBet(1)" style="background:#444; padding:5px 15px;">+1</button>
+                    <button onclick="blackjackBet(5)" style="background:#444; padding:5px 15px;">+5</button>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                    <button onclick="blackjackHit()" style="background:#4CAF50; color:#fff; border:none; padding:10px 25px; border-radius:8px; cursor:pointer; ${gameOver || playerHand.length === 0 ? 'opacity:0.5;' : ''}" ${gameOver || playerHand.length === 0 ? 'disabled' : ''}>🃏 Взять</button>
+                    <button onclick="blackjackStand()" style="background:#f44336; color:#fff; border:none; padding:10px 25px; border-radius:8px; cursor:pointer; ${gameOver || playerHand.length === 0 ? 'opacity:0.5;' : ''}" ${gameOver || playerHand.length === 0 ? 'disabled' : ''}>✋ Хватит</button>
+                    <button onclick="blackjackDeal()" style="background:#ffd700; color:#000; border:none; padding:10px 25px; border-radius:8px; cursor:pointer; font-weight:bold;">🔄 Новая игра</button>
+                </div>
+                <div id="blackjackResult" style="margin-top:10px; font-size:18px; color:#ffd700;"></div>
+                <div id="gameRatingArea" style="margin-top:10px;"></div>
+            </div>
+        `;
+        createGameRating();
+    }
+    
+    window.blackjackBet = function(amount) {
+        if (gameOver) return;
+        bet = Math.max(1, Math.min(balance, bet + amount));
+        render();
+    };
+    
+    window.blackjackDeal = function() {
+        if (bet > balance) {
+            alert('Не хватает яиц!');
+            return;
+        }
+        balance -= bet;
+        localStorage.setItem('tildochka_eggs', balance);
+        document.getElementById('headerEggs').textContent = balance;
+        db.ref('users/' + myUid).update({ eggs: balance });
+        
+        createDeck();
+        playerHand = [deck.pop(), deck.pop()];
+        dealerHand = [deck.pop(), deck.pop()];
+        gameOver = false;
+        document.getElementById('blackjackResult').textContent = '';
+        render();
+        
+        if (handTotal(playerHand) === 21) {
+            setTimeout(() => {
+                blackjackStand();
+            }, 300);
+        }
+    };
+    
+    window.blackjackHit = function() {
+        if (gameOver || playerHand.length === 0) return;
+        playerHand.push(deck.pop());
+        render();
+        if (handTotal(playerHand) > 21) {
+            gameOver = true;
+            document.getElementById('blackjackResult').textContent = '💥 ПЕРЕБОР! Вы проиграли!';
+            playSound("hit");
+            document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+            render();
+        }
+    };
+    
+    window.blackjackStand = function() {
+        if (gameOver || playerHand.length === 0) return;
+        gameOver = true;
+        
+        while (handTotal(dealerHand) < 17) {
+            dealerHand.push(deck.pop());
+        }
+        
+        const playerTotal = handTotal(playerHand);
+        const dealerTotal = handTotal(dealerHand);
+        let result = '';
+        let win = 0;
+        
+        if (dealerTotal > 21) {
+            result = '🎉 Дилер перебрал! Вы выиграли!';
+            win = bet * 2;
+            playSound("coin");
+        } else if (playerTotal > dealerTotal) {
+            result = '🎉 Вы выиграли!';
+            win = bet * 2;
+            playSound("coin");
+        } else if (playerTotal === dealerTotal) {
+            result = '🤝 Ничья! Ставка возвращена';
+            win = bet;
+            playSound("jump");
+        } else {
+            result = '😢 Дилер выиграл!';
+            playSound("hit");
+        }
+        
+        if (win > 0) {
+            balance += win;
+            localStorage.setItem('tildochka_eggs', balance);
+            document.getElementById('headerEggs').textContent = balance;
+            db.ref('users/' + myUid).update({ eggs: balance });
+            document.getElementById('gameScoreDisplay').textContent = `Счёт: ${win - bet}`;
+        } else {
+            document.getElementById('gameScoreDisplay').textContent = `Счёт: 0`;
+        }
+        
+        document.getElementById('blackjackResult').textContent = result;
+        render();
+    };
+    
+    render();
+}
+
+// ---------- 🎲 КОСТИ ----------
+function initDice() {
+    const container = document.getElementById('gameContent');
+    if (!container) return;
+    
+    let balance = parseInt(localStorage.getItem('tildochka_eggs')) || 0;
+    let bet = 5;
+    let rolling = false;
+    
+    function render() {
+        container.innerHTML = `
+            <div style="text-align:center; max-width:450px; margin:0 auto;">
+                <h3>🎲 КОСТИ</h3>
+                <div style="color:#ffd700; font-size:20px; margin:10px 0;">🥚 ${balance}</div>
+                <div style="display:flex; gap:30px; justify-content:center; margin:20px 0;">
+                    <div id="dice1" style="width:80px; height:80px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border:2px solid #444;">🎲</div>
+                    <div id="dice2" style="width:80px; height:80px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:40px; color:#000; border:2px solid #444;">🎲</div>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
+                    <button onclick="diceBet(-5)" style="background:#444; padding:5px 15px;">-5</button>
+                    <button onclick="diceBet(-1)" style="background:#444; padding:5px 15px;">-1</button>
+                    <span style="color:#ffd700; font-size:18px;">💰 ${bet}</span>
+                    <button onclick="diceBet(1)" style="background:#444; padding:5px 15px;">+1</button>
+                    <button onclick="diceBet(5)" style="background:#444; padding:5px 15px;">+5</button>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
+                    <button onclick="dicePredict('under')" style="background:#4CAF50; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; ${rolling ? 'opacity:0.5;' : ''}" ${rolling ? 'disabled' : ''}>⬇️ Меньше 7</button>
+                    <button onclick="dicePredict('over')" style="background:#f44336; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; ${rolling ? 'opacity:0.5;' : ''}" ${rolling ? 'disabled' : ''}>⬆️ Больше 7</button>
+                    <button onclick="dicePredict('seven')" style="background:#ffd700; color:#000; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:bold; ${rolling ? 'opacity:0.5;' : ''}" ${rolling ? 'disabled' : ''}>7️⃣ Ровно 7</button>
+                </div>
+                <div id="diceResult" style="margin-top:10px; font-size:18px; color:#ffd700;"></div>
+                <div id="gameRatingArea" style="margin-top:10px;"></div>
+            </div>
+        `;
+        createGameRating();
+    }
+    
+    window.diceBet = function(amount) {
+        if (rolling) return;
+        bet = Math.max(1, Math.min(balance, bet + amount));
+        render();
+    };
+    
+    window.dicePredict = function(prediction) {
+        if (rolling) return;
+        if (bet > balance) {
+            alert('Не хватает яиц!');
+            return;
+        }
+        
+        rolling = true;
+        balance -= bet;
+        localStorage.setItem('tildochka_eggs', balance);
+        document.getElementById('headerEggs').textContent = balance;
+        db.ref('users/' + myUid).update({ eggs: balance });
+        render();
+        
+        const dice1 = document.getElementById('dice1');
+        const dice2 = document.getElementById('dice2');
+        const resultDiv = document.getElementById('diceResult');
+        
+        let count = 0;
+        const interval = setInterval(() => {
+            const val1 = Math.floor(Math.random() * 6) + 1;
+            const val2 = Math.floor(Math.random() * 6) + 1;
+            const emojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+            if (dice1) dice1.textContent = emojis[val1 - 1];
+            if (dice2) dice2.textContent = emojis[val2 - 1];
+            count++;
+            if (count > 10) {
+                clearInterval(interval);
+                rolling = false;
+                
+                const final1 = Math.floor(Math.random() * 6) + 1;
+                const final2 = Math.floor(Math.random() * 6) + 1;
+                const total = final1 + final2;
+                
+                if (dice1) dice1.textContent = emojis[final1 - 1];
+                if (dice2) dice2.textContent = emojis[final2 - 1];
+                
+                let win = 0;
+                let resultText = '';
+                
+                if (prediction === 'under' && total < 7) {
+                    win = bet * 2;
+                    resultText = `🎉 Меньше 7! +${win} 🥚!`;
+                    playSound("coin");
+                } else if (prediction === 'over' && total > 7) {
+                    win = bet * 2;
+                    resultText = `🎉 Больше 7! +${win} 🥚!`;
+                    playSound("coin");
+                } else if (prediction === 'seven' && total === 7) {
+                    win = bet * 5;
+                    resultText = `🎉 Ровно 7! +${win} 🥚!`;
+                    playSound("coin");
+                } else {
+                    resultText = `😢 Проигрыш! -${bet} 🥚 (выпало ${total})`;
+                    playSound("hit");
+                }
+                
+                if (win > 0) {
+                    balance += win;
+                    localStorage.setItem('tildochka_eggs', balance);
+                    document.getElementById('headerEggs').textContent = balance;
+                    db.ref('users/' + myUid).update({ eggs: balance });
+                    document.getElementById('gameScoreDisplay').textContent = `Счёт: ${win}`;
+                } else {
+                    document.getElementById('gameScoreDisplay').textContent = `Счёт: 0`;
+                }
+                
+                resultDiv.textContent = resultText;
+                render();
+            }
+        }, 150);
+    };
+    
+    render();
+}
+// ============================================================
+// ==================== ОТЗЫВЫ НА ИГРЫ =========================
+// ============================================================
+
+function loadGameReviews(gameId) {
+    db.ref('gameReviews/' + gameId).on('value', function(snap) {
+        const reviews = [];
+        snap.forEach(function(child) {
+            reviews.push({
+                id: child.key,
+                name: child.val().name || 'Аноним',
+                avatarType: child.val().avatarType || 'emoji',
+                avatarValue: child.val().avatarValue || '🐔',
+                text: child.val().text || '',
+                rating: child.val().rating || 5,
+                ts: child.val().ts || 0
+            });
+        });
+        reviews.sort((a, b) => b.ts - a.ts);
+        
+        let sum = 0;
+        reviews.forEach(r => sum += r.rating);
+        const avg = reviews.length > 0 ? (sum / reviews.length).toFixed(1) : '0';
+        const el = document.getElementById('rating-' + gameId);
+        if (el) {
+            el.textContent = '⭐ ' + avg + '/10 (' + reviews.length + ')';
+        }
+        
+        // Сохраняем отзывы для показа
+        window._gameReviews = window._gameReviews || {};
+        window._gameReviews[gameId] = reviews;
+    });
+}
+
+// Функция для показа отзывов в игре (вызывается из showGame)
+function showGameReviewsForCurrent(gameId) {
+    const reviews = window._gameReviews && window._gameReviews[gameId] ? window._gameReviews[gameId] : [];
+    const container = document.getElementById('gameRatingArea');
+    if (!container) return;
+    
+    let html = `
+        <div style="margin-top:20px; border-top:2px solid #444; padding-top:15px;">
+            <h4 style="color:#ffd700;">💬 Отзывы на игру</h4>
+            <div style="display:flex; gap:5px; align-items:center; margin:10px 0;">
+                <span>Оцени: </span>
+                ${[1,2,3,4,5].map(i => `<span class="star" data-v="${i}" onclick="rateGame(${i*2}, '${gameId}')" style="font-size:24px; cursor:pointer; color:#555;">★</span>`).join('')}
+                <span id="gameRatingText">10/10</span>
+            </div>
+            <textarea id="gameReviewText" placeholder="Напиши отзыв..." style="width:100%; max-width:100%; padding:8px; border-radius:8px; background:#222; color:#fff; border:1px solid #444; resize:vertical; min-height:60px;"></textarea>
+            <button onclick="submitGameReview('${gameId}')" style="background:#ffd700; color:#000; border:none; padding:6px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">📝 Отправить</button>
+        </div>
+        <div id="gameReviewsList" style="margin-top:10px; max-height:200px; overflow-y:auto;">
+    `;
+    
+    if (reviews.length === 0) {
+        html += '<p style="color:#888; font-size:13px;">Нет отзывов. Будь первым!</p>';
+    } else {
+        reviews.slice(0, 10).forEach(r => {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += r.rating >= i*2 ? '⭐' : r.rating === i*2-1 ? '🌓' : '☆';
+            }
+            const avatar = r.avatarType === 'image' 
+                ? `<img src="${r.avatarValue}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;">` 
+                : r.avatarValue;
+            html += `
+                <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 12px; margin-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span style="font-size:16px;">${avatar}</span>
+                        <strong style="font-size:13px;">${r.name}</strong>
+                        <span style="font-size:12px; color:#ffd700;">${stars} ${r.rating}/10</span>
+                    </div>
+                    <div style="font-size:13px; color:#ccc; margin-top:3px;">${r.text}</div>
+                </div>
+            `;
+        });
+    }
+    html += '</div>';
+    container.innerHTML = html;
+    
+    // Настраиваем звёзды для оценки
+    const stars = container.querySelectorAll('.star');
+    let currentRating = 10;
+    stars.forEach(s => {
+        s.onclick = function() {
+            currentRating = parseInt(this.getAttribute('data-v')) * 2;
+            updateStars(stars, currentRating);
+            document.getElementById('gameRatingText').textContent = currentRating + '/10';
+        };
+        s.onmouseenter = function() {
+            const v = parseInt(this.getAttribute('data-v')) * 2;
+            stars.forEach(x => {
+                const sv = parseInt(x.getAttribute('data-v')) * 2;
+                x.classList.remove('hover-full', 'hover-half');
+                if (sv <= v) x.classList.add('hover-full');
+                else if (sv - 1 === v) x.classList.add('hover-half');
+            });
+        };
+        s.onmouseleave = function() {
+            stars.forEach(x => x.classList.remove('hover-full', 'hover-half'));
+            updateStars(stars, currentRating);
+        };
+    });
+    updateStars(stars, currentRating);
+    window._gameReviewRating = currentRating;
+}
+
+// Отправить отзыв на игру
+function submitGameReview(gameId) {
+    const text = document.getElementById('gameReviewText').value.trim();
+    if (!text) {
+        alert('Напишите отзыв!');
+        return;
+    }
+    const rating = window._gameReviewRating || 10;
+    const avatarData = JSON.parse(localStorage.getItem('tildochka_avatar_data') || '{"type":"emoji","value":"🐔"}');
+    
+    db.ref('gameReviews/' + gameId).push({
+        name: myName,
+        avatarType: avatarData.type,
+        avatarValue: avatarData.value,
+        text: text,
+        rating: rating,
+        ts: Date.now()
+    }).then(function() {
+        document.getElementById('gameReviewText').value = '';
+        alert('✅ Отзыв отправлен!');
+        loadGameReviews(gameId);
+    }).catch(function(err) {
+        alert('Ошибка: ' + err.message);
+    });
+}
+
+// Оценить игру (звёзды)
+function rateGame(rating, gameId) {
+    window._gameReviewRating = rating;
+    document.getElementById('gameRatingText').textContent = rating + '/10';
+    const stars = document.querySelectorAll('#gameRatingArea .star');
+    updateStars(stars, rating);
+}
+
+// Обновить звёзды
+function updateStars(stars, rating) {
+    stars.forEach(function(s) {
+        const v = parseInt(s.getAttribute('data-v')) * 2;
+        s.classList.remove('full', 'half', 'hover-full', 'hover-half');
+        if (rating >= v) s.classList.add('full');
+        else if (rating === v - 1) s.classList.add('half');
+    });
 }
 </script>
 </body>
