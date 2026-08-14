@@ -6911,8 +6911,12 @@ function createCustomSticker() {
         return;
     }
     
+    // Находим кнопку по ID, а не по классу
     const btn = document.getElementById('createStickerBtn');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Загрузка...'; }
+    if (btn) { 
+        btn.disabled = true; 
+        btn.textContent = '⏳ Загрузка...'; 
+    }
     
     const fileName = 'stickers/' + Date.now() + '_' + Math.random().toString(36).substr(2, 6) + '_' + selectedStickerFile.name;
     const uploadTask = storage.ref(fileName).put(selectedStickerFile);
@@ -6925,7 +6929,10 @@ function createCustomSticker() {
         (error) => {
             console.error('Ошибка загрузки:', error);
             alert('Ошибка загрузки файла: ' + error.message);
-            if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
+            if (btn) { 
+                btn.disabled = false; 
+                btn.textContent = '✅ Создать'; 
+            }
         },
         () => {
             uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
@@ -6938,17 +6945,28 @@ function createCustomSticker() {
                     alert('✅ Стикер создан!');
                     selectedStickerFile = null;
                     selectedStickerType = null;
+                    // Закрываем модалку
                     const modal = document.querySelector('.modal-overlay');
                     if (modal) modal.remove();
+                    // Обновляем список стикеров
                     loadCustomStickers();
-                    if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
+                    if (btn) { 
+                        btn.disabled = false; 
+                        btn.textContent = '✅ Создать'; 
+                    }
                 }).catch(err => {
-                    alert('Ошибка: ' + err.message);
-                    if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
+                    alert('Ошибка сохранения: ' + err.message);
+                    if (btn) { 
+                        btn.disabled = false; 
+                        btn.textContent = '✅ Создать'; 
+                    }
                 });
             }).catch(err => {
                 alert('Ошибка получения URL: ' + err.message);
-                if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
+                if (btn) { 
+                    btn.disabled = false; 
+                    btn.textContent = '✅ Создать'; 
+                }
             });
         }
     );
