@@ -988,7 +988,10 @@ function escapeHtml(str) {
 }
 
 // ========== FIREBASE ==========
-firebase.initializeApp({databaseURL:"https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"});
+firebase.initializeApp({
+    databaseURL: "https://tildochka-default-rtdb.europe-west1.firebasedatabase.app",
+    storageBucket: "tildochka-default-rtdb.firebasestorage.app"
+});
 var db=firebase.database();
 var storage = firebase.storage();
 var currentGame=null,gameInterval=null,tamaInterval=null,reviewRating=10,gameRating=10,currentMovieId='',memeMedia=null,memeMediaType=null,shortMedia=null;
@@ -6676,6 +6679,7 @@ function votePoll(pollId, option) {
     });
 }
 // ==================== СТИКЕРЫ (ФОТО/ВИДЕО) ====================
+// ==================== СТИКЕРЫ ====================
 
 function loadCustomStickers() {
     db.ref('stickers').on('value', (snapshot) => {
@@ -6729,7 +6733,6 @@ function loadCustomStickers() {
     });
 }
 
-// Открыть окно выбора стикеров
 function openStickerPicker() {
     const modal = document.getElementById('stickerPickerModal');
     if (!modal) return;
@@ -6795,7 +6798,6 @@ function closeStickerPicker() {
     if (modal) modal.style.display = 'none';
 }
 
-// Отправить стикер в чат
 function sendStickerFromChat(stickerId) {
     db.ref('stickers/' + stickerId).once('value', (snapshot) => {
         const sticker = snapshot.val();
@@ -6822,7 +6824,6 @@ function sendStickerFromChat(stickerId) {
     });
 }
 
-// Открыть окно создания стикера (загрузка фото/видео)
 function openStickerCreator() {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
@@ -6911,12 +6912,8 @@ function createCustomSticker() {
         return;
     }
     
-    // Находим кнопку по ID, а не по классу
     const btn = document.getElementById('createStickerBtn');
-    if (btn) { 
-        btn.disabled = true; 
-        btn.textContent = '⏳ Загрузка...'; 
-    }
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Загрузка...'; }
     
     const fileName = 'stickers/' + Date.now() + '_' + Math.random().toString(36).substr(2, 6) + '_' + selectedStickerFile.name;
     const uploadTask = storage.ref(fileName).put(selectedStickerFile);
@@ -6929,10 +6926,7 @@ function createCustomSticker() {
         (error) => {
             console.error('Ошибка загрузки:', error);
             alert('Ошибка загрузки файла: ' + error.message);
-            if (btn) { 
-                btn.disabled = false; 
-                btn.textContent = '✅ Создать'; 
-            }
+            if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
         },
         () => {
             uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
@@ -6945,28 +6939,17 @@ function createCustomSticker() {
                     alert('✅ Стикер создан!');
                     selectedStickerFile = null;
                     selectedStickerType = null;
-                    // Закрываем модалку
                     const modal = document.querySelector('.modal-overlay');
                     if (modal) modal.remove();
-                    // Обновляем список стикеров
                     loadCustomStickers();
-                    if (btn) { 
-                        btn.disabled = false; 
-                        btn.textContent = '✅ Создать'; 
-                    }
+                    if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
                 }).catch(err => {
-                    alert('Ошибка сохранения: ' + err.message);
-                    if (btn) { 
-                        btn.disabled = false; 
-                        btn.textContent = '✅ Создать'; 
-                    }
+                    alert('Ошибка: ' + err.message);
+                    if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
                 });
             }).catch(err => {
                 alert('Ошибка получения URL: ' + err.message);
-                if (btn) { 
-                    btn.disabled = false; 
-                    btn.textContent = '✅ Создать'; 
-                }
+                if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
             });
         }
     );
