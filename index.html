@@ -2082,8 +2082,8 @@ function loadChatMessages() {
                 <div style="margin-left:32px;" class="message-text">
     ${msg.isSticker && msg.stickerData ? 
     (msg.stickerData.type === 'video' ? 
-        `<video src="${msg.stickerData.url}" style="max-width:200px; max-height:200px; border-radius:12px; background:#000;" controls muted playsinline></video>` : 
-        `<img src="${msg.stickerData.url}" style="max-width:200px; max-height:200px; border-radius:12px; object-fit:contain; background:rgba(0,0,0,0.2);">`
+        `<video src="${msg.stickerData.data}" style="max-width:200px; max-height:200px; border-radius:12px; background:#000;" controls muted playsinline></video>` : 
+        `<img src="${msg.stickerData.data}" style="max-width:200px; max-height:200px; border-radius:12px; object-fit:contain; background:rgba(0,0,0,0.2);">`
     ) : 
     escapeHtml(msg.text)
 }
@@ -6679,7 +6679,6 @@ function votePoll(pollId, option) {
     });
 }
 // ==================== СТИКЕРЫ (ФОТО/ВИДЕО) ====================
-// ==================== СТИКЕРЫ ====================
 
 function loadCustomStickers() {
     db.ref('stickers').on('value', (snapshot) => {
@@ -6692,7 +6691,7 @@ function loadCustomStickers() {
             stickers.push({
                 id: child.key,
                 type: child.val().type || 'image',
-                url: child.val().url || child.val().data,
+                data: child.val().data,
                 author: child.val().author || 'Аноним',
                 ts: child.val().ts || 0
             });
@@ -6713,7 +6712,7 @@ function loadCustomStickers() {
             
             if (sticker.type === 'video') {
                 const video = document.createElement('video');
-                video.src = sticker.url;
+                video.src = sticker.data;
                 video.style.cssText = 'width:100%; height:100%; object-fit:cover;';
                 video.muted = true;
                 video.loop = true;
@@ -6722,7 +6721,7 @@ function loadCustomStickers() {
                 stickerDiv.appendChild(video);
             } else {
                 const img = document.createElement('img');
-                img.src = sticker.url;
+                img.src = sticker.data;
                 img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
                 stickerDiv.appendChild(img);
             }
@@ -6740,7 +6739,7 @@ function openStickerPicker() {
     
     const pickerGrid = document.getElementById('stickerPickerGrid');
     if (!pickerGrid) return;
-    pickerGrid.innerHTML = '<p style="color:#888;text-align:center;grid-column:span 4;">⏳ Загрузка...</p>';
+    pickerGrid.innerHTML = '';
     
     db.ref('stickers').once('value', (snapshot) => {
         const stickers = [];
@@ -6748,7 +6747,7 @@ function openStickerPicker() {
             stickers.push({
                 id: child.key,
                 type: child.val().type || 'image',
-                url: child.val().url || child.val().data,
+                data: child.val().data,
                 author: child.val().author || 'Аноним',
                 ts: child.val().ts || 0
             });
@@ -6756,11 +6755,10 @@ function openStickerPicker() {
         stickers.sort((a, b) => b.ts - a.ts);
         
         if (stickers.length === 0) {
-            pickerGrid.innerHTML = '<p style="color:#888;text-align:center;grid-column:span 4;">Нет стикеров. Загрузи первый!</p>';
+            pickerGrid.innerHTML = '<p style="color:#888;grid-column:span 4;">Нет стикеров. Загрузи первый!</p>';
             return;
         }
         
-        pickerGrid.innerHTML = '';
         stickers.forEach(sticker => {
             const stickerDiv = document.createElement('div');
             stickerDiv.style.cssText = 'width:100%; height:90px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:0.2s; background:rgba(0,0,0,0.2);';
@@ -6773,7 +6771,7 @@ function openStickerPicker() {
             
             if (sticker.type === 'video') {
                 const video = document.createElement('video');
-                video.src = sticker.url;
+                video.src = sticker.data;
                 video.style.cssText = 'width:100%; height:100%; object-fit:cover;';
                 video.muted = true;
                 video.loop = true;
@@ -6782,7 +6780,7 @@ function openStickerPicker() {
                 stickerDiv.appendChild(video);
             } else {
                 const img = document.createElement('img');
-                img.src = sticker.url;
+                img.src = sticker.data;
                 img.style.cssText = 'width:100%; height:100%; object-fit:cover;';
                 stickerDiv.appendChild(img);
             }
@@ -6816,7 +6814,7 @@ function sendStickerFromChat(stickerId) {
             stickerData: {
                 id: stickerId,
                 type: sticker.type || 'image',
-                url: sticker.url || sticker.data
+                data: sticker.data
             },
             reactions: {}
         });
@@ -6831,7 +6829,7 @@ function openStickerCreator() {
     modal.innerHTML = `
         <div class="modal-box" style="max-width:450px;">
             <h3>📤 Загрузить стикер</h3>
-            <p style="color:#aaa; font-size:13px;">Загрузи фото или короткое видео (до 10 МБ)</p>
+            <p style="color:#aaa; font-size:13px;">Загрузи фото или короткое видео (до 2 МБ)</p>
             
             <div style="margin:12px 0; border:2px dashed #444; border-radius:12px; padding:20px; text-align:center; cursor:pointer;" id="stickerDropZone" onclick="document.getElementById('stickerFileInput').click()">
                 <div style="font-size:48px;">📁</div>
@@ -6842,7 +6840,7 @@ function openStickerCreator() {
             
             <div id="stickerPreview" style="display:none; margin:10px auto; max-width:200px; border-radius:12px; overflow:hidden;"></div>
             
-            <button id="createStickerBtn" onclick="createCustomSticker()" style="background:#ffd700; color:#000; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">✅ Создать</button>
+            <button onclick="createCustomSticker()" style="background:#ffd700; color:#000; border:none; padding:10px 25px; border-radius:8px; font-weight:bold; cursor:pointer;">✅ Создать</button>
             <button onclick="this.closest('.modal-overlay').remove()" style="background:#444; color:#fff; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; margin-left:8px;">❌ Отмена</button>
         </div>
     `;
@@ -6873,21 +6871,23 @@ function openStickerCreator() {
 
 let selectedStickerFile = null;
 let selectedStickerType = null;
+let selectedStickerData = null;
 
 function handleStickerFile(event) {
     const file = event.target.files[0];
     if (!file) return;
     
-    if (file.size > 10 * 1024 * 1024) {
-        alert('Файл слишком большой! Максимум 10 МБ');
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Файл слишком большой! Максимум 2 МБ');
         return;
     }
     
-    selectedStickerFile = file;
-    selectedStickerType = file.type.startsWith('video') ? 'video' : 'image';
-    
     const reader = new FileReader();
     reader.onload = function(e) {
+        selectedStickerData = e.target.result;
+        selectedStickerType = file.type.startsWith('video') ? 'video' : 'image';
+        selectedStickerFile = file;
+        
         const preview = document.getElementById('stickerPreview');
         if (preview) {
             preview.style.display = 'block';
@@ -6902,57 +6902,27 @@ function handleStickerFile(event) {
 }
 
 function createCustomSticker() {
-    if (!selectedStickerFile) {
+    if (!selectedStickerData) {
         alert('Сначала загрузи фото или видео!');
         return;
     }
     
-    if (typeof storage === 'undefined') {
-        alert('❌ Ошибка: Firebase Storage не инициализирован. Обнови страницу.');
-        return;
-    }
-    
-    const btn = document.getElementById('createStickerBtn');
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Загрузка...'; }
-    
-    const fileName = 'stickers/' + Date.now() + '_' + Math.random().toString(36).substr(2, 6) + '_' + selectedStickerFile.name;
-    const uploadTask = storage.ref(fileName).put(selectedStickerFile);
-    
-    uploadTask.on('state_changed',
-        (snapshot) => {
-            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
-            if (btn) btn.textContent = '⏳ ' + progress + '%';
-        },
-        (error) => {
-            console.error('Ошибка загрузки:', error);
-            alert('Ошибка загрузки файла: ' + error.message);
-            if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
-        },
-        () => {
-            uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
-                db.ref('stickers').push({
-                    type: selectedStickerType,
-                    url: downloadURL,
-                    author: myName,
-                    ts: Date.now()
-                }).then(() => {
-                    alert('✅ Стикер создан!');
-                    selectedStickerFile = null;
-                    selectedStickerType = null;
-                    const modal = document.querySelector('.modal-overlay');
-                    if (modal) modal.remove();
-                    loadCustomStickers();
-                    if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
-                }).catch(err => {
-                    alert('Ошибка: ' + err.message);
-                    if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
-                });
-            }).catch(err => {
-                alert('Ошибка получения URL: ' + err.message);
-                if (btn) { btn.disabled = false; btn.textContent = '✅ Создать'; }
-            });
-        }
-    );
+    db.ref('stickers').push({
+        type: selectedStickerType,
+        data: selectedStickerData,
+        author: myName,
+        ts: Date.now()
+    }).then(() => {
+        alert('✅ Стикер создан!');
+        selectedStickerData = null;
+        selectedStickerFile = null;
+        selectedStickerType = null;
+        const modal = document.querySelector('.modal-overlay');
+        if (modal) modal.remove();
+        loadCustomStickers();
+    }).catch(err => {
+        alert('Ошибка: ' + err.message);
+    });
 }
 </script>
 </body>
