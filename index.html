@@ -8930,6 +8930,240 @@ function showCasinoGame(type) {
         loadLeaderboard('casino_' + type);
     }, 50);
 }
+// ============================================================
+// ==================== ФИКС 1: КАЗИНО ====================
+// ============================================================
+
+// Переписываем showCasino чтобы она точно работала
+window.showCasino = function() {
+    console.log('🎰 showCasino вызвана');
+    showScreen('casino');
+    const container = document.getElementById('casinoGamesGrid');
+    if (!container) {
+        console.error('❌ casinoGamesGrid не найден!');
+        return;
+    }
+    
+    const casinoGames = [
+        { name: '🎡 Рулетка', icon: '🎡', id: 'roulette', desc: 'Ставь на число, цвет или чёт/нечет' },
+        { name: '🎰 Слоты', icon: '🎰', id: 'slots', desc: 'Крути барабаны и выигрывай!' },
+        { name: '🃏 Блэкджек', icon: '🃏', id: 'blackjack', desc: 'Набери 21, не переборщи!' },
+        { name: '🎲 Кости', icon: '🎲', id: 'dice', desc: 'Бросай кубики и угадывай сумму' }
+    ];
+    
+    container.innerHTML = '';
+    casinoGames.forEach(function(game) {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.onclick = function() { showCasinoGame(game.id); };
+        card.innerHTML = `
+            <span class="game-icon">${game.icon}</span>
+            <h3>${game.name}</h3>
+            <div style="font-size:11px;color:#aaa;margin-top:4px;">${game.desc}</div>
+            <div class="game-rating" id="rating-casino_${game.id}">⭐ Загрузка...</div>
+        `;
+        container.appendChild(card);
+        // Загружаем рейтинг
+        loadLeaderboard('casino_' + game.id);
+        loadGameReviews('casino_' + game.id);
+        // Показываем отзывы
+        setTimeout(function(gid) {
+            showGameReviewsForCurrent(gid);
+        }, 300, 'casino_' + game.id);
+    });
+    console.log('✅ Казино отрисовано, игр:', casinoGames.length);
+};
+
+// Переписываем showCasinoGame чтобы она работала
+window.showCasinoGame = function(type) {
+    console.log('🎰 showCasinoGame вызвана с type:', type);
+    currentGame = 'casino_' + type;
+    showScreen('game');
+    const titles = {
+        roulette: '🎡 Рулетка',
+        slots: '🎰 Слоты',
+        blackjack: '🃏 Блэкджек',
+        dice: '🎲 Кости'
+    };
+    document.getElementById('gameTitle').textContent = titles[type] || type;
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameRatingArea').innerHTML = '';
+    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+    
+    setTimeout(function() {
+        if (type === 'roulette') initRoulette();
+        else if (type === 'slots') initSlots();
+        else if (type === 'blackjack') initBlackjack();
+        else if (type === 'dice') initDice();
+        loadLeaderboard('casino_' + type);
+        loadGameReviews('casino_' + type);
+        setTimeout(function() {
+            showGameReviewsForCurrent('casino_' + type);
+        }, 200);
+    }, 50);
+};
+
+// ============================================================
+// ==================== ФИКС 2: ОТОБРАЖЕНИЕ ОЦЕНОК ====================
+// ============================================================
+
+// Переписываем renderAllGames чтобы показывать оценки
+window.renderAllGames = function() {
+    var container = document.getElementById('allGamesGrid');
+    if(!container) {
+        console.error('Контейнер allGamesGrid не найден!');
+        return;
+    }
+    var allGames = [
+        { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
+        { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
+        { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
+        { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
+        { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
+        { name: 'Memory', icon: '🧠', id: 'memory', online: false },
+        { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
+        { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
+        { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
+        { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
+        { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
+        { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
+        { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
+        { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false },
+        { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
+        { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
+        { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false },
+        { name: 'Рулетка', icon: '🎡', id: 'roulette', online: false }
+    ];
+    
+    container.innerHTML = '';
+    for(var i = 0; i < allGames.length; i++) {
+        var game = allGames[i];
+        var playFunc = game.online ? 'showOnlineGame' : 'showGame';
+        var card = document.createElement('div');
+        card.className = 'game-card';
+        card.setAttribute('onclick', playFunc + "('" + game.id + "')");
+        card.setAttribute('style', 'cursor:pointer');
+        card.innerHTML = `
+            <span class="game-icon">${game.icon}</span>
+            <h3>${game.name}</h3>
+            <div class="game-rating" id="rating-${game.id}">⭐ Загрузка...</div>
+        `;
+        container.appendChild(card);
+        
+        // Загружаем рейтинг для каждой игры
+        (function(gameId) {
+            loadLeaderboard(gameId);
+            loadGameReviews(gameId);
+            // Показываем отзывы
+            setTimeout(function() {
+                showGameReviewsForCurrent(gameId);
+            }, 500);
+        })(game.id);
+    }
+    console.log('✅ Все игры отрисованы, найдено:', allGames.length);
+};
+
+// ============================================================
+// ==================== ФИКС 3: showAllGames ====================
+// ============================================================
+
+window.showAllGames = function() {
+    console.log('showAllGames вызвана');
+    showScreen('games-all');
+    setTimeout(function() {
+        renderAllGames();
+    }, 50);
+};
+
+// ============================================================
+// ==================== ФИКС 4: ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ====================
+// ============================================================
+
+// Добавляем вызов renderAllGames при загрузке
+document.addEventListener('DOMContentLoaded', function() {
+    // Ждём полной загрузки
+    setTimeout(function() {
+        // Если есть контейнер для игр - отрисовываем
+        if (document.getElementById('allGamesGrid')) {
+            renderAllGames();
+        }
+        console.log('✅ Все игры инициализированы');
+    }, 1000);
+});
+
+// ============================================================
+// ==================== ФИКС 5: ИСПРАВЛЕНИЕ showGameReviewsForCurrent ====================
+// ============================================================
+
+// Дополняем функцию обновления рейтингов
+var originalShowGameReviewsForCurrent = window.showGameReviewsForCurrent || function() {};
+
+window.showGameReviewsForCurrent = function(gameId) {
+    // Вызываем оригинальную функцию
+    if (typeof originalShowGameReviewsForCurrent === 'function') {
+        originalShowGameReviewsForCurrent(gameId);
+    }
+    
+    // Дополнительно обновляем рейтинг в карточке игры
+    setTimeout(function() {
+        var ratingEl = document.getElementById('rating-' + gameId);
+        if (ratingEl) {
+            db.ref('gameRatings/' + gameId).once('value', function(snap) {
+                var rats = [];
+                snap.forEach(function(c) {
+                    rats.push(c.val());
+                });
+                if (rats.length > 0) {
+                    var sum = 0;
+                    rats.forEach(function(r) {
+                        sum += (r.rating || 0);
+                    });
+                    var avg = (sum / rats.length).toFixed(1);
+                    ratingEl.textContent = '⭐ ' + avg + '/10 (' + rats.length + ')';
+                } else {
+                    ratingEl.textContent = '⭐ Нет оценок';
+                }
+            });
+        }
+    }, 100);
+};
+
+// ============================================================
+// ==================== ФИКС 6: loadLeaderboard ====================
+// ============================================================
+
+// Дополняем функцию загрузки рейтингов
+var originalLoadLeaderboard = window.loadLeaderboard || function() {};
+
+window.loadLeaderboard = function(type) {
+    // Вызываем оригинальную
+    if (typeof originalLoadLeaderboard === 'function') {
+        originalLoadLeaderboard(type);
+    }
+    
+    // Дополнительно обновляем рейтинг в карточке
+    var ratingEl = document.getElementById('rating-' + type);
+    if (ratingEl) {
+        db.ref('gameRatings/' + type).once('value', function(snap) {
+            var rats = [];
+            snap.forEach(function(c) {
+                rats.push(c.val());
+            });
+            if (rats.length > 0) {
+                var sum = 0;
+                rats.forEach(function(r) {
+                    sum += (r.rating || 0);
+                });
+                var avg = (sum / rats.length).toFixed(1);
+                ratingEl.textContent = '⭐ ' + avg + '/10 (' + rats.length + ')';
+            } else {
+                ratingEl.textContent = '⭐ Нет оценок';
+            }
+        });
+    }
+};
+
+console.log('✅ Все фиксы применены!');
 </script>
 </body>
                                                                                                 </html>
