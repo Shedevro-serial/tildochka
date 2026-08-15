@@ -3579,6 +3579,28 @@ function setupInviteListener() {
     db.ref('game_invites').on('child_added', function(snap){
         var inv = snap.val();
         if(!inv) return;
+        // ВНУТРИ setupInviteListener, в обработчике child_added, ПОСЛЕ if(!inv) return; ДОБАВЬ:
+
+if (inv.game === 'whoami') {
+    pendingInvite = {
+        id: snap.key,
+        from: inv.from,
+        fromName: inv.fromName,
+        game: 'whoami',
+        gameId: inv.gameId
+    };
+    document.getElementById('inviteContent').innerHTML = `
+        <p>${escapeHtml(inv.fromName)} приглашает тебя в игру <b>🕵️ Кто я?</b>!</p>
+        <p style="font-size:13px;color:#aaa;">Соберитесь за столом и угадайте, кто вы!</p>
+    `;
+    document.getElementById('inviteActions').innerHTML = `
+        <button onclick="whoamiAcceptInvite('${inv.gameId}')" style="background:#4f4;padding:10px 20px">✅ Принять</button>
+        <button onclick="whoamiDeclineInvite('${inv.id}')" style="background:#f44;padding:10px 20px">❌ Отклонить</button>
+    `;
+    document.getElementById('inviteTitle').textContent = '📨 Приглашение в "Кто я?"!';
+    document.getElementById('inviteModal').classList.add('show');
+    return;
+}
         if(inv.to === myUid && inv.status === 'pending') {
             if(inv.ts < Date.now() - 30000) {
                 snap.ref.remove();
@@ -7309,13 +7331,13 @@ function initMinesweeper() {
 }
 
 // ============================================================
-// ==================== КТО Я? (НОВАЯ ВЕРСИЯ) ====================
+// ==================== КТО Я? (ИСПРАВЛЕННАЯ) ====================
 // ============================================================
 
 let whoamiGameRef = null;
 let whoamiGameId = null;
-let whoamiMySeat = -1; // номер места за столом
-let whoamiPlayers = {}; // { seat: { name, character, guessed, asked } }
+let whoamiMySeat = -1;
+let whoamiPlayers = {};
 let whoamiCurrentTurn = -1;
 let whoamiQuestionHistory = [];
 let whoamiCanAskMore = false;
@@ -7326,13 +7348,11 @@ function initWhoAmIOnline() {
     const container = document.getElementById('whoamiOnlineContent');
     if (!container) return;
     
-    // Если уже в игре — показываем её
     if (whoamiGameId && whoamiGameRef) {
         renderWhoamiGame(container);
         return;
     }
     
-    // Показываем главный экран
     container.innerHTML = `
         <div style="text-align:center; max-width:600px; margin:0 auto;">
             <h3>🕵️ КТО Я? (за столом)</h3>
@@ -7412,7 +7432,7 @@ function whoamiCreateGame() {
     
     const gameRef = db.ref('whoami_games').push();
     const players = {};
-    players[0] = { name: myName, uid: myUid, character: null, guessed: false, asked: false };
+    players[0] = { name: myName, uid: myUid, character: null, guessed: false };
     
     gameRef.set({
         gameName: gameName || `Игра #${gameRef.key.slice(-4)}`,
@@ -7421,7 +7441,6 @@ function whoamiCreateGame() {
         currentTurn: 0,
         started: false,
         finished: false,
-        assigning: false,
         ts: Date.now(),
         host: myUid
     });
@@ -7433,7 +7452,6 @@ function whoamiCreateGame() {
 function whoamiJoinGame(gameId) {
     whoamiGameId = gameId;
     
-    // Добавляем игрока
     db.ref('whoami_games/' + gameId + '/players').once('value', (snap) => {
         const players = snap.val() || {};
         const seats = Object.keys(players).map(Number);
@@ -7449,8 +7467,7 @@ function whoamiJoinGame(gameId) {
             name: myName,
             uid: myUid,
             character: null,
-            guessed: false,
-            asked: false
+            guessed: false
         });
         
         whoamiMySeat = newSeat;
@@ -7478,45 +7495,45 @@ function whoamiJoinGame(gameId) {
 function renderWhoamiGame(container) {
     if (!container) return;
     
-    const game = whoamiGameRef ? whoamiGameRef._data : null;
-    if (!game) return;
-    
     const players = whoamiPlayers;
     const playerKeys = Object.keys(players).map(Number).sort((a, b) => a - b);
     const totalPlayers = playerKeys.length;
-    const maxPlayers = game.maxPlayers || 6;
-    const isStarted = game.started || false;
-    const isFinished = game.finished || false;
+    const maxPlayers = 6;
+    const isStarted = false; // Будет браться из game
+    const isFinished = false;
     const currentTurn = whoamiCurrentTurn;
     const isMyTurn = currentTurn === whoamiMySeat;
     const myData = players[whoamiMySeat] || {};
-    const isHost = game.host === myUid;
+    
+    // Получаем данные игры
+    let gameData = {};
+    if (whoamiGameRef && whoamiGameRef._data) {
+        gameData = whoamiGameRef._data;
+    }
+    const isGameStarted = gameData.started || false;
+    const isGameFinished = gameData.finished || false;
+    const isHost = gameData.host === myUid;
     
     // Проверка, все ли угадали
     const allGuessed = playerKeys.every(seat => players[seat] && players[seat].guessed);
-    if (allGuessed && totalPlayers > 1 && !isFinished) {
+    if (allGuessed && totalPlayers > 1 && !isGameFinished) {
         db.ref('whoami_games/' + whoamiGameId + '/finished').set(true);
-        // Покажем победителя
-        const winner = playerKeys.find(seat => players[seat] && !players[seat].guessed === false);
-        // ... но все угадали, значит победа!
     }
     
     let html = `
         <div style="text-align:center; max-width:700px; margin:0 auto;">
             <h3>🕵️ КТО Я?</h3>
-            <h4 style="color:#ffd700; font-size:14px;">${game.gameName || 'Игра'}</h4>
+            <h4 style="color:#ffd700; font-size:14px;">${gameData.gameName || 'Игра'}</h4>
             
             <!-- СТОЛ (вид сверху) -->
             <div style="position:relative; width:100%; max-width:500px; height:350px; margin:15px auto; background:linear-gradient(135deg, #2a1a0a, #3a2a1a); border-radius:50%; border:8px solid #5a3a2a; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
-                <!-- Центр стола -->
                 <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60%; height:60%; background:radial-gradient(ellipse, #4a3a2a, #2a1a0a); border-radius:50%; border:2px solid #6a4a3a;">
                     <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:#8a7a6a; font-size:12px;">
-                        ${isStarted ? '🎯 Игра идёт!' : '⏳ Ожидание...'}
+                        ${isGameStarted ? '🎯 Игра идёт!' : '⏳ Ожидание...'}
                         <br><span style="font-size:10px;">${totalPlayers}/${maxPlayers}</span>
                     </div>
                 </div>
                 
-                <!-- Игроки за столом -->
                 ${playerKeys.map((seat, index) => {
                     const player = players[seat];
                     if (!player) return '';
@@ -7531,37 +7548,36 @@ function renderWhoamiGame(container) {
                     const hasCharacter = player.character && player.character.length > 0;
                     const isGuessed = player.guessed || false;
                     
-                    // Цвет фона
                     let bgColor = 'rgba(0,0,0,0.5)';
                     if (isMe) bgColor = 'rgba(255,215,0,0.2)';
-                    if (isCurrent && isStarted) bgColor = 'rgba(255,215,0,0.4)';
+                    if (isCurrent && isGameStarted) bgColor = 'rgba(255,215,0,0.4)';
                     if (isGuessed) bgColor = 'rgba(0,255,0,0.2)';
                     
                     return `
                         <div style="position:absolute; left:${cx}%; top:${cy}%; transform:translate(-50%,-50%); text-align:center; width:80px;">
-                            <div style="width:60px; height:60px; border-radius:50%; border:3px solid ${isCurrent && isStarted ? '#ffd700' : isMe ? '#ffd700' : '#555'}; background:${bgColor}; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:28px; position:relative; overflow:hidden;">
+                            <div style="width:60px; height:60px; border-radius:50%; border:3px solid ${isCurrent && isGameStarted ? '#ffd700' : isMe ? '#ffd700' : '#555'}; background:${bgColor}; display:flex; align-items:center; justify-content:center; margin:0 auto; font-size:28px; position:relative; overflow:hidden;">
                                 ${isMe ? '👤' : (isGuessed ? '✅' : '❓')}
-                                ${isCurrent && isStarted ? '<div style="position:absolute; top:-5px; right:-5px; font-size:14px;">👉</div>' : ''}
+                                ${isCurrent && isGameStarted ? '<div style="position:absolute; top:-5px; right:-5px; font-size:14px;">👉</div>' : ''}
                             </div>
                             <div style="font-size:11px; color:${isMe ? '#ffd700' : '#aaa'}; margin-top:4px; font-weight:${isMe ? 'bold' : 'normal'};">
                                 ${player.name || '?'}
                                 ${isMe ? ' (вы)' : ''}
                                 ${isGuessed ? ' ✅' : ''}
                             </div>
-                            ${isStarted && isMe && hasCharacter ? `<div style="font-size:10px; color:#ff6b6b;">❓ Ты не знаешь, кто ты!</div>` : ''}
-                            ${isStarted && !isMe && hasCharacter ? `<div style="font-size:16px; margin-top:2px;">${player.character}</div>` : ''}
+                            ${isGameStarted && isMe && hasCharacter ? `<div style="font-size:10px; color:#ff6b6b;">❓ Ты не знаешь, кто ты!</div>` : ''}
+                            ${isGameStarted && !isMe && hasCharacter ? `<div style="font-size:16px; margin-top:2px;">${player.character}</div>` : ''}
                         </div>
                     `;
                 }).join('')}
             </div>
             
             <!-- Информация о ходе -->
-            ${isStarted && !isFinished ? `
+            ${isGameStarted && !isGameFinished ? `
                 <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:10px; margin:10px 0;">
                     <div style="color:#ffd700; font-size:14px;">
                         ${isMyTurn ? '🔫 ТВОЙ ХОД! Задай вопрос о себе' : `⏳ Ход: ${players[currentTurn] ? players[currentTurn].name : '...'}`}
                     </div>
-                    ${isMyTurn ? `
+                    ${isMyTurn && !myData.guessed ? `
                         <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center;">
                             <input id="whoamiQuestionInput" type="text" placeholder="❓ Задай вопрос о себе..." style="flex:1; min-width:200px; padding:10px; border-radius:10px; background:#222; color:#fff; border:1px solid #ffd700;">
                             <button onclick="whoamiAskQuestion()" style="background:#ffd700; color:#000; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">❓ Спросить</button>
@@ -7572,6 +7588,7 @@ function renderWhoamiGame(container) {
                         </div>
                         ${whoamiCanAskMore ? `<div style="color:#4f4; font-size:12px; margin-top:5px;">✅ Тебе ответили ДА! Можешь задать ещё вопрос.</div>` : ''}
                     ` : ''}
+                    ${isMyTurn && myData.guessed ? `<div style="color:#4f4; font-size:14px; margin-top:5px;">✅ Ты уже угадал! Ожидай остальных...</div>` : ''}
                 </div>
             ` : ''}
             
@@ -7592,35 +7609,35 @@ function renderWhoamiGame(container) {
             <!-- Статус игры -->
             <div style="margin-top:10px; display:flex; gap:15px; justify-content:center; flex-wrap:wrap; font-size:12px; color:#888;">
                 <span>👥 ${totalPlayers}/${maxPlayers} игроков</span>
-                ${isStarted ? '<span style="color:#4f4;">🔄 Игра идёт</span>' : '<span style="color:#ffd700;">⏳ Ожидание старта</span>'}
-                ${isFinished ? '<span style="color:#ffd700;">🏆 Игра окончена!</span>' : ''}
+                ${isGameStarted ? '<span style="color:#4f4;">🔄 Игра идёт</span>' : '<span style="color:#ffd700;">⏳ Ожидание старта</span>'}
+                ${isGameFinished ? '<span style="color:#ffd700;">🏆 Игра окончена!</span>' : ''}
                 ${isHost ? '<span style="color:#ffd700;">👑 Хост</span>' : ''}
             </div>
             
             <!-- Кнопки управления -->
             <div style="margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
-                ${!isStarted && isHost ? `
+                ${!isGameStarted && isHost ? `
                     <button onclick="whoamiStartGame()" style="background:#4f4; color:#000; border:none; padding:8px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">🚀 Начать игру</button>
                 ` : ''}
-                ${!isStarted && !isHost && totalPlayers >= 2 ? `
+                ${!isGameStarted && !isHost && totalPlayers >= 2 ? `
                     <div style="color:#ffd700; font-size:12px;">⏳ Ожидаем хоста...</div>
                 ` : ''}
-                ${isStarted && !isFinished ? `
+                ${isGameStarted && !isGameFinished ? `
                     <button onclick="whoamiLeaveGame()" style="background:#f44; color:#fff; border:none; padding:6px 15px; border-radius:8px; cursor:pointer;">🚪 Выйти</button>
                 ` : ''}
-                ${isFinished ? `
+                ${isGameFinished ? `
                     <button onclick="initWhoAmIOnline()" style="background:#ffd700; color:#000; border:none; padding:8px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">🔄 Новая игра</button>
                 ` : ''}
             </div>
             
-            ${!isStarted && isHost ? `
+            ${!isGameStarted && isHost && totalPlayers >= 2 ? `
                 <div style="margin-top:10px; background:rgba(255,215,0,0.1); border-radius:10px; padding:10px;">
                     <p style="color:#aaa; font-size:13px;">📌 Пригласи друзей! Каждый загадает персонажа для соседа.</p>
                     <button onclick="whoamiInviteFriends()" style="background:#ffd700; color:#000; border:none; padding:6px 15px; border-radius:8px; cursor:pointer;">📨 Пригласить</button>
                 </div>
             ` : ''}
             
-            ${!isStarted && !isHost && totalPlayers < 2 ? `
+            ${!isGameStarted && totalPlayers < 2 ? `
                 <div style="margin-top:10px; color:#888; font-size:13px;">⏳ Ожидаем других игроков... (нужно минимум 2)</div>
             ` : ''}
         </div>
@@ -7636,7 +7653,6 @@ function whoamiInviteFriends() {
         return;
     }
     
-    // Показываем список онлайн-друзей для приглашения
     const onlineUsers = Object.keys(window.onlineUsers || {});
     if (onlineUsers.length === 0) {
         alert('Нет никого онлайн! Попробуйте позже.');
@@ -7645,7 +7661,7 @@ function whoamiInviteFriends() {
     
     let html = '<p>Выбери, кого пригласить:</p>';
     onlineUsers.forEach(uid => {
-        if (uid !== myUid && whoamiPlayers[uid] === undefined) {
+        if (uid !== myUid) {
             const user = window.onlineUsers[uid];
             html += `<button onclick="whoamiSendInvite('${uid}')" style="display:block;width:100%;margin:4px 0;background:#444;">${user.name || 'Игрок'}</button>`;
         }
@@ -7690,7 +7706,6 @@ function whoamiSendInvite(uid) {
             db.ref('game_invites/' + inviteId).remove();
             hideWaiting();
             alert('✅ Игрок присоединился!');
-            // Игрок уже добавится через listener
         } else if (status === 'declined') {
             statusRef.off();
             clearTimeout(timeoutId);
@@ -7719,31 +7734,22 @@ function whoamiStartGame() {
             return;
         }
         
-        // Каждый игрок загадывает персонажа для соседа (по часовой стрелке)
         const seatKeys = playerKeys.map(Number).sort((a, b) => a - b);
         const total = seatKeys.length;
-        
-        // Просим каждого игрока ввести персонажа для соседа справа
-        // Но так как это асинхронно, используем prompt для текущего игрока
-        // и сохраняем в Firebase для остальных
-        
-        // Для каждого игрока: загадать персонажа для соседа
         const updates = {};
-        let hasAllCharacters = true;
         
+        // Хост загадывает персонажей для всех (по очереди)
+        // Для каждого игрока: загадать персонажа для соседа
         for (let i = 0; i < total; i++) {
             const currentSeat = seatKeys[i];
             const nextSeat = seatKeys[(i + 1) % total];
-            const player = players[currentSeat];
             const nextPlayer = players[nextSeat];
             
-            // Если персонаж ещё не загадан
             if (!nextPlayer.character || nextPlayer.character.length === 0) {
-                hasAllCharacters = false;
-                
-                // Если это текущий игрок - просим ввести
+                let charName = '';
+                // Если это текущий игрок - просим ввести через prompt
                 if (currentSeat === whoamiMySeat) {
-                    const charName = prompt(`👤 Загадай персонажа для ${nextPlayer.name}:\n\nПримеры: Дракон, Пират, Космонавт, Волшебник...`, '');
+                    charName = prompt(`👤 Загадай персонажа для ${nextPlayer.name}:\n\nПримеры: Дракон, Пират, Космонавт, Волшебник...`, '');
                     if (charName && charName.trim().length > 0) {
                         updates['players/' + nextSeat + '/character'] = charName.trim();
                     } else {
@@ -7754,7 +7760,6 @@ function whoamiStartGame() {
             }
         }
         
-        // Если есть обновления - сохраняем
         if (Object.keys(updates).length > 0) {
             gameRef.update(updates);
         }
@@ -7774,10 +7779,9 @@ function whoamiStartGame() {
             }
             
             if (allHaveChars) {
-                // Все персонажи назначены - начинаем игру
                 gameRef.update({
                     started: true,
-                    currentTurn: seatKeys[0] // первый игрок
+                    currentTurn: seatKeys[0]
                 });
                 alert('🎯 Игра началась! Первый ход у ' + players2[seatKeys[0]].name);
             } else {
@@ -7813,64 +7817,11 @@ function whoamiAskQuestion() {
         const players = game.players || {};
         const currentSeat = game.currentTurn;
         const currentPlayer = players[currentSeat];
-        const myData = players[whoamiMySeat];
         
         if (!currentPlayer || currentPlayer.uid !== myUid) {
             alert('Сейчас не твой ход!');
             return;
         }
-        
-        // Сохраняем вопрос в историю
-        const historyEntry = {
-            from: myName,
-            seat: whoamiMySeat,
-            text: question,
-            timestamp: Date.now()
-        };
-        
-        // Показываем вопрос всем
-        const chatRef = db.ref('whoami_games/' + whoamiGameId + '/chat');
-        chatRef.push({
-            from: myUid,
-            fromName: myName,
-            text: '❓ ' + question,
-            ts: Date.now()
-        });
-        
-        // Теперь каждый игрок (кроме вопрошающего) отвечает ДА/НЕТ
-        // Используем confirm для каждого игрока (в реальном времени)
-        const otherPlayers = Object.keys(players).filter(seat => Number(seat) !== whoamiMySeat);
-        
-        if (otherPlayers.length === 0) {
-            // Если некому отвечать - ход переходит дальше
-            whoamiNextTurn();
-            return;
-        }
-        
-        // Показываем диалог для каждого игрока
-        // Но так как это веб-приложение, используем prompt для каждого
-        // В идеале нужно сделать модалки, но для простоты - так
-        
-        let allAnswers = [];
-        
-        // Проходим по всем игрокам (кроме текущего)
-        for (let seat of otherPlayers) {
-            const player = players[seat];
-            if (!player) continue;
-            if (player.guessed) continue; // уже угадал
-            
-            // Только если это текущий игрок - он отвечает через интерфейс
-            // Остальные отвечают автоматически (для упрощения)
-            if (Number(seat) === whoamiMySeat) continue;
-            
-            // Для других игроков - они отвечают через confirm
-            // Но мы не можем показать confirm всем одновременно
-            // Поэтому используем Firebase для сбора ответов
-        }
-        
-        // Вместо этого используем простой механизм:
-        // Только текущий игрок задаёт вопрос, а остальные отвечают через чат
-        // Но для упрощения: задаём вопрос и переходим к следующему
         
         // Сохраняем вопрос
         whoamiQuestionHistory.push({
@@ -7879,10 +7830,60 @@ function whoamiAskQuestion() {
             answer: 'Ожидает ответа...'
         });
         
-        // Передаём ход следующему (временно)
-        // Позже добавим механизм ответов
-        alert('❓ Вопрос задан! Ход переходит к следующему игроку.');
-        whoamiNextTurn();
+        // Получаем всех остальных игроков
+        const otherPlayers = Object.keys(players).filter(seat => Number(seat) !== whoamiMySeat);
+        
+        if (otherPlayers.length === 0) {
+            whoamiNextTurn();
+            return;
+        }
+        
+        // Спрашиваем каждого игрока по очереди
+        let answerCount = 0;
+        let yesCount = 0;
+        
+        function askNextPlayer(index) {
+            if (index >= otherPlayers.length) {
+                // Все ответили
+                const allYes = yesCount === otherPlayers.length;
+                whoamiCanAskMore = allYes;
+                if (allYes) {
+                    alert('✅ Все ответили ДА! Можешь задать ещё вопрос.');
+                } else {
+                    alert('❌ Кто-то ответил НЕТ. Ход переходит к следующему.');
+                    whoamiNextTurn();
+                }
+                return;
+            }
+            
+            const seat = otherPlayers[index];
+            const player = players[seat];
+            if (!player || player.guessed) {
+                askNextPlayer(index + 1);
+                return;
+            }
+            
+            // Показываем вопрос игроку через confirm
+            const answer = confirm(`${player.name}, ответь на вопрос:\n\n"${question}"\n\nНажми OK если ДА, Cancel если НЕТ`);
+            const answerText = answer ? 'ДА' : 'НЕТ';
+            
+            whoamiQuestionHistory[whoamiQuestionHistory.length - 1].answer = answerText;
+            
+            if (answer) yesCount++;
+            
+            // Сохраняем ответ в чат
+            db.ref('whoami_games/' + whoamiGameId + '/chat').push({
+                from: player.uid,
+                fromName: player.name,
+                text: `📝 Ответ на "${question}": ${answerText}`,
+                ts: Date.now()
+            });
+            
+            answerCount++;
+            askNextPlayer(index + 1);
+        }
+        
+        askNextPlayer(0);
     });
 }
 
@@ -7913,23 +7914,25 @@ function whoamiMakeGuess() {
         const myData = players[whoamiMySeat];
         
         if (!myData || myData.guessed) {
-            alert('Ты уже угадал или не можешь угадывать!');
+            alert('Ты уже угадал!');
             return;
         }
         
-        // Проверяем, правильный ли ответ
-        // Сравниваем с персонажем, который загадал сосед слева
+        // Находим персонажа (загадан соседом слева)
         const seatKeys = Object.keys(players).map(Number).sort((a, b) => a - b);
         const myIndex = seatKeys.indexOf(whoamiMySeat);
         const prevSeat = seatKeys[(myIndex - 1 + seatKeys.length) % seatKeys.length];
         const myCharacter = players[prevSeat] ? players[prevSeat].character : '';
         
+        if (!myCharacter) {
+            alert('Персонаж ещё не назначен!');
+            return;
+        }
+        
         if (guess.toLowerCase() === myCharacter.toLowerCase()) {
-            // Правильно!
             db.ref('whoami_games/' + whoamiGameId + '/players/' + whoamiMySeat + '/guessed').set(true);
             
-            const chatRef = db.ref('whoami_games/' + whoamiGameId + '/chat');
-            chatRef.push({
+            db.ref('whoami_games/' + whoamiGameId + '/chat').push({
                 from: myUid,
                 fromName: myName,
                 text: '🎉 ' + myName + ' угадал! Это ' + myCharacter + '!',
@@ -7939,7 +7942,6 @@ function whoamiMakeGuess() {
             alert('🎉 ПРАВИЛЬНО! Ты ' + myCharacter + '! Молодец!');
             addEggs(10, 'Угадал персонажа в "Кто я?"!');
             
-            // Проверяем, все ли угадали
             gameRef.once('value', (snap2) => {
                 const game2 = snap2.val();
                 const players2 = game2.players || {};
@@ -7954,7 +7956,6 @@ function whoamiMakeGuess() {
             });
         } else {
             alert('❌ Неправильно! Ты - ' + myCharacter + ', а не ' + guess);
-            // Всё равно передаём ход
             setTimeout(() => whoamiNextTurn(), 500);
         }
     });
@@ -7974,7 +7975,6 @@ function whoamiNextTurn() {
         const seatKeys = Object.keys(players).map(Number).sort((a, b) => a - b);
         const currentSeat = game.currentTurn || seatKeys[0];
         
-        // Находим следующего не угадавшего игрока
         let nextSeat = null;
         let found = false;
         
@@ -7990,7 +7990,6 @@ function whoamiNextTurn() {
         }
         
         if (!nextSeat) {
-            // Если не нашли после текущего, ищем с начала
             for (let i = 0; i < seatKeys.length; i++) {
                 if (players[seatKeys[i]] && !players[seatKeys[i]].guessed && seatKeys[i] !== currentSeat) {
                     nextSeat = seatKeys[i];
@@ -8001,8 +8000,8 @@ function whoamiNextTurn() {
         
         if (nextSeat !== null) {
             gameRef.update({ currentTurn: nextSeat });
+            whoamiCanAskMore = false;
         } else {
-            // Все угадали
             gameRef.update({ finished: true });
             alert('🎉 ВСЕ УГАДАЛИ! Игра окончена!');
         }
@@ -8029,40 +8028,10 @@ function whoamiLeaveGame() {
     showScreen('home');
 }
 
-// ==================== ОБРАБОТЧИК ПРИГЛАШЕНИЙ ====================
-// Добавляем в существующий setupInviteListener обработку whoami
-// В функции setupInviteListener добавить:
-
-// В начале функции setupInviteListener добавить проверку на whoami:
-// (найти функцию setupInviteListener и добавить в неё)
-
-// ==================== ПЕРЕХВАТ ПРИГЛАШЕНИЙ ====================
-// Модифицируем существующий setupInviteListener
-// Найти функцию setupInviteListener и добавить в неё:
-
-// Внутри setupInviteListener, в обработчике child_added, добавить:
-/*
-if (inv.game === 'whoami') {
-    // Приглашение в "Кто я?"
-    document.getElementById('inviteContent').innerHTML = `
-        <p>${escapeHtml(inv.fromName)} приглашает тебя в игру <b>🕵️ Кто я?</b>!</p>
-        <p style="font-size:13px;color:#aaa;">Соберитесь за столом и угадайте, кто вы!</p>
-    `;
-    document.getElementById('inviteActions').innerHTML = `
-        <button onclick="whoamiAcceptInvite('${inv.gameId}')" style="background:#4f4;padding:10px 20px">✅ Принять</button>
-        <button onclick="whoamiDeclineInvite('${inv.id}')" style="background:#f44;padding:10px 20px">❌ Отклонить</button>
-    `;
-    document.getElementById('inviteTitle').textContent = '📨 Приглашение в "Кто я?"!';
-    document.getElementById('inviteModal').classList.add('show');
-    return;
-}
-*/
-
 // ==================== ПРИНЯТЬ ПРИГЛАШЕНИЕ ====================
 function whoamiAcceptInvite(gameId) {
     document.getElementById('inviteModal').classList.remove('show');
     
-    // Принимаем приглашение
     const inviteRef = db.ref('game_invites').orderByChild('gameId').equalTo(gameId);
     inviteRef.once('value', (snap) => {
         snap.forEach((child) => {
@@ -8073,7 +8042,6 @@ function whoamiAcceptInvite(gameId) {
         });
     });
     
-    // Присоединяемся к игре
     whoamiJoinGame(gameId);
 }
 
@@ -8266,51 +8234,6 @@ function initRoulette() {
 // ============================================================
 // ==================== КАЗИНО ================================
 // ============================================================
-
-function showCasino() {
-    showScreen('casino');
-    const container = document.getElementById('casinoGamesGrid');
-    if (!container) return;
-    
-    const casinoGames = [
-        { name: '🎡 Рулетка', icon: '🎡', id: 'roulette', desc: 'Ставь на число, цвет или чёт/нечет' },
-        { name: '🎰 Слоты', icon: '🎰', id: 'slots', desc: 'Крути барабаны и выигрывай!' },
-        { name: '🃏 Блэкджек', icon: '🃏', id: 'blackjack', desc: 'Набери 21, не переборщи!' },
-        { name: '🎲 Кости', icon: '🎲', id: 'dice', desc: 'Бросай кубики и угадывай сумму' }
-    ];
-    
-    container.innerHTML = '';
-    casinoGames.forEach(game => {
-        const card = document.createElement('div');
-        card.className = 'game-card';
-        card.onclick = () => showCasinoGame(game.id);
-        card.innerHTML = `
-            <span class="game-icon">${game.icon}</span>
-            <h3>${game.name}</h3>
-            <div style="font-size:11px;color:#aaa;margin-top:4px;">${game.desc}</div>
-            <div class="game-rating" id="rating-casino-${game.id}">⭐ Загрузка...</div>
-        `;
-        container.appendChild(card);
-        loadLeaderboard('casino_' + game.id);
-    });
-}
-
-function showCasinoGame(type) {
-    currentGame = 'casino_' + type;
-    showScreen('game');
-    document.getElementById('gameTitle').textContent = '🎰 ' + type.charAt(0).toUpperCase() + type.slice(1);
-    document.getElementById('gameContent').innerHTML = '';
-    document.getElementById('gameRatingArea').innerHTML = '';
-    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
-    
-    setTimeout(function() {
-        if (type === 'roulette') initRoulette();
-        else if (type === 'slots') initSlots();
-        else if (type === 'blackjack') initBlackjack();
-        else if (type === 'dice') initDice();
-        loadLeaderboard('casino_' + type);
-    }, 50);
-}
 // ---------- 🎰 СЛОТЫ ----------
 function initSlots() {
     const container = document.getElementById('gameContent');
