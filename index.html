@@ -5616,8 +5616,7 @@ function renderAllGames() {
     { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false },
     { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
     { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
-    { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false },
-    { name: 'Рулетка', icon: '🎡', id: 'roulette', online: false }
+    { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false }
 ];
     container.innerHTML = '';
     for(var i = 0; i < allGames.length; i++) {
@@ -5666,8 +5665,7 @@ function showAllGames() {
             // 👇 НОВЫЕ ИГРЫ (запятые исправлены!)
             { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
             { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
-            { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false },
-            { name: 'Рулетка', icon: '🎡', id: 'roulette', online: false }
+            { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false }
         ];
         container.innerHTML = '';
         for(var i = 0; i < allGames.length; i++) {
@@ -7310,214 +7308,510 @@ function initMinesweeper() {
     renderBoard();
 }
 
-// ==================== ИГРА "КТО Я?" ====================
-function initWhoAmI() {
-    const container = document.getElementById('gameContent');
+// ==================== КТО Я? (ОНЛАЙН-ВЕРСИЯ) ====================
+let whoamiGameRef = null;
+let whoamiPlayers = {};
+let whoamiCurrentPlayer = null;
+let whoamiMyCharacter = null;
+let whoamiAllCharacters = [
+    { name: 'Курица', emoji: '🐔' },
+    { name: 'Петух', emoji: '🐓' },
+    { name: 'Цыплёнок', emoji: '🐣' },
+    { name: 'Дракон', emoji: '🐉' },
+    { name: 'Единорог', emoji: '🦄' },
+    { name: 'Пират', emoji: '🏴‍☠️' },
+    { name: 'Рыцарь', emoji: '🛡️' },
+    { name: 'Принцесса', emoji: '👸' },
+    { name: 'Волшебник', emoji: '🧙' },
+    { name: 'Космонавт', emoji: '🧑‍🚀' },
+    { name: 'Робот', emoji: '🤖' },
+    { name: 'Фея', emoji: '🧚' },
+    { name: 'Динозавр', emoji: '🦖' },
+    { name: 'Кот', emoji: '🐱' },
+    { name: 'Собака', emoji: '🐶' },
+    { name: 'Лиса', emoji: '🦊' },
+    { name: 'Медведь', emoji: '🐻' },
+    { name: 'Панда', emoji: '🐼' },
+    { name: 'Тигр', emoji: '🐯' },
+    { name: 'Лев', emoji: '🦁' }
+];
+
+function initWhoAmIOnline() {
+    showScreen('whoami-online');
+    const container = document.getElementById('whoamiOnlineContent');
     if (!container) return;
-
-    // Список персонажей
-    const characters = [
-        { name: 'Курица', emoji: '🐔', hints: ['Я несу яйца', 'У меня есть гребень', 'Я живу в курятнике'] },
-        { name: 'Петух', emoji: '🐓', hints: ['Я бужу всех утром', 'У меня красивый хвост', 'Я главный в курятнике'] },
-        { name: 'Цыплёнок', emoji: '🐣', hints: ['Я маленький и жёлтый', 'Я только вылупился', 'Я пищу "пи-пи"'] },
-        { name: 'Дракон', emoji: '🐉', hints: ['Я умею летать', 'Я извергаю огонь', 'Я живу в пещере'] },
-        { name: 'Единорог', emoji: '🦄', hints: ['У меня есть рог', 'Я белый и красивый', 'Я живу в волшебном лесу'] },
-        { name: 'Пират', emoji: '🏴‍☠️', hints: ['У меня есть шляпа', 'Я ищу сокровища', 'Я плаваю на корабле'] },
-        { name: 'Рыцарь', emoji: '🛡️', hints: ['Я ношу доспехи', 'У меня есть меч', 'Я защищаю принцесс'] },
-        { name: 'Принцесса', emoji: '👸', hints: ['Я ношу корону', 'Я живу в замке', 'Меня охраняют рыцари'] },
-        { name: 'Волшебник', emoji: '🧙', hints: ['Я ношу мантию', 'У меня есть волшебная палочка', 'Я умею колдовать'] },
-        { name: 'Космонавт', emoji: '🧑‍🚀', hints: ['Я летаю в космос', 'У меня есть скафандр', 'Я был на Луне'] },
-        { name: 'Робот', emoji: '🤖', hints: ['Я сделан из металла', 'Я говорю "бип-бип"', 'У меня есть кнопки'] },
-        { name: 'Фея', emoji: '🧚', hints: ['У меня есть крылья', 'Я исполняю желания', 'Я живу в цветке'] }
-    ];
-
-    let selectedChar = null;
-    let currentPlayer = 0;
-    let players = [];
-    let gameActive = false;
-    let questionCount = 0;
-    let maxQuestions = 20;
-
-    function renderSetup() {
-        container.innerHTML = `
-            <div style="text-align:center; max-width:500px; margin:0 auto;">
-                <h3>🕵️ Игра "Кто я?"</h3>
-                <p style="color:#aaa;">Сколько игроков? (2-6)</p>
-                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin:10px 0;">
-                    ${[2,3,4,5,6].map(n => `
-                        <button onclick="whoAmISetPlayers(${n})" style="background:#444; color:#fff; border:1px solid #ffd700; padding:10px 20px; border-radius:12px; cursor:pointer; font-size:18px;">${n}</button>
-                    `).join('')}
-                </div>
+    
+    // Сначала показываем ввод имени
+    container.innerHTML = `
+        <div style="text-align:center; max-width:500px; margin:0 auto;">
+            <h3>🕵️ КТО Я? (онлайн)</h3>
+            <p style="color:#aaa;">Введите своё имя и присоединяйтесь к игре!</p>
+            <div style="margin:20px 0;">
+                <input id="whoamiNameInput" type="text" placeholder="Ваше имя..." value="${myName !== 'Гость' ? myName : ''}" style="width:100%; padding:12px; border-radius:10px; background:#222; color:#fff; border:2px solid #ffd700; font-size:16px; text-align:center;">
+                <button onclick="whoamiJoinOrCreate()" style="background:#ffd700; color:#000; border:none; padding:12px 30px; border-radius:12px; font-weight:bold; cursor:pointer; font-size:18px; margin-top:10px;">🚪 Войти в игру</button>
             </div>
-        `;
-    }
-
-    window.whoAmISetPlayers = function(count) {
-        players = [];
-        for (let i = 0; i < count; i++) {
-            players.push({ name: `Игрок ${i+1}`, char: null, guessed: false });
+            <div id="whoamiGamesList" style="margin-top:15px;"></div>
+        </div>
+    `;
+    
+    // Показываем список активных игр
+    db.ref('whoami_games').on('value', (snap) => {
+        const list = document.getElementById('whoamiGamesList');
+        if (!list) return;
+        let html = '<h4 style="color:#ffd700;">📋 Активные игры:</h4>';
+        let hasGames = false;
+        snap.forEach((child) => {
+            const game = child.val();
+            if (!game.finished) {
+                const players = Object.keys(game.players || {}).length;
+                const maxPlayers = game.maxPlayers || 6;
+                if (players < maxPlayers) {
+                    hasGames = true;
+                    const gameName = game.gameName || `Игра #${child.key.slice(-4)}`;
+                    html += `
+                        <div style="background:rgba(0,0,0,0.3); border-radius:10px; padding:12px; margin:8px 0; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span style="color:#ffd700;">${gameName}</span>
+                                <span style="color:#888; font-size:12px;">👥 ${players}/${maxPlayers} игроков</span>
+                                ${game.started ? '<span style="color:#4f4; font-size:11px;">🔄 Идёт игра</span>' : '<span style="color:#f4f; font-size:11px;">⏳ Ожидание</span>'}
+                            </div>
+                            <button onclick="whoamiJoinGame('${child.key}')" style="background:#4CAF50; color:#fff; border:none; padding:6px 15px; border-radius:8px; cursor:pointer;">Присоединиться</button>
+                        </div>
+                    `;
+                }
+            }
+        });
+        if (!hasGames) {
+            html += '<p style="color:#888;">Нет активных игр. Создай новую!</p>';
         }
-        currentPlayer = 0;
-        gameActive = true;
-        questionCount = 0;
-        selectedChar = characters[Math.floor(Math.random() * characters.length)];
-        // Первому игроку даём персонажа
-        players[0].char = selectedChar;
-        renderGame();
-    };
+        list.innerHTML = html;
+    });
+}
 
-    function renderGame() {
-        const current = players[currentPlayer];
-        const allGuessed = players.every(p => p.guessed);
+window.whoamiJoinOrCreate = function() {
+    const nameInput = document.getElementById('whoamiNameInput');
+    if (!nameInput) return;
+    const name = nameInput.value.trim();
+    if (!name) {
+        alert('Введите ваше имя!');
+        return;
+    }
+    myName = name;
+    localStorage.setItem('tildochka_username', name);
+    document.getElementById('headerName').textContent = name.length > 15 ? name.slice(0, 15) + '..' : name;
+    
+    // Проверяем, есть ли игра, в которую можно вступить
+    db.ref('whoami_games').once('value', (snap) => {
+        let gameToJoin = null;
+        snap.forEach((child) => {
+            const game = child.val();
+            if (!game.finished && game.started !== true) {
+                const players = Object.keys(game.players || {}).length;
+                const maxPlayers = game.maxPlayers || 6;
+                if (players < maxPlayers) {
+                    gameToJoin = { id: child.key, ...game };
+                }
+            }
+        });
+        
+        if (gameToJoin) {
+            whoamiJoinGame(gameToJoin.id);
+        } else {
+            whoamiCreateGame();
+        }
+    });
+};
 
-        if (allGuessed && gameActive) {
-            gameActive = false;
+function whoamiCreateGame() {
+    const gameName = prompt('📝 Название игры:', `Игра ${new Date().toLocaleTimeString()}`);
+    const maxPlayers = parseInt(prompt('👥 Сколько игроков? (2-6)', '4'));
+    if (isNaN(maxPlayers) || maxPlayers < 2 || maxPlayers > 6) {
+        alert('Введите число от 2 до 6!');
+        return;
+    }
+    
+    const gameRef = db.ref('whoami_games').push();
+    const players = {};
+    players[myUid] = { name: myName, character: null, guessed: false };
+    
+    gameRef.set({
+        gameName: gameName || `Игра #${gameRef.key.slice(-4)}`,
+        maxPlayers: maxPlayers,
+        players: players,
+        currentTurn: myUid,
+        finished: false,
+        started: false,
+        ts: Date.now()
+    });
+    
+    whoamiJoinGame(gameRef.key);
+}
+
+function whoamiJoinGame(gameId) {
+    const container = document.getElementById('whoamiOnlineContent');
+    if (!container) return;
+    
+    // Добавляем игрока
+    db.ref('whoami_games/' + gameId + '/players/' + myUid).update({
+        name: myName,
+        character: null,
+        guessed: false
+    });
+    
+    if (whoamiGameRef) whoamiGameRef.off();
+    whoamiGameRef = db.ref('whoami_games/' + gameId);
+    
+    whoamiGameRef.on('value', (snapshot) => {
+        const game = snapshot.val();
+        if (!game) {
+            container.innerHTML = '<p style="color:#888;">Игра удалена</p>';
+            return;
+        }
+        
+        const players = game.players || {};
+        const playerList = Object.keys(players);
+        const maxPlayers = game.maxPlayers || 6;
+        const currentTurn = game.currentTurn || playerList[0];
+        const isMyTurn = currentTurn === myUid;
+        const myData = players[myUid];
+        const allGuessed = playerList.every(uid => players[uid] && players[uid].guessed);
+        const isGameStarted = game.started || false;
+        
+        // Если все угадали - конец игры
+        if (allGuessed && playerList.length > 1 && game.finished !== true) {
+            db.ref('whoami_games/' + gameId + '/finished').set(true);
             container.innerHTML = `
                 <div style="text-align:center; max-width:500px; margin:0 auto;">
                     <h3>🎉 ВСЕ УГАДАЛИ!</h3>
                     <div style="margin:15px 0;">
-                        ${players.map(p => `<div style="padding:8px; border-bottom:1px solid #333;">${p.name}: ${p.char ? p.char.emoji + ' ' + p.char.name : '❌'}</div>`).join('')}
+                        ${playerList.map(uid => `
+                            <div style="padding:8px; border-bottom:1px solid #333;">
+                                ${players[uid] ? players[uid].name : '?'}: ${players[uid] && players[uid].character ? players[uid].character.emoji + ' ' + players[uid].character.name : '❌'}
+                            </div>
+                        `).join('')}
                     </div>
-                    <button onclick="initWhoAmI()" style="background:#ffd700; color:#000; border:none; padding:10px 30px; border-radius:30px; font-weight:bold; cursor:pointer;">🔄 Новая игра</button>
+                    <button onclick="initWhoAmIOnline()" style="background:#ffd700; color:#000; border:none; padding:10px 30px; border-radius:30px; font-weight:bold; cursor:pointer;">🔄 Новая игра</button>
                 </div>
             `;
             return;
         }
-
-        if (!current.char) {
-            // Выбираем персонажа для текущего игрока
-            const available = characters.filter(c => !players.some(p => p.char && p.char.name === c.name));
-            const randChar = available.length > 0 ? available[Math.floor(Math.random() * available.length)] : characters[Math.floor(Math.random() * characters.length)];
-            players[currentPlayer].char = randChar;
-        }
-
-        const char = current.char;
-        const hint = char.hints[Math.floor(Math.random() * char.hints.length)];
-
-        container.innerHTML = `
-            <div style="text-align:center; max-width:500px; margin:0 auto;">
-                <h3>🕵️ Кто я?</h3>
-                <div style="background:rgba(255,215,0,0.1); border:2px solid #ffd700; border-radius:15px; padding:20px; margin:15px 0;">
-                    <div style="font-size:48px;">${char.emoji}</div>
-                    <div style="font-size:14px; color:#aaa;">Подсказка: ${hint}</div>
-                    <div style="margin-top:10px; font-size:12px; color:#888;">Вопрос ${questionCount}/${maxQuestions}</div>
-                </div>
-                <div style="color:#ffd700; font-size:18px;">Ход: ${current.name}</div>
-                <div style="margin:15px 0;">
-                    <input id="whoAmIGuess" type="text" placeholder="Кто я?" style="background:#222; border:2px solid #ffd700; border-radius:8px; padding:8px 15px; color:#fff; width:200px;">
-                    <button onclick="whoAmIGuess()" style="background:#ffd700; color:#000; border:none; padding:8px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">🤔 Угадать</button>
-                </div>
-                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                    <button onclick="whoAmINext()" style="background:#444; color:#fff; border:1px solid #666; padding:8px 20px; border-radius:8px; cursor:pointer;">⏭️ Пропустить ход</button>
-                    <button onclick="whoAmIHint()" style="background:#555; color:#fff; border:1px solid #666; padding:8px 20px; border-radius:8px; cursor:pointer;">💡 Ещё подсказку</button>
-                </div>
-                <div style="margin-top:20px; border-top:1px solid #333; padding-top:15px; display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">
-                    ${players.map((p, i) => `
-                        <div style="background:${i === currentPlayer ? 'rgba(255,215,0,0.2)' : 'rgba(0,0,0,0.3)'}; padding:8px 15px; border-radius:12px; border:1px solid ${i === currentPlayer ? '#ffd700' : 'transparent'};">
-                            ${p.name} ${p.guessed ? '✅' : '❓'}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-
-        document.getElementById('whoAmIGuess')?.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') whoAmIGuess();
-        });
-    }
-
-    window.whoAmIGuess = function() {
-        if (!gameActive) return;
-        const input = document.getElementById('whoAmIGuess');
-        if (!input) return;
-        const guess = input.value.trim();
-        input.value = '';
-        if (!guess) return;
-
-        const current = players[currentPlayer];
-        if (current.guessed) {
-            alert('Ты уже угадал!');
-            return;
-        }
-
-        questionCount++;
-        if (guess.toLowerCase() === current.char.name.toLowerCase()) {
-            current.guessed = true;
-            addEggs(5, 'Угадал персонажа!');
-            alert(`✅ ${current.name} угадал! Это был ${current.char.emoji} ${current.char.name}!`);
-            // Переход к следующему
-            let next = (currentPlayer + 1) % players.length;
-            while (players[next].guessed && next !== currentPlayer) {
-                next = (next + 1) % players.length;
-            }
-            if (players.every(p => p.guessed)) {
-                currentPlayer = next;
-                renderGame();
+        
+        // Если игра ещё не началась - показываем ожидание
+        if (!isGameStarted) {
+            const playerCount = playerList.length;
+            const canStart = playerCount >= 2 && playerCount <= maxPlayers;
+            
+            // Автоматически начинаем, когда 2+ игрока
+            if (canStart && playerCount >= 2) {
+                // Раздаём персонажей
+                const shuffled = [...whoamiAllCharacters].sort(() => Math.random() - 0.5);
+                playerList.forEach((uid, index) => {
+                    if (!players[uid].character) {
+                        const charIndex = index % shuffled.length;
+                        db.ref('whoami_games/' + gameId + '/players/' + uid + '/character').set(shuffled[charIndex]);
+                    }
+                });
+                db.ref('whoami_games/' + gameId + '/started').set(true);
                 return;
             }
-            currentPlayer = next;
-            // Выбираем персонажа для следующего
-            const available = characters.filter(c => !players.some(p => p.char && p.char.name === c.name));
-            if (available.length === 0) {
-                // Все персонажи использованы, даём рандомного
-                const randChar = characters[Math.floor(Math.random() * characters.length)];
-                players[currentPlayer].char = randChar;
-            } else {
-                const randChar = available[Math.floor(Math.random() * available.length)];
-                players[currentPlayer].char = randChar;
-            }
-            renderGame();
-        } else {
-            if (questionCount >= maxQuestions) {
-                alert(`⏰ Вопросы закончились! Это был ${current.char.emoji} ${current.char.name}`);
-                current.guessed = true;
-                let next = (currentPlayer + 1) % players.length;
-                while (players[next].guessed && next !== currentPlayer) {
-                    next = (next + 1) % players.length;
-                }
-                currentPlayer = next;
-                renderGame();
-            } else {
-                alert(`❌ Неправильно! Попробуй ещё. Осталось вопросов: ${maxQuestions - questionCount}`);
-                renderGame();
-            }
-        }
-    };
-
-    window.whoAmINext = function() {
-        if (!gameActive) return;
-        const current = players[currentPlayer];
-        if (current.guessed) {
-            let next = (currentPlayer + 1) % players.length;
-            while (players[next].guessed && next !== currentPlayer) {
-                next = (next + 1) % players.length;
-            }
-            currentPlayer = next;
-            renderGame();
+            
+            container.innerHTML = `
+                <div style="text-align:center; max-width:500px; margin:0 auto;">
+                    <h3>🕵️ КТО Я?</h3>
+                    <h4 style="color:#ffd700;">${game.gameName || 'Игра'}</h4>
+                    <div style="background:rgba(0,0,0,0.3); border-radius:15px; padding:20px; margin:15px 0;">
+                        <div style="font-size:48px;">⏳</div>
+                        <div style="font-size:18px; color:#ffd700;">Ожидание игроков...</div>
+                        <div style="font-size:14px; color:#aaa;">${playerCount}/${maxPlayers} игроков</div>
+                        <div style="margin-top:15px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
+                            ${playerList.map(uid => `
+                                <div style="background:${uid === myUid ? 'rgba(255,215,0,0.2)' : 'rgba(0,0,0,0.3)'}; padding:8px 15px; border-radius:12px; border:1px solid ${uid === myUid ? '#ffd700' : 'transparent'};">
+                                    ${players[uid] ? players[uid].name : '?'} ${uid === myUid ? '(вы)' : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${playerCount < 2 ? '<p style="color:#888; margin-top:10px;">Нужно минимум 2 игрока для старта</p>' : ''}
+                        ${playerCount >= 2 ? '<p style="color:#4f4; margin-top:10px;">✅ Игра начнётся автоматически!</p>' : ''}
+                    </div>
+                    ${playerList.length === 1 ? `
+                        <div style="margin-top:15px;">
+                            <button onclick="whoamiInviteFriends()" style="background:#ffd700; color:#000; border:none; padding:8px 20px; border-radius:12px; cursor:pointer;">📨 Пригласить друзей</button>
+                        </div>
+                    ` : ''}
+                    <button onclick="whoamiLeaveGame()" style="background:#f44; color:#fff; border:none; padding:8px 20px; border-radius:12px; cursor:pointer; margin-top:10px;">🚪 Выйти</button>
+                </div>
+            `;
             return;
         }
-        // Пропуск хода
-        let next = (currentPlayer + 1) % players.length;
-        while (players[next].guessed && next !== currentPlayer) {
-            next = (next + 1) % players.length;
-        }
-        currentPlayer = next;
-        renderGame();
-    };
-
-    window.whoAmIHint = function() {
-        if (!gameActive) return;
-        const current = players[currentPlayer];
-        if (current.guessed) return;
-        const hints = current.char.hints;
-        const usedHints = hints.slice(0, Math.min(hints.length, Math.floor(questionCount / 2) + 1));
-        const hintText = usedHints.join(' | ');
-        alert(`💡 Подсказки: ${hintText}`);
-    };
-
-    renderSetup();
+        
+        // ИГРА ИДЁТ
+        const myChar = myData.character;
+        const otherPlayers = playerList.filter(uid => uid !== myUid);
+        const myTurn = currentTurn === myUid;
+        
+        let html = `
+            <div style="text-align:center; max-width:550px; margin:0 auto;">
+                <h3>🕵️ КТО Я?</h3>
+                <h4 style="color:#ffd700; font-size:14px;">${game.gameName || 'Игра'}</h4>
+                
+                <div style="background:rgba(255,215,0,0.1); border:2px solid #ffd700; border-radius:15px; padding:20px; margin:15px 0;">
+                    <div style="font-size:48px;">${myChar ? '❓' : '⏳'}</div>
+                    <div style="font-size:16px; color:#ffd700; font-weight:bold;">Ты: ${myData.name}</div>
+                    <div style="font-size:14px; color:#aaa;">Ты НЕ знаешь, кто ты! Задавай вопросы другим игрокам</div>
+                    ${myChar ? `<div style="font-size:12px; color:#888; margin-top:5px;">(твой персонаж: ${myChar.emoji} ${myChar.name})</div>` : ''}
+                </div>
+                
+                <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:12px; margin:10px 0;">
+                    <div style="color:#ffd700; font-size:16px;">
+                        ${myTurn ? '🔫 ТВОЙ ХОД!' : '⏳ Ход: ' + (players[currentTurn] ? players[currentTurn].name : '...')}
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:8px;">
+                        ${otherPlayers.map(uid => `
+                            <div style="background:${players[uid] && players[uid].guessed ? '#4f4' : 'rgba(0,0,0,0.3)'}; padding:6px 12px; border-radius:10px; border:1px solid ${uid === currentTurn ? '#ffd700' : 'transparent'}; font-size:13px;">
+                                ${players[uid] ? players[uid].name : '?'} 
+                                ${players[uid] && players[uid].guessed ? '✅' : ''}
+                                ${players[uid] && players[uid].character ? players[uid].character.emoji : '❓'}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                ${!myData.guessed && myTurn ? `
+                    <div style="margin:12px 0; background:rgba(0,0,0,0.3); border-radius:12px; padding:15px;">
+                        <p style="color:#aaa; font-size:13px; margin-bottom:8px;">❓ Задай вопрос о себе (например: "Я человек?")</p>
+                        <div style="display:flex; gap:8px;">
+                            <input id="whoamiQuestion" type="text" placeholder="Ваш вопрос..." style="flex:1; padding:10px; border-radius:10px; background:#222; color:#fff; border:1px solid #ffd700;">
+                            <button onclick="whoamiAskQuestion('${gameId}')" style="background:#ffd700; color:#000; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">❓ Спросить</button>
+                        </div>
+                        <div style="margin-top:10px; display:flex; gap:8px;">
+                            <input id="whoamiGuess" type="text" placeholder="Угадать кто я?" style="flex:1; padding:10px; border-radius:10px; background:#222; color:#fff; border:1px solid #4f4;">
+                            <button onclick="whoamiMakeGuess('${gameId}')" style="background:#4f4; color:#000; border:none; padding:10px 20px; border-radius:10px; font-weight:bold; cursor:pointer;">🤔 Угадать</button>
+                        </div>
+                    </div>
+                ` : ''}
+                
+                ${!myData.guessed && !myTurn ? `
+                    <div style="margin:12px 0; background:rgba(0,0,0,0.3); border-radius:12px; padding:15px; color:#888;">
+                        ⏳ Ожидайте вопроса от ${players[currentTurn] ? players[currentTurn].name : '...'}
+                    </div>
+                ` : ''}
+                
+                ${myData.guessed ? `
+                    <div style="color:#4f4; font-size:16px; margin:10px 0;">✅ Ты уже угадал! Ожидай остальных...</div>
+                ` : ''}
+                
+                <div id="whoamiChatMessages" style="margin-top:15px; max-height:200px; overflow-y:auto; background:rgba(0,0,0,0.2); border-radius:10px; padding:10px; text-align:left;">
+                    <!-- Сообщения чата -->
+                </div>
+                
+                <button onclick="whoamiLeaveGame()" style="background:#f44; color:#fff; border:none; padding:6px 15px; border-radius:10px; cursor:pointer; margin-top:10px; font-size:12px;">🚪 Выйти</button>
+            </div>
+        `;
+        
+        container.innerHTML = html;
+        
+        // Загружаем сообщения чата
+        db.ref('whoami_games/' + gameId + '/chat').limitToLast(20).on('value', (chatSnap) => {
+            const chatContainer = document.getElementById('whoamiChatMessages');
+            if (!chatContainer) return;
+            const messages = [];
+            chatSnap.forEach((child) => {
+                messages.push({
+                    id: child.key,
+                    from: child.val().from,
+                    fromName: child.val().fromName,
+                    text: child.val().text,
+                    ts: child.val().ts
+                });
+            });
+            messages.sort((a, b) => a.ts - b.ts);
+            
+            chatContainer.innerHTML = messages.map(msg => `
+                <div style="padding:4px 8px; margin:2px 0; border-radius:6px; background:${msg.from === myUid ? 'rgba(255,215,0,0.1)' : 'rgba(0,0,0,0.2)'};">
+                    <strong style="color:${msg.from === myUid ? '#ffd700' : '#aaa'};">${msg.fromName}:</strong>
+                    <span>${msg.text}</span>
+                </div>
+            `).join('');
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        });
+    });
 }
 
+window.whoamiAskQuestion = function(gameId) {
+    const input = document.getElementById('whoamiQuestion');
+    if (!input) return;
+    const question = input.value.trim();
+    if (!question) {
+        alert('Напиши вопрос!');
+        return;
+    }
+    input.value = '';
+    
+    // Отправляем вопрос в чат
+    db.ref('whoami_games/' + gameId + '/chat').push({
+        from: myUid,
+        fromName: myName,
+        text: '❓ ' + question,
+        ts: Date.now()
+    });
+    
+    // Показываем кнопки для ответа всем игрокам (кроме вопрошающего)
+    db.ref('whoami_games/' + gameId + '/players').once('value', (snap) => {
+        const players = snap.val();
+        const playerList = Object.keys(players);
+        const answerUids = playerList.filter(uid => uid !== myUid && !players[uid].guessed);
+        
+        if (answerUids.length === 0) {
+            // Если некому отвечать - просто переходим к следующему
+            whoamiNextTurn(gameId);
+            return;
+        }
+        
+        // Каждый игрок отвечает в чат
+        answerUids.forEach(uid => {
+            // Добавляем кнопки "Да" и "Нет" для каждого игрока
+            const answer = confirm(players[uid].name + ', ответь на вопрос: "' + question + '" - Нажми OK если ДА, Cancel если НЕТ');
+            const answerText = answer ? '✅ Да' : '❌ Нет';
+            db.ref('whoami_games/' + gameId + '/chat').push({
+                from: uid,
+                fromName: players[uid].name,
+                text: '📝 ' + answerText + ' (на вопрос: ' + question + ')',
+                ts: Date.now()
+            });
+        });
+        
+        // Передаём ход следующему
+        setTimeout(() => {
+            whoamiNextTurn(gameId);
+        }, 1000);
+    });
+};
+
+window.whoamiMakeGuess = function(gameId) {
+    const input = document.getElementById('whoamiGuess');
+    if (!input) return;
+    const guess = input.value.trim();
+    if (!guess) {
+        alert('Напиши кого ты угадываешь!');
+        return;
+    }
+    input.value = '';
+    
+    db.ref('whoami_games/' + gameId + '/players/' + myUid + '/character').once('value', (snap) => {
+        const character = snap.val();
+        if (!character) {
+            alert('Персонаж ещё не назначен!');
+            return;
+        }
+        
+        if (guess.toLowerCase() === character.name.toLowerCase()) {
+            db.ref('whoami_games/' + gameId + '/players/' + myUid + '/guessed').set(true);
+            db.ref('whoami_games/' + gameId + '/chat').push({
+                from: myUid,
+                fromName: myName,
+                text: '🎉 ' + myName + ' угадал! Это ' + character.emoji + ' ' + character.name + '!',
+                ts: Date.now()
+            });
+            alert('🎉 ПРАВИЛЬНО! Ты ' + character.emoji + ' ' + character.name + '!');
+            addEggs(10, 'Угадал персонажа в "Кто я?"!');
+            
+            // Проверяем, все ли угадали
+            db.ref('whoami_games/' + gameId + '/players').once('value', (snap2) => {
+                const players = snap2.val();
+                const allGuessed = Object.keys(players).every(key => players[key].guessed);
+                if (allGuessed && Object.keys(players).length > 1) {
+                    db.ref('whoami_games/' + gameId + '/finished').set(true);
+                    alert('🎉 ВСЕ УГАДАЛИ! Игра окончена!');
+                } else {
+                    whoamiNextTurn(gameId);
+                }
+            });
+        } else {
+            alert('❌ Неправильно! Попробуй ещё раз или подожди следующего хода.');
+            // Всё равно передаём ход после неудачной попытки
+            setTimeout(() => {
+                whoamiNextTurn(gameId);
+            }, 500);
+        }
+    });
+};
+
+function whoamiNextTurn(gameId) {
+    db.ref('whoami_games/' + gameId + '/players').once('value', (snap) => {
+        const players = snap.val();
+        const playerList = Object.keys(players);
+        const currentTurn = snap.ref.parent.child('currentTurn');
+        
+        currentTurn.once('value', (turnSnap) => {
+            const current = turnSnap.val() || playerList[0];
+            let nextTurn = null;
+            let found = false;
+            
+            for (let i = 0; i < playerList.length; i++) {
+                if (playerList[i] === current) {
+                    found = true;
+                    continue;
+                }
+                if (found && !players[playerList[i]].guessed) {
+                    nextTurn = playerList[i];
+                    break;
+                }
+            }
+            if (!nextTurn) {
+                for (let i = 0; i < playerList.length; i++) {
+                    if (!players[playerList[i]].guessed) {
+                        nextTurn = playerList[i];
+                        break;
+                    }
+                }
+            }
+            if (nextTurn) {
+                currentTurn.set(nextTurn);
+            } else {
+                // Все угадали
+                db.ref('whoami_games/' + gameId + '/finished').set(true);
+            }
+        });
+    });
+}
+
+function whoamiLeaveGame() {
+    if (whoamiGameRef) {
+        whoamiGameRef.off();
+        whoamiGameRef = null;
+    }
+    // Удаляем игрока из игры
+    if (whoamiGameRef) {
+        // Но мы не знаем gameId... используем другой подход
+        db.ref('whoami_games').once('value', (snap) => {
+            snap.forEach((child) => {
+                const game = child.val();
+                if (game.players && game.players[myUid]) {
+                    if (!game.finished) {
+                        child.ref.child('players/' + myUid).remove();
+                    }
+                }
+            });
+        });
+    }
+    showScreen('home');
+}
+
+function whoamiInviteFriends() {
+    const gameId = whoamiGameRef ? whoamiGameRef.key : null;
+    if (!gameId) {
+        alert('Вы не в игре!');
+        return;
+    }
+    const inviteLink = window.location.href + '?whoami=' + gameId;
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText('🕵️ Присоединяйся к игре "Кто я?"! ' + inviteLink);
+        alert('📋 Ссылка скопирована! Отправь её друзьям.');
+    } else {
+        prompt('📋 Скопируй ссылку и отправь друзьям:', inviteLink);
+    }
+}
 // ==================== РУЛЕТКА ====================
 function initRoulette() {
     const container = document.getElementById('gameContent');
@@ -8310,6 +8604,40 @@ function updateStars(stars, rating) {
         s.classList.remove('full', 'half', 'hover-full', 'hover-half');
         if (rating >= v) s.classList.add('full');
         else if (rating === v - 1) s.classList.add('half');
+    });
+}
+// Убедимся, что showCasino вызывается правильно
+function showCasino() {
+    console.log('showCasino вызвана!');
+    showScreen('casino');
+    const container = document.getElementById('casinoGamesGrid');
+    if (!container) {
+        console.error('Контейнер casinoGamesGrid не найден!');
+        return;
+    }
+    
+    const casinoGames = [
+        { name: '🎡 Рулетка', icon: '🎡', id: 'roulette', desc: 'Ставь на число, цвет или чёт/нечет' },
+        { name: '🎰 Слоты', icon: '🎰', id: 'slots', desc: 'Крути барабаны и выигрывай!' },
+        { name: '🃏 Блэкджек', icon: '🃏', id: 'blackjack', desc: 'Набери 21, не переборщи!' },
+        { name: '🎲 Кости', icon: '🎲', id: 'dice', desc: 'Бросай кубики и угадывай сумму' }
+    ];
+    
+    container.innerHTML = '';
+    casinoGames.forEach(game => {
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.onclick = function() {
+            showCasinoGame(game.id);
+        };
+        card.innerHTML = `
+            <span class="game-icon">${game.icon}</span>
+            <h3>${game.name}</h3>
+            <div style="font-size:11px;color:#aaa;margin-top:4px;">${game.desc}</div>
+            <div class="game-rating" id="rating-casino-${game.id}">⭐ Загрузка...</div>
+        `;
+        container.appendChild(card);
+        loadLeaderboard('casino_' + game.id);
     });
 }
 </script>
