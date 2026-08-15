@@ -8490,7 +8490,6 @@ function loadGameReviews(gameId) {
     });
 }
 
-// Функция для показа отзывов в игре (вызывается из showGame)
 function showGameReviewsForCurrent(gameId) {
     const reviews = window._gameReviews && window._gameReviews[gameId] ? window._gameReviews[gameId] : [];
     const container = document.getElementById('gameRatingArea');
@@ -8536,7 +8535,7 @@ function showGameReviewsForCurrent(gameId) {
     html += '</div>';
     container.innerHTML = html;
     
-    // Настраиваем звёзды для оценки
+    // 👇 ДОБАВЬТЕ ЭТОТ БЛОК (он же есть, но может не работать):
     const stars = container.querySelectorAll('.star');
     let currentRating = 10;
     stars.forEach(s => {
@@ -8559,8 +8558,10 @@ function showGameReviewsForCurrent(gameId) {
             updateStars(stars, currentRating);
         };
     });
-    updateStars(stars, currentRating);
-    window._gameReviewRating = currentRating;
+    // 👇 ВАЖНО: установите начальные звёзды
+    updateStars(stars, 10);
+    document.getElementById('gameRatingText').textContent = '10/10';
+    window._gameReviewRating = 10;
 }
 
 // Отправить отзыв на игру
@@ -8608,13 +8609,9 @@ function updateStars(stars, rating) {
 }
 // Убедимся, что showCasino вызывается правильно
 function showCasino() {
-    console.log('showCasino вызвана!');
     showScreen('casino');
     const container = document.getElementById('casinoGamesGrid');
-    if (!container) {
-        console.error('Контейнер casinoGamesGrid не найден!');
-        return;
-    }
+    if (!container) return;
     
     const casinoGames = [
         { name: '🎡 Рулетка', icon: '🎡', id: 'roulette', desc: 'Ставь на число, цвет или чёт/нечет' },
@@ -8627,9 +8624,7 @@ function showCasino() {
     casinoGames.forEach(game => {
         const card = document.createElement('div');
         card.className = 'game-card';
-        card.onclick = function() {
-            showCasinoGame(game.id);
-        };
+        card.onclick = () => showCasinoGame(game.id);
         card.innerHTML = `
             <span class="game-icon">${game.icon}</span>
             <h3>${game.name}</h3>
@@ -8639,6 +8634,29 @@ function showCasino() {
         container.appendChild(card);
         loadLeaderboard('casino_' + game.id);
     });
+}
+
+function showCasinoGame(type) {
+    currentGame = 'casino_' + type;
+    showScreen('game');
+    const titles = {
+        roulette: '🎡 Рулетка',
+        slots: '🎰 Слоты',
+        blackjack: '🃏 Блэкджек',
+        dice: '🎲 Кости'
+    };
+    document.getElementById('gameTitle').textContent = titles[type] || type;
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameRatingArea').innerHTML = '';
+    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+    
+    setTimeout(function() {
+        if (type === 'roulette') initRoulette();
+        else if (type === 'slots') initSlots();
+        else if (type === 'blackjack') initBlackjack();
+        else if (type === 'dice') initDice();
+        loadLeaderboard('casino_' + type);
+    }, 50);
 }
 </script>
 </body>
