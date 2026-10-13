@@ -6,8 +6,11 @@
   <title>Tildochka - Сериалы и Игры</title>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <style>
+    /* ============================================================
+       CSS 1. БАЗА: сброс стилей, фон, праздничные фоны
+       ============================================================ */
+    
        *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:Arial;background:#1a1a1a;color:#fff;min-height:100vh}
     #bg{position:fixed;top:0;left:0;width:100%;height:100%;background:url("bg.jpg") center/cover;z-index:-2}
@@ -20,6 +23,10 @@
     
     #blocked{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;color:#000;font-size:2rem;justify-content:center;align-items:center;z-index:1000}
     #loading{position:fixed;top:0;left:0;width:100%;height:100%;background:#1a1a1a;display:flex;justify-content:center;align-items:center;z-index:999;font-size:2rem}
+    /* ============================================================
+       CSS 2. ШАПКА, ПРОФИЛЬ, МЕНЮ
+       ============================================================ */
+    
     .header{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:15px 25px;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(10px)}
     .logo{font-size:30px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0}.logo:hover{color:#ffd700}
     .header-right{display:flex;align-items:center;gap:10px;flex-shrink:0;min-width:0}
@@ -35,6 +42,10 @@
     .menu.show{display:block}
     .menu a{display:block;padding:12px 18px;color:#fff;border-bottom:1px solid #333;cursor:pointer;font-size:15px}.menu a:hover{background:rgba(255,215,0,.2)}
     #content{padding-top:70px;}.screen{display:none}.screen.active{display:block}
+    /* ============================================================
+       CSS 3. КАТАЛОГ: фильмы, игры, карточки
+       ============================================================ */
+    
     .catalog{max-width:1200px;margin:0 auto;padding:30px 20px}.catalog h2{margin-bottom:25px;font-size:1.8rem;border-bottom:2px solid #ffd700;padding-bottom:8px;display:inline-block}
     .movie-grid,.games-grid{display:flex;flex-wrap:wrap;gap:15px;justify-content:center}
     .movie-card,.game-card{
@@ -72,10 +83,18 @@
     button:hover{background:#555}button:disabled{opacity:.5}
     .episodes{margin-top:12px;padding:12px;background:rgba(0,0,0,.3);border-radius:8px;display:none}.episodes.show{display:block}
     .coming-soon{color:#aaa;font-style:italic;padding:10px}
+    /* ============================================================
+       CSS 4. ЗВЁЗДЫ, ОТЗЫВЫ, ПОЛЯ ВВОДА
+       ============================================================ */
+    
     .stars-container{display:flex;align-items:center;gap:8px;margin:12px 0}
     .star{font-size:30px;cursor:pointer;color:#555;transition:.2s;width:30px;text-align:center}.star:hover{transform:scale(1.2)}
     .star.full{color:#ffd700}.star.half{background:linear-gradient(90deg,#ffd700 50%,#555 50%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .game-container{text-align:center;padding:15px}
+    /* ============================================================
+       CSS 5. ИГРЫ: холст, кнопки управления, лидеры
+       ============================================================ */
+    
     .game-canvas{border:2px solid #444;border-radius:10px;background:#1a1a1a;margin:15px auto;display:block;max-width:100%}
     .game-score{font-size:22px;color:#ffd700;margin:8px}
     .mobile-controls{display:flex;flex-direction:column;align-items:center;gap:5px;margin:8px 0}
@@ -127,6 +146,10 @@
     .rating-info{margin-top:8px;padding:8px;background:rgba(255,215,0,.1);border-radius:8px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}
     input,textarea{width:100%;max-width:500px;padding:10px;margin:8px 0;background:#2a2a2a;color:#fff;border:1px solid #444;border-radius:8px;font-size:14px}
     textarea{min-height:100px;resize:vertical}
+    /* ============================================================
+       CSS 6. ЧАТ, МЕМЫ, ИДЕИ
+       ============================================================ */
+    
     .chat-container{max-width:700px;margin:0 auto;padding:15px}
     .chat-messages{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;max-height:400px;overflow-y:auto;margin-bottom:10px}
     .message{background:rgba(0,0,0,.5);padding:10px 12px;border-radius:8px;margin-bottom:8px;border:1px solid rgba(255,255,255,.05)}
@@ -136,6 +159,10 @@
     .idea-card{background:rgba(0,0,0,.5);padding:15px;border-radius:10px;margin-bottom:15px;border:1px solid rgba(255,255,255,.1)}
     .idea-author{color:#ffd700}.idea-likes{margin-top:10px;display:flex;align-items:center;gap:10px}
     .like-btn{background:none;border:none;color:#fff;cursor:pointer;font-size:18px}
+    /* ============================================================
+       CSS 7. МОДАЛЬНЫЕ ОКНА, МАГАЗИН, АВАТАРЫ
+       ============================================================ */
+    
     .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:300;justify-content:center;align-items:center}
     .modal-overlay.show{display:flex}
     .modal-box{background:#1a1a1a;border:2px solid #ffd700;border-radius:15px;padding:25px;text-align:center;max-width:500px;width:90%;max-height:85vh;overflow-y:auto}
@@ -155,6 +182,10 @@
     .meme-card img,.meme-card video{max-width:100%;max-height:400px;border-radius:8px;margin-top:10px}
     .meme-author{color:#ffd700}.meme-reactions{display:flex;gap:10px;margin-top:10px}
     .meme-reaction{background:none;border:1px solid #444;color:#fff;cursor:pointer;font-size:18px;padding:5px 10px;border-radius:20px}
+    /* ============================================================
+       CSS 8. ИГРЫ: крестики-нолики, морской бой, рисование, тамагочи
+       ============================================================ */
+    
     .xo-board{display:grid;grid-template-columns:repeat(3,90px);grid-template-rows:repeat(3,90px);gap:4px;justify-content:center;margin:15px auto}
     .xo-cell{width:90px;height:90px;background:#333;border:2px solid #555;border-radius:10px;font-size:45px;display:flex;align-items:center;justify-content:center;cursor:pointer}
     .xo-cell.x{color:#ffd700}.xo-cell.o{color:#f60}
@@ -192,6 +223,10 @@
     .pet-card .pet-desc{font-size:10px;color:#aaa;line-height:1.4}
     .pet-card .pet-stats{font-size:10px;color:#888;margin-top:4px}
     .shorts-container{max-width:500px;margin:0 auto;padding:15px}
+    /* ============================================================
+       CSS 9. CHICKENTUBE (короткие видео)
+       ============================================================ */
+    
     .short-card{background:rgba(0,0,0,.5);border-radius:15px;padding:15px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1)}
     .short-video{width:100%;max-height:400px;border-radius:10px;background:#000}
     .short-actions{display:flex;gap:15px;margin-top:10px;align-items:center}
@@ -199,6 +234,10 @@
     .short-comments{margin-top:10px;font-size:13px}
     .short-comment{background:rgba(0,0,0,.3);padding:8px;border-radius:8px;margin:5px 0}
     .tag{display:inline-block;background:rgba(255,215,0,.2);border:1px solid #ffd700;border-radius:20px;padding:4px 12px;margin:3px;font-size:12px;color:#ffd700}
+    /* ============================================================
+       CSS 10. ЭКРАН ЗАГРУЗКИ
+       ============================================================ */
+    
     
     /* ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ЗАГРУЗКИ */
     .loading-overlay {
@@ -257,6 +296,10 @@
         color: #666;
         margin-top: 20px;
     }
+    /* ============================================================
+       CSS 11. БЫСТРЫЕ КНОПКИ, ТЕЛЕФОННЫЕ ФИКСЫ
+       ============================================================ */
+    
     .quick-card {
         transition: transform 0.2s, box-shadow 0.2s;
     }
@@ -468,6 +511,10 @@
         touch-action: pan-y pan-x;
     }
     }
+    /* ============================================================
+       CSS 12. МАГИЧЕСКИЙ ШАР
+       ============================================================ */
+    
 
     /* Стили для магического шара */
     .magic-chat-container {
@@ -553,6 +600,10 @@
         padding: 0 20px;
         font-weight: bold;
     }
+    /* ============================================================
+       CSS 13. СОВМЕСТНАЯ РИСОВАЛКА
+       ============================================================ */
+    
 
     /* Стили для совместной рисовалки */
     .drawing-container {
@@ -646,30 +697,42 @@
     .drawing-status span {
         color: #66ff66;
     }
+
+    /* Анекдот на экране загрузки: переносы строк из текста */
+    .loading-joke{white-space:pre-line}
+    .loading-status{font-size:12px;color:#888;min-height:16px}
   </style>
 </head>
 <body>
+<!-- ============================================================
+     ЭКРАН ЗАГРУЗКИ: закрывается, когда загружено ВСЁ (см. loadAllData в скрипте)
+     ============================================================ -->
 <div id="customLoading" class="loading-overlay" style="display:flex">
     <div class="loading-container">
-        <div class="loading-bar">
-            <div class="loading-fill" id="loadingFill"></div>
-        </div>
+        <div class="loading-bar"><div class="loading-fill" id="loadingFill"></div></div>
         <div class="loading-percent" id="loadingPercent">0%</div>
-        <div class="loading-joke" id="loadingJoke">
-            🐔 Загрузка Tildochka...
-        </div>
+        <div class="loading-status" id="loadingStatus">Подготовка...</div>
+        <div class="loading-joke" id="loadingJoke">🐔 Загрузка Tildochka...</div>
         <div class="loading-tip">💡 Совет: не закрывайте страницу</div>
     </div>
 </div>
 <div id="blocked"><div>🚫 ДОСТУП ЗАПРЕЩЁН</div></div>
-<div id="loading">🥚 Загрузка Tildochka...</div>
 <div id="bg"></div>
 
+<!-- ============================================================
+     МОДАЛЬНЫЕ ОКНА: онлайн, приглашения, магазин
+     ============================================================ -->
 <div class="modal-overlay" id="onlineModal"><div class="modal-box"><h3>🟢 Онлайн</h3><div id="onlineList"></div><button onclick="document.getElementById('onlineModal').classList.remove('show')" style="background:#444;color:#fff;margin-top:8px">Закрыть</button></div></div>
 <div class="modal-overlay" id="inviteModal"><div class="modal-box"><h3 id="inviteTitle">📨 Приглашение</h3><div id="inviteContent"></div><div id="inviteActions"></div></div></div>
 <div class="modal-overlay" id="shopModal" style="z-index:400"><div class="modal-box"><h3>🛒 Магазин</h3><p>🥚 <span id="shopEggs">0</span></p><div class="shop-grid" id="shopGrid"></div><button onclick="document.getElementById('shopModal').classList.remove('show')" style="background:#444;color:#fff;margin-top:12px">Закрыть</button></div></div>
 
+<!-- ============================================================
+     ПРИЛОЖЕНИЕ (показывается после загрузки): шапка, меню, экраны
+     ============================================================ -->
 <div id="app" style="display:none">
+<!-- ============================================================
+     ШАПКА
+     ============================================================ -->
 <div class="header">
 <div class="logo" onclick="showScreen('home')">Tildochka</div>
 <div class="header-right">
@@ -679,6 +742,9 @@
 <div class="burger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
 </div>
 </div>
+<!-- ============================================================
+     МЕНЮ
+     ============================================================ -->
 <div class="menu" id="menuDropdown">
 <a onclick="showScreen('home');closeMenu()">🏠 Главная</a>
 <a onclick="showScreen('quests');closeMenu()">📋 Задания</a>
@@ -692,8 +758,14 @@
 <a onclick="showScreen('magicball');closeMenu()">🔮 Магический шар</a>
 <a onclick="showScreen('poll');closeMenu()">📊 Опросы</a>
 </div>
+<!-- ============================================================
+     ЭКРАНЫ САЙТА (показывается один активный .screen)
+     ============================================================ -->
 <div id="content">
 
+<!-- ============================================================
+     ЭКРАН: ГЛАВНАЯ (быстрые кнопки, сериалы, фильмы, цитата, событие дня)
+     ============================================================ -->
 <div id="home-screen" class="screen active">
     <div class="catalog">
        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px">
@@ -758,12 +830,21 @@
     <div id="dailyEventDesc" style="text-align:center; color:#ccc; font-size:0.9rem"></div>
     <div id="dailyEventAction" style="text-align:center; margin-top:10px"></div>
 </div>
-</div></div></div>
+</div></div>
 
+<!-- ============================================================
+     ЭКРАН: ФИЛЬМ / СЕРИАЛ (описание, плеер, отзывы)
+     ============================================================ -->
 <div id="movie-screen" class="screen"><div class="hero"><img id="moviePoster" class="poster"><h1 id="movieTitle"></h1><h2 id="movieRatingHero">⭐ ...</h2><div class="tags" id="movieTags"></div></div><div class="content"><div class="section"><h2>📖 Описание</h2><p id="movieDescription"></p><div class="rating-info"><span id="totalRatingDisplay"></span><span id="reviewsCountDisplay"></span></div></div><div class="section" id="seasonsSection" style="display:none"><h2>📺 Сезоны</h2><div id="seasonsContent"></div></div><div class="section"><h2>▶️ Смотреть</h2><video id="player" controls><source id="videosrc"></video></div><div class="section"><h2>💭 Отзывы</h2><div class="stars-container" id="revStars"><span>Оценка: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span><span id="ratingText">10/10</span></div><textarea id="reviewText" placeholder="Отзыв..."></textarea><button onclick="addReview()">📝 Отправить</button><div id="reviews"></div></div></div></div>
 
-<div id="game-screen" class="screen"><button onclick="window.stopGame && window.stopGame()">← На главную</button><h2 id="gameTitle"></h2><div class="game-score" id="gameScoreDisplay">Счёт: 0</div><div id="gameContent"></div><div id="gameRatingArea"></div><div class="leaderboard" id="leaderboard"><h3>🏆 Лидеры</h3></div></div></div>
+<!-- ============================================================
+     ЭКРАН: ИГРА (общий для всех игр)
+     ============================================================ -->
+<div id="game-screen" class="screen"><button onclick="stopGame()">← На главную</button><h2 id="gameTitle"></h2><div class="game-score" id="gameScoreDisplay">Счёт: 0</div><div id="gameContent"></div><div id="gameRatingArea"></div><div class="leaderboard" id="leaderboard"><h3>🏆 Лидеры</h3></div></div>
 
+<!-- ============================================================
+     ЭКРАН: ОБЩИЙ ЧАТ
+     ============================================================ -->
 <div id="chat-screen" class="screen">
     <div class="chat-container">
         <h2>💬 Чат</h2>
@@ -803,6 +884,9 @@
 </div>
 
 <!-- Окно выбора стикеров (вне чата, но это модалка – она должна быть глобальной) -->
+<!-- ============================================================
+     ОКНО: выбор стикера
+     ============================================================ -->
 <div id="stickerPickerModal" class="modal-overlay" style="display:none; z-index:500;">
     <div class="modal-box" style="max-width:500px; max-height:80vh; overflow-y:auto;">
         <h3>📂 Выбери стикер</h3>
@@ -810,9 +894,18 @@
         <button onclick="closeStickerPicker()" style="background:#444; color:#fff; border:none; padding:8px 20px; border-radius:8px; cursor:pointer;">Закрыть</button>
     </div>
 </div>
+<!-- ============================================================
+     ЭКРАН: МЕМЫ
+     ============================================================ -->
 <div id="memes-screen" class="screen"><div class="chat-container"><h2>😂 Мемы</h2><textarea id="memeCaption" placeholder="Подпись..."></textarea><div class="media-upload"><label for="memePhoto">📷 Фото</label><input type="file" id="memePhoto" accept="image/*" onchange="previewMemeMedia('photo')"><label for="memeVideo">🎬 Видео</label><input type="file" id="memeVideo" accept="video/*" onchange="previewMemeMedia('video')"></div><div id="memePreview"></div><button id="memeSendBtn" onclick="postMeme()">😂 Опубликовать</button><div id="memesList" style="margin-top:25px"></div></div></div>
+<!-- ============================================================
+     ЭКРАН: ИДЕИ
+     ============================================================ -->
 <div id="ideas-screen" class="screen"><div class="chat-container"><h2>💡 Идеи</h2><div id="ideasList"></div><textarea id="ideaText" placeholder="Твоя идея..."></textarea><button id="ideaSendBtn" onclick="addIdea()">💡 Предложить</button></div></div>
 
+<!-- ============================================================
+     ЭКРАН: CHICKENTUBE
+     ============================================================ -->
 <div id="chickentube-screen" class="screen">
     <div class="shorts-container">
         <h2 style="border-bottom:2px solid #ffd700;padding-bottom:8px;margin-bottom:15px">🐔 ChickenTube</h2>
@@ -846,9 +939,15 @@
     </div>
 </div>
 
+<!-- ============================================================
+     ЭКРАНЫ: ЗАДАНИЯ и ЛИДЕРЫ ПО ЯЙЦАМ
+     ============================================================ -->
 <div id="quests-screen" class="screen"><div class="chat-container"><h2>📋 Задания</h2><button onclick="generateDailyQuests(true)" style="margin-bottom:12px;background:#ffd700;color:#000;border:none;font-weight:700">🔄 Новые (5🥚)</button><div id="questsList"></div></div></div>
 <div id="eggsLB-screen" class="screen"><div class="chat-container"><h2>🏆 Лидеры по яйцам</h2><div id="eggsLeaderboard"></div></div></div>
 
+<!-- ============================================================
+     ЭКРАН: ДРУЗЬЯ
+     ============================================================ -->
 <div id="friends-screen" class="screen">
     <div class="chat-container">
         <h2>👥 Друзья</h2>
@@ -863,6 +962,9 @@
         </div>
     </div>
 </div>
+<!-- ============================================================
+     ЭКРАН: ЛИДЕРЫ ПО ИГРАМ
+     ============================================================ -->
 <div id="gamesLB-screen" class="screen">
     <div class="chat-container">
         <h2>🎮 Лидеры по играм</h2>
@@ -880,6 +982,9 @@
         <div id="gameLeadersList"></div>
     </div>
 </div>
+<!-- ============================================================
+     ЭКРАН: КАТАЛОГ ВСЕХ ИГР
+     ============================================================ -->
 <div id="games-all-screen" class="screen">
     <div class="catalog">
         <h2>🎮 Все игры</h2>
@@ -931,44 +1036,9 @@
     </div>
 </div>
 
-<!-- НОВЫЙ ЭКРАН: Совместная рисовалка -->
-<div id="drawing-screen" class="screen">
-    <div class="drawing-container">
-        <h1 style="text-align:center; color:#ffd700; margin-bottom:15px; font-size:24px">🎨 СОВМЕСТНАЯ РИСОВАЛКА</h1>
-        <canvas id="drawCanvas" width="800" height="500" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/500"></canvas>
-        
-        <div class="drawing-toolbar">
-            <div class="drawing-color-picker" id="drawingColorPicker">
-                <div class="drawing-color-btn" style="background:#000000" data-color="#000000"></div>
-                <div class="drawing-color-btn" style="background:#ff0000" data-color="#ff0000"></div>
-                <div class="drawing-color-btn" style="background:#00ff00" data-color="#00ff00"></div>
-                <div class="drawing-color-btn" style="background:#0000ff" data-color="#0000ff"></div>
-                <div class="drawing-color-btn" style="background:#ffff00" data-color="#ffff00"></div>
-                <div class="drawing-color-btn" style="background:#ff00ff" data-color="#ff00ff"></div>
-                <div class="drawing-color-btn" style="background:#00ffff" data-color="#00ffff"></div>
-                <div class="drawing-color-btn" style="background:#ff8800" data-color="#ff8800"></div>
-                <div class="drawing-color-btn" style="background:#ffffff" data-color="#ffffff"></div>
-            </div>
-            
-            <div class="drawing-size-control">
-                <span>✏️</span>
-                <input type="range" id="drawingBrushSize" min="1" max="40" value="5">
-                <div class="drawing-size-preview" id="drawingSizePreview"></div>
-            </div>
-            
-            <button id="drawingClearBtn" class="clear-btn" style="background:linear-gradient(135deg, #ff4444, #cc0000)">🗑️ ОЧИСТИТЬ</button>
-            <button id="drawingSaveBtn" style="background:linear-gradient(135deg, #ff6b6b, #ee5a24)">💾 СОХРАНИТЬ</button>
-        </div>
-        
-        <div class="drawing-status">
-            <div class="online-count">🟢 ОНЛАЙН: <span id="drawingOnlineCount">1</span></div>
-            <div>💡 РИСУЙТЕ ВМЕСТЕ — ВСЕ ВИДЯТ ИЗМЕНЕНИЯ</div>
-            <div>🖱️ МЫШЬ / ПАЛЕЦ — РИСОВАНИЕ</div>
-        </div>
-    </div>
-</div>
-
-</div></div>
+<!-- ============================================================
+     ЭКРАН: ОПРОСЫ
+     ============================================================ -->
 <div id="poll-screen" class="screen">
     <div class="chat-container">
         <h2>📊 Опросы</h2>
@@ -986,7 +1056,16 @@
     </div>
 </div>
 
+</div><!-- /#content -->
+</div><!-- /#app -->
+
+<!-- ============================================================
+     ОКНО: ПРОФИЛЬ
+     ============================================================ -->
 <div class="modal-overlay" id="profileModal"><div class="modal-box"><h3>👤 Профиль</h3><div id="profileAvatarPreview" style="width:70px;height:70px;border-radius:50%;border:3px solid #ffd700;margin:8px auto;display:flex;align-items:center;justify-content:center;font-size:40px;overflow:hidden"><span id="avatarPreviewContent">🐔</span></div><input id="newNameInput" placeholder="Имя (макс 20 символов)" maxlength="20"><br><button onclick="document.getElementById('customAvatarInput').click()" style="background:#444;color:#fff;margin:4px">📷 Фото</button><button onclick="showDrawCanvas()" style="background:#444;color:#fff;margin:4px">🎨 Нарисовать</button><button onclick="closeProfileModal();openShop()" style="background:#444;color:#ffd700;margin:4px">🛒 Магазин</button><input type="file" id="customAvatarInput" accept="image/*" onchange="loadCustomAvatar()" style="display:none"><div id="drawArea" style="display:none;margin-top:8px"><canvas id="drawCanvas" class="draw-canvas" width="200" height="200"></canvas><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:4px 0"><button onclick="changeDrawColor('#000')" style="background:#000;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#f00')" style="background:red;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#0f0')" style="background:green;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#00f')" style="background:blue;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="changeDrawColor('#ff0')" style="background:yellow;width:25px;height:25px;border-radius:50%;padding:0"></button><button onclick="clearDrawCanvas()" style="background:#555;padding:4px 8px;font-size:11px">Очистить</button></div><button onclick="saveDrawnAvatar()">💾 Сохранить</button></div><p style="color:#ffd700;margin-top:10px">Бесплатные:</p><div class="shop-grid" id="avatarGridFree"><span class="shop-item selected" onclick="selectAvatar('🐔')">🐔</span><span class="shop-item" onclick="selectAvatar('🐣')">🐣</span><span class="shop-item" onclick="selectAvatar('🥚')">🥚</span><span class="shop-item" onclick="selectAvatar('🐤')">🐤</span></div><p style="color:#ffd700;margin-top:8px">Купленные:</p><div class="shop-grid" id="avatarGridBought"></div><br><button onclick="saveProfile()">💾 Сохранить</button><button onclick="closeProfileModal()" style="background:#444;color:#fff;margin-left:4px">Отмена</button></div></div>
+<!-- ============================================================
+     МЕНЮ: действия с сообщением чата
+     ============================================================ -->
 <div id="chatContextMenu" style="display:none; position:fixed; background:#2a2a2a; border:1px solid #555; border-radius:12px; padding:8px 0; min-width:180px; z-index:9999; box-shadow:0 4px 20px rgba(0,0,0,0.8);">
     <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('💩')">💩</div>
     <div style="padding:8px 16px; cursor:pointer; color:#fff; border-bottom:1px solid #444; font-size:14px;" onclick="addReactionFromMenu('❤️')">❤️</div>
@@ -1000,35 +1079,128 @@
 </div>
   
 <script>
-// ========== ФИКС ДЛЯ ТЕЛЕФОНА ==========
-document.addEventListener('DOMContentLoaded', function() {
-    document.body.style.touchAction = 'manipulation';
-    var clickables = document.querySelectorAll('.quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo');
-    clickables.forEach(function(el) {
-        el.style.touchAction = 'manipulation';
-        el.style.webkitTapHighlightColor = 'transparent';
-    });
-    console.log('✅ Телефон фикс применён, найдено элементов: ' + clickables.length);
-});
-document.addEventListener('touchstart', function(){}, {passive: true});
+/* ============================================================
+   1. УТИЛИТЫ (безопасный текст, слушатели Firebase, таймеры игр)
+   ============================================================ */
 
+// Экранирование пользовательского текста перед вставкой в HTML
 function escapeHtml(str) {
-    if(!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-        if(m === '&') return '&amp;';
-        if(m === '<') return '&lt;';
-        if(m === '>') return '&gt;';
-        return m;
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
     });
 }
 
-// ========== FIREBASE ==========
+// Экранирование строки для вставки внутрь onclick="...('текст')"
+function jsStr(str) {
+    return escapeHtml(String(str === null || str === undefined ? '' : str).replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
+}
+
+// Сжатие картинки (чтобы в базу не уходили огромные файлы)
+function resizeImageFile(file, maxSize, callback) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+            var scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+            var canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            callback(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.onerror = function() { alert('❌ Не удалось открыть картинку'); };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Чтение видео в base64 с ограничением размера
+var MAX_VIDEO_BYTES = 8 * 1024 * 1024;
+function readVideoFile(file, callback) {
+    if (file.size > MAX_VIDEO_BYTES) {
+        alert('❌ Видео слишком большое (максимум 8 МБ)');
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) { callback(e.target.result); };
+    reader.readAsDataURL(file);
+}
+
+/* ---------- Слушатели Firebase (без дублей) ----------
+   Один ключ = один активный слушатель. Повторный вызов заменяет старый.
+   Возвращает Promise, который выполнится после ПЕРВОЙ порции данных —
+   на него опирается экран загрузки. */
+var _fbListeners = {};
+function fbListen(key, query, callback) {
+    if (_fbListeners[key]) {
+        _fbListeners[key].query.off('value', _fbListeners[key].handler);
+    }
+    return new Promise(function(resolve) {
+        var handler = function(snap) {
+            try { callback(snap); } catch (e) { console.error('[' + key + ']', e); }
+            resolve();
+        };
+        _fbListeners[key] = { query: query, handler: handler };
+        query.on('value', handler, function(err) {
+            console.error('[' + key + '] нет доступа:', err);
+            resolve();
+        });
+    });
+}
+
+/* ---------- Игровые таймеры ----------
+   Всё, что игра запускает через gInterval / gTimeout / gRaf / onGameStop,
+   автоматически останавливается при выходе из игры. */
+var gameToken = 0;
+var _gameTimers = [];
+var _gameCleanups = [];
+
+function gInterval(fn, ms) {
+    var id = setInterval(fn, ms);
+    _gameTimers.push({ kind: 'interval', id: id });
+    return id;
+}
+function gTimeout(fn, ms) {
+    var id = setTimeout(fn, ms);
+    _gameTimers.push({ kind: 'timeout', id: id });
+    return id;
+}
+function gRaf(fn) {
+    var token = gameToken;
+    return requestAnimationFrame(function() {
+        if (token === gameToken) fn();
+    });
+}
+function onGameStop(fn) { _gameCleanups.push(fn); }
+
+function stopGameTimers() {
+    gameToken++;
+    if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
+    if (tamaInterval) { clearInterval(tamaInterval); tamaInterval = null; }
+    _gameTimers.forEach(function(t) {
+        if (t.kind === 'interval') clearInterval(t.id); else clearTimeout(t.id);
+    });
+    _gameTimers = [];
+    var cleanups = _gameCleanups;
+    _gameCleanups = [];
+    cleanups.forEach(function(fn) { try { fn(); } catch (e) {} });
+}
+
+// Кнопка «← На главную» внутри игры
+function stopGame() {
+    stopGameTimers();
+    showScreen('home');
+}
+window.stopGame = stopGame;
+
+/* ============================================================
+   FIREBASE
+   ============================================================ */
 firebase.initializeApp({
-    databaseURL: "https://tildochka-default-rtdb.europe-west1.firebasedatabase.app",
-    storageBucket: "tildochka-default-rtdb.firebasestorage.app"
+    databaseURL: "https://tildochka-default-rtdb.europe-west1.firebasedatabase.app"
 });
 var db=firebase.database();
-var storage = firebase.storage();
 var currentGame=null,gameInterval=null,tamaInterval=null,reviewRating=10,gameRating=10,currentMovieId='',memeMedia=null,memeMediaType=null,shortMedia=null;
 var selectedAvatar='🐔',selectedAvatarType='emoji',drawColor='#000',drawCanvas=null,drawCtx=null;
 var myUid=localStorage.getItem('tildochka_uid')||'user_'+Math.random().toString(36).substr(2,9);
@@ -1037,44 +1209,24 @@ var myName='Гость',myEggs=0,boughtAvatars=[],onlineUsers={},pendingInvite=n
 var myChannel=localStorage.getItem('tildochka_channel')||'';
 var audioCtx=null;
 var lastSoundTime=0;
+var isAdmin = localStorage.getItem('tildochka_admin') === 'true';
+var shortMediaType = null;
 
 // КАСТОМНЫЕ ПЕРСОНАЖИ ДЛЯ ИГР
 var customCharacters = [];
 var activeCharacter = null;
 
-(function initCharactersFromStorage() {
-    var saved = localStorage.getItem('tildochka_characters');
-    if(saved) {
-        try {
-            customCharacters = JSON.parse(saved);
-        } catch(e) { customCharacters = []; }
-    }
-    var active = localStorage.getItem('tildochka_active_character');
-    if(active) {
-        try {
-            activeCharacter = JSON.parse(active);
-        } catch(e) { activeCharacter = null; }
-    }
-    if(!activeCharacter) {
+function loadCustomCharacters() {
+    try { customCharacters = JSON.parse(localStorage.getItem('tildochka_characters') || '[]') || []; }
+    catch (e) { customCharacters = []; }
+    try { activeCharacter = JSON.parse(localStorage.getItem('tildochka_active_character') || 'null'); }
+    catch (e) { activeCharacter = null; }
+    if (!activeCharacter) {
         activeCharacter = { id: '🐔', name: 'Курица', price: 0, purchased: true };
         saveCustomCharacters();
     }
-})();
-
-function loadCustomCharacters() {
-    var saved = localStorage.getItem('tildochka_characters');
-    if(saved) {
-        try {
-            customCharacters = JSON.parse(saved);
-        } catch(e) {}
-    }
-    var active = localStorage.getItem('tildochka_active_character');
-    if(active) {
-        try {
-            activeCharacter = JSON.parse(active);
-        } catch(e) {}
-    }
 }
+loadCustomCharacters();
 
 function saveCustomCharacters() {
     localStorage.setItem('tildochka_characters', JSON.stringify(customCharacters));
@@ -1207,48 +1359,9 @@ function openCharactersShop() {
     modal.classList.add('show');
 }
 
-// ==================== АНЕКДОТЫ ДЛЯ ЗАГРУЗКИ ====================
-var loadingJokes = [
-    "— Доктор, я ходить буду?\n— Ну, если только под себя.\n— А плавать?\n— Если будете много ходить.",
-    "Что сказал нуль восьмёрке?\n— «Ты так стянута! Надо бы тебе развязаться!»",
-    "Как называется битва без рук и без ног?\nБитва бесконечностей...",
-    "Как называется корова которая не даёт молоко?\nЖадина говядина",
-    "Как называется бутерброд без ничего?\nНищеброд",
-    "Что сказал синоптик когда умер его коллега?\nСегодня -1",
-    "Какая любимая поговорка снайпера?\nВ одно ухо влетело из другого вылетело",
-    "Почему птицы улетают на юг?\nПотому что им пешком не дойти",
-    "Почему с бомжами весело играть в догонялки?\nОни никогда не скажут «я в домике»",
-    "Как каннибалы называют морг?\nАдвент календарь...",
-    "Почему в детдоме дети худые?\nОни не едят за маму и папу...",
-    "Если краткость — сестра таланта, то немые — самые талантливые.",
-    "Опыт Муму показывает — если у тебя немой хозяин, учись плавать.",
-    "Однажды поругались два обитателя дома для глухонемых. Пришёл директор, один стоит спиной к другому и трясётся от смеха. «Почему ты смеёшься? Почему товарищ сердитый?» Немой ответил: «Потому что он хочет поругаться, а я отказываюсь смотреть!»",
-    "На соревнованиях по брейк-дансу победил немой, пытавшийся предупредить всех о пожаре.",
-    "Как разговаривают немые и безрукие?\nБолтают ногами.",
-    "Во Всероссийском обществе глухих не слышали о задержании руководства.",
-    "В столовой клиники для глухонемых табличка: «Когда я ем — я как обычно».",
-    "Битый час уговаривал отца купить новый слуховой аппарат. А он как будто меня не слышит!..",
-    "Кого бы вы не хотели видеть на своей свадьбе?\nМистера Пропера — он оставляет разводы.",
-    "Что будет, если ворона сядет на оголённые провода?\nЭлектрокар.",
-    "Как называется притон наркоманов-закладчиков?\n«Клуб весёлых и находчивых».",
-    "Где лежат книги о дискриминации карликов?\nНа верхней полке.",
-    "— Мама, там папа в зале повесился! Мать прибегает — отца нет. — С 1 апреля, мам... Он на кухне висит.",
-    "Жила в деревне собачка по имени «Новость». Наступила на мину. Новость разлетелась по всей деревне.",
-    "Мы с женой совсем не ждали ребёнка, но вдруг он влетел нам в лобовое стекло.",
-    "Пропала собака без одной ноги. Особая примета: когда ссыт — падает.",
-    "Соревнования по плаванию среди инвалидов. У кого нет рук, у кого ног. На последней дорожке — только голова. Дали старт — голова утонула. Откачали, спрашивают: «Почему не поплыл?» — «Я 10 лет тренировался ушами грести, нафига вы надели плавательную шапку?!»",
-    "Сидят русский и казах. Русский: — Слушай, а у тебя жена есть? — Жок. — Молодец! Я бы свою тоже сжёг.",
-    "Как называют человека, который продал свою печень?\nОбеспеченный.",
-    "Почему можно шутить над всеми, кроме безногих?\nШутки про них обычно не заходят...",
-    "Почему безногий боится гопников?\nНе может постоять за себя.",
-    "Почему в Африке так много болезней?\nПотому что таблетки надо запивать водой...",
-    "Как предотвратить инцест у грибов?\nФразой: «Не спорь с матерью!»",
-    "В чём разница между землёй и нашими шутками?\nЗемля не плоская.",
-    "Что общего у наших шуток и почты России?\nНе до всех доходит.",
-    "Знаете, как зовут собаку, которая утонула?\nБульдог."
-];
-
-// ==================== ЗВУК ====================
+/* ============================================================
+   ЗВУК
+   ============================================================ */
 function initAudio() {
     if (audioCtx) return;
     try {
@@ -1280,7 +1393,9 @@ function playSound(type) {
 }
 document.body.addEventListener('click', function() { initAudio(); }, { once: true });
 
-// ==================== ФИЛЬМЫ ====================
+/* ============================================================
+   ФИЛЬМЫ
+   ============================================================ */
 var moviesData={
 series:{title:'Приключения 4 куриц',poster:'cover.jpg',video:'episode1.mp4',
 description:'Очень увлекательный сериал, основанный на частично реальных и частично абсолютно безумных событиях. История рассказывает о четырёх курицах, которые неожиданно оказываются втянутыми в череду странных, смешных и иногда даже опасных приключений. В центре сюжета — тема неразделённой любви, дружбы, преданности и силы чувств, которые способны преодолеть любые препятствия. С каждой серией герои сталкиваются с новыми испытаниями, которые заставляют их меняться, расти и по-новому смотреть на мир.',
@@ -1347,8 +1462,9 @@ var questTemplates = [
     { text: 'Создай канал на ChickenTube', type: 'createChannel', target: 1, reward: 15 },
     { text: 'Выложи видео на ChickenTube', type: 'postShort', target: 1, reward: 10 }
 ];
-// ==================== ШУТКИ (АНЕКДОТЫ) ====================
-var jokesList = [];
+/* ============================================================
+   ШУТКИ (АНЕКДОТЫ)
+   ============================================================ */
 var baseJokes = [
     "— Доктор, я ходить буду?\n— Ну, если только под себя.\n— А плавать?\n— Если будете много ходить.",
     "Что сказал нуль восьмёрке?\n— «Ты так стянута! Надо бы тебе развязаться!»",
@@ -1361,23 +1477,44 @@ var baseJokes = [
     "Почему с бомжами весело играть в догонялки?\nОни никогда не скажут «я в домике»",
     "Как каннибалы называют морг?\nАдвент календарь...",
     "Почему в детдоме дети худые?\nОни не едят за маму и папу...",
+    "Если краткость — сестра таланта, то немые — самые талантливые.",
+    "Опыт Муму показывает — если у тебя немой хозяин, учись плавать.",
+    "Однажды поругались два обитателя дома для глухонемых. Пришёл директор, один стоит спиной к другому и трясётся от смеха. «Почему ты смеёшься? Почему товарищ сердитый?» Немой ответил: «Потому что он хочет поругаться, а я отказываюсь смотреть!»",
+    "На соревнованиях по брейк-дансу победил немой, пытавшийся предупредить всех о пожаре.",
+    "Как разговаривают немые и безрукие?\nБолтают ногами.",
+    "Во Всероссийском обществе глухих не слышали о задержании руководства.",
+    "В столовой клиники для глухонемых табличка: «Когда я ем — я как обычно».",
+    "Битый час уговаривал отца купить новый слуховой аппарат. А он как будто меня не слышит!..",
+    "Кого бы вы не хотели видеть на своей свадьбе?\nМистера Пропера — он оставляет разводы.",
+    "Что будет, если ворона сядет на оголённые провода?\nЭлектрокар.",
+    "Как называется притон наркоманов-закладчиков?\n«Клуб весёлых и находчивых».",
+    "Где лежат книги о дискриминации карликов?\nНа верхней полке.",
+    "— Мама, там папа в зале повесился! Мать прибегает — отца нет. — С 1 апреля, мам... Он на кухне висит.",
+    "Жила в деревне собачка по имени «Новость». Наступила на мину. Новость разлетелась по всей деревне.",
+    "Мы с женой совсем не ждали ребёнка, но вдруг он влетел нам в лобовое стекло.",
+    "Пропала собака без одной ноги. Особая примета: когда ссыт — падает.",
+    "Соревнования по плаванию среди инвалидов. У кого нет рук, у кого ног. На последней дорожке — только голова. Дали старт — голова утонула. Откачали, спрашивают: «Почему не поплыл?» — «Я 10 лет тренировался ушами грести, нафига вы надели плавательную шапку?!»",
+    "Сидят русский и казах. Русский: — Слушай, а у тебя жена есть? — Жок. — Молодец! Я бы свою тоже сжёг.",
+    "Как называют человека, который продал свою печень?\nОбеспеченный.",
+    "Почему можно шутить над всеми, кроме безногих?\nШутки про них обычно не заходят...",
+    "Почему безногий боится гопников?\nНе может постоять за себя.",
+    "Почему в Африке так много болезней?\nПотому что таблетки надо запивать водой...",
+    "Как предотвратить инцест у грибов?\nФразой: «Не спорь с матерью!»",
+    "В чём разница между землёй и нашими шутками?\nЗемля не плоская.",
+    "Что общего у наших шуток и почты России?\nНе до всех доходит.",
+    "Знаете, как зовут собаку, которая утонула?\nБульдог.",
     "Что мы все про Фадееву разговариваем? Фадеева она и в Африке Фадеева"
 ];
+var jokesList = baseJokes.slice(); // + одобренные пользовательские (loadJokesFromFirebase)
 
 function loadJokesFromFirebase() {
-    db.ref('jokes').once('value', function(snap) {
-        var userJokes = [];
+    return db.ref('jokes').once('value').then(function(snap) {
+        var approved = [];
         snap.forEach(function(child) {
-            userJokes.push({
-                id: child.key,
-                text: child.val().text,
-                approved: child.val().approved || false,
-                suggestedBy: child.val().suggestedBy,
-                ts: child.val().ts
-            });
+            var v = child.val() || {};
+            if (v.approved === true && v.text) approved.push(v.text);
         });
-        var approvedJokes = userJokes.filter(j => j.approved === true);
-        window.jokesList = [...baseJokes, ...approvedJokes.map(j => j.text)];
+        jokesList = baseJokes.concat(approved);
     });
 }
 
@@ -1397,14 +1534,6 @@ function suggestJoke() {
     progressQuest('suggestJoke', 1);
 }
 
-if(isAdmin) {
-    setTimeout(function() {
-        addAdminButtonsToMenu();
-        updateAdminBadge();
-    }, 1000);
-}
-
-var isAdmin = localStorage.getItem('tildochka_admin') === 'true';
 function updateAdminBadge() {
     if(isAdmin) {
         var headerName = document.getElementById('headerName');
@@ -1414,372 +1543,151 @@ function updateAdminBadge() {
     }
 }
 
-// ==================== ОСНОВНЫЕ ФУНКЦИИ ====================
+/* ============================================================
+   7. ЭКРАН ЗАГРУЗКИ
+   Закрывается только когда выполнены ВСЕ задачи из списка ниже
+   (данные из Firebase получены, картинки загружены).
+   Если что-то зависло — через 20 секунд сайт откроется сам.
+   ============================================================ */
+var LOADER_TIMEOUT_MS = 20000;
+
+// Ждём загрузки картинки (ошибка или долгое ожидание не блокируют сайт)
+function preloadImage(src) {
+    return new Promise(function(resolve) {
+        var img = new Image();
+        var timer = setTimeout(resolve, 8000);
+        img.onload = img.onerror = function() { clearTimeout(timer); resolve(); };
+        img.src = src;
+    });
+}
+
 function loadAllData() {
-    var loadingDiv = document.getElementById('customLoading');
-    if(loadingDiv) loadingDiv.style.display = 'flex';
-    document.getElementById('loading').style.display = 'none';
-    
-    var jokeInterval = setInterval(function() {
-        var jokeSpan = document.getElementById('loadingJoke');
-        if(jokeSpan && window.loadingJokes && window.loadingJokes.length > 0) {
-            var randomJoke = window.loadingJokes[Math.floor(Math.random() * window.loadingJokes.length)];
-            jokeSpan.innerHTML = '🐔 ' + randomJoke;
-        }
-    }, 5000);
-    
-    function setProgress(percent) {
-        var fill = document.getElementById('loadingFill');
-        var percentSpan = document.getElementById('loadingPercent');
-        if(fill) fill.style.width = percent + '%';
-        if(percentSpan) percentSpan.textContent = percent + '%';
+    var overlay = document.getElementById('customLoading');
+    var fillEl = document.getElementById('loadingFill');
+    var percentEl = document.getElementById('loadingPercent');
+    var statusEl = document.getElementById('loadingStatus');
+    var jokeEl = document.getElementById('loadingJoke');
+    if (overlay) { overlay.style.display = 'flex'; overlay.style.opacity = '1'; }
+
+    // --- Анекдоты на экране загрузки ---
+    function showRandomJoke() {
+        var list = (jokesList && jokesList.length) ? jokesList : baseJokes;
+        if (jokeEl && list.length) jokeEl.textContent = '🐔 ' + list[Math.floor(Math.random() * list.length)];
     }
-    
+    showRandomJoke();
+    var jokeTimer = setInterval(showRandomJoke, 5000);
+
+    // --- Прогресс ---
+    var total = 0, done = 0, finished = false;
+    function renderProgress(label) {
+        var pct = total ? Math.min(100, Math.round(done / total * 100)) : 0;
+        if (fillEl) fillEl.style.width = pct + '%';
+        if (percentEl) percentEl.textContent = pct + '%';
+        if (statusEl && label) statusEl.textContent = label;
+    }
+
+    // Запуск одной задачи: ошибка в одной задаче не ломает остальные
+    function runTask(task) {
+        var result;
+        try { result = task.run(); } catch (e) { console.error('Загрузка «' + task.name + '»:', e); }
+        return Promise.resolve(result)
+            .catch(function(e) { console.error('Загрузка «' + task.name + '»:', e); })
+            .then(function() { done++; renderProgress(task.name); });
+    }
+    function runStage(tasks) {
+        return Promise.all(tasks.map(runTask));
+    }
+
+    // --- Завершение ---
     function finishLoading() {
-        clearInterval(jokeInterval);
-        if(loadingDiv) {
-            loadingDiv.style.opacity = '0';
-            setTimeout(function(){ loadingDiv.style.display = 'none'; }, 300);
-        }
+        if (finished) return;
+        finished = true;
+        clearTimeout(fallbackTimer);
+        clearInterval(jokeTimer);
+        done = total;
+        renderProgress('Готово!');
+
         document.getElementById('app').style.display = 'block';
         showScreen('home');
         applyDailyEvent();
         initStickerButtons();
+        generateDailyQuests(false);
+        setupFriendNotifications();
+        ensureInviteListener();
+        loadGifts();
+        loadFriends();
+        if (isAdmin) { addAdminButtonsToMenu(); updateAdminBadge(); }
+
+        if (overlay) {
+            overlay.style.opacity = '0';
+            setTimeout(function() { overlay.style.display = 'none'; }, 500);
+        }
     }
-    
-    setProgress(5);
+    var fallbackTimer = setTimeout(function() {
+        console.warn('Загрузка заняла больше ' + LOADER_TIMEOUT_MS / 1000 + ' сек — открываем сайт как есть');
+        finishLoading();
+    }, LOADER_TIMEOUT_MS);
+
+    // --- Этап 1: локальные данные (мгновенно) ---
     loadProfile();
-    setupOnline();
-    
-    var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0');
+    var savedEggs = parseInt(localStorage.getItem('tildochka_eggs') || '0') || 0;
     myEggs = savedEggs;
     document.getElementById('headerEggs').textContent = myEggs;
-    setProgress(15);
-    
-    if(typeof loadCustomCharacters === 'function') loadCustomCharacters();
-    setProgress(20);
-    
-    db.ref('users/' + myUid).once('value').then(function(s) {
-        var userData = s.val() || {};
-        if(userData.eggs !== undefined) myEggs = userData.eggs;
-        if(myEggs < savedEggs) myEggs = savedEggs;
-        localStorage.setItem('tildochka_eggs', myEggs);
-        document.getElementById('headerEggs').textContent = myEggs;
-        boughtAvatars = userData.boughtAvatars || [];
-        setProgress(35);
-        
-        return Promise.all([
-    db.ref('chat').limitToLast(50).once('value').then(function() { loadChatMessages(); }).catch(function(e){}),
-    db.ref('memes').limitToLast(30).once('value').then(function() { loadMemes(); }).catch(function(e){}),
-    db.ref('ideas').limitToLast(30).once('value').then(function() { loadIdeas(); }).catch(function(e){}),
-    db.ref('shorts').once('value').then(function() { loadShorts(); updateChannelUI(); }).catch(function(e){}),
-    db.ref('magicChat').once('value').then(function() { loadMagicMessages(); }).catch(function(e){}),
-    db.ref('quotes').once('value').then(function() { initQuotes(); }).catch(function(e){}),
-    new Promise(function(resolve) { loadGifts(); resolve(); }),
-    // 👇 НОВОЕ: дожидаемся загрузки опросов
-    db.ref('polls').once('value').then(function() { loadPolls(); }).catch(function(e){})
-]);
-    }).then(function() {
-    setProgress(70);
-    // Сначала загружаем рейтинги фильмов
-    return loadAllRatings();
-}).then(function() {
-    setProgress(80);
-    // Потом загружаем рейтинги игр и прочее
-    var games = ['snake','tetris','runner','chickenrain','flappy','memory','tamagotchi','guess','rps','pong','xo','battleship','shooter','hangman','minesweeper','whoami','roulette','casino_slots','casino_blackjack','casino_dice','casino_roulette'];
-    var gamePromises = games.map(function(g) {
-        return db.ref('gameRatings/' + g).once('value').then(function() { loadLeaderboard(g); }).catch(function(){});
-    });
-    return Promise.all(gamePromises);
-}).then(function() {
-    setProgress(85);
-    generateDailyQuests(false);
-    setupFriendNotifications();
-    ensureInviteListener();
-    setProgress(100);
-    finishLoading();
-}).catch(function(err) {
-    console.error('Ошибка:', err);
-    setProgress(100);
-    finishLoading();
-});
+    setupOnline();
+
+    // --- Этап 2: данные пользователя (нужны остальным) ---
+    var stageProfile = [{
+        name: 'Профиль',
+        run: function() {
+            return db.ref('users/' + myUid).once('value').then(function(s) {
+                var userData = s.val() || {};
+                if (userData.eggs !== undefined) myEggs = userData.eggs;
+                if (myEggs < savedEggs) myEggs = savedEggs;
+                localStorage.setItem('tildochka_eggs', myEggs);
+                document.getElementById('headerEggs').textContent = myEggs;
+                boughtAvatars = userData.boughtAvatars || [];
+            });
+        }
+    }];
+
+    // --- Этап 3: всё остальное параллельно ---
+    var stageData = [
+        { name: 'Чат',             run: function() { return loadChatMessages(); } },
+        { name: 'Мемы',            run: function() { return loadMemes(); } },
+        { name: 'Идеи',            run: function() { return loadIdeas(); } },
+        { name: 'ChickenTube',     run: function() { return loadShorts(); } },
+        { name: 'Магический шар',  run: function() { return loadMagicMessages(); } },
+        { name: 'Цитаты',          run: function() { return initQuotes(); } },
+        { name: 'Анекдоты',        run: function() { return loadJokesFromFirebase(); } },
+        { name: 'Опросы',          run: function() { return loadPolls(); } },
+        { name: 'Рейтинги фильмов', run: function() { return loadAllRatings(); } },
+        { name: 'Рейтинги игр',    run: function() { return Promise.all(allRatedGameIds().map(function(id) { return loadLeaderboard(id); })); } },
+        { name: 'Отзывы на игры',  run: function() { return Promise.all(allRatedGameIds().map(function(id) { return loadGameReviews(id); })); } },
+        { name: 'Картинки',        run: function() {
+            var srcs = ['bg.jpg'];
+            Object.keys(moviesData).forEach(function(k) {
+                if (srcs.indexOf(moviesData[k].poster) === -1) srcs.push(moviesData[k].poster);
+            });
+            return Promise.all(srcs.map(preloadImage));
+        } }
+    ];
+
+    total = stageProfile.length + stageData.length;
+    renderProgress('Подключаемся...');
+
+    runStage(stageProfile)
+        .then(function() { return runStage(stageData); })
+        .then(finishLoading)
+        .catch(function(err) { console.error('Ошибка загрузки:', err); finishLoading(); });
 }
 
-// Инициализация совместной рисовалки
-function initDrawingCanvas() {
-    const canvas = document.getElementById('drawCanvas');
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    canvas.width = 800;
-    canvas.height = 500;
-    
-    let drawing = false;
-    let currentColor = '#000000';
-    let brushSize = 5;
-    let strokes = [];
-    let currentStrokePoints = [];
-    
-    // Загрузка из localStorage
-    function loadFromStorage() {
-        const saved = localStorage.getItem('shared_drawing');
-        if (saved) {
-            try {
-                strokes = JSON.parse(saved);
-                redrawCanvas();
-            } catch(e) { console.log('Ошибка загрузки рисунка'); }
-        }
-    }
-    
-    function saveToStorage() {
-        localStorage.setItem('shared_drawing', JSON.stringify(strokes));
-    }
-    
-    function redrawCanvas() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        for (let stroke of strokes) {
-            ctx.beginPath();
-            ctx.strokeStyle = stroke.color;
-            ctx.lineWidth = stroke.size;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            if (stroke.points.length > 0) {
-                ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-                for (let i = 1; i < stroke.points.length; i++) {
-                    ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-                }
-                ctx.stroke();
-            }
-        }
-    }
-    
-    function addStroke(points, color, size) {
-        strokes.push({
-            points: points.map(p => ({ x: p.x, y: p.y })),
-            color: color,
-            size: size,
-            timestamp: Date.now()
-        });
-        redrawCanvas();
-        saveToStorage();
-        syncDrawingWithServer();
-    }
-    
-    function addPointToCurrentStroke(points) {
-        if (strokes.length === 0) return;
-        strokes[strokes.length - 1].points.push({ x: points.x, y: points.y });
-        redrawCanvas();
-        saveToStorage();
-        syncDrawingWithServer();
-    }
-    
-    // Синхронизация через BroadcastChannel
-    const channel = new BroadcastChannel('drawing_sync');
-    function syncDrawingWithServer() {
-        channel.postMessage({
-            type: 'sync',
-            strokes: strokes
-        });
-    }
-    channel.onmessage = (event) => {
-        if (event.data.type === 'sync') {
-            strokes = event.data.strokes;
-            redrawCanvas();
-            updateDrawingOnlineCount();
-        }
-    };
-    
-    // Онлайн-счётчик
-    let onlineDrawingUsers = new Set();
-    const drawingUserId = 'drawing_user_' + Math.random().toString(36).substr(2, 8);
-    function updateDrawingOnlineCount() {
-        const countSpan = document.getElementById('drawingOnlineCount');
-        if(countSpan) countSpan.innerText = onlineDrawingUsers.size;
-    }
-    function initDrawingOnlineTracking() {
-        let users = localStorage.getItem('drawing_users');
-        if (users) {
-            try {
-                const parsed = JSON.parse(users);
-                onlineDrawingUsers = new Set(parsed);
-            } catch(e) {}
-        }
-        onlineDrawingUsers.add(drawingUserId);
-        saveDrawingOnlineUsers();
-        setInterval(() => {
-            onlineDrawingUsers.add(drawingUserId);
-            saveDrawingOnlineUsers();
-        }, 30000);
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'drawing_users') {
-                const newUsers = JSON.parse(e.newValue || '[]');
-                onlineDrawingUsers = new Set(newUsers);
-                updateDrawingOnlineCount();
-            }
-            if (e.key === 'shared_drawing') {
-                const newDrawing = localStorage.getItem('shared_drawing');
-                if (newDrawing) {
-                    strokes = JSON.parse(newDrawing);
-                    redrawCanvas();
-                }
-            }
-        });
-        updateDrawingOnlineCount();
-    }
-    function saveDrawingOnlineUsers() {
-        localStorage.setItem('drawing_users', JSON.stringify([...onlineDrawingUsers]));
-        updateDrawingOnlineCount();
-    }
-    
-    // Рисование
-    function getCanvasCoords(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        let clientX, clientY;
-        if (e.touches) {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
-        } else {
-            clientX = e.clientX;
-            clientY = e.clientY;
-        }
-        let x = (clientX - rect.left) * scaleX;
-        let y = (clientY - rect.top) * scaleY;
-        x = Math.min(Math.max(0, x), canvas.width);
-        y = Math.min(Math.max(0, y), canvas.height);
-        return { x, y };
-    }
-    
-    function startDrawing(e) {
-        e.preventDefault();
-        drawing = true;
-        currentStrokePoints = [];
-        const coords = getCanvasCoords(e);
-        currentStrokePoints.push(coords);
-        strokes.push({
-            points: [{ x: coords.x, y: coords.y }],
-            color: currentColor,
-            size: brushSize,
-            timestamp: Date.now()
-        });
-        redrawCanvas();
-    }
-    
-    function draw(e) {
-        if (!drawing) return;
-        e.preventDefault();
-        const coords = getCanvasCoords(e);
-        const lastPoint = currentStrokePoints[currentStrokePoints.length - 1];
-        if (lastPoint) {
-            ctx.beginPath();
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = brushSize;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.moveTo(lastPoint.x, lastPoint.y);
-            ctx.lineTo(coords.x, coords.y);
-            ctx.stroke();
-        }
-        currentStrokePoints.push(coords);
-        if (strokes.length > 0) {
-            strokes[strokes.length - 1].points = [...currentStrokePoints];
-        }
-        saveToStorage();
-        syncDrawingWithServer();
-    }
-    
-    function stopDrawing(e) {
-        if (!drawing) return;
-        e.preventDefault();
-        drawing = false;
-        syncDrawingWithServer();
-    }
-    
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseleave', stopDrawing);
-    canvas.addEventListener('touchstart', startDrawing);
-    canvas.addEventListener('touchmove', draw);
-    canvas.addEventListener('touchend', stopDrawing);
-    canvas.addEventListener('touchcancel', stopDrawing);
-    
-    // Цвета
-    document.querySelectorAll('.drawing-color-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.drawing-color-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentColor = btn.dataset.color;
-        });
-        if (btn.dataset.color === '#000000') {
-            btn.classList.add('active');
-        }
-    });
-    
-    // Размер кисти
-    const sizeSlider = document.getElementById('drawingBrushSize');
-    const sizePreview = document.getElementById('drawingSizePreview');
-    if(sizeSlider) {
-        sizeSlider.addEventListener('input', (e) => {
-            brushSize = parseInt(e.target.value);
-            if(sizePreview) {
-                sizePreview.style.width = brushSize + 'px';
-                sizePreview.style.height = brushSize + 'px';
-            }
-        });
-    }
-    if(sizePreview) {
-        sizePreview.style.width = brushSize + 'px';
-        sizePreview.style.height = brushSize + 'px';
-    }
-    
-    // Очистка
-    const clearBtn = document.getElementById('drawingClearBtn');
-    if(clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            if (confirm('🗑️ Очистить весь рисунок? Это увидят все пользователи!')) {
-                strokes = [];
-                redrawCanvas();
-                saveToStorage();
-                syncDrawingWithServer();
-            }
-        });
-    }
-    
-    // Сохранение
-    const saveBtn = document.getElementById('drawingSaveBtn');
-    if(saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = 'drawing.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        });
-    }
-    
-    loadFromStorage();
-    initDrawingOnlineTracking();
-}
-
-function refreshUI() {
-    var activeScreen = document.querySelector('.screen.active');
-    if(activeScreen) {
-        activeScreen.style.display = 'none';
-        setTimeout(function() {
-            activeScreen.style.display = 'block';
-        }, 10);
-    }
-    console.log("UI обновлён для телефона");
-}
 function loadProfile(){myName=localStorage.getItem('tildochka_username')||'Гость';var as=localStorage.getItem('tildochka_avatar_data');if(as){try{var ad=JSON.parse(as);selectedAvatar=ad;selectedAvatarType=ad.type;}catch(e){selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}}else{selectedAvatar={type:'emoji',value:'🐔'};selectedAvatarType='emoji';}updateHeaderAvatar();document.getElementById('headerName').textContent=myName.length>15?myName.slice(0,15)+'..':myName;updateAdminBadge();}
 function updateHeaderAvatar(){if(selectedAvatarType==='emoji')document.getElementById('headerAvatar').textContent=selectedAvatar.value||'🐔';else document.getElementById('headerAvatar').innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
 function syncOnlineProfile(){if(myName==='Гость')return;db.ref('online/'+myUid).update({name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value,ts:Date.now()});db.ref('users/'+myUid).update({name:myName,eggs:myEggs,channel:myChannel});}
 function openProfileModal(){document.getElementById('newNameInput').value=myName;updateAvatarPreview();document.querySelectorAll('#avatarGridFree .shop-item').forEach(function(el){el.classList.remove('selected');if(el.textContent===selectedAvatar.value&&selectedAvatarType==='emoji')el.classList.add('selected');});var bg=document.getElementById('avatarGridBought');bg.innerHTML='';boughtAvatars.forEach(function(e){var o=document.createElement('span');o.className='shop-item';o.textContent=e;o.onclick=function(){selectAvatar(e);};if(selectedAvatarType==='emoji'&&selectedAvatar.value===e)o.classList.add('selected');bg.appendChild(o);});document.getElementById('profileModal').classList.add('show');}
 function updateAvatarPreview(){var p=document.getElementById('avatarPreviewContent');if(selectedAvatarType==='emoji')p.innerHTML=selectedAvatar.value;else p.innerHTML='<img src="'+selectedAvatar.value+'" style="width:100%;height:100%;object-fit:cover">';}
 function selectAvatar(e){selectedAvatar={type:'emoji',value:e};selectedAvatarType='emoji';updateAvatarPreview();}
-function loadCustomAvatar(){var f=document.getElementById('customAvatarInput').files[0];if(!f)return;var r=new FileReader();r.onload=function(e){selectedAvatar={type:'image',value:e.target.result};selectedAvatarType='image';updateAvatarPreview();};r.readAsDataURL(f);}
+function loadCustomAvatar(){var f=document.getElementById('customAvatarInput').files[0];if(!f)return;resizeImageFile(f,128,function(data){selectedAvatar={type:'image',value:data};selectedAvatarType='image';updateAvatarPreview();});}
 function showDrawCanvas(){document.getElementById('drawArea').style.display='block';drawCanvas=document.getElementById('drawCanvas');drawCtx=drawCanvas.getContext('2d');drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,200,200);var d=false;drawCanvas.onmousedown=function(e){d=true;draw(e);};drawCanvas.onmouseup=function(){d=false;drawCtx.beginPath();};drawCanvas.onmousemove=function(e){if(d)draw(e);};drawCanvas.ontouchstart=function(e){e.preventDefault();d=true;var t=e.touches[0];drawTouch(t);};drawCanvas.ontouchmove=function(e){e.preventDefault();if(d){var t=e.touches[0];drawTouch(t);}};drawCanvas.ontouchend=function(){d=false;drawCtx.beginPath();};function draw(e){var r=drawCanvas.getBoundingClientRect();drawCtx.fillStyle=drawColor;drawCtx.beginPath();drawCtx.arc((e.clientX-r.left)*(200/r.width),(e.clientY-r.top)*(200/r.height),5,0,Math.PI*2);drawCtx.fill();}function drawTouch(t){var r=drawCanvas.getBoundingClientRect();drawCtx.fillStyle=drawColor;drawCtx.beginPath();drawCtx.arc((t.clientX-r.left)*(200/r.width),(t.clientY-r.top)*(200/r.height),5,0,Math.PI*2);drawCtx.fill();}}
 function changeDrawColor(c){drawColor=c;}function clearDrawCanvas(){if(drawCtx){drawCtx.fillStyle='#fff';drawCtx.fillRect(0,0,200,200);}}
 function saveDrawnAvatar(){if(!drawCanvas)return;var d=drawCanvas.toDataURL('image/png');selectedAvatar={type:'image',value:d};selectedAvatarType='image';updateAvatarPreview();document.getElementById('drawArea').style.display='none';}
@@ -1788,8 +1696,10 @@ function closeProfileModal(){document.getElementById('profileModal').classList.r
 function openShop(){document.getElementById('shopEggs').textContent=myEggs;var g=document.getElementById('shopGrid');g.innerHTML='';Object.keys(shopItems).forEach(function(e){var p=shopItems[e];var o=boughtAvatars.includes(e);var d=document.createElement('div');d.className='shop-item'+(o||myEggs<p?' locked':'');d.innerHTML=e+'<span class="price">'+p+'</span>';if(!o&&myEggs>=p)d.onclick=function(){buyAvatar(e,p);};else if(o)d.style.border='2px solid #4f4';g.appendChild(d);});document.getElementById('shopModal').classList.add('show');}
 function buyAvatar(e,p){if(myEggs<p)return;if(boughtAvatars.includes(e))return;myEggs-=p;boughtAvatars.push(e);localStorage.setItem('tildochka_eggs',myEggs);document.getElementById('headerEggs').textContent=myEggs;db.ref('users/'+myUid).update({eggs:myEggs,boughtAvatars:boughtAvatars});openShop();}
 function addEggs(a,r){myEggs+=a;localStorage.setItem('tildochka_eggs',myEggs);document.getElementById('headerEggs').textContent=myEggs;db.ref('users/'+myUid).update({eggs:myEggs});}
-function loadEggsLeaderboard(){db.ref('users').orderByChild('eggs').limitToLast(20).on('value',function(s){var u=[];s.forEach(function(c){u.push({name:c.val().name,eggs:c.val().eggs||0});});u.sort(function(a,b){return b.eggs-a.eggs;});var h='';u.forEach(function(u,i){h+='<div class="eggs-leaderboard-item"><span>'+(i+1)+'</span><span>'+u.name+'</span><span>🥚'+u.eggs+'</span></div>';});document.getElementById('eggsLeaderboard').innerHTML=h||'<p>Нет данных</p>';});}
-// ==================== ЕЖЕДНЕВНЫЕ ЗАДАНИЯ ====================
+function loadEggsLeaderboard(){fbListen('eggsLB',db.ref('users').orderByChild('eggs').limitToLast(20),function(s){var u=[];s.forEach(function(c){u.push({name:c.val().name,eggs:c.val().eggs||0});});u.sort(function(a,b){return b.eggs-a.eggs;});var h='';u.forEach(function(u,i){h+='<div class="eggs-leaderboard-item"><span>'+(i+1)+'</span><span>'+escapeHtml(u.name)+'</span><span>🥚'+u.eggs+'</span></div>';});document.getElementById('eggsLeaderboard').innerHTML=h||'<p>Нет данных</p>';});}
+/* ============================================================
+   ЕЖЕДНЕВНЫЕ ЗАДАНИЯ
+   ============================================================ */
 var dailyQuests = [];
 
 function generateDailyQuests(force) {
@@ -1888,72 +1798,40 @@ function claimQuest(uid) {
     renderQuests();
 }
 
-function showScreen(id){
-    document.querySelectorAll('.screen').forEach(function(s){
-        s.classList.remove('active');
-    });
-    var t = document.getElementById(id+'-screen');
-    if(t) {
-        t.classList.add('active');
-    } else {
-        t = document.getElementById(id);
-        if(t) t.classList.add('active');
+/* ============================================================
+   10. НАВИГАЦИЯ: переключение экранов
+   ============================================================ */
+function showScreen(id) {
+    // Уходим с экрана игры — останавливаем все игровые таймеры
+    var current = document.querySelector('.screen.active');
+    if (current && current.id === 'game-screen' && id !== 'game') {
+        stopGameTimers();
     }
+
+    document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+    var target = document.getElementById(id + '-screen') || document.getElementById(id);
+    if (target) target.classList.add('active');
+
     closeMenu();
-    window.scrollTo(0,0);
-    if(id === 'quests') loadQuests();
-    if(id === 'eggsLB') loadEggsLeaderboard();
-    if(id === 'chickentube') loadShorts();
-    if(id === 'friends') loadFriends();
-    if(id === 'games-all') {
-        setTimeout(function() {
-            renderAllGames();
-        }, 50);
-    }
-    if(id === 'magicball') {
-        loadMagicMessages();
-    }
-    if(id === 'drawing') {
-        // При открытии рисовалки обновляем canvas
-        setTimeout(function() {
-            const canvas = document.getElementById('drawCanvas');
-            if(canvas && canvas.getContext) {
-                // Просто перерисовываем
-                const ctx = canvas.getContext('2d');
-                const saved = localStorage.getItem('shared_drawing');
-                if(saved) {
-                    const strokes = JSON.parse(saved);
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    for (let stroke of strokes) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = stroke.color;
-                        ctx.lineWidth = stroke.size;
-                        ctx.lineCap = 'round';
-                        ctx.lineJoin = 'round';
-                        if (stroke.points.length > 0) {
-                            ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-                            for (let i = 1; i < stroke.points.length; i++) {
-                                ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-                            }
-                            ctx.stroke();
-                        }
-                    }
-                }
-            }
-        }, 100);
-    }
+    window.scrollTo(0, 0);
+
+    // Что нужно обновить при открытии конкретного экрана
+    if (id === 'quests') renderQuests();
+    if (id === 'eggsLB') loadEggsLeaderboard();
+    if (id === 'chickentube') { loadShorts(); updateChannelUI(); }
+    if (id === 'friends') loadFriends();
+    if (id === 'games-all') renderAllGames();
+    if (id === 'casino') renderCasinoGrid();
+    if (id === 'magicball') loadMagicMessages();
+    if (id === 'gamesLB') { fillGameSelect(); loadGameLeaders(); }
 }
+
 function toggleMenu(){document.getElementById('menuDropdown').classList.toggle('show');}function closeMenu(){document.getElementById('menuDropdown').classList.remove('show');}
-document.addEventListener('click',function(e){if(!e.target.closest('.burger')&&!e.target.closest('.menu')&&!e.target.closest('.modal-box'))closeMenu();});
 
 function setupOnline(){var ref=db.ref('online/'+myUid);ref.onDisconnect().remove();db.ref('online').on('value',function(s){onlineUsers={};s.forEach(function(c){if(c.key!==myUid)onlineUsers[c.key]=c.val();});document.getElementById('onlineCount').textContent='🟢 '+(Object.keys(onlineUsers).length+1);});syncOnlineProfile();}
-function showOnlineList(){var h='';var all={};all[myUid]={name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value};Object.keys(onlineUsers).forEach(function(u){all[u]=onlineUsers[u];});Object.keys(all).forEach(function(uid){var u=all[uid];var av=(u.avatarType==='image')?'<img src="'+u.avatarValue+'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle">':(u.avatarValue||'🐔');h+='<div class="online-user"><span>'+av+'</span><span>'+u.name+'</span>'+(uid===myUid?' (вы)':'')+'</div>';});document.getElementById('onlineList').innerHTML=h||'<p>Никого нет</p>';document.getElementById('onlineModal').classList.add('show');}
+function showOnlineList(){var h='';var all={};all[myUid]={name:myName,avatarType:selectedAvatarType,avatarValue:selectedAvatarType==='emoji'?selectedAvatar.value:selectedAvatar.value};Object.keys(onlineUsers).forEach(function(u){all[u]=onlineUsers[u];});Object.keys(all).forEach(function(uid){var u=all[uid];var av=(u.avatarType==='image')?'<img src="'+escapeHtml(u.avatarValue)+'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;vertical-align:middle">':escapeHtml(u.avatarValue||'🐔');h+='<div class="online-user"><span>'+av+'</span><span>'+escapeHtml(u.name)+'</span>'+(uid===myUid?' (вы)':'')+'</div>';});document.getElementById('onlineList').innerHTML=h||'<p>Никого нет</p>';document.getElementById('onlineModal').classList.add('show');}
 var lastCounts={chat:0,memes:0,ideas:0};
 function updateUnreadAll(){['chat','memes','ideas'].forEach(function(k){var s=parseInt(localStorage.getItem('tildochka_read_'+k)||'0');var u=Math.max(0,lastCounts[k]-s);var b=document.getElementById('unread'+k.charAt(0).toUpperCase()+k.slice(1));if(b){if(u>0)b.style.display='inline';else b.style.display='none';}});}
-function markRead(k){localStorage.setItem('tildochka_read_'+k,lastCounts[k]||0);updateUnreadAll();}
-function safeSend(key,fn){if(isSending[key])return;isSending[key]=true;var btn=document.getElementById(key+'SendBtn');if(btn){btn.disabled=true;btn.textContent='⏳...';}fn().then(function(){if(btn)btn.textContent='✅';setTimeout(function(){if(btn){btn.disabled=false;btn.textContent=key==='chat'?'💬 Отправить':key==='meme'?'😂 Опубликовать':'💡 Предложить';}isSending[key]=false;},1500);}).catch(function(e){if(btn){btn.disabled=false;}isSending[key]=false;});}
 
 function sendChatMessage() {
     var input = document.getElementById('chatMessageLive');
@@ -2018,7 +1896,7 @@ function sendChatMessage() {
     });
 }
 function loadChatMessages() {
-    db.ref('chat').limitToLast(50).on('value', (snapshot) => {
+    return fbListen('chat', db.ref('chat').limitToLast(50), (snapshot) => {
         const messages = [];
         snapshot.forEach((child) => {
             messages.push({
@@ -2080,7 +1958,9 @@ function loadChatMessages() {
             // Маркер "изменено"
             let editedMarker = msg.edited ? ' <span style="font-size:10px;color:#888;">(изменено)</span>' : '';
 
-            // ======== ОТВЕТ НА СООБЩЕНИЕ (как в Telegram) ========
+/* ============================================================
+   ОТВЕТ НА СООБЩЕНИЕ (как в Telegram)
+   ============================================================ */
             let replyPreview = '';
             if (msg.replyTo && msg.replyToName) {
                 const replyText = msg.replyToText || 'сообщение';
@@ -2125,7 +2005,9 @@ function loadChatMessages() {
 </div>
             `;
 
-            // ======== РЕАКЦИИ (показываем только если есть голоса) ========
+/* ============================================================
+   РЕАКЦИИ (показываем только если есть голоса)
+   ============================================================ */
             const reactionsDiv = document.createElement('div');
             reactionsDiv.style.cssText = 'margin-left: 32px; margin-top: 5px; display: flex; gap: 4px; flex-wrap: wrap;';
             
@@ -2230,7 +2112,9 @@ function loadChatMessages() {
                 div.appendChild(emptyReactionsDiv);
             }
 
-            // ======== КНОПКА "ОТВЕТИТЬ" ========
+/* ============================================================
+   КНОПКА "ОТВЕТИТЬ"
+   ============================================================ */
             const replyBtn = document.createElement('button');
             replyBtn.textContent = '💬 Ответить';
             replyBtn.style.cssText = `
@@ -2271,7 +2155,9 @@ function loadChatMessages() {
 };
             div.appendChild(replyBtn);
 
-            // ======== КОНТЕКСТНОЕ МЕНЮ ========
+/* ============================================================
+   КОНТЕКСТНОЕ МЕНЮ
+   ============================================================ */
             div.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 showContextMenu(e, msg.id);
@@ -2301,7 +2187,9 @@ function loadChatMessages() {
         updateUnreadAll();
     });
 }
-// === КОНТЕКСТНОЕ МЕНЮ ===
+/* ============================================================
+   КОНТЕКСТНОЕ МЕНЮ
+   ============================================================ */
 let contextMenuTargetId = null;
 
 function showContextMenu(e, messageId) {
@@ -2379,7 +2267,9 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// === РЕДАКТИРОВАНИЕ СООБЩЕНИЯ ===
+/* ============================================================
+   РЕДАКТИРОВАНИЕ СООБЩЕНИЯ
+   ============================================================ */
 function editMessage(messageId) {
     const msgDiv = document.querySelector(`.message[data-id="${messageId}"]`);
     if(!msgDiv) return;
@@ -2452,7 +2342,9 @@ function cancelReply() {
     if(previewContainer) previewContainer.style.display = 'none';
 }
 
-// === УДАЛЕНИЕ СООБЩЕНИЯ ===
+/* ============================================================
+   УДАЛЕНИЕ СООБЩЕНИЯ
+   ============================================================ */
 function deleteMessage(messageId) {
     if(!confirm('Удалить это сообщение?')) return;
     // Помечаем как удалённое (или полностью удаляем)
@@ -2464,7 +2356,9 @@ function deleteMessage(messageId) {
     }).catch(err => alert('Ошибка удаления: ' + err.message));
 }
 
-// === БЫСТРАЯ РЕАКЦИЯ ИЗ МЕНЮ ===
+/* ============================================================
+   БЫСТРАЯ РЕАКЦИЯ ИЗ МЕНЮ
+   ============================================================ */
 function addReactionFromMenu(emoji) {
     if(!contextMenuTargetId) return;
     const ref = db.ref('chat/' + contextMenuTargetId + '/reactions/' + emoji);
@@ -2500,7 +2394,7 @@ function postMeme() {
     });
 }
 function loadMemes() {
-    db.ref('memes').limitToLast(30).on('value', (snapshot) => {
+    return fbListen('memes', db.ref('memes').limitToLast(30), (snapshot) => {
         const memes = [];
         snapshot.forEach((child) => {
             memes.push({
@@ -2564,7 +2458,7 @@ function addIdea() {
     });
 }
 function loadIdeas() {
-    db.ref('ideas').limitToLast(30).on('value', (snapshot) => {
+    return fbListen('ideas', db.ref('ideas').limitToLast(30), (snapshot) => {
         const ideas = [];
         snapshot.forEach((child) => {
             ideas.push({
@@ -2602,7 +2496,6 @@ function loadIdeas() {
 function likeIdea(id,l){db.ref('ideas/'+id).update({likes:l+1});progressQuest('like',1);}
 
 function createChannel(){var n=prompt('Название канала:');if(!n)return;myChannel=n;localStorage.setItem('tildochka_channel',n);syncOnlineProfile();updateChannelUI();alert('✅ Канал "'+n+'" создан!');progressQuest('createChannel', 1);}
-function previewShortVideo(){var f=document.getElementById('shortVideo').files[0];if(!f)return;var r=new FileReader();r.onload=function(e){shortMedia=e.target.result;document.getElementById('shortPreview').innerHTML='<video src="'+e.target.result+'" style="max-width:300px;border-radius:8px" controls></video>';};r.readAsDataURL(f);}
 function postShort(){
     var cap = document.getElementById('shortCaption').value.trim();
     if(!cap && !shortMedia) {
@@ -2642,21 +2535,23 @@ function previewShortMedia(type) {
     var input = document.getElementById(type === 'image' ? 'shortImage' : 'shortVideo');
     var file = input.files[0];
     if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        shortMedia = e.target.result;
-        shortMediaType = type;
-        var preview = document.getElementById('shortPreview');
-        if(type === 'image') {
-            preview.innerHTML = '<img src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px">';
-        } else {
-            preview.innerHTML = '<video src="'+e.target.result+'" style="max-width:100%;max-height:150px;border-radius:8px" controls playsinline preload="auto"></video>';
-        }
-    };
-    reader.readAsDataURL(file);
+    var preview = document.getElementById('shortPreview');
+    if(type === 'image') {
+        resizeImageFile(file, 900, function(data) {
+            shortMedia = data;
+            shortMediaType = 'image';
+            preview.innerHTML = '<img src="' + data + '" style="max-width:100%;max-height:150px;border-radius:8px">';
+        });
+    } else {
+        readVideoFile(file, function(data) {
+            shortMedia = data;
+            shortMediaType = 'video';
+            preview.innerHTML = '<video src="' + data + '" style="max-width:100%;max-height:150px;border-radius:8px" controls playsinline preload="auto"></video>';
+        });
+    }
 }
 function loadShorts() {
-    db.ref('shorts').on('value', function(snapshot) {
+    return fbListen('shorts', db.ref('shorts'), function(snapshot) {
         const shorts = [];
         snapshot.forEach(function(child) {
             shorts.push({
@@ -2673,6 +2568,8 @@ function loadShorts() {
             });
         });
         shorts.sort(function(a, b) { return b.ts - a.ts; });
+        window._myShortsCount = shorts.filter(function(s) { return myChannel && s.channel === myChannel; }).length;
+        updateChannelUI();
         const container = document.getElementById('shortsList');
         if(!container) return;
         if(shorts.length === 0) {
@@ -2735,6 +2632,74 @@ function loadShorts() {
         }
     });
 }
+/* ---------- Мемы: превью выбранного фото/видео ---------- */
+function previewMemeMedia(type) {
+    var input = document.getElementById(type === 'photo' ? 'memePhoto' : 'memeVideo');
+    var file = input && input.files[0];
+    if (!file) return;
+    var preview = document.getElementById('memePreview');
+    if (type === 'photo') {
+        resizeImageFile(file, 900, function(data) {
+            memeMedia = data;
+            memeMediaType = 'photo';
+            preview.innerHTML = '<img src="' + data + '" style="max-width:100%;max-height:150px;border-radius:8px">';
+        });
+    } else {
+        readVideoFile(file, function(data) {
+            memeMedia = data;
+            memeMediaType = 'video';
+            preview.innerHTML = '<video src="' + data + '" style="max-width:100%;max-height:150px;border-radius:8px" controls playsinline></video>';
+        });
+    }
+}
+
+/* ---------- ChickenTube: канал ---------- */
+function updateChannelUI() {
+    var nameEl = document.getElementById('channelNameDisplay');
+    var statsEl = document.getElementById('channelStats');
+    var avatarEl = document.getElementById('channelAvatarDisplay');
+    if (nameEl) nameEl.textContent = myChannel || 'Без канала';
+    if (statsEl) statsEl.textContent = (window._myShortsCount || 0) + ' видео';
+    if (avatarEl) {
+        var avatar = { type: 'emoji', value: '📺' };
+        try { avatar = JSON.parse(localStorage.getItem('tildochka_channel_avatar')) || avatar; } catch (e) {}
+        if (avatar.type === 'image') {
+            avatarEl.innerHTML = '<img src="' + avatar.value + '" style="width:100%;height:100%;object-fit:cover">';
+        } else {
+            avatarEl.textContent = avatar.value;
+        }
+    }
+}
+
+function changeChannelAvatar() {
+    var emoji = prompt('Эмодзи для аватара канала (оставь пустым, чтобы выбрать фото):', '📺');
+    if (emoji === null) return;
+    emoji = emoji.trim();
+    if (emoji) {
+        localStorage.setItem('tildochka_channel_avatar', JSON.stringify({ type: 'emoji', value: emoji.slice(0, 4) }));
+        updateChannelUI();
+        return;
+    }
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = function() {
+        var file = input.files[0];
+        if (!file) return;
+        resizeImageFile(file, 128, function(data) {
+            localStorage.setItem('tildochka_channel_avatar', JSON.stringify({ type: 'image', value: data }));
+            updateChannelUI();
+        });
+    };
+    input.click();
+}
+
+function deleteShort(id) {
+    if (!isAdmin) return;
+    if (!confirm('Удалить пост?')) return;
+    db.ref('shorts/' + id).remove();
+}
+
 function likeShort(id,l){db.ref('shorts/'+id).update({likes:l+1});}
 function addShortComment(id){var inp=document.getElementById('sc_'+id);if(!inp)return;var t=inp.value.trim();if(!t)return;db.ref('shorts/'+id+'/comments').push({name:myName,text:t,ts:Date.now()});inp.value='';}
 
@@ -2744,82 +2709,33 @@ function playEpisode(src){document.getElementById('videosrc').src=src;document.g
 function setupReviewStars(){var stars=document.querySelectorAll('#revStars .star');stars.forEach(function(s){s.onclick=function(){reviewRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,reviewRating);document.getElementById('ratingText').textContent=reviewRating+'/10';};s.onmouseenter=function(){var v=parseInt(this.getAttribute('data-v'))*2;stars.forEach(function(x){var sv=parseInt(x.getAttribute('data-v'))*2;x.classList.remove('hover-full','hover-half');if(sv<=v)x.classList.add('hover-full');else if(sv-1===v)x.classList.add('hover-half');});};s.onmouseleave=function(){stars.forEach(function(x){x.classList.remove('hover-full','hover-half');});updateStars(stars,reviewRating);};});updateStars(stars,10);}
 function updateStars(stars,r){stars.forEach(function(s){var v=parseInt(s.getAttribute('data-v'))*2;s.classList.remove('full','half','hover-full','hover-half');if(r>=v)s.classList.add('full');else if(r===v-1)s.classList.add('half');});}
 function addReview(){var t=document.getElementById('reviewText').value.trim();if(!t)return;var ad=JSON.parse(localStorage.getItem('tildochka_avatar_data')||'{"type":"emoji","value":"🐔"}');db.ref('reviews/'+currentMovieId).push({name:myName,avatarType:ad.type,avatarValue:ad.value,text:t,rating:reviewRating,ts:Date.now()}).then(function(){document.getElementById('reviewText').value='';reviewRating=10;updateStars(document.querySelectorAll('#revStars .star'),10);document.getElementById('ratingText').textContent='10/10';progressQuest('review',1);addEggs(2,'Отзыв!');});}
-function loadMovieReviews(mid){db.ref('reviews/'+mid).on('value',function(s){var revs=[];s.forEach(function(c){revs.push({name:c.val().name,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'🐔',text:c.val().text,rating:c.val().rating,ts:c.val().ts});});revs.sort(function(a,b){return(b.ts||0)-(a.ts||0);});var c=document.getElementById('reviews');if(!revs.length)c.innerHTML='<p style="color:#888">Нет отзывов</p>';else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var av=r.avatarType==='image'?'<img src="'+r.avatarValue+'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:5px;vertical-align:middle">':r.avatarValue;c.innerHTML+='<div class="review"><span class="review-avatar">'+av+'</span> <strong>'+r.name+'</strong><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+r.text+'</div></div>';});}updateMovieRating(mid,revs);});}
+function loadMovieReviews(mid){fbListen('reviewsOpen',db.ref('reviews/'+mid),function(s){var revs=[];s.forEach(function(c){revs.push({name:c.val().name,avatarType:c.val().avatarType||'emoji',avatarValue:c.val().avatarValue||'🐔',text:c.val().text,rating:c.val().rating,ts:c.val().ts});});revs.sort(function(a,b){return(b.ts||0)-(a.ts||0);});var c=document.getElementById('reviews');if(!revs.length)c.innerHTML='<p style="color:#888">Нет отзывов</p>';else{c.innerHTML='';revs.forEach(function(r){var sd='';for(var j=1;j<=5;j++)sd+=r.rating>=j*2?'⭐':r.rating===j*2-1?'🌓':'☆';var av=r.avatarType==='image'?'<img src="'+escapeHtml(r.avatarValue)+'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;margin-right:5px;vertical-align:middle">':escapeHtml(r.avatarValue);c.innerHTML+='<div class="review"><span class="review-avatar">'+av+'</span> <strong>'+escapeHtml(r.name)+'</strong><div class="review-stars-display">'+sd+' '+r.rating+'/10</div><div class="review-text">'+escapeHtml(r.text)+'</div></div>';});}updateMovieRating(mid,revs);});}
 function updateMovieRating(mid,revs){if(!revs.length){var el=document.getElementById('rating-'+mid);if(el)el.textContent='—';return;}var sum=0;revs.forEach(function(r){sum+=r.rating;});var avg=(sum/revs.length).toFixed(1);document.getElementById('movieRatingHero').textContent='⭐ '+avg+' / 10';document.getElementById('totalRatingDisplay').textContent='⭐ '+avg+' / 10';var el=document.getElementById('rating-'+mid);if(el)el.textContent='⭐ '+avg+'/10';}
-// ==================== ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ВСЕХ РЕЙТИНГОВ ====================
+/* ============================================================
+   РЕЙТИНГИ ФИЛЬМОВ НА ГЛАВНОЙ
+   ============================================================ */
 function loadAllRatings() {
-    var movieIds = Object.keys(moviesData);
-    var promises = movieIds.map(function(mid) {
-        return db.ref('reviews/' + mid).once('value').then(function(snap) {
-            var revs = [];
-            snap.forEach(function(c) {
-                revs.push(c.val());
-            });
+    return Promise.all(Object.keys(moviesData).map(function(mid) {
+        return fbListen('rating_' + mid, db.ref('reviews/' + mid), function(snap) {
+            var sum = 0, n = 0;
+            snap.forEach(function(c) { sum += (c.val().rating || 0); n++; });
             var el = document.getElementById('rating-' + mid);
-            if(el && revs.length > 0) {
-                var sum = 0;
-                revs.forEach(function(r) {
-                    sum += (r.rating || 0);
-                });
-                el.textContent = '⭐ ' + (sum/revs.length).toFixed(1) + '/10';
-            } else if(el) {
-                el.textContent = '⭐ 0/10';
-            }
-            // Подписываемся на обновления после первоначальной загрузки
-            db.ref('reviews/' + mid).on('value', function(snap2) {
-                var revs2 = [];
-                snap2.forEach(function(c) {
-                    revs2.push(c.val());
-                });
-                var el2 = document.getElementById('rating-' + mid);
-                if(el2 && revs2.length > 0) {
-                    var sum2 = 0;
-                    revs2.forEach(function(r) {
-                        sum2 += (r.rating || 0);
-                    });
-                    el2.textContent = '⭐ ' + (sum2/revs2.length).toFixed(1) + '/10';
-                } else if(el2) {
-                    el2.textContent = '⭐ 0/10';
-                }
-            });
-        }).catch(function() {});
-    });
-    return Promise.all(promises); // 👈 теперь возвращаем Promise
+            if (el) el.textContent = n ? '⭐ ' + (sum / n).toFixed(1) + '/10' : '⭐ 0/10';
+        });
+    }));
 }
 function showGame(type){
-    if(gameInterval) {
-        clearInterval(gameInterval);
-        gameInterval = null;
-    }
-    if(tamaInterval) {
-        clearInterval(tamaInterval);
-        tamaInterval = null;
-    }
+    stopGameTimers();
+    var _tk = gameToken;
     currentGame = type;
     showScreen('game');
-    var titles = {
-        snake: '🐍 Змейка',
-        tetris: '🧱 Тетрис',
-        runner: '🏃 Раннер',
-        chickenrain: '🌧️ Кур. дождь',
-        flappy: '🐔 Flappy курица',
-        memory: '🧠 Memory',
-        tamagotchi: '🐣 Тамагочи',
-        guess: '🔢 Угадай число',
-        rps: '✂️ Камень-ножницы',
-        shooter: '🎯 Птичий тир',
-        drawing: '🎨 Совместная рисовалка',
-        hangman: '🙃 Виселица',
-        minesweeper: '💣 Сапёр',
-        whoami: '🕵️ Кто я?',
-        roulette: '🎡 Рулетка'
-    };
-    document.getElementById('gameTitle').textContent = titles[type] || type;
+    document.getElementById('gameTitle').textContent = getGameTitle(type);
     document.getElementById('gameContent').innerHTML = '';
     document.getElementById('gameRatingArea').innerHTML = '';
     document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
     
     setTimeout(function() {
+        if(_tk !== gameToken) return; // успели выйти из игры
         if(type === 'snake') {
             initSnake();
             progressQuest('playSnake', 1);
@@ -2854,7 +2770,9 @@ function showGame(type){
             initShooter();
         }
         else if(type === 'drawing') {
-            // ===== ПОЛНЫЙ КОД РИСОВАЛКИ =====
+/* ============================================================
+   ПОЛНЫЙ КОД РИСОВАЛКИ
+   ============================================================ */
             document.getElementById('gameContent').innerHTML = '<div class="drawing-container" style="max-width:900px;margin:0 auto;padding:20px">' +
                 '<canvas id="drawGameCanvas" width="800" height="500" style="width:100%; height:auto; max-width:800px; aspect-ratio:800/500; background:white; border-radius:20px"></canvas>' +
                 '<div class="drawing-toolbar" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center">' +
@@ -2982,7 +2900,7 @@ function showGame(type){
                     gameOnlineUsers.add(gameUserId);
                     localStorage.setItem('drawing_users', JSON.stringify([...gameOnlineUsers]));
                     gameUpdateOnlineCount();
-                    setInterval(() => {
+                    gInterval(() => {
                         gameOnlineUsers.add(gameUserId);
                         localStorage.setItem('drawing_users', JSON.stringify([...gameOnlineUsers]));
                         gameUpdateOnlineCount();
@@ -3126,7 +3044,9 @@ function showGame(type){
                 gameInitOnlineTracking();
             }, 100);
         }
-        // ===== НОВЫЕ ИГРЫ =====
+/* ============================================================
+   НОВЫЕ ИГРЫ
+   ============================================================ */
         else if(type === 'hangman') {
             initHangman();
         }
@@ -3134,7 +3054,7 @@ function showGame(type){
             initMinesweeper();
         }
         else if(type === 'whoami') {
-            initWhoAmI();
+            initWhoAmIOnline();
         }
         else if(type === 'roulette') {
             initRoulette();
@@ -3148,11 +3068,252 @@ function showGame(type){
         }, 100);
     }, 50);
 }
-function loadLeaderboard(type){db.ref('gameRatings/'+type).on('value',function(s){var rats=[];s.forEach(function(c){rats.push(c.val());});rats.sort(function(a,b){return(b.score||0)-(a.score||0);});var h='<h3>🏆 Лидеры</h3>';if(!rats.length)h+='<p>Нет игроков</p>';else{for(var i=0;i<Math.min(rats.length,10);i++)h+='<div class="leaderboard-item"><span>'+(i+1)+'. '+(rats[i].name||'—')+'</span><span>'+rats[i].score+' | ⭐'+rats[i].rating+'/10</span></div>';var sum=0;rats.forEach(function(r){sum+=r.rating||0;});var el=document.getElementById('rating-'+type);if(el)el.textContent='⭐ '+(sum/rats.length).toFixed(1)+'/10 ('+rats.length+')';}document.getElementById('leaderboard').innerHTML=h;});}
-function createGameRating(){document.getElementById('gameRatingArea').innerHTML='<div class="stars-container"><span>Оцени: </span><span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span><span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div><button onclick="submitGameRating()">⭐ Отправить</button>';var stars=document.querySelectorAll('#gameRatingArea .star');stars.forEach(function(s){s.onclick=function(){gameRating=parseInt(this.getAttribute('data-v'))*2;updateStars(stars,gameRating);};});updateStars(stars,10);}
-function submitGameRating(){var sc=parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g,''))||0;db.ref('gameRatings/'+currentGame).push({name:myName,rating:gameRating,score:sc,ts:Date.now()});addEggs(Math.floor(sc/10),'Игра!');}
+/* ============================================================
+   СПИСОК ИГР (единый источник: каталог, названия, рейтинги, лидеры)
+   online:true — игра запускается через showOnlineGame (с приглашением)
+   ============================================================ */
+var GAMES = [
+    { id: 'snake',       name: 'Змейка',               icon: '🐍', online: false },
+    { id: 'tetris',      name: 'Тетрис',               icon: '🧱', online: false },
+    { id: 'runner',      name: 'Раннер',               icon: '🏃', online: false },
+    { id: 'chickenrain', name: 'Куриный дождь',        icon: '🌧️', online: false },
+    { id: 'flappy',      name: 'Flappy курица',        icon: '🐔', online: false },
+    { id: 'memory',      name: 'Memory',               icon: '🧠', online: false },
+    { id: 'tamagotchi',  name: 'Тамагочи',             icon: '🐣', online: false },
+    { id: 'guess',       name: 'Угадай число',         icon: '🔢', online: false },
+    { id: 'rps',         name: 'Камень-ножницы',       icon: '✂️', online: false },
+    { id: 'pong',        name: 'Пинг-понг',            icon: '🏓', online: true  },
+    { id: 'xo',          name: 'Крестики-нолики',      icon: '❌', online: true  },
+    { id: 'battleship',  name: 'Морской бой',          icon: '🚢', online: true  },
+    { id: 'shooter',     name: 'Птичий тир',           icon: '🎯', online: false },
+    { id: 'drawing',     name: 'Совместная рисовалка', icon: '🎨', online: false },
+    { id: 'hangman',     name: 'Виселица',             icon: '🙃', online: false },
+    { id: 'minesweeper', name: 'Сапёр',                icon: '💣', online: false },
+    { id: 'whoami',      name: 'Кто я?',               icon: '🕵️', online: false },
+    { id: 'roulette',    name: 'Рулетка',              icon: '🎡', online: false }
+];
 
-// ==================== ТАМАГОЧИ ====================
+var CASINO_GAMES = [
+    { id: 'roulette',  name: 'Рулетка',   icon: '🎡', desc: 'Ставь на число, цвет или чёт/нечет' },
+    { id: 'slots',     name: 'Слоты',     icon: '🎰', desc: 'Крути барабаны и выигрывай!' },
+    { id: 'blackjack', name: 'Блэкджек',  icon: '🃏', desc: 'Набери 21, не переборщи!' },
+    { id: 'dice',      name: 'Кости',     icon: '🎲', desc: 'Бросай кубики и угадывай сумму' }
+];
+
+// Все id, у которых есть рейтинги/отзывы в базе
+function allRatedGameIds() {
+    var ids = GAMES.map(function(g) { return g.id; });
+    CASINO_GAMES.forEach(function(g) { ids.push('casino_' + g.id); });
+    return ids;
+}
+
+// Заголовок экрана игры
+function getGameTitle(id) {
+    for (var i = 0; i < GAMES.length; i++) {
+        if (GAMES[i].id === id) return GAMES[i].icon + ' ' + GAMES[i].name;
+    }
+    return id;
+}
+
+/* ============================================================
+   ОЦЕНКИ И ЛИДЕРЫ ИГР
+   Оценка игры = среднее по оценкам из таблицы лидеров (gameRatings)
+   и по отзывам (gameReviews).
+   ============================================================ */
+var _gameRateData = {};
+
+function updateGameCardRating(id) {
+    var el = document.getElementById('rating-' + id);
+    if (!el) return;
+    var d = _gameRateData[id] || {};
+    var all = (d.ratings || []).concat(d.reviews || []);
+    if (!all.length) { el.textContent = '⭐ Нет оценок'; return; }
+    var sum = 0;
+    all.forEach(function(r) { sum += r; });
+    el.textContent = '⭐ ' + (sum / all.length).toFixed(1) + '/10 (' + all.length + ')';
+}
+
+// Таблица лидеров (рисуется только для игры, которая сейчас открыта)
+function loadLeaderboard(type) {
+    return fbListen('lb_' + type, db.ref('gameRatings/' + type), function(s) {
+        var rats = [];
+        s.forEach(function(c) { rats.push(c.val()); });
+        rats.sort(function(a, b) { return (b.score || 0) - (a.score || 0); });
+
+        _gameRateData[type] = _gameRateData[type] || {};
+        _gameRateData[type].ratings = rats.map(function(r) { return r.rating || 0; }).filter(function(n) { return n > 0; });
+        updateGameCardRating(type);
+
+        var box = document.getElementById('leaderboard');
+        if (box && currentGame === type) {
+            var h = '<h3>🏆 Лидеры</h3>';
+            if (!rats.length) {
+                h += '<p>Нет игроков</p>';
+            } else {
+                for (var i = 0; i < Math.min(rats.length, 10); i++) {
+                    h += '<div class="leaderboard-item"><span>' + (i + 1) + '. ' + escapeHtml(rats[i].name || '—') + '</span><span>' +
+                         (rats[i].score || 0) + ' | ⭐' + (rats[i].rating || 0) + '/10</span></div>';
+                }
+            }
+            box.innerHTML = h;
+        }
+    });
+}
+
+// Блок «Оцени игру и отправь счёт» (его рисуют сами игры)
+function createGameRating() {
+    var box = document.getElementById('gameScoreRatingArea');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'gameScoreRatingArea';
+        var area = document.getElementById('gameRatingArea');
+        if (!area) return;
+        area.insertBefore(box, area.firstChild);
+    }
+    box.innerHTML = '<div class="stars-container"><span>Оцени: </span>' +
+        '<span class="star" data-v="1">★</span><span class="star" data-v="2">★</span><span class="star" data-v="3">★</span>' +
+        '<span class="star" data-v="4">★</span><span class="star" data-v="5">★</span></div>' +
+        '<button onclick="submitGameRating()">⭐ Отправить</button>';
+    var stars = box.querySelectorAll('.star');
+    gameRating = 10;
+    stars.forEach(function(s) {
+        s.onclick = function() {
+            gameRating = parseInt(this.getAttribute('data-v')) * 2;
+            updateStars(stars, gameRating);
+        };
+    });
+    updateStars(stars, 10);
+}
+
+function submitGameRating() {
+    var sc = parseInt(document.getElementById('gameScoreDisplay').textContent.replace(/\D/g, '')) || 0;
+    db.ref('gameRatings/' + currentGame).push({ name: myName, rating: gameRating, score: sc, ts: Date.now() });
+    addEggs(Math.floor(sc / 10), 'Игра!');
+    var btn = document.querySelector('#gameScoreRatingArea button');
+    if (btn) { btn.disabled = true; btn.textContent = '✅ Отправлено'; }
+}
+
+// Отзывы на игру
+function loadGameReviews(gameId) {
+    return fbListen('gr_' + gameId, db.ref('gameReviews/' + gameId), function(snap) {
+        var reviews = [];
+        snap.forEach(function(child) {
+            var v = child.val() || {};
+            reviews.push({
+                id: child.key,
+                name: v.name || 'Аноним',
+                avatarType: v.avatarType || 'emoji',
+                avatarValue: v.avatarValue || '🐔',
+                text: v.text || '',
+                rating: v.rating || 5,
+                ts: v.ts || 0
+            });
+        });
+        reviews.sort(function(a, b) { return b.ts - a.ts; });
+
+        window._gameReviews = window._gameReviews || {};
+        window._gameReviews[gameId] = reviews;
+        _gameRateData[gameId] = _gameRateData[gameId] || {};
+        _gameRateData[gameId].reviews = reviews.map(function(r) { return r.rating; });
+        updateGameCardRating(gameId);
+
+        // Обновляем список отзывов, если игра открыта и человек не печатает отзыв
+        if (currentGame === gameId) {
+            var ta = document.getElementById('gameReviewText');
+            if (!ta || !ta.value) showGameReviewsForCurrent(gameId);
+        }
+    });
+}
+
+/* ============================================================
+   КАТАЛОГ ИГР И КАЗИНО
+   ============================================================ */
+function renderAllGames() {
+    var container = document.getElementById('allGamesGrid');
+    if (!container) return;
+    container.innerHTML = '';
+    GAMES.forEach(function(game) {
+        var card = document.createElement('div');
+        card.className = 'game-card';
+        card.style.cursor = 'pointer';
+        card.onclick = function() { (game.online ? showOnlineGame : showGame)(game.id); };
+        card.innerHTML =
+            '<span class="game-icon">' + game.icon + '</span>' +
+            '<h3>' + game.name + '</h3>' +
+            '<div class="game-rating" id="rating-' + game.id + '">⭐ Загрузка...</div>';
+        container.appendChild(card);
+        updateGameCardRating(game.id);
+    });
+}
+
+function showAllGames() {
+    showScreen('games-all');
+}
+
+function showCasino() {
+    showScreen('casino');
+}
+
+function renderCasinoGrid() {
+    var container = document.getElementById('casinoGamesGrid');
+    if (!container) return;
+    container.innerHTML = '';
+    CASINO_GAMES.forEach(function(game) {
+        var card = document.createElement('div');
+        card.className = 'game-card';
+        card.onclick = function() { showCasinoGame(game.id); };
+        card.innerHTML =
+            '<span class="game-icon">' + game.icon + '</span>' +
+            '<h3>' + game.icon + ' ' + game.name + '</h3>' +
+            '<div style="font-size:11px;color:#aaa;margin-top:4px;">' + game.desc + '</div>' +
+            '<div class="game-rating" id="rating-casino_' + game.id + '">⭐ Загрузка...</div>';
+        container.appendChild(card);
+        updateGameCardRating('casino_' + game.id);
+    });
+}
+
+function showCasinoGame(type) {
+    stopGameTimers();
+    var tk = gameToken;
+    currentGame = 'casino_' + type;
+    showScreen('game');
+    var game = CASINO_GAMES.filter(function(g) { return g.id === type; })[0];
+    document.getElementById('gameTitle').textContent = game ? game.icon + ' ' + game.name : type;
+    document.getElementById('gameContent').innerHTML = '';
+    document.getElementById('gameRatingArea').innerHTML = '';
+    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
+
+    setTimeout(function() {
+        if (tk !== gameToken) return;
+        if (type === 'roulette') initRoulette();
+        else if (type === 'slots') initSlots();
+        else if (type === 'blackjack') initBlackjack();
+        else if (type === 'dice') initDice();
+        loadLeaderboard('casino_' + type);
+        loadGameReviews('casino_' + type);
+        setTimeout(function() { showGameReviewsForCurrent('casino_' + type); }, 100);
+    }, 50);
+}
+
+// Выпадающий список на экране «Лидеры по играм»
+function fillGameSelect() {
+    var sel = document.getElementById('gameSelect');
+    if (!sel || sel.options.length === GAMES.length) return;
+    var current = sel.value;
+    sel.innerHTML = '';
+    GAMES.forEach(function(g) {
+        var o = document.createElement('option');
+        o.value = g.id;
+        o.textContent = g.icon + ' ' + g.name;
+        sel.appendChild(o);
+    });
+    if (current) sel.value = current;
+}
+
+
+/* ============================================================
+   ТАМАГОЧИ
+   ============================================================ */
 var tamagotchiData=null;
 var activeEmotions = [];
 var activeThoughts = [];
@@ -3258,7 +3419,7 @@ if(!t||!t.isAlive){
         });
         addEggs(Math.floor(t.age / 10), 'Тамагочи прожил ' + t.age + ' дней!');
     }
-    document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+ageValue+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div><div id="gameRatingArea"></div>';
+    document.getElementById('gameContent').innerHTML='<div style="text-align:center"><h3>💀 '+deadName+' умер...</h3><p>Возраст: '+ageValue+'</p><p style="color:#aaa;font-size:13px">'+(t?t.hint:'')+'</p><button onclick="resetTamagotchi()" style="font-size:20px;padding:15px 30px">🔄 Новый питомец</button></div><div id="gameScoreRatingArea"></div>';
     if(tamaInterval){clearInterval(tamaInterval);tamaInterval=null;}
     return;
 }
@@ -3278,7 +3439,7 @@ h+='</div><h3>'+t.name+' ('+t.stage+') | '+t.age+' дн.</h3>';
 h+='<p style="color:#aaa;font-size:12px;margin-bottom:8px">'+t.hint+'</p>';
 h+='<div style="max-width:250px;margin:0 auto"><p>😊</p><div class="stat-bar"><div class="stat-fill happy" style="width:'+t.happy+'%"></div></div><p>🍗</p><div class="stat-bar"><div class="stat-fill hunger" style="width:'+t.hunger+'%"></div></div><p>⚡</p><div class="stat-bar"><div class="stat-fill energy" style="width:'+t.energy+'%"></div></div></div>';
 h+='<button onclick="feedPet()">🍗 Кормить</button><button onclick="playWithPet()">🎾 Играть</button><button onclick="sleepPet()">😴 Спать</button>';
-h+='<div id="gameRatingArea" style="margin-top:15px"></div>';
+h+='<div id="gameScoreRatingArea" style="margin-top:15px"></div>';
 document.getElementById('gameContent').innerHTML=h;
 document.getElementById('gameScoreDisplay').textContent='Возраст: '+t.age;
 localStorage.setItem('tildochka_tamagotchi',JSON.stringify(t));
@@ -3300,7 +3461,7 @@ if(roomEl) {
     var ctx = canvas.getContext('2d');
     function animateEmotions() {
         if(!tamagotchiData || !tamagotchiData.isAlive) {
-            requestAnimationFrame(animateEmotions);
+            gRaf(animateEmotions);
             return;
         }
         if(!document.getElementById('tamagotchiRoom')) return;
@@ -3334,10 +3495,10 @@ if(roomEl) {
                 i--;
             }
         }
-        requestAnimationFrame(animateEmotions);
+        gRaf(animateEmotions);
     }
     animateEmotions();
-    setInterval(function() {
+    gInterval(function() {
         if(!tamagotchiData || !tamagotchiData.isAlive) return;
         var centerX = canvas.width/2;
         var centerY = canvas.height/2 - 20;
@@ -3346,7 +3507,7 @@ if(roomEl) {
         else if(tamagotchiData.happy < 50) showThought('🎾', centerX, centerY);
         else if(tamagotchiData.happy > 85 && Math.random() < 0.3) showThought('❤️', centerX, centerY);
     }, 6000);
-    setInterval(function() {
+    gInterval(function() {
         if(!tamagotchiData || !tamagotchiData.isAlive) return;
         var centerX = canvas.width/2;
         var centerY = canvas.height/2 - 20;
@@ -3503,7 +3664,9 @@ renderTamagotchi();
 },3000);
 }
 
-// ==================== ОНЛАЙН-ИГРЫ ====================
+/* ============================================================
+   ОНЛАЙН-ИГРЫ
+   ============================================================ */
 function showOnlineGame(type){
     var users = Object.keys(onlineUsers);
     if(users.length === 0){
@@ -3582,6 +3745,8 @@ function setupInviteListener() {
         // ВНУТРИ setupInviteListener, в обработчике child_added, ПОСЛЕ if(!inv) return; ДОБАВЬ:
 
 if (inv.game === 'whoami') {
+    if (inv.to !== myUid || inv.status !== 'pending') return;
+    if (inv.ts < Date.now() - 60000) { snap.ref.remove(); return; }
     pendingInvite = {
         id: snap.key,
         from: inv.from,
@@ -3595,7 +3760,7 @@ if (inv.game === 'whoami') {
     `;
     document.getElementById('inviteActions').innerHTML = `
         <button onclick="whoamiAcceptInvite('${inv.gameId}')" style="background:#4f4;padding:10px 20px">✅ Принять</button>
-        <button onclick="whoamiDeclineInvite('${inv.id}')" style="background:#f44;padding:10px 20px">❌ Отклонить</button>
+        <button onclick="whoamiDeclineInvite('${snap.key}')" style="background:#f44;padding:10px 20px">❌ Отклонить</button>
     `;
     document.getElementById('inviteTitle').textContent = '📨 Приглашение в "Кто я?"!';
     document.getElementById('inviteModal').classList.add('show');
@@ -3660,7 +3825,9 @@ function ensureInviteListener() {
 function showWaiting(msg,dur){var w=document.getElementById('waitingModal');if(!w){w=document.createElement('div');w.className='modal-overlay';w.id='waitingModal';w.innerHTML='<div class="modal-box"><h3>⏳ Ожидание</h3><div id="waitingContent"></div></div>';document.body.appendChild(w);}document.getElementById('waitingContent').textContent='⏳ '+msg;w.classList.add('show');if(window._wt)clearTimeout(window._wt);window._wt=setTimeout(function(){w.classList.remove('show');},dur);}
 function hideWaiting(){var w=document.getElementById('waitingModal');if(w){w.classList.remove('show');if(window._wt)clearTimeout(window._wt);}}
 
-// ==================== МОРСКОЙ БОЙ ====================
+/* ============================================================
+   МОРСКОЙ БОЙ
+   ============================================================ */
 function startBattleshipSetup(opp,rid){
 currentGame='battleship';
 showScreen('game');
@@ -3837,7 +4004,9 @@ function initOnlinePong(opp, rid, maxScoreToWin){
     }
     gameInterval=setInterval(loop,20);
 }
-// ==================== MEMORY ====================
+/* ============================================================
+   MEMORY
+   ============================================================ */
 function initMemory(){
 var h='<p>Выбери уровень:</p>';
 h+='<button onclick="startMemory(4)" style="margin:8px">😊 4×4 (8 пар)</button>';
@@ -3893,7 +4062,9 @@ playSound("hit");
 rM();
 }
 
-// ==================== FLAPPY КУРИЦА ====================
+/* ============================================================
+   FLAPPY КУРИЦА
+   ============================================================ */
 function initFlappy(){
     document.getElementById('gameContent').innerHTML='<canvas id="fc" width="400" height="500" class="game-canvas"></canvas><p>Пробел/клик/тап — лететь!</p><button id="flappySkinBtn" style="margin:5px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     document.getElementById('flappySkinBtn').onclick = function() {
@@ -4022,7 +4193,9 @@ function initFlappy(){
     }
     gameInterval = setInterval(gameLoop, 20);
 }
-// ==================== КУРИНЫЙ ДОЖДЬ ====================
+/* ============================================================
+   КУРИНЫЙ ДОЖДЬ
+   ============================================================ */
 function initChickenRain(){
     document.getElementById('gameContent').innerHTML='<canvas id="cr" width="400" height="500" class="game-canvas"></canvas><div style="display:flex;gap:15px;justify-content:center;margin:10px"><button class="mobile-btn" id="crl" style="font-size:28px;padding:12px 25px">◀</button><button class="mobile-btn" id="crr" style="font-size:28px;padding:12px 25px">▶</button></div><p style="color:#ffd700">Лови яйца 🥚! Избегай падения!</p><button id="chickenRainSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     var skinBtn = document.getElementById('chickenRainSkinBtn');
@@ -4132,12 +4305,14 @@ function initChickenRain(){
             if(particles[i].life <= 0) particles.splice(i,1);
         }
         spawnEgg();
-        requestAnimationFrame(update);
+        gRaf(update);
     }
     update();
     gameInterval=setInterval(function(){},1000);
 }
-// ==================== РАННЕР ====================
+/* ============================================================
+   РАННЕР
+   ============================================================ */
 function initRunner(){
     document.getElementById('gameContent').innerHTML='<canvas id="rc" width="600" height="200" class="game-canvas"></canvas><div class="mobile-controls"><button class="mobile-btn" onclick="runnerJump()">🏃 ПРЫЖОК</button></div><p>Пробел/клик/тап — прыжок!</p><button id="runnerSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     var skinBtn = document.getElementById('runnerSkinBtn');
@@ -4163,7 +4338,7 @@ function initRunner(){
         }
     }
     window.runnerJump = runnerJump;
-    setInterval(function() {
+    gInterval(function() {
         if(!ov) legSwing = (legSwing + 0.3) % (Math.PI * 2);
     }, 50);
     document.onkeydown = function(e){
@@ -4266,12 +4441,14 @@ function initRunner(){
         ctx.fillStyle = '#000';
         ctx.font = 'bold 18px Arial';
         ctx.fillText('Счёт: ' + score, 500, 30);
-        requestAnimationFrame(update);
+        gRaf(update);
     }
     update();
     gameInterval = setInterval(function(){}, 1000);
 }
-// ==================== ЗМЕЙКА, ТЕТРИС, УГАДАЙ ЧИСЛО, КАМЕНЬ-НОЖНИЦЫ ====================
+/* ============================================================
+   ЗМЕЙКА, ТЕТРИС, УГАДАЙ ЧИСЛО, КАМЕНЬ-НОЖНИЦЫ
+   ============================================================ */
 function initSnake(){
     document.getElementById('gameContent').innerHTML='<canvas id="sc" width="400" height="400" class="game-canvas"></canvas><div class="ds4"><div></div><button class="ds4-btn" id="su">↑</button><div></div><button class="ds4-btn" id="sl">←</button><div></div><button class="ds4-btn" id="sr">→</button><div></div><button class="ds4-btn" id="sd">↓</button><div></div></div><button id="snakeSkinBtn" style="margin:10px auto;display:block;background:#ffd700;color:#000;border:none;padding:8px 16px;border-radius:20px;font-size:14px">🎨 Магазин скинов</button>';
     document.getElementById('snakeSkinBtn').onclick = function() {
@@ -4421,7 +4598,7 @@ document.getElementById('tl').onclick=function(){if(!ov)ml();};document.getEleme
 document.getElementById('tu').onclick=function(){if(!ov)rotate();};document.getElementById('td').onclick=function(){if(!ov)drop();};
 document.onkeydown=function(e){if(ov)return;if(e.key==='ArrowLeft')ml();if(e.key==='ArrowRight')mr();if(e.key==='ArrowDown')drop();if(e.key==='ArrowUp')rotate();e.preventDefault();};
 function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,300,480);for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++)if(board[y][x]){ctx.fillStyle='#ffd700';ctx.fillRect(x*BLOCK,y*BLOCK,BLOCK-1,BLOCK-1);}for(var y=0;y<piece.shape.length;y++)for(var x=0;x<piece.shape[y].length;x++)if(piece.shape[y][x]){ctx.fillStyle='#f60';ctx.fillRect((piece.x+x)*BLOCK,(piece.y+y)*BLOCK,BLOCK-1,BLOCK-1);}}
-function loop(){if(ov)return;if(Date.now()-last>500)drop();draw();requestAnimationFrame(loop);}
+function loop(){if(ov)return;if(Date.now()-last>500)drop();draw();gRaf(loop);}
 function end(){
     ov=true;
     clearInterval(gameInterval);
@@ -4451,25 +4628,18 @@ function end(){
     document.getElementById('gameContent').style.minHeight = '400px';
     document.getElementById('gameContent').appendChild(container);
 }
-requestAnimationFrame(loop);}
+gRaf(loop);}
 function initGuess(){createGameRating();var n=Math.floor(Math.random()*100)+1,a=0;document.getElementById('gameContent').innerHTML='<p>Угадай число 1-100!</p><input id="gi" type="number"><br><button onclick="guessClick()">Угадать</button><p id="gh"></p>';window.guessClick=function(){var g=parseInt(document.getElementById('gi').value);if(!g)return;a++;playSound("jump");if(g===n){alert('Победа! '+a+' попыток!');addEggs(5,'Победа!');}else document.getElementById('gh').textContent=g<n?'🔺 Больше!':'🔻 Меньше!';document.getElementById('gameScoreDisplay').textContent='Попыток: '+a;};}
 function initRPS(){createGameRating();var sc={p:0,b:0};document.getElementById('gameContent').innerHTML='<div style="display:flex;gap:10px;justify-content:center"><button onclick="rpsClick(0)" style="font-size:22px;padding:18px">🪨</button><button onclick="rpsClick(1)" style="font-size:22px;padding:18px">📄</button><button onclick="rpsClick(2)" style="font-size:22px;padding:18px">✂️</button></div><p id="rr"></p>';window.rpsClick=function(p){var bot=Math.floor(Math.random()*3);playSound("jump");if(p===bot)document.getElementById('rr').textContent='Ничья!';else if((p===0&&bot===2)||(p===1&&bot===0)||(p===2&&bot===1)){sc.p++;document.getElementById('rr').textContent='Ты победил!';addEggs(2,'Победа!');}else{sc.b++;document.getElementById('rr').textContent='Бот победил!';}document.getElementById('gameScoreDisplay').textContent='Ты: '+sc.p+' | Бот: '+sc.b;};}
 
-var savedTama=localStorage.getItem('tildochka_tamagotchi');
-if(savedTama){try{tamagotchiData=JSON.parse(savedTama);if(tamagotchiData&&tamagotchiData.isAlive)startTamagotchiLoop();}catch(e){}}
-
-var pass = prompt("🔐 Введите кодовое слово:");
-if (["Тильдочка","тильдочка"].includes(pass)) {
-    loadAllData();
-} else {
-    document.getElementById("blocked").style.display = "flex";
-}
-// ==================== ДРУЗЬЯ ====================
+/* ============================================================
+   ДРУЗЬЯ
+   ============================================================ */
 var myFriends = [];
 var friendRequests = [];
 
 function loadFriends() {
-    db.ref('users/' + myUid + '/friends').on('value', function(snap) {
+    fbListen('friends', db.ref('users/' + myUid + '/friends'), function(snap) {
         myFriends = snap.val() || [];
         var container = document.getElementById('friendsList');
         if(!container) return;
@@ -4482,14 +4652,13 @@ function loadFriends() {
             var friend = myFriends[i];
             var onlineStatus = onlineUsers[friend.uid] ? '🟢 онлайн' : '⚫ офлайн';
             html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #333">';
-            html += '<div><strong>' + friend.name + '</strong><br><small>' + onlineStatus + '</small></div>';
-            html += '<div><button onclick="sendGift(\'' + friend.uid + '\', \'' + friend.name.replace(/'/g, "\\'") + '\')" style="background:#ffd700;color:#000;padding:5px 12px;border-radius:8px;cursor:pointer">🎁 Подарок</button></div>';
+            html += '<div><strong>' + escapeHtml(friend.name) + '</strong><br><small>' + onlineStatus + '</small></div>';
+            html += '<div><button onclick="sendGift(\'' + friend.uid + '\', \'' + jsStr(friend.name) + '\')" style="background:#ffd700;color:#000;padding:5px 12px;border-radius:8px;cursor:pointer">🎁 Подарок</button></div>';
             html += '</div>';
         }
         container.innerHTML = html;
     });
-    db.ref('users/' + myUid + '/friendRequests').off();
-    db.ref('users/' + myUid + '/friendRequests').on('value', function(snap) {
+    fbListen('friendRequests', db.ref('users/' + myUid + '/friendRequests'), function(snap) {
         var requests = [];
         snap.forEach(function(child) {
             requests.push({
@@ -4510,7 +4679,7 @@ function loadFriends() {
         for(var i = 0; i < requests.length; i++) {
             var req = requests[i];
             html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #333">';
-            html += '<div><strong>' + req.name + '</strong><br><small>хочет добавить в друзья</small></div>';
+            html += '<div><strong>' + escapeHtml(req.name) + '</strong><br><small>хочет добавить в друзья</small></div>';
             html += '<div>';
             html += '<button onclick="acceptFriend(\'' + req.uid + '\', \'' + req.id + '\')" style="background:#4f4;color:#000;padding:5px 12px;border-radius:8px;cursor:pointer;margin-right:5px">✅ Принять</button>';
             html += '<button onclick="declineFriend(\'' + req.id + '\')" style="background:#f44;color:#fff;padding:5px 12px;border-radius:8px;cursor:pointer">❌ Отклонить</button>';
@@ -4624,7 +4793,10 @@ function sendGift(friendUid, friendName) {
     }
 }
 
+var _giftsListening = false;
 function loadGifts() {
+    if(_giftsListening) return;
+    _giftsListening = true;
     db.ref('users/' + myUid + '/gifts').on('child_added', function(snap) {
         var gift = snap.val();
         if(gift) {
@@ -4641,7 +4813,10 @@ function loadGifts() {
     });
 }
 
+var _friendNotifSetup = false;
 function setupFriendNotifications() {
+    if(_friendNotifSetup) return;
+    _friendNotifSetup = true;
     db.ref('users/' + myUid + '/friendRequests').on('child_added', function(snap) {
         var req = snap.val();
         if(req && req.name && req.uid !== myUid) {
@@ -4655,11 +4830,9 @@ function setupFriendNotifications() {
     });
 }
 
-function showFriendsScreen() {
-    showScreen('friends');
-    loadFriends();
-}
-// ==================== ЛИДЕРЫ ПО ИГРАМ ====================
+/* ============================================================
+   ЛИДЕРЫ ПО ИГРАМ
+   ============================================================ */
 function loadGameLeaders() {
     var game = document.getElementById('gameSelect').value;
     var container = document.getElementById('gameLeadersList');
@@ -4690,7 +4863,7 @@ function loadGameLeaders() {
             else if(i === 2) medal = '🥉 ';
             html += '<div style="display:grid;grid-template-columns:50px 1fr 80px 80px;padding:10px;border-bottom:1px solid rgba(255,255,255,.1)">';
             html += '<div>' + medal + (i+1) + '</div>';
-            html += '<div>' + (l.name || 'Аноним') + '</div>';
+            html += '<div>' + escapeHtml(l.name || 'Аноним') + '</div>';
             html += '<div>' + l.score + '</div>';
             html += '<div>⭐ ' + (l.rating).toFixed(1) + '/10</div>';
             html += '</div>';
@@ -4700,11 +4873,9 @@ function loadGameLeaders() {
     });
 }
 
-function showGamesLBScreen() {
-    showScreen('gamesLB');
-    loadGameLeaders();
-}
-// ==================== ИГРА "ТИР" ====================
+/* ============================================================
+   ИГРА "ТИР"
+   ============================================================ */
 function initShooter(){
     document.getElementById('gameContent').innerHTML = `
         <div style="display:flex;gap:20px;justify-content:center;margin-bottom:10px;flex-wrap:wrap">
@@ -5081,17 +5252,17 @@ function initShooter(){
         var touchY = (touch.clientY - rect.top) * scaleY;
         shootAt(touchX, touchY);
     };
-    setInterval(function() {
+    gInterval(function() {
         if(gameActive && flyingAnimals.length < 3 && Math.random() < 0.35) {
             spawnFlyingAnimal();
         }
     }, 1500);
-    setInterval(function() {
+    gInterval(function() {
         if(gameActive && groundAnimals.length < 3 && Math.random() < 0.3) {
             spawnGroundAnimal();
         }
     }, 2000);
-    setInterval(function() {
+    gInterval(function() {
         if(!gameActive) return;
         for(var i = 0; i < flyingAnimals.length; i++) {
             var a = flyingAnimals[i];
@@ -5255,18 +5426,18 @@ function initShooter(){
         ctx.fillStyle = 'rgba(255,0,0,0.6)';
         ctx.fill();
         frame++;
-        requestAnimationFrame(animate);
+        gRaf(animate);
     }
     animate();
-    var oldStop = stopGame;
-    window.stopGame = function() {
+    onGameStop(function() {
         if(timerInterval) clearInterval(timerInterval);
         document.removeEventListener('keydown', keyHandler);
-        if(oldStop) oldStop();
-    };
+    });
     gameInterval = setInterval(function(){}, 1000);
 }
-// ==================== ЦИТАТЫ ДНЯ (30+ штук) ====================
+/* ============================================================
+   ЦИТАТЫ ДНЯ (30+ штук)
+   ============================================================ */
 var allBaseQuotes = [
     { text: 'Курица — это не птица, это образ жизни.', author: 'Курица №1', movie: 'Приключения 4 куриц' },
     { text: 'Я не умею летать, но я умею мечтать.', author: 'Курица №2', movie: 'Приключения 4 куриц' },
@@ -5299,31 +5470,6 @@ var allBaseQuotes = [
     { text: 'Жизнь слишком коротка, чтобы не стрелять по птицам в тире.', author: 'Снайпер', movie: 'Tildochka' }
 ];
 
-function loadQuotesFromFirebase() {
-    db.ref('quotes').on('value', function(snap) {
-        var userQuotes = [];
-        snap.forEach(function(child) {
-            userQuotes.push({
-                id: child.key,
-                text: child.val().text,
-                author: child.val().author,
-                movie: child.val().movie,
-                approved: child.val().approved || false,
-                ts: child.val().ts,
-                suggestedBy: child.val().suggestedBy
-            });
-        });
-        var approvedUserQuotes = userQuotes.filter(q => q.approved === true);
-        var allQuotes = [...allBaseQuotes, ...approvedUserQuotes];
-        window.quotesList = allQuotes.map((q, i) => ({
-            id: 'q_' + i,
-            text: q.text,
-            author: q.author,
-            movie: q.movie
-        }));
-        setCurrentQuote();
-    });
-}
 function setCurrentQuote() {
     if(!window.quotesList || window.quotesList.length === 0) {
         window.quotesList = allBaseQuotes.map(function(q, i) {
@@ -5430,9 +5576,9 @@ function showQuoteAdmin() {
                 <h3>⏳ Ожидают одобрения:</h3>
                 ${all.filter(q => !q.approved).map(q => `
                     <div class="quote-item">
-                        <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
-                        <div>— ${q.author} (${q.movie})</div>
-                        <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
+                        <div style="font-style:italic">«${escapeHtml(q.text)}»</div>
+                        <div>— ${escapeHtml(q.author)} (${escapeHtml(q.movie)})</div>
+                        <div style="font-size:11px;color:#aaa">Предложил: ${escapeHtml(q.suggestedBy)}</div>
                         <button onclick="window.opener.postMessage({type:'approveQuote', id:'${q.id}'}, '*')">✅ Одобрить</button>
                         <button class="delete" onclick="window.opener.postMessage({type:'deleteQuote', id:'${q.id}'}, '*')">🗑️ Удалить</button>
                     </div>
@@ -5440,18 +5586,18 @@ function showQuoteAdmin() {
                 <h3>✅ Одобренные пользовательские цитаты:</h3>
                 ${all.filter(q => q.approved).map(q => `
                     <div class="quote-item">
-                        <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
-                        <div>— ${q.author} (${q.movie})</div>
-                        <div style="font-size:11px;color:#aaa">Предложил: ${q.suggestedBy}</div>
-                        <button class="delete" onclick="window.opener.postMessage({type:'deleteJoke', id:'${q.id}'}, '*')">🗑️ Удалить</button>
+                        <div style="font-style:italic">«${escapeHtml(q.text)}»</div>
+                        <div>— ${escapeHtml(q.author)} (${escapeHtml(q.movie)})</div>
+                        <div style="font-size:11px;color:#aaa">Предложил: ${escapeHtml(q.suggestedBy)}</div>
+                        <button class="delete" onclick="window.opener.postMessage({type:'deleteQuote', id:'${q.id}'}, '*')">🗑️ Удалить</button>
                     </div>
                 `).join('') || '<p>Нет одобренных пользовательских цитат</p>'}
                 <hr>
                 <h3>📜 Базовые цитаты (${allBaseQuotes.length} шт.):</h3>
                 ${allBaseQuotes.map(q => `
                     <div class="quote-item" style="background:#222">
-                        <div style="font-style:italic">«${q.text.replace(/'/g, "\\'")}»</div>
-                        <div>— ${q.author} (${q.movie})</div>
+                        <div style="font-style:italic">«${escapeHtml(q.text)}»</div>
+                        <div>— ${escapeHtml(q.author)} (${escapeHtml(q.movie)})</div>
                     </div>
                 `).join('')}
                 <button onclick="window.close()">Закрыть</button>
@@ -5486,39 +5632,26 @@ function deleteJoke(id) {
     ref.remove();
     alert('🗑️ Удалено!');
 }
+var _quotesTimer = null;
 function initQuotes() {
     setCurrentQuote();
-    db.ref('quotes').on('value', function(snap) {
-        var userQuotes = [];
+    var ready = fbListen('quotes', db.ref('quotes'), function(snap) {
+        var approvedUserQuotes = [];
         snap.forEach(function(child) {
-            userQuotes.push({
-                id: child.key,
-                text: child.val().text,
-                author: child.val().author,
-                movie: child.val().movie,
-                approved: child.val().approved || false,
-                ts: child.val().ts,
-                suggestedBy: child.val().suggestedBy
-            });
+            var v = child.val() || {};
+            if (v.approved === true) approvedUserQuotes.push({ text: v.text, author: v.author, movie: v.movie });
         });
-        var approvedUserQuotes = userQuotes.filter(function(q) { return q.approved === true; });
-        var allQuotes = allBaseQuotes.concat(approvedUserQuotes);
-        window.quotesList = allQuotes.map(function(q, i) {
-            return {
-                id: 'q_' + i,
-                text: q.text,
-                author: q.author,
-                movie: q.movie
-            };
+        window.quotesList = allBaseQuotes.concat(approvedUserQuotes).map(function(q, i) {
+            return { id: 'q_' + i, text: q.text, author: q.author, movie: q.movie };
         });
         setCurrentQuote();
     });
-    setInterval(function() {
-        setCurrentQuote();
-    }, 30 * 60 * 1000);
+    if (!_quotesTimer) _quotesTimer = setInterval(setCurrentQuote, 30 * 60 * 1000);
+    return ready;
 }
-setTimeout(initQuotes, 2000);
-// ==================== АДМИН ПАНЕЛЬ ====================
+/* ============================================================
+   АДМИН ПАНЕЛЬ
+   ============================================================ */
 function showAdminLogin() {
     var code = prompt('🔐 Введите код администратора:');
     if(code === 'трактор') {
@@ -5614,249 +5747,22 @@ function showJokeAdmin() {
 if(isAdmin) {
     setTimeout(addAdminButtonsToMenu, 1000);
 }
-// Функция для отрисовки всех игр
-function renderAllGames() {
-    var container = document.getElementById('allGamesGrid');
-    if(!container) {
-        console.error('Контейнер allGamesGrid не найден!');
-        return;
-    }
-    var allGames = [
-    { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
-    { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
-    { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
-    { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
-    { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
-    { name: 'Memory', icon: '🧠', id: 'memory', online: false },
-    { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
-    { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
-    { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
-    { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
-    { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
-    { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
-    { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
-    { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false },
-    { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
-    { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
-    { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false }
-];
-    container.innerHTML = '';
-    for(var i = 0; i < allGames.length; i++) {
-        var game = allGames[i];
-        var playFunc = game.online ? 'showOnlineGame' : 'showGame';
-        var card = document.createElement('div');
-        card.className = 'game-card';
-        card.setAttribute('onclick', playFunc + "('" + game.id + "')");
-        card.setAttribute('style', 'cursor:pointer');
-        card.innerHTML = `
-            <span class="game-icon">${game.icon}</span>
-            <h3>${game.name}</h3>
-            <div class="game-rating" id="rating-${game.id}">⭐ Загрузка...</div>
-        `;
-        container.appendChild(card);
-    }
-    for(var i = 0; i < allGames.length; i++) {
-        loadLeaderboard(allGames[i].id);
-    }
-    console.log('✅ Игры отрисованы, найдено:', allGames.length);
-}
-function showAllGames() {
-    console.log('showAllGames вызвана');
-    showScreen('games-all');
-    function renderGames() {
-        var container = document.getElementById('allGamesGrid');
-        if(!container) {
-            console.error('Контейнер allGamesGrid не найден!');
-            return false;
-        }
-        var allGames = [
-            { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
-            { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
-            { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
-            { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
-            { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
-            { name: 'Memory', icon: '🧠', id: 'memory', online: false },
-            { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
-            { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
-            { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
-            { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
-            { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
-            { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
-            { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
-            { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false },
-            // 👇 НОВЫЕ ИГРЫ (запятые исправлены!)
-            { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
-            { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
-            { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false }
-        ];
-        container.innerHTML = '';
-        for(var i = 0; i < allGames.length; i++) {
-            var game = allGames[i];
-            var playFunc = game.online ? 'showOnlineGame' : 'showGame';
-            var card = document.createElement('div');
-            card.className = 'game-card';
-            card.setAttribute('onclick', playFunc + "('" + game.id + "')");
-            card.setAttribute('style', 'cursor:pointer');
-            card.innerHTML = `
-                <span class="game-icon">${game.icon}</span>
-                <h3>${game.name}</h3>
-                <div class="game-rating" id="rating-${game.id}">⭐ Загрузка...</div>
-            `;
-            container.appendChild(card);
-        }
-        console.log('✅ Игры отрисованы, найдено:', allGames.length);
-        return true;
-    }
-    if(!renderGames()) {
-        setTimeout(function() {
-            renderGames();
-        }, 100);
-    }
-    setTimeout(function() {
-        var allGameIds = ['snake', 'tetris', 'runner', 'chickenrain', 'flappy', 'memory', 'tamagotchi', 'guess', 'rps', 'pong', 'xo', 'battleship', 'shooter', 'drawing', 'hangman', 'minesweeper', 'whoami', 'roulette'];
-        for(var i = 0; i < allGameIds.length; i++) {
-            loadLeaderboard(allGameIds[i]);
-        }
-    }, 200);
-}
 window.addEventListener('message', function(event) {
+    if(event.origin !== window.location.origin) return;
     var data = event.data;
-    if(typeof data === 'string') return;
+    if(!data || typeof data === 'string') return;
     if(data.type === 'approveJoke') approveJoke(data.id);
     else if(data.type === 'deleteJoke') deleteJoke(data.id);
     else if(data.type === 'approveQuote') approveQuote(data.id);
     else if(data.type === 'deleteQuote') deleteQuote(data.id);
 });
-window.stopGame = function() {
-    console.log('stopGame вызван');
-    if(gameInterval) {
-        clearInterval(gameInterval);
-        gameInterval = null;
-    }
-    if(tamaInterval) {
-        clearInterval(tamaInterval);
-        tamaInterval = null;
-    }
-    if(window.shooterTimerInterval) {
-        clearInterval(window.shooterTimerInterval);
-        window.shooterTimerInterval = null;
-    }
-    showScreen('home');
-};
-document.addEventListener('keydown', function(e) {
-    if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        console.log('Печатаем в поле:', e.key);
-    }
-});
-function fixBackButton() {
-    var backBtn = document.querySelector('#game-screen button');
-    if(backBtn && backBtn.textContent.includes('На главную')) {
-        backBtn.removeAttribute('onclick');
-        backBtn.onclick = function() {
-            console.log('Кнопка На главную нажата');
-            if(window.gameInterval) {
-                clearInterval(window.gameInterval);
-                window.gameInterval = null;
-            }
-            if(window.tamaInterval) {
-                clearInterval(window.tamaInterval);
-                window.tamaInterval = null;
-            }
-            showScreen('home');
-        };
-    }
-}
-var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-        if(mutation.type === 'childList') {
-            fixBackButton();
-        }
-    });
-});
-observer.observe(document.getElementById('game-screen'), { childList: true, subtree: true });
-setTimeout(fixBackButton, 100);
-document.addEventListener('DOMContentLoaded', function() {
-    var chatInput = document.getElementById('chatMessageLive');
-    if(chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if(e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendChatMessage();
-            }
-        });
-    }
-    var ideaInput = document.getElementById('ideaText');
-    if(ideaInput) {
-        ideaInput.addEventListener('keypress', function(e) {
-            if(e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                addIdea();
-            }
-        });
-    }
-    var magicInput = document.getElementById('magicMessageInput');
-    if(magicInput) {
-        magicInput.addEventListener('keypress', function(e) {
-            if(e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMagicMessage();
-            }
-        });
-    }
-});
-var originalShowScreen = window.showScreen;
-window.showScreen = function(id) {
-    console.log('showScreen вызван с id:', id);
-    var currentScreen = document.querySelector('.screen.active');
-    if(currentScreen && currentScreen.id === 'game-screen' && id !== 'game') {
-        if(window.gameInterval) {
-            clearInterval(window.gameInterval);
-            window.gameInterval = null;
-        }
-        if(window.tamaInterval) {
-            clearInterval(window.tamaInterval);
-            window.tamaInterval = null;
-        }
-    }
-    originalShowScreen(id);
-};
-document.addEventListener('DOMContentLoaded', function() {
-    fixBackButton();
-    var gameCards = document.querySelectorAll('.game-card');
-    gameCards.forEach(function(card) {
-        card.addEventListener('click', function(e) {
-            var onclickAttr = card.getAttribute('onclick');
-            if(onclickAttr) {
-                console.log('Клик по игре:', onclickAttr);
-            }
-        });
-    });
-    console.log('✅ Все фиксы применены');
-});
 function closeModal(modalId) {
     var modal = document.getElementById(modalId);
     if(modal) modal.classList.remove('show');
 }
-function rateTamagotchiNow() {
-    if(!tamagotchiData || !tamagotchiData.isAlive) {
-        alert('Питомец мёртв или не выбран!');
-        return;
-    }
-    var rating = parseInt(prompt('Оцените игру Тамагочи от 1 до 10:', '10'));
-    if(isNaN(rating) || rating < 1 || rating > 10) {
-        alert('Введите число от 1 до 10');
-        return;
-    }
-    db.ref('gameRatings/tamagotchi').push({
-        name: myName,
-        rating: rating,
-        score: tamagotchiData.age,
-        ts: Date.now()
-    });
-    alert('⭐ Спасибо за оценку!');
-    addEggs(2, 'Оценка игры!');
-}
-// ==================== СКИНЫ ДЛЯ ИГР ====================
+/* ============================================================
+   СКИНЫ ДЛЯ ИГР
+   ============================================================ */
 var gameSkins = {
     snake: {
         default: { id: 'snake_default', name: '🐍 Классическая', emoji: '🐍', color: '#4CAF50', price: 0, icon: '🐍' },
@@ -6052,7 +5958,9 @@ function restartCurrentGame() {
         }, 100);
     }
 }
-// ==================== ЕЖЕДНЕВНЫЕ ПРАЗДНИКИ И СОБЫТИЯ (366 дней) ====================
+/* ============================================================
+   ЕЖЕДНЕВНЫЕ ПРАЗДНИКИ И СОБЫТИЯ (366 дней)
+   ============================================================ */
 function generateAllYearEvents() {
     const events = {};
     events['01-01'] = { name: '🎄 Новый год!', desc: 'Ёлка, мандарины и подарки! С новым счастьем!', type: 'newyear', reward: 50, bg: 'newyear', quest: 'Отправь 10 🎄 в чате', character: { emoji: '🎄', name: 'Дед Мороз' } };
@@ -6505,7 +6413,9 @@ function applyDailyEvent() {
         }, 1500);
     }
 }
-// ========== НОВЫЙ ЧАТ: МАГИЧЕСКИЙ ШАР ==========
+/* ============================================================
+   НОВЫЙ ЧАТ: МАГИЧЕСКИЙ ШАР
+   ============================================================ */
 const magicAnswers = ["Да", "Нет", "Возможно", "Скорее не", "Спроси у звезд", "Боже упаси", "Удочери меня", "Мой третий глаз видит, что.... ты лохушка", "Тильдочка", "А как ты считаешь кто разумнее, Кира или одноклеточная молекула без разума?", "Квэдрэт, сасать ёпта, эээ сикс севен..., чики бамбони, эпштейн"];
 const stickers = ["🗿", "🤨", "🐧", "🤡", "💀", "👽", "🔥", "✨"];
 function initStickerButtons() {
@@ -6553,7 +6463,7 @@ function sendMagicMessageText(text) {
     }
 }
 function loadMagicMessages() {
-    db.ref('magicChat').limitToLast(50).on('value', (snapshot) => {
+    return fbListen('magic', db.ref('magicChat').limitToLast(50), (snapshot) => {
         const messages = [];
         snapshot.forEach((child) => {
             messages.push({
@@ -6620,15 +6530,16 @@ function addPollOption() {
     container.appendChild(input);
 }
 
+// Создание опроса. Голоса хранятся по НОМЕРУ варианта (v:2) —
+// так в вариантах можно использовать любые символы (точки, # и т.д.)
 function createPoll() {
     const question = document.getElementById('pollQuestion').value.trim();
     if (!question) {
         alert('Введите вопрос!');
         return;
     }
-    const inputs = document.querySelectorAll('.poll-option-input');
     const options = [];
-    inputs.forEach(inp => {
+    document.querySelectorAll('.poll-option-input').forEach(inp => {
         const val = inp.value.trim();
         if (val) options.push(val);
     });
@@ -6636,59 +6547,65 @@ function createPoll() {
         alert('Добавьте минимум 2 варианта!');
         return;
     }
-    const pollData = {
+    const votes = {};
+    options.forEach((opt, i) => { votes[i] = 0; });
+    db.ref('polls').push({
+        v: 2,
         question: question,
         options: options,
-        votes: {},
-        voters: {},          // ← НОВОЕ ПОЛЕ для хранения uid проголосовавших
+        votes: votes,
         createdBy: myName,
         ts: Date.now()
-    };
-    options.forEach(opt => {
-        pollData.votes[opt] = 0;
     });
-    db.ref('polls').push(pollData);
     document.getElementById('pollQuestion').value = '';
     document.querySelectorAll('.poll-option-input').forEach(inp => inp.value = '');
     alert('✅ Опрос создан!');
-    loadPolls();
 }
+
+// Количество голосов за вариант (поддерживает и старые опросы, где ключом был текст)
+function pollVotesFor(poll, index) {
+    const votes = poll.votes || {};
+    const key = poll.v === 2 ? String(index) : poll.options[index];
+    return votes[key] || 0;
+}
+
 function loadPolls() {
-    db.ref('polls').on('value', (snapshot) => {
+    return fbListen('polls', db.ref('polls'), (snapshot) => {
         const polls = [];
         snapshot.forEach(child => {
-            polls.push({ id: child.key, ...child.val() });
+            const data = child.val() || {};
+            if (!Array.isArray(data.options)) return;
+            polls.push(Object.assign({ id: child.key }, data));
         });
-        polls.sort((a, b) => b.ts - a.ts);
+        polls.sort((a, b) => (b.ts || 0) - (a.ts || 0));
         const container = document.getElementById('pollsList');
         if (!container) return;
         if (polls.length === 0) {
             container.innerHTML = '<p style="color:#888">Нет активных опросов.</p>';
             return;
         }
-        container.innerHTML = '';
+        let html = '';
         polls.forEach(poll => {
-            const totalVotes = Object.values(poll.votes || {}).reduce((a, b) => a + b, 0);
+            const counts = poll.options.map((opt, i) => pollVotesFor(poll, i));
+            const totalVotes = counts.reduce((a, b) => a + b, 0);
             const hasVoted = !!(poll.voters && poll.voters[myUid]);
-
-            // Проверяем, может ли пользователь удалить этот опрос
             const canDelete = (poll.createdBy === myName) || isAdmin;
 
             let optionsHtml = '';
-            poll.options.forEach(opt => {
-                const votes = poll.votes[opt] || 0;
+            poll.options.forEach((opt, i) => {
+                const votes = counts[i];
                 const percent = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
                 optionsHtml += `
                     <div style="margin:8px 0;">
                         <div style="display:flex;justify-content:space-between;font-size:13px;">
-                            <span>${opt}</span>
+                            <span>${escapeHtml(opt)}</span>
                             <span>${votes} (${percent}%)</span>
                         </div>
                         <div style="background:#333;border-radius:10px;height:16px;overflow:hidden;">
                             <div style="background:linear-gradient(90deg,#ffd700,#ffaa00);height:100%;width:${percent}%;transition:width 0.3s;"></div>
                         </div>
-                        <button onclick="votePoll('${poll.id}','${opt}')" 
-                                style="font-size:11px;padding:2px 10px;background:${hasVoted ? '#555' : '#444'};border-radius:8px;margin-top:2px;${hasVoted ? 'opacity:0.6;cursor:default;' : ''}"
+                        <button onclick="votePoll('${poll.id}',${i})"
+                                style="font-size:11px;padding:2px 10px;background:${hasVoted ? '#555' : '#444'};border-radius:8px;margin-top:2px;"
                                 ${hasVoted ? 'disabled' : ''}>
                             ${hasVoted ? '✅ Вы проголосовали' : 'Голосовать'}
                         </button>
@@ -6696,17 +6613,16 @@ function loadPolls() {
                 `;
             });
 
-            // Добавляем кнопку удаления (если есть права)
             const deleteButton = canDelete
-                ? `<button onclick="deletePoll('${poll.id}')" style="background:#f44;color:#fff;border:none;padding:4px 12px;border-radius:8px;font-size:12px;cursor:pointer;margin-left:10px;">🗑️ Удалить</button>`
+                ? `<button onclick="deletePoll('${poll.id}')" style="background:#f44;color:#fff;border:none;padding:4px 12px;border-radius:8px;font-size:11px;margin-left:8px;">🗑️ Удалить</button>`
                 : '';
 
-            container.innerHTML += `
+            html += `
                 <div style="background:rgba(0,0,0,0.4);border-radius:12px;padding:15px;margin-bottom:15px;border:1px solid rgba(255,215,0,0.2);">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                        <h4 style="color:#ffd700;">${poll.question}</h4>
+                        <h4 style="color:#ffd700;">${escapeHtml(poll.question)}</h4>
                         <div>
-                            <span style="font-size:11px;color:#888;">👤 ${poll.createdBy}</span>
+                            <span style="font-size:11px;color:#888;">👤 ${escapeHtml(poll.createdBy)}</span>
                             ${deleteButton}
                         </div>
                     </div>
@@ -6715,70 +6631,52 @@ function loadPolls() {
                 </div>
             `;
         });
+        container.innerHTML = html;
     });
 }
+
 function deletePoll(pollId) {
-    // Проверяем права – сначала получаем данные опроса
     db.ref('polls/' + pollId).once('value', (snapshot) => {
         const poll = snapshot.val();
         if (!poll) {
             alert('Опрос не найден');
             return;
         }
-        // Проверяем, кто автор
         if (poll.createdBy !== myName && !isAdmin) {
             alert('⛔ У вас нет прав на удаление этого опроса');
             return;
         }
         if (confirm('Удалить опрос "' + poll.question + '"?')) {
             db.ref('polls/' + pollId).remove()
-                .then(() => {
-                    alert('🗑️ Опрос удалён');
-                    loadPolls(); // обновляем список
-                })
-                .catch((err) => {
-                    alert('Ошибка удаления: ' + err.message);
-                });
+                .then(() => alert('🗑️ Опрос удалён'))
+                .catch((err) => alert('Ошибка удаления: ' + err.message));
         }
     });
 }
 
-function votePoll(pollId, option) {
-    const pollRef = db.ref('polls/' + pollId);
-    pollRef.transaction((currentData) => {
-        if (currentData === null) return currentData;
-
-        // Если пользователь уже голосовал – отменяем транзакцию
-        if (currentData.voters && currentData.voters[myUid]) {
-            return; // undefined → транзакция не применится
-        }
-
-        // Инициализируем, если нужно
-        if (!currentData.voters) currentData.voters = {};
-        if (!currentData.votes) currentData.votes = {};
-
-        // Запоминаем пользователя
-        currentData.voters[myUid] = true;
-
-        // Увеличиваем счётчик за выбранный вариант
-        if (!currentData.votes[option]) currentData.votes[option] = 0;
-        currentData.votes[option]++;
-
-        return currentData;
-    }, (error, committed, snapshot) => {
+// Голосование: один голос с одного устройства (транзакция защищает от гонок)
+function votePoll(pollId, index) {
+    db.ref('polls/' + pollId).transaction((poll) => {
+        if (poll === null) return poll;
+        if (poll.voters && poll.voters[myUid]) return; // уже голосовал — отмена
+        if (!poll.voters) poll.voters = {};
+        if (!poll.votes) poll.votes = {};
+        poll.voters[myUid] = true;
+        const key = poll.v === 2 ? String(index) : poll.options[index];
+        poll.votes[key] = (poll.votes[key] || 0) + 1;
+        return poll;
+    }, (error, committed) => {
         if (error) {
             alert('Ошибка голосования: ' + error.message);
             return;
         }
-        if (committed) {
-            alert('✅ Ваш голос учтён!');
-            loadPolls(); // обновляем список
-        } else {
-            alert('❌ Вы уже голосовали в этом опросе!');
-        }
+        alert(committed ? '✅ Ваш голос учтён!' : '❌ Вы уже голосовали в этом опросе!');
     });
 }
-// ==================== СТИКЕРЫ (ФОТО/ВИДЕО) ====================
+
+/* ============================================================
+   СТИКЕРЫ (ФОТО/ВИДЕО)
+   ============================================================ */
 
 function loadCustomStickers() {
     
@@ -6976,7 +6874,9 @@ function createCustomSticker() {
         alert('Ошибка: ' + err.message);
     });
 }
-// ==================== ЭМОДЗИ-ПАНЕЛЬ ====================
+/* ============================================================
+   ЭМОДЗИ-ПАНЕЛЬ
+   ============================================================ */
 const commonEmojis = ['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','😋','😎','😍','🥰','😘','😗','😙','😚','🙂','🤗','🤩','🤔','🤨','😐','😑','😶','🙄','😏','😣','😥','😮','🤐','😯','😪','😫','😴','😌','😛','😜','😝','🤤','😒','😓','😔','😕','🙃','🤑','😲','☹️','🙁','😖','😞','😟','😤','😢','😭','😦','😧','😨','😩','🤯','😬','😰','😱','🥵','🥶','😳','🤪','😵','😡','😠','🤬','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','🎃','😺','😸','😻','😽','🙀','😿','😹','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️','✝️','☪️','🕉️','☸️','✡️','🔯','🕎','☯️','☦️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓','🆔','⚛️','🉑','☢️','☣️','📴','📳','🈶','🈚','🈸','🈺','🈷️','✴️','🆚','💮','🉐','㊙️','㊗️','🈴','🈵','🈹','🈲','🅰️','🅱️','🆎','🆑','🅾️','🆘','❌','⭕','🛑','⛔','📛','🚫','💯','💢','♨️','🚷','🚯','🚳','🚱','🔞','📵','🚭','❗','❕','❓','❔','‼️','⁉️','🔅','🔆','〽️','⚠️','🚸','🔱','⚜️','🔰','♻️','✅','🈯️','💹','❇️','✳️','❎','🌐','💠','Ⓜ️','🌀','💤','🏧','🚾','♿','🅿️','🈳','🈂️','🛂','🛃','🛄','🛅','🚹','🚺','🚼','⚧️','🚻','🚮','🎦','📶','🈁','🔣','ℹ️','🔤','🔡','🔠','🆖','🆗','🆙','🆒','🆕','🆓','0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟','🔢','#️⃣','*️⃣','⏏️','▶️','⏸️','⏹️','⏺️','⏭️','⏮️','⏩','⏪','⏫','⏬','◀️','🔼','🔽','➡️','⬅️','⬆️','⬇️','↗️','↘️','↙️','↖️','↕️','↔️','🔄','↩️','↪️','⤴️','⤵️','🔀','🔁','🔂','🔄','🔃','🎵','🎶','➕','➖','➗','✖️','♾️','💲','💱','™️','©️','®️','👁️‍🗨️','🔚','🔙','🔛','🔝','🔜','🛐','⚕️'];
 
 let emojiPanelVisible = false;
@@ -7012,7 +6912,9 @@ function toggleEmojiPanel() {
     }
 }
 
-// ==================== ВИСЕЛИЦА ====================
+/* ============================================================
+   ВИСЕЛИЦА
+   ============================================================ */
 function initHangman() {
     const words = [
         'КУРИЦА', 'ПЕТУХ', 'ЯЙЦО', 'КРЫЛО', 'ХВОСТ', 'ГРЕБЕНЬ',
@@ -7138,7 +7040,9 @@ function initHangman() {
     render();
 }
 
-// ==================== САПЁР ====================
+/* ============================================================
+   САПЁР
+   ============================================================ */
 function initMinesweeper() {
     const rows = 9;
     const cols = 9;
@@ -7330,9 +7234,9 @@ function initMinesweeper() {
     renderBoard();
 }
 
-// ============================================================
-// ==================== КТО Я? (ИСПРАВЛЕННАЯ) ====================
-// ============================================================
+/* ============================================================
+   КТО Я? (ИСПРАВЛЕННАЯ)
+   ============================================================ */
 
 let whoamiGameRef = null;
 let whoamiGameId = null;
@@ -7342,7 +7246,9 @@ let whoamiCurrentTurn = -1;
 let whoamiQuestionHistory = [];
 let whoamiCanAskMore = false;
 
-// ==================== ЗАПУСК ИГРЫ ====================
+/* ============================================================
+   ЗАПУСК ИГРЫ
+   ============================================================ */
 function initWhoAmIOnline() {
     showScreen('whoami-online');
     const container = document.getElementById('whoamiOnlineContent');
@@ -7381,7 +7287,9 @@ function initWhoAmIOnline() {
     `;
 }
 
-// ==================== ПОКАЗАТЬ АКТИВНЫЕ ИГРЫ ====================
+/* ============================================================
+   ПОКАЗАТЬ АКТИВНЫЕ ИГРЫ
+   ============================================================ */
 function whoamiShowActiveGames() {
     const list = document.getElementById('whoamiGamesList');
     if (!list) return;
@@ -7420,7 +7328,9 @@ function whoamiShowActiveGames() {
     });
 }
 
-// ==================== СОЗДАТЬ ИГРУ ====================
+/* ============================================================
+   СОЗДАТЬ ИГРУ
+   ============================================================ */
 function whoamiCreateGame() {
     const gameName = prompt('📝 Название игры:', `Игра за столом ${new Date().toLocaleTimeString()}`);
     const maxPlayers = parseInt(prompt('👥 Сколько игроков? (2-6)', '4'));
@@ -7448,7 +7358,9 @@ function whoamiCreateGame() {
     whoamiJoinGame(gameRef.key);
 }
 
-// ==================== ПРИСОЕДИНИТЬСЯ К ИГРЕ ====================
+/* ============================================================
+   ПРИСОЕДИНИТЬСЯ К ИГРЕ
+   ============================================================ */
 function whoamiJoinGame(gameId) {
     whoamiGameId = gameId;
     
@@ -7491,7 +7403,9 @@ function whoamiJoinGame(gameId) {
     });
 }
 
-// ==================== ОТРИСОВКА ИГРЫ ====================
+/* ============================================================
+   ОТРИСОВКА ИГРЫ
+   ============================================================ */
 function renderWhoamiGame(container) {
     if (!container) return;
     
@@ -7646,7 +7560,9 @@ function renderWhoamiGame(container) {
     container.innerHTML = html;
 }
 
-// ==================== ПРИГЛАСИТЬ ДРУЗЕЙ ====================
+/* ============================================================
+   ПРИГЛАСИТЬ ДРУЗЕЙ
+   ============================================================ */
 function whoamiInviteFriends() {
     if (!whoamiGameId) {
         alert('Вы не в игре!');
@@ -7716,7 +7632,9 @@ function whoamiSendInvite(uid) {
     });
 }
 
-// ==================== НАЧАТЬ ИГРУ ====================
+/* ============================================================
+   НАЧАТЬ ИГРУ
+   ============================================================ */
 function whoamiStartGame() {
     if (!whoamiGameId) return;
     
@@ -7791,7 +7709,9 @@ function whoamiStartGame() {
     });
 }
 
-// ==================== ЗАДАТЬ ВОПРОС ====================
+/* ============================================================
+   ЗАДАТЬ ВОПРОС
+   ============================================================ */
 function whoamiAskQuestion() {
     if (!whoamiGameId) return;
     if (whoamiCurrentTurn !== whoamiMySeat) {
@@ -7887,7 +7807,9 @@ function whoamiAskQuestion() {
     });
 }
 
-// ==================== УГАДАТЬ ====================
+/* ============================================================
+   УГАДАТЬ
+   ============================================================ */
 function whoamiMakeGuess() {
     if (!whoamiGameId) return;
     if (whoamiCurrentTurn !== whoamiMySeat) {
@@ -7961,7 +7883,9 @@ function whoamiMakeGuess() {
     });
 }
 
-// ==================== СЛЕДУЮЩИЙ ХОД ====================
+/* ============================================================
+   СЛЕДУЮЩИЙ ХОД
+   ============================================================ */
 function whoamiNextTurn() {
     if (!whoamiGameId) return;
     
@@ -8008,7 +7932,9 @@ function whoamiNextTurn() {
     });
 }
 
-// ==================== ВЫЙТИ ИЗ ИГРЫ ====================
+/* ============================================================
+   ВЫЙТИ ИЗ ИГРЫ
+   ============================================================ */
 function whoamiLeaveGame() {
     if (whoamiGameRef) {
         whoamiGameRef.off();
@@ -8028,7 +7954,9 @@ function whoamiLeaveGame() {
     showScreen('home');
 }
 
-// ==================== ПРИНЯТЬ ПРИГЛАШЕНИЕ ====================
+/* ============================================================
+   ПРИНЯТЬ ПРИГЛАШЕНИЕ
+   ============================================================ */
 function whoamiAcceptInvite(gameId) {
     document.getElementById('inviteModal').classList.remove('show');
     
@@ -8052,7 +7980,9 @@ function whoamiDeclineInvite(inviteId) {
         db.ref('game_invites/' + inviteId).remove();
     }, 1000);
 }
-// ==================== РУЛЕТКА ====================
+/* ============================================================
+   РУЛЕТКА
+   ============================================================ */
 function initRoulette() {
     const container = document.getElementById('gameContent');
     if (!container) return;
@@ -8231,9 +8161,9 @@ function initRoulette() {
 
     render();
 }
-// ============================================================
-// ==================== КАЗИНО ================================
-// ============================================================
+/* ============================================================
+   КАЗИНО
+   ============================================================ */
 // ---------- 🎰 СЛОТЫ ----------
 function initSlots() {
     const container = document.getElementById('gameContent');
@@ -8272,7 +8202,7 @@ function initSlots() {
                     <button onclick="initSlots()" style="background:#444; color:#fff; border:none; padding:6px 20px; border-radius:20px; cursor:pointer;">🔄 Обновить</button>
                     <button onclick="submitGameRating()" style="background:#555; color:#fff; border:none; padding:6px 20px; border-radius:20px; cursor:pointer;">⭐ Оценить</button>
                 </div>
-                <div id="gameRatingArea" style="margin-top:10px;"></div>
+                <div id="gameScoreRatingArea" style="margin-top:10px;"></div>
             </div>
         `;
         createGameRating();
@@ -8437,7 +8367,7 @@ function initBlackjack() {
                     <button onclick="blackjackDeal()" style="background:#ffd700; color:#000; border:none; padding:10px 25px; border-radius:8px; cursor:pointer; font-weight:bold;">🔄 Новая игра</button>
                 </div>
                 <div id="blackjackResult" style="margin-top:10px; font-size:18px; color:#ffd700;"></div>
-                <div id="gameRatingArea" style="margin-top:10px;"></div>
+                <div id="gameScoreRatingArea" style="margin-top:10px;"></div>
             </div>
         `;
         createGameRating();
@@ -8564,7 +8494,7 @@ function initDice() {
                     <button onclick="dicePredict('seven')" style="background:#ffd700; color:#000; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-weight:bold; ${rolling ? 'opacity:0.5;' : ''}" ${rolling ? 'disabled' : ''}>7️⃣ Ровно 7</button>
                 </div>
                 <div id="diceResult" style="margin-top:10px; font-size:18px; color:#ffd700;"></div>
-                <div id="gameRatingArea" style="margin-top:10px;"></div>
+                <div id="gameScoreRatingArea" style="margin-top:10px;"></div>
             </div>
         `;
         createGameRating();
@@ -8595,7 +8525,7 @@ function initDice() {
         const resultDiv = document.getElementById('diceResult');
         
         let count = 0;
-        const interval = setInterval(() => {
+        const interval = gInterval(() => {
             const val1 = Math.floor(Math.random() * 6) + 1;
             const val2 = Math.floor(Math.random() * 6) + 1;
             const emojis = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -8651,44 +8581,20 @@ function initDice() {
     
     render();
 }
-// ============================================================
-// ==================== ОТЗЫВЫ НА ИГРЫ =========================
-// ============================================================
-
-function loadGameReviews(gameId) {
-    db.ref('gameReviews/' + gameId).on('value', function(snap) {
-        const reviews = [];
-        snap.forEach(function(child) {
-            reviews.push({
-                id: child.key,
-                name: child.val().name || 'Аноним',
-                avatarType: child.val().avatarType || 'emoji',
-                avatarValue: child.val().avatarValue || '🐔',
-                text: child.val().text || '',
-                rating: child.val().rating || 5,
-                ts: child.val().ts || 0
-            });
-        });
-        reviews.sort((a, b) => b.ts - a.ts);
-        
-        let sum = 0;
-        reviews.forEach(r => sum += r.rating);
-        const avg = reviews.length > 0 ? (sum / reviews.length).toFixed(1) : '0';
-        const el = document.getElementById('rating-' + gameId);
-        if (el) {
-            el.textContent = '⭐ ' + avg + '/10 (' + reviews.length + ')';
-        }
-        
-        // Сохраняем отзывы для показа
-        window._gameReviews = window._gameReviews || {};
-        window._gameReviews[gameId] = reviews;
-    });
-}
+/* ============================================================
+   ОТЗЫВЫ НА ИГРЫ
+   ============================================================ */
 
 function showGameReviewsForCurrent(gameId) {
     const reviews = window._gameReviews && window._gameReviews[gameId] ? window._gameReviews[gameId] : [];
-    const container = document.getElementById('gameRatingArea');
-    if (!container) return;
+    const area = document.getElementById('gameRatingArea');
+    if (!area) return;
+    let container = document.getElementById('gameReviewArea');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'gameReviewArea';
+        area.appendChild(container);
+    }
     
     let html = `
         <div style="margin-top:20px; border-top:2px solid #444; padding-top:15px;">
@@ -8713,16 +8619,16 @@ function showGameReviewsForCurrent(gameId) {
                 stars += r.rating >= i*2 ? '⭐' : r.rating === i*2-1 ? '🌓' : '☆';
             }
             const avatar = r.avatarType === 'image' 
-                ? `<img src="${r.avatarValue}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;">` 
-                : r.avatarValue;
+                ? `<img src="${escapeHtml(r.avatarValue)}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:4px;">` 
+                : escapeHtml(r.avatarValue);
             html += `
                 <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 12px; margin-bottom:6px;">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span style="font-size:16px;">${avatar}</span>
-                        <strong style="font-size:13px;">${r.name}</strong>
+                        <strong style="font-size:13px;">${escapeHtml(r.name)}</strong>
                         <span style="font-size:12px; color:#ffd700;">${stars} ${r.rating}/10</span>
                     </div>
-                    <div style="font-size:13px; color:#ccc; margin-top:3px;">${r.text}</div>
+                    <div style="font-size:13px; color:#ccc; margin-top:3px;">${escapeHtml(r.text)}</div>
                 </div>
             `;
         });
@@ -8789,304 +8695,69 @@ function submitGameReview(gameId) {
 function rateGame(rating, gameId) {
     window._gameReviewRating = rating;
     document.getElementById('gameRatingText').textContent = rating + '/10';
-    const stars = document.querySelectorAll('#gameRatingArea .star');
+    const stars = document.querySelectorAll('#gameReviewArea .star');
     updateStars(stars, rating);
 }
 
-// Обновить звёзды
-function updateStars(stars, rating) {
-    stars.forEach(function(s) {
-        const v = parseInt(s.getAttribute('data-v')) * 2;
-        s.classList.remove('full', 'half', 'hover-full', 'hover-half');
-        if (rating >= v) s.classList.add('full');
-        else if (rating === v - 1) s.classList.add('half');
+/* ============================================================
+   99. ЗАПУСК САЙТА
+   Выполняется ПОСЛЕ того, как весь код выше уже определён.
+   Кодовое слово при входе: «Тильдочка» (регистр не важен).
+   ============================================================ */
+
+// Телефонные фиксы (быстрые нажатия без задержки) и Enter в полях ввода
+function initDomHandlers() {
+    document.body.style.touchAction = 'manipulation';
+    document.querySelectorAll('.quick-card, .movie-card, .game-card, button, .burger, .profile-area, .menu a, .logo').forEach(function(el) {
+        el.style.touchAction = 'manipulation';
+        el.style.webkitTapHighlightColor = 'transparent';
     });
-}
-// Убедимся, что showCasino вызывается правильно
-function showCasino() {
-    showScreen('casino');
-    const container = document.getElementById('casinoGamesGrid');
-    if (!container) return;
-    
-    const casinoGames = [
-        { name: '🎡 Рулетка', icon: '🎡', id: 'roulette', desc: 'Ставь на число, цвет или чёт/нечет' },
-        { name: '🎰 Слоты', icon: '🎰', id: 'slots', desc: 'Крути барабаны и выигрывай!' },
-        { name: '🃏 Блэкджек', icon: '🃏', id: 'blackjack', desc: 'Набери 21, не переборщи!' },
-        { name: '🎲 Кости', icon: '🎲', id: 'dice', desc: 'Бросай кубики и угадывай сумму' }
-    ];
-    
-    container.innerHTML = '';
-    casinoGames.forEach(game => {
-        const card = document.createElement('div');
-        card.className = 'game-card';
-        card.onclick = () => showCasinoGame(game.id);
-        card.innerHTML = `
-            <span class="game-icon">${game.icon}</span>
-            <h3>${game.name}</h3>
-            <div style="font-size:11px;color:#aaa;margin-top:4px;">${game.desc}</div>
-            <div class="game-rating" id="rating-casino-${game.id}">⭐ Загрузка...</div>
-        `;
-        container.appendChild(card);
-        loadLeaderboard('casino_' + game.id);
-    });
-}
+    document.addEventListener('touchstart', function() {}, { passive: true });
 
-function showCasinoGame(type) {
-    currentGame = 'casino_' + type;
-    showScreen('game');
-    const titles = {
-        roulette: '🎡 Рулетка',
-        slots: '🎰 Слоты',
-        blackjack: '🃏 Блэкджек',
-        dice: '🎲 Кости'
-    };
-    document.getElementById('gameTitle').textContent = titles[type] || type;
-    document.getElementById('gameContent').innerHTML = '';
-    document.getElementById('gameRatingArea').innerHTML = '';
-    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
-    
-    setTimeout(function() {
-        if (type === 'roulette') initRoulette();
-        else if (type === 'slots') initSlots();
-        else if (type === 'blackjack') initBlackjack();
-        else if (type === 'dice') initDice();
-        loadLeaderboard('casino_' + type);
-    }, 50);
-}
-// ============================================================
-// ==================== ФИКС 1: КАЗИНО ====================
-// ============================================================
-
-// Переписываем showCasino чтобы она точно работала
-window.showCasino = function() {
-    console.log('🎰 showCasino вызвана');
-    showScreen('casino');
-    const container = document.getElementById('casinoGamesGrid');
-    if (!container) {
-        console.error('❌ casinoGamesGrid не найден!');
-        return;
-    }
-    
-    const casinoGames = [
-        { name: '🎡 Рулетка', icon: '🎡', id: 'roulette', desc: 'Ставь на число, цвет или чёт/нечет' },
-        { name: '🎰 Слоты', icon: '🎰', id: 'slots', desc: 'Крути барабаны и выигрывай!' },
-        { name: '🃏 Блэкджек', icon: '🃏', id: 'blackjack', desc: 'Набери 21, не переборщи!' },
-        { name: '🎲 Кости', icon: '🎲', id: 'dice', desc: 'Бросай кубики и угадывай сумму' }
-    ];
-    
-    container.innerHTML = '';
-    casinoGames.forEach(function(game) {
-        const card = document.createElement('div');
-        card.className = 'game-card';
-        card.onclick = function() { showCasinoGame(game.id); };
-        card.innerHTML = `
-            <span class="game-icon">${game.icon}</span>
-            <h3>${game.name}</h3>
-            <div style="font-size:11px;color:#aaa;margin-top:4px;">${game.desc}</div>
-            <div class="game-rating" id="rating-casino_${game.id}">⭐ Загрузка...</div>
-        `;
-        container.appendChild(card);
-        // Загружаем рейтинг
-        loadLeaderboard('casino_' + game.id);
-        loadGameReviews('casino_' + game.id);
-        // Показываем отзывы
-        setTimeout(function(gid) {
-            showGameReviewsForCurrent(gid);
-        }, 300, 'casino_' + game.id);
-    });
-    console.log('✅ Казино отрисовано, игр:', casinoGames.length);
-};
-
-// Переписываем showCasinoGame чтобы она работала
-window.showCasinoGame = function(type) {
-    console.log('🎰 showCasinoGame вызвана с type:', type);
-    currentGame = 'casino_' + type;
-    showScreen('game');
-    const titles = {
-        roulette: '🎡 Рулетка',
-        slots: '🎰 Слоты',
-        blackjack: '🃏 Блэкджек',
-        dice: '🎲 Кости'
-    };
-    document.getElementById('gameTitle').textContent = titles[type] || type;
-    document.getElementById('gameContent').innerHTML = '';
-    document.getElementById('gameRatingArea').innerHTML = '';
-    document.getElementById('gameScoreDisplay').textContent = 'Счёт: 0';
-    
-    setTimeout(function() {
-        if (type === 'roulette') initRoulette();
-        else if (type === 'slots') initSlots();
-        else if (type === 'blackjack') initBlackjack();
-        else if (type === 'dice') initDice();
-        loadLeaderboard('casino_' + type);
-        loadGameReviews('casino_' + type);
-        setTimeout(function() {
-            showGameReviewsForCurrent('casino_' + type);
-        }, 200);
-    }, 50);
-};
-
-// ============================================================
-// ==================== ФИКС 2: ОТОБРАЖЕНИЕ ОЦЕНОК ====================
-// ============================================================
-
-// Переписываем renderAllGames чтобы показывать оценки
-window.renderAllGames = function() {
-    var container = document.getElementById('allGamesGrid');
-    if(!container) {
-        console.error('Контейнер allGamesGrid не найден!');
-        return;
-    }
-    var allGames = [
-        { name: 'Змейка', icon: '🐍', id: 'snake', online: false },
-        { name: 'Тетрис', icon: '🧱', id: 'tetris', online: false },
-        { name: 'Раннер', icon: '🏃', id: 'runner', online: false },
-        { name: 'Куриный дождь', icon: '🌧️', id: 'chickenrain', online: false },
-        { name: 'Flappy курица', icon: '🐔', id: 'flappy', online: false },
-        { name: 'Memory', icon: '🧠', id: 'memory', online: false },
-        { name: 'Тамагочи', icon: '🐣', id: 'tamagotchi', online: false },
-        { name: 'Угадай число', icon: '🔢', id: 'guess', online: false },
-        { name: 'Камень-ножницы', icon: '✂️', id: 'rps', online: false },
-        { name: 'Пинг-понг', icon: '🏓', id: 'pong', online: true },
-        { name: 'Крестики-нолики', icon: '❌', id: 'xo', online: true },
-        { name: 'Морской бой', icon: '🚢', id: 'battleship', online: true },
-        { name: 'Птичий тир', icon: '🎯', id: 'shooter', online: false },
-        { name: 'Совместная рисовалка', icon: '🎨', id: 'drawing', online: false },
-        { name: 'Виселица', icon: '🙃', id: 'hangman', online: false },
-        { name: 'Сапёр', icon: '💣', id: 'minesweeper', online: false },
-        { name: 'Кто я?', icon: '🕵️', id: 'whoami', online: false },
-        { name: 'Рулетка', icon: '🎡', id: 'roulette', online: false }
-    ];
-    
-    container.innerHTML = '';
-    for(var i = 0; i < allGames.length; i++) {
-        var game = allGames[i];
-        var playFunc = game.online ? 'showOnlineGame' : 'showGame';
-        var card = document.createElement('div');
-        card.className = 'game-card';
-        card.setAttribute('onclick', playFunc + "('" + game.id + "')");
-        card.setAttribute('style', 'cursor:pointer');
-        card.innerHTML = `
-            <span class="game-icon">${game.icon}</span>
-            <h3>${game.name}</h3>
-            <div class="game-rating" id="rating-${game.id}">⭐ Загрузка...</div>
-        `;
-        container.appendChild(card);
-        
-        // Загружаем рейтинг для каждой игры
-        (function(gameId) {
-            loadLeaderboard(gameId);
-            loadGameReviews(gameId);
-            // Показываем отзывы
-            setTimeout(function() {
-                showGameReviewsForCurrent(gameId);
-            }, 500);
-        })(game.id);
-    }
-    console.log('✅ Все игры отрисованы, найдено:', allGames.length);
-};
-
-// ============================================================
-// ==================== ФИКС 3: showAllGames ====================
-// ============================================================
-
-window.showAllGames = function() {
-    console.log('showAllGames вызвана');
-    showScreen('games-all');
-    setTimeout(function() {
-        renderAllGames();
-    }, 50);
-};
-
-// ============================================================
-// ==================== ФИКС 4: ИНИЦИАЛИЗАЦИЯ ПРИ ЗАГРУЗКЕ ====================
-// ============================================================
-
-// Добавляем вызов renderAllGames при загрузке
-document.addEventListener('DOMContentLoaded', function() {
-    // Ждём полной загрузки
-    setTimeout(function() {
-        // Если есть контейнер для игр - отрисовываем
-        if (document.getElementById('allGamesGrid')) {
-            renderAllGames();
-        }
-        console.log('✅ Все игры инициализированы');
-    }, 1000);
-});
-
-// ============================================================
-// ==================== ФИКС 5: ИСПРАВЛЕНИЕ showGameReviewsForCurrent ====================
-// ============================================================
-
-// Дополняем функцию обновления рейтингов
-var originalShowGameReviewsForCurrent = window.showGameReviewsForCurrent || function() {};
-
-window.showGameReviewsForCurrent = function(gameId) {
-    // Вызываем оригинальную функцию
-    if (typeof originalShowGameReviewsForCurrent === 'function') {
-        originalShowGameReviewsForCurrent(gameId);
-    }
-    
-    // Дополнительно обновляем рейтинг в карточке игры
-    setTimeout(function() {
-        var ratingEl = document.getElementById('rating-' + gameId);
-        if (ratingEl) {
-            db.ref('gameRatings/' + gameId).once('value', function(snap) {
-                var rats = [];
-                snap.forEach(function(c) {
-                    rats.push(c.val());
-                });
-                if (rats.length > 0) {
-                    var sum = 0;
-                    rats.forEach(function(r) {
-                        sum += (r.rating || 0);
-                    });
-                    var avg = (sum / rats.length).toFixed(1);
-                    ratingEl.textContent = '⭐ ' + avg + '/10 (' + rats.length + ')';
-                } else {
-                    ratingEl.textContent = '⭐ Нет оценок';
-                }
-            });
-        }
-    }, 100);
-};
-
-// ============================================================
-// ==================== ФИКС 6: loadLeaderboard ====================
-// ============================================================
-
-// Дополняем функцию загрузки рейтингов
-var originalLoadLeaderboard = window.loadLeaderboard || function() {};
-
-window.loadLeaderboard = function(type) {
-    // Вызываем оригинальную
-    if (typeof originalLoadLeaderboard === 'function') {
-        originalLoadLeaderboard(type);
-    }
-    
-    // Дополнительно обновляем рейтинг в карточке
-    var ratingEl = document.getElementById('rating-' + type);
-    if (ratingEl) {
-        db.ref('gameRatings/' + type).once('value', function(snap) {
-            var rats = [];
-            snap.forEach(function(c) {
-                rats.push(c.val());
-            });
-            if (rats.length > 0) {
-                var sum = 0;
-                rats.forEach(function(r) {
-                    sum += (r.rating || 0);
-                });
-                var avg = (sum / rats.length).toFixed(1);
-                ratingEl.textContent = '⭐ ' + avg + '/10 (' + rats.length + ')';
-            } else {
-                ratingEl.textContent = '⭐ Нет оценок';
+    // Enter — отправить (Shift+Enter — новая строка)
+    [['chatMessageLive', sendChatMessage], ['ideaText', addIdea], ['magicMessageInput', sendMagicMessage]].forEach(function(pair) {
+        var input = document.getElementById(pair[0]);
+        if (!input) return;
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                pair[1]();
             }
         });
-    }
-};
+    });
 
-console.log('✅ Все фиксы применены!');
+    // Клик вне меню закрывает меню
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.burger') && !e.target.closest('.menu') && !e.target.closest('.modal-box')) closeMenu();
+    });
+}
+
+function isPasswordCorrect(value) {
+    var v = (value || '').trim().toLowerCase();
+    return v === 'тильдочка' || v === 'тильлочка';
+}
+
+function bootApp() {
+    initDomHandlers();
+
+    var pass = prompt('🔐 Введите кодовое слово:');
+    if (isPasswordCorrect(pass)) {
+        // Тамагочи продолжает жить, если был жив
+        try {
+            var savedTama = localStorage.getItem('tildochka_tamagotchi');
+            if (savedTama) {
+                tamagotchiData = JSON.parse(savedTama);
+                if (tamagotchiData && tamagotchiData.isAlive) startTamagotchiLoop();
+            }
+        } catch (e) {}
+        loadAllData();
+    } else {
+        document.getElementById('customLoading').style.display = 'none';
+        document.getElementById('blocked').style.display = 'flex';
+    }
+}
+
+bootApp();
 </script>
 </body>
-                                                                                                </html>
+</html>
